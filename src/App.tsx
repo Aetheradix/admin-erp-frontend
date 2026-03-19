@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Spin } from 'antd';
+import { Spin, App as AntdApp } from 'antd';
 import Layout from '@/components/layout/Layout';
 
 
@@ -25,30 +25,32 @@ const LoadingFallback = () => (
 
 function App() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
+    <AntdApp>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
 
-        {/* Protected Admin Routes */}
-        {/* <Route element={<ProtectedRoute allowedRoles={['admin']} />}> */}
-          <Route element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="blogs" element={<BlogsList />} />
-            <Route path="gallery" element={<GalleryList />} />
-            <Route path="events" element={<EventsList />} />
-            <Route path="careers" element={<CareersList />} />
-            <Route path="users" element={<UsersList />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="dashboard" element={<Navigate to="/" replace />} />
-          </Route>
-        {/* </Route> */}
+          {/* Protected Admin Routes */}
+          {/* <Route element={<ProtectedRoute allowedRoles={['admin']} />}> */}
+            <Route element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="blogs" element={<BlogsList />} />
+              <Route path="gallery" element={<GalleryList />} />
+              <Route path="events" element={<EventsList />} />
+              <Route path="careers" element={<CareersList />} />
+              <Route path="users" element={<UsersList />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="dashboard" element={<Navigate to="/" replace />} />
+            </Route>
+          {/* </Route> */}
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Suspense>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Suspense>
+    </AntdApp>
   );
 }
 

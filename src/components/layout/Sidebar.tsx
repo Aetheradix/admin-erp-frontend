@@ -19,8 +19,8 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
-    <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 h-full bg-[#161a23] border-r border-white/5 flex flex-col transition-transform duration-300 ease-in-out ${
-      isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20 xl:w-64'
+    <aside className={`fixed lg:static inset-y-0 left-0 z-40 h-full bg-[#161a23] border-r border-white/5 flex flex-col transition-all duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'
     }`}>
       {/* Mobile Close Button */}
       <button 
@@ -30,35 +30,54 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <X size={20} />
       </button>
       {/* Logo Area */}
-      <div className="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-white/5">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-black font-black text-xl">
+      <div className={`h-20 flex items-center ${isOpen ? 'justify-start px-8' : 'justify-center'} border-b border-white/5 transition-all duration-300`}>
+        <div className="w-10 h-10 shrink-0 rounded-xl bg-primary flex items-center justify-center text-black font-black text-xl">
           T
         </div>
-        <span className="hidden lg:block ml-4 text-xl font-bold tracking-tight text-white">
-          TaskTrail
-        </span>
+        {isOpen && (
+          <span className="ml-4 text-xl font-bold tracking-tight text-white whitespace-nowrap">
+            TaskTrail
+          </span>
+        )}
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 py-8 px-4 flex flex-col gap-2 overflow-y-auto">
+      <nav className="flex-1 py-6 px-3 flex flex-col gap-1.5 overflow-y-auto mt-4">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 group ${isActive
-                ? 'bg-primary text-black font-semibold'
-                : 'text-white/50 hover:bg-white/5 hover:text-white'
+              `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center px-0'} py-3.5 rounded-xl transition-all duration-300 group overflow-hidden ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
               }`
             }
           >
             {({ isActive }) => (
               <>
+                {isActive && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-md shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
+                )}
                 <item.icon
                   size={20}
-                  className={`transition-colors ${isActive ? 'text-black' : 'text-white/50 group-hover:text-primary'}`}
+                  className={`shrink-0 transition-colors duration-300 relative z-10 ${
+                    isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-100'
+                  }`}
                 />
-                <span className="hidden lg:block whitespace-nowrap">{item.label}</span>
+                {isOpen && (
+                  <span className={`whitespace-nowrap relative z-10 transition-colors duration-300 ${
+                    isActive ? 'text-primary font-semibold tracking-wide' : 'text-slate-400 font-medium tracking-wide group-hover:text-slate-100'
+                  }`}>
+                    {item.label}
+                  </span>
+                )}
+                
+                {/* Subtle active background glow */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50 pointer-events-none" />
+                )}
               </>
             )}
           </NavLink>

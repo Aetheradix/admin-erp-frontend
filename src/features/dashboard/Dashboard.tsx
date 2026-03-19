@@ -3,6 +3,7 @@ import DashboardHeader from '@/features/dashboard/components/DashboardHeader';
 import DashboardProjectGrid from '@/features/dashboard/components/DashboardProjectGrid';
 import DashboardBottomStats from '@/features/dashboard/components/DashboardBottomStats';
 import DashboardCalendar from '@/features/dashboard/components/DashboardCalendar';
+import AttendanceWidget from '@/features/dashboard/components/AttendanceWidget';
 
 const Dashboard: React.FC = () => {
   return (
@@ -15,7 +16,8 @@ const Dashboard: React.FC = () => {
           <DashboardBottomStats />
         </div>
 
-        <div className="xl:col-span-1">
+        <div className="xl:col-span-1 flex flex-col gap-6">
+          <AttendanceWidget />
           <DashboardCalendar />
         </div>
       </div>

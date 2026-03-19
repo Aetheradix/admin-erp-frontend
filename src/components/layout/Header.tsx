@@ -8,10 +8,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
   return (
     <header className="h-24 w-full flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-10 z-20">
       <div className="flex items-center gap-4 w-full">
-        {/* Mobile Menu Toggle */}
+        {/* Mobile & Desktop Menu Toggle */}
         <button 
           onClick={onMenuClick}
-          className="lg:hidden p-2 -ml-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+          className="p-2 -ml-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-colors"
         >
           <Menu size={24} />
         </button>
