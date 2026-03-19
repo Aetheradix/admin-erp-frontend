@@ -31,12 +31,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       {/* Right Actions */}
       <div className="flex items-center gap-6 ml-auto">
-        {/* Invite Button */}
-        <button className="hidden sm:flex items-center gap-2 bg-[#1b212f] hover:bg-white/10 text-white px-5 py-2.5 rounded-full border border-white/5 transition-all duration-300 text-sm font-medium">
-          <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs">+</span>
-          Invite user
-        </button>
-
         {/* Notifications */}
         <button className="relative p-3 rounded-full bg-[#1b212f] border border-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors duration-300">
           <Bell size={20} />

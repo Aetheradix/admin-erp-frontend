@@ -12,16 +12,18 @@ interface FormModalProps {
 const FormModal: React.FC<FormModalProps> = ({ title, open, onCancel, children, width = 600 }) => {
   return (
     <Modal
-      title={<h3 className="text-xl font-bold text-white mb-4">{title}</h3>}
+      title={<h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter italic">/ {title}</h3>}
       open={open}
       onCancel={onCancel}
       footer={null}
       width={width}
+      centered
       classNames={{
-        body: '!bg-[#1a1a1a] !border !border-white/10 !rounded-2xl !p-6',
-        header: '!bg-transparent !border-b !border-white/10 !pb-4 !mb-6',
+        content: '!bg-white/5 !backdrop-blur-3xl !border !border-white/10 !rounded-[2.5rem] !shadow-2xl !p-0 !overflow-hidden',
+        body: '!p-10',
+        header: '!bg-white/5 !backdrop-blur-md !border-b !border-white/5 !p-8 !mb-0',
       }}
-      closeIcon={<span className="text-white/60! hover:text-white! top-6! right-6!">&times;</span>}
+      closeIcon={<span className="text-white/40! hover:text-white! transition-colors text-2xl">&times;</span>}
     >
       {children}
     </Modal>
