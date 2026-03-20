@@ -1,5 +1,6 @@
-import { Calendar, LayoutDashboard, Settings, Ticket, Users, Briefcase, X, FileText, Image as ImageIcon } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Calendar, LayoutDashboard, Settings, Ticket, Users, Briefcase, X, FileText, Image as ImageIcon, LogOut, User as UserIcon } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -7,7 +8,8 @@ const navItems = [
   { icon: ImageIcon, label: 'Gallery', path: '/gallery' },
   { icon: Ticket, label: 'Events', path: '/events' },
   { icon: Briefcase, label: 'Careers', path: '/careers' },
-  { icon: Users, label: 'Staff', path: '/users' },
+  { icon: Users, label: 'Admin Panel', path: '/users', role: 'admin' },
+  { icon: UserIcon, label: 'Profile', path: '/profile' },
   { icon: Calendar, label: 'Calendar', path: '/calendar' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
@@ -18,6 +20,18 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+  
+  const filteredNavItems = navItems.filter(item => 
+    !item.role || item.role === user?.role
+  );
+
   return (
     <aside className={`fixed lg:static inset-y-0 left-0 z-40 h-full bg-[#161a23] border-r border-white/5 flex flex-col transition-all duration-300 ease-in-out ${
       isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'
@@ -43,7 +57,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Navigation Links */}
       <nav className="flex-1 py-6 px-3 flex flex-col gap-1.5 overflow-y-auto mt-4">
-        {navItems.map((item) => (
+        {filteredNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -84,7 +98,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Bottom Profile / Logout action could go here */}
+      {/* Bottom Profile / Logout action */}
+      <div className={`p-4 border-t border-white/5 ${isOpen ? 'px-6' : 'px-2'}`}>
+        <button 
+          onClick={handleLogout}
+          className={`flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center px-0'} py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-all duration-300 group`}
+        >
+          <LogOut size={20} className="shrink-0" />
+          {isOpen && <span className="font-medium ml-4">Sign Out</span>}
+        </button>
+      </div>
     </aside>
   );
 }

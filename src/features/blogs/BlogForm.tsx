@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { Form, Switch, Upload } from 'antd';
-import { UploadCloud } from 'lucide-react';
+import { Form, Switch } from 'antd';
 import FormModal from '@/components/common/FormModal';
 import FormInput from '@/components/common/FormInput';
 import PrimaryButton from '@/components/common/PrimaryButton';
@@ -18,10 +17,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ open, onCancel, onSubmit, initialVa
   useEffect(() => {
     if (open) {
       if (initialValues) {
-        form.setFieldsValue({
-          ...initialValues,
-          isPublished: initialValues.status === 'Published'
-        });
+        form.setFieldsValue(initialValues);
       } else {
         form.resetFields();
       }
@@ -68,19 +64,20 @@ const BlogForm: React.FC<BlogFormProps> = ({ open, onCancel, onSubmit, initialVa
         </Form.Item>
 
         <Form.Item
-          name="image"
-          label={<span className="text-gray-300 font-medium text-sm">Cover Image</span>}
+          name="image_url"
+          noStyle
         >
-          <Upload name="logo" action="/upload.do" listType="picture">
-            <PrimaryButton className="bg-[#1b212f]! text-white! border border-white/10 hover:border-cyan-500/50!">
-              <UploadCloud size={18} className="mr-2" /> Upload Assets
-            </PrimaryButton>
-          </Upload>
+          <FormInput 
+            name="image_url" 
+            label="Cover Image URL"
+            placeholder="https://images.unsplash.com/photo-..." 
+            className="!m-0"
+          />
         </Form.Item>
 
         <div className="flex items-center justify-between bg-white/5 p-4 rounded-2xl mb-8">
           <span className="text-sm font-medium text-gray-300">Authorize Immediate Publication</span>
-          <Form.Item name="isPublished" valuePropName="checked" noStyle>
+          <Form.Item name="status" valuePropName="checked" noStyle getValueProps={(value) => ({ checked: value === 'Published' })} getValueFromEvent={(checked) => checked ? 'Published' : 'Draft'}>
             <Switch />
           </Form.Item>
         </div>

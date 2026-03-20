@@ -1,17 +1,18 @@
-import { Space } from 'antd';
+import { Image, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Edit2, Trash2 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import IconButton from '@/components/ui/IconButton';
 
 interface BlogType {
-  key: string;
   id?: string;
   title: string;
   category: string;
   status: string;
   author: string;
-  date: string;
+  content: string;
+  image_url?: string;
+  created_at?: string;
 }
 
 export const useBlogColumns = (handleEdit: (record: any) => void, handleDelete: (id: string) => void) => {
@@ -22,12 +23,18 @@ export const useBlogColumns = (handleEdit: (record: any) => void, handleDelete: 
       key: 'title',
       render: (text) => <span className="font-bold text-white tracking-tighter uppercase text-sm">{text}</span>,
     },
-    {
-      title: 'Classification',
-      dataIndex: 'category',
-      key: 'category',
-      render: (category) => <Badge variant="muted" className="border-white/5!">{category}</Badge>,
-    },
+    // {
+    //   title: 'Classification',
+    //   dataIndex: 'category',
+    //   key: 'category',
+    //   render: (category) => <Badge variant="muted" className="border-white/5!">{category}</Badge>,
+    // },
+    // {
+    //   title: 'Image',
+    //   dataIndex: 'image',
+    //   key: 'image',
+    //   render: (image_url) => <Image src={image_url} className="border-white/5!" width={20} height={10} />,
+    // },
     {
       title: 'Status',
       key: 'status',
@@ -45,6 +52,12 @@ export const useBlogColumns = (handleEdit: (record: any) => void, handleDelete: 
       render: (author) => <span className="text-white/20 text-xs font-black uppercase tracking-widest">{author}</span>,
     },
     {
+      title: 'Created',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date) => <span className="text-white/40 text-[10px] font-medium">{new Date(date).toLocaleDateString()}</span>,
+    },
+    {
       title: 'Operations',
       key: 'actions',
       width: 120,
@@ -53,7 +66,7 @@ export const useBlogColumns = (handleEdit: (record: any) => void, handleDelete: 
           <IconButton icon={Edit2} onClick={() => handleEdit(record)} size={14} className="bg-white/5! border-none!" />
           <IconButton 
             icon={Trash2} 
-            onClick={() => handleDelete(record.id || record.key)} 
+            onClick={() => handleDelete(record.id!)} 
             size={14} 
             className="text-rose-400! bg-rose-500/10! border-none!" 
           />

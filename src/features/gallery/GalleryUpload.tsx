@@ -47,12 +47,12 @@ const GalleryUpload: React.FC<GalleryUploadProps> = ({ open, onCancel, onSubmit,
         initialValues={initialValues}
       >
         <Form.Item
-          name="album"
-          label={<span className="text-gray-300 font-medium text-sm">Security Classification / Album</span>}
+          name="category"
+          label={<span className="text-gray-300 font-medium text-sm">Security Classification / Category</span>}
           rules={[{ required: true, message: 'Classification required' }]}
         >
           <Select 
-            placeholder="Select album"
+            placeholder="Select category"
             className="h-12 w-full custom-select"
             options={[
               { value: 'events', label: 'Events & Coordination' },

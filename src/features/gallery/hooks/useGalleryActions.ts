@@ -30,8 +30,8 @@ export const useGalleryActions = () => {
       } else {
         const payload = {
           title: values.title,
-          album: values.album,
-          url: `https://picsum.photos/400/300?random=${Math.random()}`,
+          category: values.category,
+          image_url: `https://picsum.photos/400/300?random=${Math.random()}`,
         };
         await uploadItem(payload).unwrap();
         message.success('Resource Node Created Successfully');

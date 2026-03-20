@@ -12,7 +12,7 @@ interface FormModalProps {
 const FormModal: React.FC<FormModalProps> = ({ title, open, onCancel, children, width = 600 }) => {
   return (
     <Modal
-      title={<h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter italic">/ {title}</h3>}
+      title={<h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter ">{title}</h3>}
       open={open}
       onCancel={onCancel}
       footer={null}

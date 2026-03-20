@@ -6,10 +6,11 @@ interface Event {
   id: string;
   key?: string;
   title: string;
-  date: string;
+  event_date: string;
   location: string;
   status: 'Upcoming' | 'Scheduled' | 'Completed' | string;
   type: string;
+  image_url?: string;
 }
 
 interface EventCardProps {
@@ -63,7 +64,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete }) => {
       <div className="space-y-3">
         <div className="flex items-center gap-3 text-white/40 text-sm">
           <Calendar size={16} />
-          <span>{event.date}</span>
+          <span>{event.event_date}</span>
         </div>
         <div className="flex items-center gap-3 text-white/40 text-sm">
           <MapPin size={16} />

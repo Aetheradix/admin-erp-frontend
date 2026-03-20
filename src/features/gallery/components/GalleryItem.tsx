@@ -44,7 +44,7 @@ const GalleryItem: React.FC<GalleryItemProps> = ({ img, onEdit, onDelete }) => {
       </div>
       <div className="p-4">
         <h4 className="text-white font-bold truncate text-sm mb-2 uppercase tracking-tight" title={img.title}>{img.title}</h4>
-        <Badge variant="muted" className="uppercase text-[9px]! px-2! py-0.5! border-white/10!">{img.album}</Badge>
+        <Badge variant="muted" className="uppercase text-[9px]! px-2! py-0.5! border-white/10!">{img.category}</Badge>
       </div>
     </div>
   );

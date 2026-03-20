@@ -1,38 +1,34 @@
 import { apiSlice } from './apiSlice';
 
-// A simple mock backend using localStorage to ensure the UI toggles work flawlessly for demo
-const getMockState = () => {
-  const data = localStorage.getItem('mockAttendance');
-  return data ? JSON.parse(data) : { status: 'checked-out', lastAction: null };
-};
-
-const setMockState = (state: any) => {
-  localStorage.setItem('mockAttendance', JSON.stringify(state));
-};
-
 export const attendanceSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getAttendanceStatus: builder.query<{ status: 'checked-in' | 'checked-out'; lastAction?: string }, void>({
-      queryFn: () => {
-        return { data: getMockState() };
+    getAttendanceStatus: builder.query<{ status: 'checked-in' | 'checked-out' | null; lastAction?: string | null; dbStatus?: string | null }, void>({
+      query: () => '/attendance/status',
+      transformResponse: (response: any) => {
+        if (!response.data || !response.data.status) {
+          return { status: null, lastAction: null, dbStatus: null };
+        }
+        return {
+          status: response.data.status === 'CHECKED_IN' ? 'checked-in' : 'checked-out',
+          lastAction: response.data.record?.check_in_time ? new Date(response.data.record.check_in_time).toISOString() : null,
+          dbStatus: response.data.status
+        };
       },
       providesTags: ['Attendance'],
     }),
-    checkIn: builder.mutation<{ success: boolean; time: string }, { timestamp: string }>({
-      queryFn: (arg) => {
-        const newState = { status: 'checked-in', lastAction: arg.timestamp };
-        setMockState(newState);
-        return { data: { success: true, time: arg.timestamp } };
-      },
+    checkIn: builder.mutation<{ success: boolean; message: string; id: number }, { remark?: string }>({
+      query: (arg) => ({
+        url: '/attendance/checkin',
+        method: 'POST',
+        body: arg,
+      }),
       invalidatesTags: ['Attendance'],
     }),
-    checkOut: builder.mutation<{ success: boolean; time: string }, { timestamp: string }>({
-      queryFn: (arg) => {
-        // When checking out, we keep the lastAction as the checkout time so we can display "Last out"
-        const newState = { status: 'checked-out', lastAction: arg.timestamp };
-        setMockState(newState);
-        return { data: { success: true, time: arg.timestamp } };
-      },
+    checkOut: builder.mutation<{ success: boolean; message: string; id: number }, void>({
+      query: () => ({
+        url: '/attendance/checkout',
+        method: 'POST',
+      }),
       invalidatesTags: ['Attendance'],
     }),
   }),
@@ -43,5 +39,3 @@ export const {
   useCheckInMutation,
   useCheckOutMutation,
 } = attendanceSlice;
-
-

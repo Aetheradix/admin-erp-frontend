@@ -35,14 +35,16 @@ const SignUp: React.FC = () => {
   return (
     <AuthLayout title="Create Account" subtitle="Join to manage your content effectively" leftPanelContent={leftPanelContent}>
       <Form layout="vertical" onFinish={handleSignUp} requiredMark={false}>
-        <div className="grid grid-cols-2 gap-4">
-          <FormInput name="fullName" label="Full Name" placeholder="John Doe" rules={[{ required: true, message: 'Name required' }]} />
-          <FormInput name="org" label="Organization" placeholder="Nexus Corp" rules={[{ required: true, message: 'Org required' }]} />
-        </div>
+        <FormInput 
+          name="username" 
+          label="Username" 
+          placeholder="Choose a username" 
+          rules={[{ required: true, message: 'Username required' }]} 
+        />
 
         <FormInput 
           name="email" 
-          label="Email address" 
+          label="Email Address" 
           placeholder="Enter your email" 
           rules={[{ required: true, type: 'email', message: 'Valid email required' }]} 
         />

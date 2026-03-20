@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, App, Tag, Divider } from 'antd';
+import { Card, Button, Typography, App, Tag, Divider, Modal, Input } from 'antd';
 import { Clock, LogIn, LogOut, AlertCircle, CheckCircle2, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGetAttendanceStatusQuery, useCheckInMutation, useCheckOutMutation } from '@/store/api/attendanceSlice';
@@ -13,6 +13,8 @@ const AttendanceWidget: React.FC = () => {
   const { notification } = App.useApp();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [workedTime, setWorkedTime] = useState('00:00:00');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [remark, setRemark] = useState('');
   
   const { data: attendanceData, isLoading } = useGetAttendanceStatusQuery();
   const [checkIn, { isLoading: isCheckingIn }] = useCheckInMutation();
@@ -57,7 +59,12 @@ const AttendanceWidget: React.FC = () => {
     }).format(date);
   };
 
-  const handleCheckIn = async () => {
+  const handleCheckIn = async (customRemark?: string) => {
+    if (attendanceData?.dbStatus === 'CHECKED_OUT' && !customRemark) {
+      setIsModalOpen(true);
+      return;
+    }
+
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
@@ -65,8 +72,13 @@ const AttendanceWidget: React.FC = () => {
     const isLate = hours > LATE_THRESHOLD_HOURS || (hours === LATE_THRESHOLD_HOURS && minutes > LATE_THRESHOLD_MINUTES);
 
     try {
-      await checkIn({ timestamp: now.toISOString() }).unwrap();
+      await checkIn(customRemark ? { remark: customRemark } : {}).unwrap();
       
+      if (customRemark) {
+        setIsModalOpen(false);
+        setRemark('');
+      }
+
       if (isLate) {
         notification.warning({
           message: 'Late Check-in',
@@ -93,7 +105,7 @@ const AttendanceWidget: React.FC = () => {
   const handleCheckOut = async () => {
     try {
       const now = new Date();
-      await checkOut({ timestamp: now.toISOString() }).unwrap();
+      await checkOut().unwrap();
       notification.info({
         message: 'Checked Out',
         description: `You checked out at ${formatTime(now)}. Total worked time: ${workedTime}`,
@@ -208,7 +220,7 @@ const AttendanceWidget: React.FC = () => {
               size="large" 
               block 
               icon={<LogIn size={18} />}
-              onClick={handleCheckIn}
+              onClick={() => handleCheckIn()}
               loading={isCheckingIn || isLoading}
               className="btn btn-primary flex items-center justify-center rounded-xl"
               style={{ height: '52px' }}
@@ -230,6 +242,25 @@ const AttendanceWidget: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      <Modal
+        title="Provide Remark for Re-checking In"
+        open={isModalOpen}
+        onOk={() => handleCheckIn(remark)}
+        onCancel={() => { setIsModalOpen(false); setRemark(''); }}
+        okButtonProps={{ disabled: !remark.trim() }}
+        okText="Confirm Check In"
+      >
+        <div className="py-4">
+          <Typography.Text className="block mb-2 text-muted">Please provide a reason for checking in again (e.g., mistaken checkout).</Typography.Text>
+          <Input.TextArea 
+            placeholder="Enter remark here..."
+            value={remark}
+            onChange={(e) => setRemark(e.target.value)}
+            rows={4}
+          />
+        </div>
+      </Modal>
     </motion.div>
   );
 };

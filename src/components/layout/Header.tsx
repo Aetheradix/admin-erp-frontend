@@ -1,10 +1,15 @@
 import { Bell, Search, Menu } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <header className="h-24 w-full flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-10 z-20">
       <div className="flex items-center gap-4 w-full">
@@ -38,9 +43,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         {/* User Profile */}
-        <div className="h-10 w-10 shrink-0 rounded-full border-2 border-white/10 overflow-hidden cursor-pointer hover:border-primary transition-colors duration-300">
+        <div 
+          onClick={() => navigate('/profile')}
+          className="h-10 w-10 shrink-0 rounded-full border-2 border-white/10 overflow-hidden cursor-pointer hover:border-primary transition-colors duration-300"
+        >
           <img
-            src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=b9ff66"
+            src={user?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'Felix'}`}
             alt="User profile"
             className="w-full h-full object-cover"
           />

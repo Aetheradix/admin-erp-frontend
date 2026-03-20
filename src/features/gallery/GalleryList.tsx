@@ -34,7 +34,7 @@ const GalleryList: React.FC = () => {
         }
       />
 
-      <div className="bg-[#1b212f] rounded-[2.5rem] p-6 lg:p-10 border border-white/5 flex-1 shadow-2xl overflow-y-auto backdrop-blur-md">
+      <div className="">
         {isLoading ? (
           <div className="h-64 flex items-center justify-center text-cyan-400 font-bold tracking-widest uppercase animate-pulse">Synchronizing Local Grid...</div>
         ) : (

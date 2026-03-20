@@ -15,6 +15,7 @@ const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
 
 const Login = lazy(() => import('@/pages/Login'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
+const Profile = lazy(() => import('@/pages/Profile'));
 // const Unauthorized = lazy(() => import('@/pages/Unauthorized'));
 
 const LoadingFallback = () => (
@@ -41,6 +42,7 @@ function App() {
               <Route path="events" element={<EventsList />} />
               <Route path="careers" element={<CareersList />} />
               <Route path="users" element={<UsersList />} />
+              <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="dashboard" element={<Navigate to="/" replace />} />
             </Route>

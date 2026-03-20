@@ -1,8 +1,9 @@
-import { useDeleteUserMutation } from '@/store/api/userSlice';
+import { useDeleteUserMutation, useUpdateUserRoleMutation } from '@/store/api/userSlice';
 import { message, Modal } from 'antd';
 
 export const useUserActions = () => {
   const [deleteUser] = useDeleteUserMutation();
+  const [updateUserRole] = useUpdateUserRoleMutation();
 
   const handleDelete = (id: string) => {
     Modal.confirm({
@@ -23,5 +24,14 @@ export const useUserActions = () => {
     });
   };
 
-  return { handleDelete };
+  const handleUpdateRole = async (id: string, newRole: 'admin' | 'user') => {
+    try {
+      await updateUserRole({ id, role: newRole }).unwrap();
+      message.success(`User role updated to ${newRole}`);
+    } catch (error) {
+      message.error('Failed to update user role');
+    }
+  };
+
+  return { handleDelete, handleUpdateRole };
 };

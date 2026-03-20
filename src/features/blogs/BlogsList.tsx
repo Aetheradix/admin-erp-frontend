@@ -10,14 +10,14 @@ import { Plus } from 'lucide-react';
 
 const BlogsList: React.FC = () => {
   const { data: blogs = [], isLoading, isError } = useGetBlogsQuery();
-  const { 
-    isModalOpen, 
-    setIsModalOpen, 
-    editingBlog, 
-    handleEdit, 
-    handleCreate, 
-    handleDelete, 
-    handleModalSubmit 
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    editingBlog,
+    handleEdit,
+    handleCreate,
+    handleDelete,
+    handleModalSubmit
   } = useBlogActions();
 
   const columns = useBlogColumns(handleEdit, handleDelete);
@@ -26,8 +26,8 @@ const BlogsList: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col pb-12">
-      <PageHeader 
-        title="Content Protocol" 
+      <PageHeader
+        title="Content Protocol"
         subtitle="Initialize and manage corporate data streams"
         actions={
           <PrimaryButton onClick={handleCreate} className="w-fit! px-8! py-4! shadow-xl shadow-cyan-500/20">
@@ -36,14 +36,14 @@ const BlogsList: React.FC = () => {
         }
       />
 
-      <div className="bg-[#1b212f] rounded-[2.5rem] p-6 border border-white/5 flex-1 shadow-2xl overflow-hidden backdrop-blur-md">
-        <DataTable 
-          columns={columns} 
-          dataSource={blogs} 
-          rowKey={(record) => record.id || record.key}
-          loading={isLoading}
-        />
-      </div>
+
+      <DataTable
+        columns={columns}
+        dataSource={blogs}
+        rowKey={(record) => record.id}
+        loading={isLoading}
+      />
+
 
       <BlogForm
         open={isModalOpen}
