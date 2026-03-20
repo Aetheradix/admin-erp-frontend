@@ -1,13 +1,17 @@
-import { Calendar, LayoutDashboard, Settings, Ticket, Users, Briefcase, X, FileText, Image as ImageIcon, LogOut, User as UserIcon } from 'lucide-react';
+import { Calendar, LayoutDashboard, Settings, Ticket, Users, Briefcase, X, FileText, Image as ImageIcon, LogOut, User as UserIcon, IndianRupee, ShieldAlert, Key, BarChart3 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+  { icon: BarChart3, label: 'Insights', path: '/stats' },
   { icon: FileText, label: 'Blogs', path: '/blogs' },
   { icon: ImageIcon, label: 'Gallery', path: '/gallery' },
   { icon: Ticket, label: 'Events', path: '/events' },
   { icon: Briefcase, label: 'Careers', path: '/careers' },
+  { icon: IndianRupee, label: 'Finance', path: '/finance' },
+  { icon: ShieldAlert, label: 'Grievances', path: '/grievances' },
+  { icon: Key, label: 'Guest Pass', path: '/guest-pass' },
   { icon: Users, label: 'Admin Panel', path: '/users', role: 'admin' },
   { icon: UserIcon, label: 'Profile', path: '/profile' },
   { icon: Calendar, label: 'Calendar', path: '/calendar' },

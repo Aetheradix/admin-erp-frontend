@@ -1,6 +1,5 @@
-import { useLoginMutation } from '@/store/api/authApiSlice';
+import { useLoginMutation, useLoginWithOTPMutation, useRequestOTPMutation } from '@/store/api/authApiSlice';
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -8,12 +7,17 @@ interface User {
   email: string;
   role: 'admin' | 'user';
   image_url?: string;
+  designation?: string;
+  employee_id?: string;
+  contact_no?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (credentials: any) => Promise<any>;
+  loginWithOTP: (credentials: { email: string, otp: string }) => Promise<any>;
+  requestOTP: (email: string) => Promise<any>;
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
   isLoading: boolean;
@@ -25,6 +29,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loginMutation] = useLoginMutation();
+  const [loginWithOTPMutation] = useLoginWithOTPMutation();
+  const [requestOTPMutation] = useRequestOTPMutation();
  
 
   useEffect(() => {
@@ -44,27 +50,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkAuth();
   }, []);
 
+  const processUserData = (data: any) => {
+    const loggedUser: User = {
+      id: data.admin.id.toString(),
+      username: data.admin.username,
+      email: data.admin.email,
+      role: data.admin.role || 'user',
+      image_url: data.admin.image_url,
+      designation: data.admin.designation,
+      employee_id: data.admin.employee_id,
+      contact_no: data.admin.contact_no,
+    };
+    
+    setUser(loggedUser);
+    localStorage.setItem('user', JSON.stringify(loggedUser));
+    localStorage.setItem('token', data.token);
+    return data;
+  };
+
   const login = async (credentials: any) => {
     try {
       const data = await loginMutation(credentials).unwrap();
-      
-      const loggedUser: User = {
-        id: data.admin.id.toString(),
-        username: data.admin.username,
-        email: data.admin.email,
-        role: data.admin.role || 'user',
-        image_url: data.admin.image_url,
-      };
-      
-      setUser(loggedUser);
-      localStorage.setItem('user', JSON.stringify(loggedUser));
-      localStorage.setItem('token', data.token);
-      return data; // Return data so hooks can access the message
+      return processUserData(data);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
     }
   };
+
+  const loginWithOTP = async (values: { email: string, otp: string }) => {
+    try {
+      const data = await loginWithOTPMutation(values).unwrap();
+      return processUserData(data);
+    } catch (error) {
+      console.error('OTP Login failed:', error);
+      throw error;
+    }
+  };
+
+  const requestOTP = async (email: string) => {
+    try {
+      return await requestOTPMutation({ email }).unwrap();
+    } catch (error) {
+      console.error('OTP request failed:', error);
+      throw error;
+    }
+  };
+
 
   const logout = () => {
     setUser(null);
@@ -82,7 +114,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, updateUser, isLoading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, loginWithOTP, requestOTP, logout, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

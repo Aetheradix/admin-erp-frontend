@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useRegisterMutation } from '@/store/api/authApiSlice';
 
 export const useAuthActions = () => {
-  const { login } = useAuth();
+  const { login, loginWithOTP, requestOTP } = useAuth();
   const [registerMutation] = useRegisterMutation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,19 +22,39 @@ export const useAuthActions = () => {
 
   const handleSignUp = async (values: any) => {
     try {
-     
- 
       const result = await registerMutation(values).unwrap();
-
-      message.success({ content: result.message || 'Account established successfully.', key: 'reg' });
+      message.success(result.message || 'Account established successfully.');
       navigate('/login');
     } catch (error: any) {
-      message.error({ content: error.data?.message || 'Registration failure. System halted.', key: 'reg' });
+      message.error(error.data?.message || 'Registration failure.');
+    }
+  };
+
+  const handleRequestOTP = async (email: string) => {
+    try {
+      const result = await requestOTP(email);
+      message.success(result.message || 'OTP sent to your registered email.');
+      return true;
+    } catch (error: any) {
+      message.error(error.data?.message || 'Failed to request OTP.');
+      return false;
+    }
+  };
+
+  const handleOTPLogin = async (values: { email: string, otp: string }) => {
+    try {
+      const result = await loginWithOTP(values);
+      message.success(result.message || 'OTP Verified. Welcome back.');
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      message.error(error.data?.message || 'Invalid or expired OTP.');
     }
   };
 
   return {
     handleLogin,
-    handleSignUp
+    handleSignUp,
+    handleRequestOTP,
+    handleOTPLogin
   };
 };

@@ -10,6 +10,7 @@ interface FormInputProps {
   icon?: LucideIcon;
   rules?: any[];
   className?: string;
+  disabled?: boolean;
 }
 
 const FormInput: React.FC<FormInputProps> = ({ 
@@ -19,7 +20,8 @@ const FormInput: React.FC<FormInputProps> = ({
   type = 'text', 
   icon: Icon,
   rules = [],
-  className = ''
+  className = '',
+  disabled = false
 }) => {
   const InputComponent = type === 'password' ? AntdInput.Password : AntdInput;
   
@@ -31,6 +33,7 @@ const FormInput: React.FC<FormInputProps> = ({
       className={className}
     >
       <InputComponent 
+        disabled={disabled}
         suffix={Icon && <Icon size={18} className="text-gray-500" />}
         className="h-12 rounded-xl border-white/10 focus:border-cyan-500 hover:border-cyan-500 bg-[#0f172a] text-white shadow-sm placeholder:text-gray-600"
         placeholder={placeholder}

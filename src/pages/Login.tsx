@@ -1,15 +1,30 @@
-import React from 'react';
 import { Form, Checkbox } from 'antd';
-import { Mail, Lock, FileText, Image, Calendar } from 'lucide-react';
+import { Mail, Lock, FileText, Image, Calendar, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
 import AuthCard from '@/components/auth/AuthCard';
 import FormInput from '@/components/common/FormInput';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import { useAuthActions } from '@/hooks/useAuthActions';
+import { useState } from 'react';
 
 const Login: React.FC = () => {
-  const { handleLogin } = useAuthActions();
+  const [isOtpMode, setIsOtpMode] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [emailForOtp, setEmailForOtp] = useState('');
+  const { handleLogin, handleRequestOTP, handleOTPLogin } = useAuthActions();
+
+  const [form] = Form.useForm();
+
+  const handleSendOTP = async () => {
+    const email = form.getFieldValue('email');
+    if (!email) return;
+    const success = await handleRequestOTP(email);
+    if (success) {
+      setOtpSent(true);
+      setEmailForOtp(email);
+    }
+  };
 
   const leftPanelContent = (
     <>
@@ -52,39 +67,94 @@ const Login: React.FC = () => {
 
   return (
     <AuthLayout 
-      title="Welcome Back" 
-      subtitle="Sign in to manage your content"
+      title={isOtpMode ? "Security Verification" : "Welcome Back"} 
+      subtitle={isOtpMode ? "Enter the 6-digit code sent to your email" : "Sign in to manage your content"}
       leftPanelContent={leftPanelContent}
     >
-      <Form layout="vertical" onFinish={handleLogin} initialValues={{ remember: true }} requiredMark={false}>
+      <Form 
+        form={form}
+        layout="vertical" 
+        onFinish={isOtpMode ? handleOTPLogin : handleLogin} 
+        initialValues={{ remember: true }} 
+        requiredMark={false}
+      >
         <FormInput 
           name="email" 
           label="Email address" 
           placeholder="Enter your email" 
           icon={Mail}
+          disabled={otpSent && isOtpMode}
           rules={[{ required: true, type: 'email', message: 'Valid email required' }]}
         />
         
-        <FormInput 
-          name="password" 
-          label="Password" 
-          placeholder="Enter your password" 
-          type="password"
-          icon={Lock}
-          rules={[{ required: true, message: 'Password required' }]}
-        />
+        {!isOtpMode ? (
+          <>
+            <FormInput 
+              name="password" 
+              label="Password" 
+              placeholder="Enter your password" 
+              type="password"
+              icon={Lock}
+              rules={[{ required: true, message: 'Password required' }]}
+            />
 
-        <div className="flex items-center justify-between mb-8 mt-2 px-1">
-          <Form.Item name="remember" valuePropName="checked" noStyle>
-            <Checkbox className="text-gray-400 text-sm font-medium">Remember me</Checkbox>
-          </Form.Item>
-          <a href="#" className="text-cyan-400 text-sm font-semibold hover:text-cyan-300 transition-colors">Forgot password?</a>
-        </div>
+            <div className="flex items-center justify-between mb-8 mt-2 px-1">
+              <Form.Item name="remember" valuePropName="checked" noStyle>
+                <Checkbox className="text-gray-400 text-sm font-medium">Remember me</Checkbox>
+              </Form.Item>
+              <button 
+                type="button"
+                onClick={() => setIsOtpMode(true)}
+                className="text-cyan-400 text-sm font-semibold hover:text-cyan-300 transition-colors bg-transparent border-none cursor-pointer"
+              >
+                Login with OTP?
+              </button>
+            </div>
 
-        <Form.Item className="mb-6">
-          <PrimaryButton htmlType="submit">Sign In</PrimaryButton>
-        </Form.Item>
+            <Form.Item className="mb-6">
+              <PrimaryButton htmlType="submit">Sign In</PrimaryButton>
+            </Form.Item>
+          </>
+        ) : (
+          <>
+            {otpSent && (
+              <>
+                <FormInput 
+                  name="otp" 
+                  label="One-Time Password" 
+                  placeholder="Enter 6-digit code" 
+                  icon={ShieldCheck}
+                  rules={[{ required: true, len: 6, message: '6-digit OTP required' }]}
+                />
+                <p className="text-gray-500 text-xs -mt-4 mb-4 px-1">
+                  Sent to <span className="text-cyan-400">{emailForOtp}</span>
+                </p>
+              </>
+            )}
+
+            <div className="flex flex-col gap-4 mb-6 mt-4">
+              {!otpSent ? (
+                <PrimaryButton onClick={handleSendOTP}>
+                   Request Security Code
+                </PrimaryButton>
+              ) : (
+                <PrimaryButton htmlType="submit">
+                   Verify & Access System
+                </PrimaryButton>
+              )}
+              
+              <button 
+                type="button" 
+                onClick={() => { setIsOtpMode(false); setOtpSent(false); }}
+                className="flex items-center justify-center text-gray-500 hover:text-white transition-colors text-sm font-bold gap-2"
+              >
+                <ArrowLeft size={14} /> Back to Password Login
+              </button>
+            </div>
+          </>
+        )}
       </Form>
+
 
       <div className="flex items-center my-6">
         <div className="flex-1 border-t border-white/5"></div>

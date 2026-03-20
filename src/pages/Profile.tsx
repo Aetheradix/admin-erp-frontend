@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Typography, Avatar, Tag, Divider, Row, Col, Button, Form, Input, App, Upload, Space } from 'antd';
-import { User, Mail, Shield, Calendar, Clock, Edit2, Save, X, Camera, Upload as UploadIcon } from 'lucide-react';
+import { User, Mail, Shield, Calendar, Clock, Edit2, Save, X, Camera, Briefcase, Fingerprint, Phone } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import PageHeader from '@/components/common/PageHeader';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
@@ -153,7 +153,34 @@ const Profile: React.FC = () => {
                   name="email"
                   isEditing={isEditing}
                   value={user.email}
-                  rules={[{ required: true, type: 'email', message: 'Valid email is required' }]}
+                  rules={[{ required: true, type: 'email' as const, message: 'Valid email is required' }]}
+                />
+
+                <ProfileItem 
+                  icon={Briefcase} 
+                  label="Designation / Role" 
+                  name="designation"
+                  isEditing={isEditing}
+                  value={user.designation || 'Not Set'}
+                  placeholder="e.g. Senior Software Engineer"
+                />
+
+                <ProfileItem 
+                  icon={Fingerprint} 
+                  label="Employee Identifier" 
+                  name="employee_id"
+                  isEditing={isEditing}
+                  value={user.employee_id || 'Not Set'}
+                  placeholder="e.g. EMP-2024-001"
+                />
+
+                <ProfileItem 
+                  icon={Phone} 
+                  label="Contact Protocol" 
+                  name="contact_no"
+                  isEditing={isEditing}
+                  value={user.contact_no || 'Not Set'}
+                  placeholder="+91 XXXXX XXXXX"
                 />
 
                 <div className="flex items-start gap-6 bg-white/[0.02] p-6 rounded-3xl border border-white/5 opacity-80 decoration-slate-400">
@@ -204,8 +231,9 @@ const ProfileItem: React.FC<{
   name: string,
   value: string,
   isEditing: boolean,
-  rules?: any[]
-}> = ({ icon: Icon, label, name, value, isEditing, rules }) => (
+  rules?: any[],
+  placeholder?: string
+}> = ({ icon: Icon, label, name, value, isEditing, rules, placeholder }) => (
   <div className={`flex items-start gap-6 bg-white/[0.02] p-6 rounded-3xl border transition-all duration-300 ${isEditing ? 'border-primary/30 bg-primary/5' : 'border-white/5'}`}>
     <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center transition-colors duration-300 ${isEditing ? 'bg-primary text-black' : 'bg-white/5 text-primary'}`}>
       <Icon size={24} strokeWidth={isEditing ? 2.5 : 1.5} />
@@ -218,6 +246,7 @@ const ProfileItem: React.FC<{
           <Input 
             className="glass-input h-10 border-none px-0 text-white font-bold text-lg hover:bg-transparent focus:bg-transparent" 
             autoFocus={name === 'username'}
+            placeholder={placeholder}
           />
         </Form.Item>
       ) : (
