@@ -4,6 +4,7 @@ import Profile from './profile/Profile';
 import BlogsModule from './blogs';
 import GalleryModule from './gallery';
 import EventsModule from './events';
+import ComponentLibrary from './ComponentLibrary';
 
 const AppFeature = () => {
   return (
@@ -13,6 +14,7 @@ const AppFeature = () => {
       <Route path="/blogs/*" element={<BlogsModule />} />
       <Route path="/gallery/*" element={<GalleryModule />} />
       <Route path="/events/*" element={<EventsModule />} />
+      <Route path="/ui" element={<ComponentLibrary />} />
     </Routes>
   );
 };
