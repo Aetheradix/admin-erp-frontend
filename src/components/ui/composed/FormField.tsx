@@ -8,15 +8,23 @@ interface FormFieldProps {
   children: React.ReactNode;
   className?: string;
   id?: string;
+  required?: boolean;
+  description?: string;
 }
 
-export const FormField = ({ label, error, help, children, className, id }: FormFieldProps) => {
+export const FormField = ({ label, error, help, children, className, id, required, description }: FormFieldProps) => {
   return (
     <div className={classNames('mb-4 w-full flex flex-col gap-1.5', className)}>
       {label && (
         <label htmlFor={id} className="text-sm font-semibold text-foreground/80 ml-1">
           {label}
+          {required && <span className="text-error ml-1">*</span>}
         </label>
+      )}
+      {description && (
+        <p className="text-[11px] text-muted ml-1 -mt-1 mb-1">
+          {description}
+        </p>
       )}
       <div className="w-full">
         {children}

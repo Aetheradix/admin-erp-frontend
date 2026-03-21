@@ -7,7 +7,7 @@ export const RichEditor = React.forwardRef<Editor, EditorProps>(({ className, ..
     <Editor
       ref={ref}
       className={classNames(
-        'rounded-card overflow-hidden border border-border-subtle bg-white shadow-soft',
+        ' overflow-hidden border border-border-subtle bg-white shadow-soft',
         className
       )}
       {...props}

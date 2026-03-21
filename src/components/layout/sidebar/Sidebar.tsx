@@ -35,7 +35,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       variants={sidebarVariants}
       animate={isOpen ? 'open' : 'closed'}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed lg:static inset-y-0 left-0 z-40 h-full bg-primary-foreground rounded-3xl flex flex-col border-r border-white/5 overflow-hidden"
+      className="fixed lg:static inset-y-0 left-0 z-40 h-full bg-primary-foreground  flex flex-col border-r border-white/5 overflow-hidden"
     >
       {/* Mobile close */}
       <AnimatePresence>

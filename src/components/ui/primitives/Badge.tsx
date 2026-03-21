@@ -2,12 +2,13 @@ import { Badge as PRBadge, type BadgeProps as PRBadgeProps } from 'primereact/ba
 import { classNames } from 'primereact/utils';
 
 interface BadgeProps extends PRBadgeProps {
-  variant?: 'success' | 'info' | 'warning' | 'danger' | 'primary';
+  variant?: 'success' | 'info' | 'warning' | 'danger' | 'primary' | 'secondary';
 }
 
 export const Badge = ({ variant = 'primary', className, ...props }: BadgeProps) => {
   const variantClasses = {
     primary: 'bg-primary-soft text-primary border-primary-glow',
+    secondary: 'bg-surface-subtle text-muted border-border-subtle',
     success: 'bg-success/10 text-success border-success/20',
     info: 'bg-info/10 text-info border-info/20',
     warning: 'bg-warning/10 text-warning border-warning/20',

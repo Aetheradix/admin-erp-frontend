@@ -7,9 +7,13 @@ export const Select = React.forwardRef<PRDropdown, PRDropdownProps>(({ className
     <PRDropdown
       ref={ref}
       className={classNames(
-        '!w-full !border !border-border-subtle !rounded-card !bg-surface-elevated !text-foreground focus:!border-primary !transition-all !duration-200 !outline-none',
+        '!w-full !border !border-border-subtle !rounded-2xl !bg-white !text-foreground focus:!border-primary/50 !transition-all !duration-200 !outline-none !shadow-xs !h-14 flex items-center',
         className
       )}
+      pt={{
+        input: { className: 'px-5 font-medium text-sm text-foreground' },
+        trigger: { className: 'pr-4' }
+      }}
       {...props}
     />
   );

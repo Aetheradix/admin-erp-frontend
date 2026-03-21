@@ -1,0 +1,32 @@
+import { Filter, Search } from 'lucide-react';
+import { Button } from '@/components/ui/primitives/Button';
+import { Input } from '@/components/ui/primitives/Input';
+
+interface BlogTableToolbarProps {
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+}
+
+export function BlogTableToolbar({ searchValue, onSearchChange }: BlogTableToolbarProps) {
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between p-6 gap-4 border-b border-border-subtle/50 mb-2">
+      <div className="relative w-full sm:max-w-md group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={18} />
+        <Input
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search stories..."
+          className="pl-12!"
+        />
+      </div>
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        <Button
+          variant="secondary"
+          className="flex-1 sm:flex-none h-12 px-6 rounded-2xl! gap-2 hover:bg-surface-elevated! border-border-subtle!"
+          icon={<Filter size={18} />}
+          label="Filters"
+        />
+      </div>
+    </div>
+  );
+}

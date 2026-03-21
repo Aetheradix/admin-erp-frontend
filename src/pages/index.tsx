@@ -1,10 +1,9 @@
-import { Routes, Route } from 'react-router-dom';
-import Dashboard from '@/pages/dashboard/Dashboard';
-import Profile from '@/pages/profile/Profile';
 import BlogsModule from '@/pages/blogs';
-import GalleryModule from '@/pages/gallery';
+import Dashboard from '@/pages/dashboard/Dashboard';
 import EventsModule from '@/pages/events';
-import ComponentLibrary from '@/pages/ComponentLibrary';
+import GalleryModule from '@/pages/gallery';
+import Profile from '@/pages/profile/Profile';
+import { Route, Routes } from 'react-router-dom';
 
 const AppFeature = () => {
   return (
@@ -14,7 +13,7 @@ const AppFeature = () => {
       <Route path="/blogs/*" element={<BlogsModule />} />
       <Route path="/gallery/*" element={<GalleryModule />} />
       <Route path="/events/*" element={<EventsModule />} />
-      <Route path="/ui" element={<ComponentLibrary />} />
+
     </Routes>
   );
 };
