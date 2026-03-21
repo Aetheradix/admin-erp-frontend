@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { GalleryGrid } from './components/GalleryGrid';
 import { mockGallery as initialMockData, type GalleryItem } from './hooks/mockGallery';
@@ -6,6 +6,8 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';
 import { Dialog } from 'primereact/dialog';
 import { GalleryForm } from './components/GalleryForm';
+
+import { Tabs } from '@/components/ui/primitives/Tabs';
 
 const Gallery = () => {
   const [items, setItems] = useState<GalleryItem[]>(initialMockData);
@@ -69,20 +71,13 @@ const Gallery = () => {
       />
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-4 rounded-[32px] border border-border-subtle shadow-soft">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0 w-full md:w-auto">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-6 py-2.5 rounded-2xl text-xs font-black tracking-widest uppercase transition-all flex-shrink-0 ${
-                activeCategory === cat ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-subtle text-muted hover:text-foreground hover:bg-surface-elevated'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-4 rounded-[40px] border border-border-subtle shadow-soft">
+        <Tabs 
+          items={categories} 
+          activeItem={activeCategory} 
+          onItemChange={setActiveCategory} 
+          className="w-full md:w-auto"
+        />
 
         <div className="relative w-full md:w-72 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={18} />

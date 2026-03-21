@@ -16,7 +16,13 @@ const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name'];
 
 const BlogList = () => {
   const navigate = useNavigate();
-  const { searchValue, filters, handleSearchChange } = useBlogFilters();
+  const { 
+    searchValue, 
+    activeCategory, 
+    filters, 
+    handleSearchChange, 
+    handleCategoryChange 
+  } = useBlogFilters();
 
   const handleDelete = (id: string) => {
     // TODO: wire to useDeleteBlog() mutation
@@ -40,6 +46,8 @@ const BlogList = () => {
         <BlogTableToolbar
           searchValue={searchValue}
           onSearchChange={handleSearchChange}
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
         />
 
         <DataTable
