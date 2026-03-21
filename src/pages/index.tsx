@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
-import Dashboard from './dashboard/Dashboard';
-import Profile from './profile/Profile';
-import BlogsModule from './blogs';
-import GalleryModule from './gallery';
-import EventsModule from './events';
-import ComponentLibrary from './ComponentLibrary';
+import Dashboard from '@/pages/dashboard/Dashboard';
+import Profile from '@/pages/profile/Profile';
+import BlogsModule from '@/pages/blogs';
+import GalleryModule from '@/pages/gallery';
+import EventsModule from '@/pages/events';
+import ComponentLibrary from '@/pages/ComponentLibrary';
 
 const AppFeature = () => {
   return (

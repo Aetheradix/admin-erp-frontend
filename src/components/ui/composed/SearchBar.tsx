@@ -21,7 +21,7 @@ export const SearchBar = ({ value, onChange, onSearch, placeholder = 'Search...'
   return (
     <div className={classNames('relative flex items-center w-full max-w-md gap-2', className)}>
       <div className="relative flex-1">
-        <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+        {/* <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted" /> */}
         <Input
           value={value}
           onChange={onChange}

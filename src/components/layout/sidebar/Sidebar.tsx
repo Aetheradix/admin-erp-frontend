@@ -1,0 +1,77 @@
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { navItems } from '@/config/navItems';
+import { Button } from '@/components/ui/primitives/Button';
+
+import { SidebarLogo } from './SidebarLogo';
+import { NavSection } from './NavSection';
+import { SidebarFooter } from './SidebarFooter';
+import { sidebarVariants } from './variants';
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const NAV_CATEGORIES = ['OVERVIEW', 'MANAGEMENT', 'SYSTEM'] as const;
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const filteredNavItems = navItems.filter(
+    (item) => !item.role || item.role === user?.role
+  );
+
+  return (
+    <motion.aside
+      variants={sidebarVariants}
+      animate={isOpen ? 'open' : 'closed'}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="fixed lg:static inset-y-0 left-0 z-40 h-full bg-primary-foreground rounded-3xl flex flex-col border-r border-white/5 overflow-hidden"
+    >
+      {/* Mobile close */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="close-btn"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-4 right-4 lg:hidden z-50"
+          >
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="p-2 text-white/50 hover:text-white transition-colors"
+            >
+              <X size={20} />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <SidebarLogo isOpen={isOpen} />
+
+      <nav className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth">
+        {NAV_CATEGORIES.map((category) => (
+          <NavSection
+            key={category}
+            category={category}
+            items={filteredNavItems.filter((item) => item.category === category)}
+            isOpen={isOpen}
+          />
+        ))}
+      </nav>
+
+      <SidebarFooter isOpen={isOpen} onLogout={handleLogout} />
+    </motion.aside>
+  );
+}
