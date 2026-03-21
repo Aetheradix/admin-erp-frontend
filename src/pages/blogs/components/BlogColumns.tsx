@@ -66,7 +66,7 @@ export function CategoryCell({ category }: { category: string }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-      <span className="text-[11px] font-black text-muted uppercase tracking-[0.1em]">
+      <span className="text-[11px] font-black text-muted uppercase tracking-widest">
         {category}
       </span>
     </div>
