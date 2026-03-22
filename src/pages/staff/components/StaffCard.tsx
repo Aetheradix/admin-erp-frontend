@@ -40,7 +40,7 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
         {/* Avatar with Status Indicator */}
         <div className="relative">
           <div className="w-24 h-24 rounded-4xl overflow-hidden border-4 border-surface-subtle shadow-inner">
-            <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+            <img src={member.image} alt={member.name} width={96} height={96} className="w-full h-full object-cover" />
           </div>
           <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status)} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
         </div>

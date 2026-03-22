@@ -28,14 +28,14 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
   };
 
   return (
-    <div className="group bg-white p-8 rounded-[40px] border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
+    <div className="group bg-white p-8 rounded-4xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
       {/* Category Accent */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-12 -mt-12 blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
 
       <div className="flex flex-col gap-6 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+            <div className="w-12 h-12 rounded-3xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
               <FileText size={24} />
             </div>
             <div className="flex flex-col">

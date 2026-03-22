@@ -11,19 +11,19 @@ interface CareerCardProps {
 
 export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCardProps) {
   return (
-    <div className="group relative bg-white rounded-[32px] p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
+    <div className="group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
         <button 
           onClick={() => onEdit?.(career.id)}
-          className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Edit Position"
         >
           <Edit2 size={16} />
         </button>
         <button 
           onClick={() => onDelete?.(career.id)}
-          className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Remove Position"
         >
           <Trash2 size={16} />
@@ -36,7 +36,7 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
       <div className="relative flex flex-col h-full gap-6">
         {/* Header: Icon + Department */}
         <div className="flex items-center justify-between">
-          <div className="w-14 h-14 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+          <div className="w-14 h-14 rounded-3xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
             <Briefcase size={28} />
           </div>
           <span className="px-4 py-1.5 rounded-full bg-primary-soft text-primary text-[10px] font-black uppercase tracking-wider">
@@ -81,7 +81,7 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
           <Button
             onClick={() => onViewDetails?.(career.id)}
             variant="ghost"
-            className="w-full justify-between h-14 px-6 rounded-2xl! group/btn hover:bg-primary! hover:text-white! transition-all duration-300 border border-transparent hover:border-primary!"
+            className="w-full justify-between h-14 px-6 rounded-3xl! group/btn hover:bg-primary! hover:text-white! transition-all duration-300 border border-transparent hover:border-primary!"
           >
             <span className="font-black text-sm uppercase tracking-widest">Explore Role</span>
             <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />

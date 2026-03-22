@@ -38,11 +38,11 @@ export function RulebookPage() {
       />
 
       {/* Search Header */}
-      <div className="bg-white p-6 rounded-[40px] border border-border-subtle shadow-soft flex items-center gap-6">
+      <div className="bg-white p-6 rounded-4xl border border-border-subtle shadow-soft flex items-center gap-6">
         <div className="relative flex-1">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted" size={20} />
           <Input 
-            className="!pl-16 !h-14 !rounded-[24px] !bg-surface-subtle/50 !border-none" 
+            className="!pl-16 !h-14 !rounded-3xl !bg-surface-subtle/50 !border-none" 
             placeholder="Search policies, keywords, or legal terms..." 
           />
         </div>
@@ -54,8 +54,8 @@ export function RulebookPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {policies.map((policy) => (
-          <div key={policy.title} className="group bg-white p-10 rounded-[48px] border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex items-start gap-8">
-            <div className={`w-16 h-16 rounded-[24px] bg-surface-subtle flex items-center justify-center ${policy.color} group-hover:scale-110 transition-transform duration-500`}>
+          <div key={policy.title} className="group bg-white p-10 rounded-4xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex items-start gap-8">
+            <div className={`w-16 h-16 rounded-3xl bg-surface-subtle flex items-center justify-center ${policy.color} group-hover:scale-110 transition-transform duration-500`}>
               <policy.icon size={32} />
             </div>
             
@@ -76,7 +76,7 @@ export function RulebookPage() {
       </div>
 
       {/* Compliance Prompt */}
-      <div className="p-10 rounded-[48px] bg-foreground text-white flex flex-col gap-6 relative overflow-hidden group">
+      <div className="p-10 rounded-4xl bg-foreground text-white flex flex-col gap-6 relative overflow-hidden group">
          <div className="absolute right-0 top-0 w-1/3 h-full bg-primary/20 -skew-x-12 translate-x-12" />
          <div className="relative z-10 flex flex-col gap-4 max-w-2xl">
             <h2 className="text-3xl font-black leading-tight">Digital Signature <span className="text-primary">Required</span></h2>
@@ -86,7 +86,7 @@ export function RulebookPage() {
             </p>
          </div>
          <div className="relative z-10 pt-4 flex items-center gap-6">
-            <div className="flex items-center gap-3 h-14 px-8 rounded-2xl bg-white/5 border border-white/10">
+            <div className="flex items-center gap-3 h-14 px-8 rounded-3xl bg-white/5 border border-white/10">
                <Shield className="text-success" size={20} />
                <span className="text-xs font-black uppercase tracking-widest">Acknowledged for 2026</span>
             </div>

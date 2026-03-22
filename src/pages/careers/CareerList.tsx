@@ -67,7 +67,7 @@ export function CareerList() {
           label: 'Post New Role',
           onClick: handleCreate,
           icon: 'pi pi-plus',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className: 'px-8! py-4! rounded-3xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -84,7 +84,7 @@ export function CareerList() {
         {/* Results Info */}
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-3xl bg-primary/10 flex items-center justify-center text-primary">
               <Sparkles size={18} />
             </div>
             <div>
@@ -110,7 +110,7 @@ export function CareerList() {
 
           {/* Empty State */}
           {filteredCareers.length === 0 && (
-            <div className="col-span-full py-32 rounded-[48px] border-2 border-dashed border-border-strong bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center text-center gap-6">
+            <div className="col-span-full py-32 rounded-4xl border-2 border-dashed border-border-strong bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center text-center gap-6">
               <div className="w-24 h-24 rounded-full bg-surface-subtle flex items-center justify-center text-muted/30">
                 <Briefcase size={48} />
               </div>
@@ -128,7 +128,7 @@ export function CareerList() {
       </div>
 
       {/* Values / Perks Banner */}
-      <div className="mt-8 p-12 rounded-[48px] bg-foreground text-white relative overflow-hidden group">
+      <div className="mt-8 p-12 rounded-4xl bg-foreground text-white relative overflow-hidden group">
         <div className="absolute right-0 top-0 w-1/2 h-full bg-linear-to-l from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
           <div className="max-w-xl flex flex-col gap-4">
@@ -164,7 +164,7 @@ export function CareerList() {
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
-          root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
+          root: { className: 'rounded-4xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' }
         }}
       >

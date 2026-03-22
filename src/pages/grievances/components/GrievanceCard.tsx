@@ -28,7 +28,7 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
   };
 
   return (
-    <div className="group bg-white p-8 rounded-[40px] border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex flex-col gap-6">
+    <div className="group bg-white p-8 rounded-4xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex flex-col gap-6">
       {/* Anonymous Indicator */}
       {grievance.isAnonymous && (
         <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
@@ -49,7 +49,7 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
       </div>
 
       {grievance.response && (
-        <div className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle/50 flex flex-col gap-2">
+        <div className="p-4 rounded-3xl bg-surface-subtle border border-border-subtle/50 flex flex-col gap-2">
           <span className="text-[10px] font-black text-foreground uppercase tracking-wider flex items-center gap-2">
             <MessageSquare size={12} className="text-primary" />
             Management Response

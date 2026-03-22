@@ -15,7 +15,7 @@ export default function ProjectCard({ title, tasks, value, color, category, part
     <motion.div 
       whileHover={{ y: -5 }}
       style={{ backgroundColor: color }}
-      className="p-6 rounded-3xl shadow-lg shadow-black/5 flex flex-col justify-between min-h-40 cursor-pointer group transition-all"
+      className="p-6 rounded-4xl shadow-lg shadow-black/5 flex flex-col justify-between min-h-40 cursor-pointer group transition-all"
     >
       <div>
         <div className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-md mb-4 inline-block">
@@ -33,6 +33,8 @@ export default function ProjectCard({ title, tasks, value, color, category, part
             <Avatar 
               key={i}
               image={`https://api.dicebear.com/7.x/avataaars/svg?seed=${title}-${i}`}
+              width={28}
+              height={28}
               className="w-7 h-7 rounded-full! border-2 border-white/20 shadow-none!"
             />
           ))}
