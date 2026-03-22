@@ -137,8 +137,8 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                 <>
                   <img src={formData.featuredImage} alt="Preview" width={400} height={225} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button variant="primary" className="rounded-full! p-3!">
-                      <i className="pi pi-pencil"></i>
+                    <Button variant="primary" className="rounded-full! p-3!" aria-label="Edit featured image">
+                      <i className="pi pi-pencil" aria-hidden="true"></i>
                     </Button>
                   </div>
                 </>

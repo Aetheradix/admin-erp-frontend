@@ -9,6 +9,7 @@ export function SidebarFooter({ isOpen, onLogout }: { isOpen: boolean; onLogout:
       <Button
         variant="ghost"
         onClick={onLogout}
+        aria-label="Sign Out"
         className={`flex items-center w-full rounded-xl py-3.5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-200 group ${
           isOpen ? 'justify-start gap-4 px-4' : 'justify-center px-0'
         }`}

@@ -9,7 +9,7 @@
   --background: #f5f4f2;
   --foreground: #1a1a1a;
   --primary-foreground: #0d0d0d;
-  --muted: #8a7f7a;
+  --muted: #6b635e; /* Darkened for WCAG AA compliance */
 
   /* Surface & Card Colors */
   --surface-elevated: #ffffff;
@@ -28,10 +28,10 @@
   --accent-light: #fde8e4;
 
   /* Semantic Colors */
-  --success: #34d399;
-  --warning: #fbbf24;
-  --error: #fb7185;
-  --info: #38bdf8;
+  --success: #059669; /* Darkened for WCAG AA */
+  --warning: #d97706; /* Darkened for WCAG AA */
+  --error: #e11d48; /* Darkened for WCAG AA */
+  --info: #0284c7; /* Darkened for WCAG AA */
 
   /* Shape Tokens */
   --radius-shell: 1.5rem;

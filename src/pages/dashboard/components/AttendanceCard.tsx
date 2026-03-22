@@ -33,7 +33,7 @@ export default function AttendanceCard() {
       <div className="absolute top-6 left-8 flex items-center gap-2">
         <div className="w-1.5 h-6 bg-primary rounded-full"></div>
         <div>
-          <h2 className="text-sm font-bold text-foreground">Attendance Center</h2>
+          <h3 className="text-sm font-bold text-foreground">Attendance Center</h3>
           <p className="text-[10px] font-medium text-muted">{formatDate(time)}</p>
         </div>
       </div>
@@ -51,6 +51,7 @@ export default function AttendanceCard() {
 
       <Button 
         variant="primary" 
+        aria-label="Check in to your shift"
         className="mt-10 w-full  h-14 rounded-2xl! shadow-lg shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all"
       >
         <LogIn size={20} />

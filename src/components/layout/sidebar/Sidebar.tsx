@@ -51,6 +51,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               variant="ghost"
               onClick={onClose}
               className="p-2 text-white/50 hover:text-white transition-colors"
+              aria-label="Close sidebar"
             >
               <X size={20} />
             </Button>

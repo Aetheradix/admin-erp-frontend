@@ -27,8 +27,13 @@ export default function CalendarCard() {
           <h3 className="text-base font-bold text-foreground">Calendar</h3>
           <p className="text-xs font-medium text-muted tracking-tight">Active Cycle</p>
         </div>
-        <div className="w-8 h-8 rounded-full bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-colors">
-          <i className="pi pi-ellipsis-h text-muted"></i>
+        <div 
+          role="button"
+          tabIndex={0}
+          aria-label="Calendar options"
+          className="w-8 h-8 rounded-full bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-colors"
+        >
+          <i className="pi pi-ellipsis-h text-muted" aria-hidden="true"></i>
         </div>
       </div>
 

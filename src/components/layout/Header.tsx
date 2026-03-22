@@ -19,6 +19,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* Mobile & Desktop Menu Toggle */}
         <Button 
           onClick={onMenuClick}
+          aria-label="Toggle navigation menu"
           variant="secondary"
           className="p-2.5! rounded-pill! bg-surface-subtle! hover:bg-surface-elevated! transition-colors"
         >
@@ -38,6 +39,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-3 sm:gap-4 ml-auto">
         <Button 
           variant="ghost"
+          aria-label="Settings"
           className="hidden sm:flex w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150"
         >
           <Settings size={18} className="text-muted transition-transform hover:rotate-45" />
@@ -46,6 +48,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* Notifications */}
         <Button 
           variant="ghost"
+          aria-label="Notifications"
           className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 group"
         >
           <Bell size={18} className="text-muted group-hover:rotate-12 transition-transform" />
@@ -57,6 +60,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* User Profile */}
         <div 
           onClick={() => navigate('/profile')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/profile')}
+          aria-label="View user profile"
           className="flex items-center gap-3 pl-2 pr-1.5 py-1.5 rounded-pill border border-border-subtle bg-surface-subtle cursor-pointer hover:bg-surface-elevated hover:border-border-strong transition-all duration-300 shadow-sm"
         >
           <span className="hidden sm:block text-xs font-bold text-foreground ml-2">

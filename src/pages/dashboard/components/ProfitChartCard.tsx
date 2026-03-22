@@ -77,8 +77,13 @@ export default function ProfitChartCard() {
           <h3 className="text-sm font-black text-foreground uppercase tracking-wider mb-1">Yearly Profit</h3>
           <p className="text-[10px] font-bold text-success">+ 28% VS LAST YEAR</p>
         </div>
-        <div className="w-8 h-8 rounded-full bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-colors">
-          <i className="pi pi-arrow-up-right text-muted text-xs"></i>
+        <div 
+          role="button"
+          tabIndex={0}
+          aria-label="View yearly profit details"
+          className="w-8 h-8 rounded-full bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-colors"
+        >
+          <i className="pi pi-arrow-up-right text-muted text-xs" aria-hidden="true"></i>
         </div>
       </div>
 
