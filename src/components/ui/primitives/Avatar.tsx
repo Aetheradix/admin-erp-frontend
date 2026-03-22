@@ -6,7 +6,7 @@ interface AvatarProps extends PRAvatarProps {
   height?: number | string;
 }
 
-export const Avatar = ({ className, width, height, ...props }: AvatarProps) => {
+export const Avatar = ({ className, width, height, image, imageAlt, children, ...props }: AvatarProps) => {
   return (
     <PRAvatar
       className={classNames(
@@ -15,6 +15,16 @@ export const Avatar = ({ className, width, height, ...props }: AvatarProps) => {
       )}
       style={{ width, height, ...props.style }}
       {...props}
-    />
+    >
+      {image ? (
+        <img 
+          src={image} 
+          alt={imageAlt || 'Avatar'} 
+          width={width} 
+          height={height} 
+          className="w-full h-full object-cover"
+        />
+      ) : children}
+    </PRAvatar>
   );
 };
