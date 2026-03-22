@@ -4,11 +4,11 @@ import {
   Calendar,
   CreditCard,
   FileText,
-  Heart,
   Image as ImageIcon,
   Key,
   LayoutDashboard,
   Scale,
+  Settings,
   Ticket,
   UserCircle,
   Users,
@@ -104,19 +104,12 @@ export const navItems: NavItem[] = [
     category: 'SYSTEM',
     description: 'Business insights'
   },
-  // {
-  //   label: 'Settings',
-  //   path: '/settings',
-  //   icon: Settings,
-  //   category: 'SYSTEM',
-  //   description: 'System preferences'
-  // },
   {
-    label: 'Wellness',
-    path: '/wellness',
-    icon: Heart,
-    category: 'OVERVIEW',
-    description: 'Emotional well-being'
+    label: 'Settings',
+    path: '/settings',
+    icon: Settings,
+    category: 'SYSTEM',
+    description: 'System preferences'
   },
   {
     label: 'Profile',
