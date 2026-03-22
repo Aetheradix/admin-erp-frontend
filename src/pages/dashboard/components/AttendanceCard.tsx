@@ -33,7 +33,7 @@ export default function AttendanceCard() {
       <div className="absolute top-6 left-8 flex items-center gap-2">
         <div className="w-1.5 h-6 bg-primary rounded-full"></div>
         <div>
-          <h3 className="text-sm font-bold text-foreground">Attendance Center</h3>
+          <h2 className="text-sm font-bold text-foreground">Attendance Center</h2>
           <p className="text-[10px] font-medium text-muted">{formatDate(time)}</p>
         </div>
       </div>
