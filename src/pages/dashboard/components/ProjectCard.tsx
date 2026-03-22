@@ -1,5 +1,6 @@
 import { Avatar } from '@/components/ui/primitives/Avatar';
 import { motion } from 'framer-motion';
+import { MoreHorizontal } from 'lucide-react';
 
 interface ProjectCardProps {
   title: string;
@@ -25,6 +26,15 @@ export default function ProjectCard({ title, tasks, value, color, category, part
         <p className="text-[11px] font-medium text-white/80">Completed tasks: {tasks}</p>
       </div>
 
+      <div className="flex justify-between items-center mb-4">
+        <button 
+          className="p-2 -ml-2 text-white/40 hover:text-white transition-colors"
+          aria-label={`Project options for ${title}`}
+        >
+          <MoreHorizontal size={20} />
+        </button>
+      </div>
+
       <div className="flex items-center justify-between mt-6">
         <h4 className="text-xl font-black text-white">{value}</h4>
         
@@ -36,6 +46,7 @@ export default function ProjectCard({ title, tasks, value, color, category, part
               width={28}
               height={28}
               className="w-7 h-7 rounded-full! border-2 border-white/20 shadow-none!"
+              aria-label={`Participant ${i}`}
             />
           ))}
           {participants > 2 && (

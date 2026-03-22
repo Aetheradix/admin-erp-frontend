@@ -1,4 +1,4 @@
-import { Clock, CheckCircle2, AlertCircle, MessageSquare, Shield } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, MessageSquare, Shield, ChevronRight } from 'lucide-react';
 import { classNames } from 'primereact/utils';
 import type { Grievance } from '../hooks/mockGrievances';
 
@@ -59,6 +59,23 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
           </p>
         </div>
       )}
+
+      <div className="flex items-center gap-6 pt-2 border-t border-border-subtle/50">
+        <button 
+          className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
+          aria-label={`View full details of grievance #${grievance.id}`}
+        >
+          View Details
+          <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+        </button>
+        <button 
+          className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
+          aria-label={`Submit a response to grievance #${grievance.id}`}
+        >
+          Respond
+          <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+        </button>
+      </div>
 
       <div className="mt-auto flex items-center justify-between pt-6 border-t border-border-subtle/50">
         <div className={classNames(

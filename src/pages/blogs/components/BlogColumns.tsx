@@ -34,6 +34,9 @@ export function AuthorCell({ author }: { author: Blog['author'] }) {
         <Avatar
           image={author.image}
           className="w-9 h-9 rounded-full border-2 border-white shadow-soft"
+          width={36}
+          height={36}
+          aria-label={`Author: ${author.name}`}
         />
         <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success border-2 border-white rounded-full" />
       </div>
@@ -77,8 +80,8 @@ export function CategoryCell({ category }: { category: string }) {
 
 export function ImageCell({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative group overflow-hidden rounded-2xl border border-border-subtle shadow-sm transition-transform hover:scale-105">
-      <img src={src} alt={alt} className="w-20 h-14 object-cover" />
+    <div className="relative group overflow-hidden rounded-3xl border border-border-subtle shadow-sm transition-transform hover:scale-105">
+      <img src={src} alt={alt} width={80} height={56} className="w-20 h-14 object-cover" />
       <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
     </div>
   );
@@ -100,20 +103,15 @@ export function ActionsCell({ id, onDelete }: ActionsCellProps) {
         variant="ghost"
         className="w-13! h-13! rounded-full! hover:bg-surface-elevated! hover:text-primary! transition-all active:scale-95"
         onClick={() => navigate(`/blogs/${id}/edit`)}
+        aria-label="Edit post"
       >
         <Edit2 size={30} />
       </Button>
-      {/* <Button
-        variant="ghost"
-        className="w-13! h-13! rounded-full! hover:bg-surface-elevated! hover:text-info! transition-all active:scale-95"
-        onClick={() => navigate(`/blogs/${id}`)}
-      >
-        <Eye size={30} />
-      </Button> */}
       <Button
         variant="ghost"
         className="w-13! h-13! rounded-full! hover:bg-red-500/13! hover:text-red-500! transition-all active:scale-95"
         onClick={() => onDelete(id)}
+        aria-label="Delete post"
       >
         <Trash2 size={30} />
       </Button>

@@ -22,15 +22,17 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
         <button 
           onClick={() => onEdit?.(member.id)}
-          className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Edit Profile"
+          aria-label={`Edit ${member.name}'s profile`}
         >
           <Edit2 size={16} />
         </button>
         <button 
           onClick={() => onDelete?.(member.id)}
-          className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Remove Member"
+          aria-label={`Remove ${member.name} from staff`}
         >
           <Trash2 size={16} />
         </button>
@@ -84,11 +86,17 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
 
         {/* Contact Quick Actions */}
         <div className="grid grid-cols-2 gap-3 w-full pt-2">
-          <button className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact">
+          <button 
+            className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
+            aria-label={`Send email to ${member.name}`}
+          >
             <Mail size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Email</span>
           </button>
-          <button className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact">
+          <button 
+            className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
+            aria-label={`Call ${member.name}`}
+          >
             <Phone size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Call</span>
           </button>

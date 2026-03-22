@@ -16,6 +16,8 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
       <img
         src={item.url}
         alt={item.title}
+        width={400}
+        height={500}
         className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
       />
 
@@ -27,6 +29,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
             variant="ghost" 
             className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 border-none backdrop-blur-md" 
             onClick={() => onView(item.id)}
+            aria-label={`View ${item.title} in full screen`}
           >
             <Maximize2 size={18} />
           </Button>
@@ -49,16 +52,18 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
           <div className="flex gap-2 pt-4 border-t border-white/10">
             <Button 
               variant="ghost" 
-              className="flex-1 h-11 rounded-xl bg-white/10 text-white hover:bg-white/20 border-none backdrop-blur-md font-bold text-xs gap-2"
+              className="flex-1 h-11 rounded-3xl bg-white/10 text-white hover:bg-white/20 border-none backdrop-blur-md font-bold text-xs gap-2"
               onClick={() => onEdit(item.id)}
+              aria-label={`Edit details for ${item.title}`}
             >
               <Edit2 size={14} />
               Edit
             </Button>
             <Button 
               variant="ghost" 
-              className="w-11 h-11 rounded-xl bg-white/10 text-white hover:bg-red-500/30 border-none backdrop-blur-md"
+              className="w-11 h-11 rounded-3xl bg-white/10 text-white hover:bg-red-500/30 border-none backdrop-blur-md"
               onClick={() => onDelete(item.id)}
+              aria-label={`Delete ${item.title} from gallery`}
             >
               <Trash2 size={16} />
             </Button>

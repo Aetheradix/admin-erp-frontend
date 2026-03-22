@@ -62,7 +62,10 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
             <span>{request.status}</span>
           </div>
           
-          <button className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn">
+          <button 
+            className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
+            aria-label={`View details for ${request.item} reimbursement`}
+          >
             View Details
             <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
           </button>

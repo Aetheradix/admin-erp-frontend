@@ -43,24 +43,28 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-6">
-          <FormField label="Item / Expense Name" required>
+          <FormField label="Item / Expense Name" required id="finance-item">
             <Input 
+              id="finance-item"
               value={formData.item} 
               onChange={(e) => setFormData({ ...formData, item: e.target.value })}
               placeholder="e.g. Ergonomic Keyboard" 
             />
           </FormField>
 
-          <FormField label="Category" required>
+          <FormField label="Category" required id="finance-category">
             <Select 
+              id="finance-category"
               options={CATEGORIES}
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.value })}
+              placeholder="Select category"
             />
           </FormField>
 
-          <FormField label="Description / Justification" required>
+          <FormField label="Description / Justification" required id="finance-description">
             <Textarea 
+              id="finance-description"
               value={formData.description} 
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Briefly explain the intent of this acquisition..." 
@@ -70,8 +74,9 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
         </div>
 
         <div className="flex flex-col gap-6">
-          <FormField label="Amount ($)" required>
+          <FormField label="Amount ($)" required id="finance-amount">
             <Input 
+              id="finance-amount"
               type="number"
               value={formData.amount?.toString() || ''} 
               onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
@@ -79,8 +84,9 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
             />
           </FormField>
 
-          <FormField label="Expense Date" required>
+          <FormField label="Expense Date" required id="finance-date">
             <Calendar 
+              id="finance-date"
               value={formData.date ? new Date(formData.date) : null}
               onChange={(e) => setFormData({ ...formData, date: e.value?.toISOString().split('T')[0] || '' })}
               placeholder="Select date" 
@@ -103,13 +109,19 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button variant="ghost" onClick={onCancel} className="px-8! rounded-2xl! font-bold text-muted!">
+        <Button 
+          variant="ghost" 
+          onClick={onCancel} 
+          className="px-8! rounded-3xl! font-bold text-muted!"
+          aria-label="Discard changes"
+        >
           Discard
         </Button>
         <Button 
           variant="primary" 
           onClick={handleApply}
-          className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20"
+          className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
+          aria-label="Submit reimbursement request"
         >
           Submit Request
         </Button>

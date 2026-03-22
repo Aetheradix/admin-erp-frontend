@@ -44,7 +44,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-4xl p-8 border border-border-subtle shadow-soft">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
-                <h2 className="text-2xl font-black text-foreground">Projects</h2>
+                <h1 className="text-2xl font-black text-foreground">Projects</h1>
                 <div className="bg-surface-subtle px-3 py-1 rounded-full border border-border-subtle">
                   <span className="text-[10px] font-black text-muted tracking-widest uppercase">88 TOTAL</span>
                 </div>
@@ -93,7 +93,7 @@ const Dashboard = () => {
               className="bg-white rounded-4xl p-8 border border-border-subtle shadow-soft"
             >
               <div className="flex items-center justify-between mb-8">
-                <h3 className="text-sm font-black text-foreground uppercase tracking-wider">Projects Output</h3>
+                <h2 className="text-sm font-black text-foreground uppercase tracking-wider">Projects Output</h2>
                 <div className="w-8 h-8 rounded-full bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer">
                   <i className="pi pi-arrow-up-right text-muted text-xs"></i>
                 </div>

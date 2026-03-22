@@ -135,7 +135,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <div className="aspect-video w-full rounded-2xl border-2 border-dashed border-border-subtle bg-surface-subtle flex flex-col items-center justify-center gap-3 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all overflow-hidden relative">
               {formData.featuredImage ? (
                 <>
-                  <img src={formData.featuredImage} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={formData.featuredImage} alt="Preview" width={400} height={225} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button variant="primary" className="rounded-full! p-3!">
                       <i className="pi pi-pencil"></i>

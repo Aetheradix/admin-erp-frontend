@@ -24,6 +24,8 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
         <img 
           src={event.image} 
           alt={event.title} 
+          width={600}
+          height={400}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end p-6">
@@ -33,7 +35,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
         </div>
         
         {/* Date Tablet */}
-        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md rounded-2xl p-3 flex flex-col items-center min-w-15 shadow-sm border border-white/20">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md rounded-3xl p-3 flex flex-col items-center min-w-15 shadow-sm border border-white/20">
           <span className="text-[10px] font-black text-primary uppercase tracking-tighter leading-none mb-1">
             {event.date.split(' ')[0]}
           </span>
@@ -49,6 +51,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
                 variant="ghost" 
                 className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-primary hover:bg-white border-none shadow-soft"
                 onClick={() => onEdit(event.id)}
+                aria-label={`Edit ${event.title}`}
              >
                <Edit2 size={16} />
              </Button>
@@ -56,6 +59,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
                 variant="ghost" 
                 className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-red-500 hover:bg-white border-none shadow-soft"
                 onClick={() => onDelete(event.id)}
+                aria-label={`Cancel ${event.title}`}
              >
                <Trash2 size={16} />
              </Button>
@@ -93,7 +97,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
            </div>
         </div>
 
-        <Button variant="secondary" className="w-full mt-2 h-12 rounded-2xl! gap-2 font-black text-xs uppercase tracking-widest border-border-subtle! group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+        <Button variant="secondary" className="w-full mt-2 h-12 rounded-3xl! gap-2 font-black text-xs uppercase tracking-widest border-border-subtle! group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
           Register Now
         </Button>
       </div>

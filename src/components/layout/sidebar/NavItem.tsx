@@ -7,6 +7,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
   return (
     <NavLink
       to={item.path}
+      aria-label={`Navigate to ${item.label}`}
       className={({ isActive }) =>
         `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-xl transition-colors duration-200 group overflow-hidden ${
           isActive ? 'text-white' : 'text-white/40 hover:text-white'

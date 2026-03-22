@@ -22,7 +22,7 @@ export function OrgChart({ nodes }: OrgChartProps) {
           )}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-surface-subtle shadow-inner">
-              <img src={node.image} alt={node.name} className="w-full h-full object-cover" />
+              <img src={node.image} alt={node.name} width={48} height={48} className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col min-w-0">
               <h4 className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors">{node.name}</h4>

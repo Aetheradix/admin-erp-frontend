@@ -255,12 +255,12 @@ export function SettingsPage() {
                  <div className="flex flex-col gap-1">
                     <span className="text-base font-black text-error uppercase tracking-tight">System Cache Reset</span>
                     <p className="text-xs font-medium text-error/70 leading-relaxed italic">
-                      Clearing the cache will perform a deep logout and refresh all local system meta-data. 
+                      Clearing the cache will perform a deep logout and refresh all local system meta-data.
                       This action cannot be undone.
                     </p>
                  </div>
               </div>
-              <Button variant="ghost" className="w-full h-14 rounded-2xl! border-error/30! text-error! hover:bg-error/10 font-black uppercase tracking-widest shadow-lg shadow-error/5">
+              <Button variant="ghost" className="w-full h-14 rounded-3xl! border-error/30! text-error! hover:bg-error/10 font-black uppercase tracking-widest shadow-lg shadow-error/5">
                 Reset Cache & Logout
               </Button>
            </div>
@@ -278,7 +278,7 @@ export function SettingsPage() {
                <p className="text-xs font-medium text-muted-foreground">Version 2.4.0 (Aetheradix Core) • Last optimized 12 hours ago</p>
             </div>
          </div>
-         <Button variant="primary" className="h-14 px-10 rounded-2xl! font-black tracking-widest shadow-xl shadow-primary/20 bg-primary! text-white!">
+         <Button variant="primary" className="h-14 px-10 rounded-3xl! font-black tracking-widest shadow-xl shadow-primary/20 bg-primary! text-white!">
            Check for Updates
          </Button>
       </div>

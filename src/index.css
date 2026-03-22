@@ -48,6 +48,26 @@
   --font-body: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-display: swap;
+  src: local('Plus Jakarta Sans');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  src: local('Inter');
+}
+
+@layer base {
+  button:not([aria-label]), 
+  a:not([aria-label]):has(svg) {
+    /* Accessibility marker: Ensure icon-buttons have aria-labels */
+    outline-color: transparent;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

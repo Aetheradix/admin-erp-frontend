@@ -93,9 +93,9 @@ export function StaffList() {
               <Sparkles size={18} />
             </div>
             <div>
-              <h4 className="text-sm font-black text-foreground uppercase tracking-widest">
+              <h2 className="text-sm font-black text-foreground uppercase tracking-widest">
                 {filteredStaff.length} Members Registered
-              </h4>
+              </h2>
               <p className="text-xs text-muted font-bold">Showing {activeDepartment} directory</p>
             </div>
           </div>

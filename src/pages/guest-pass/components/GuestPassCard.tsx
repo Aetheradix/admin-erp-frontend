@@ -74,10 +74,16 @@ export function GuestPassCard({ pass }: GuestPassCardProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-primary/5 hover:text-primary flex items-center justify-center transition-all border border-transparent hover:border-primary/20">
+            <button 
+              className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary flex items-center justify-center transition-all border border-transparent hover:border-primary/20"
+              aria-label="Share guest pass"
+            >
               <Share2 size={16} />
             </button>
-            <button className="px-6 h-10 rounded-xl bg-foreground text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all">
+            <button 
+              className="px-6 h-10 rounded-3xl bg-foreground text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all"
+              aria-label="Manage guest pass settings"
+            >
               Manage
             </button>
           </div>

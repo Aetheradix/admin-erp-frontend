@@ -43,16 +43,18 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-6">
-          <FormField label="Event Title" required>
+          <FormField label="Event Title" required id="event-title">
             <Input 
+              id="event-title"
               value={formData.title} 
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g. Annual Tech Summit" 
             />
           </FormField>
 
-          <FormField label="Description">
+          <FormField label="Description" id="event-description">
             <Textarea 
+              id="event-description"
               value={formData.description} 
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Tell us what this event is about..." 
@@ -60,15 +62,17 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Category">
+            <FormField label="Category" id="event-category">
               <Select 
+                id="event-category"
                 options={categories}
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.value })}
               />
             </FormField>
-            <FormField label="Attendees">
+            <FormField label="Attendees" id="event-attendees">
               <Input 
+                id="event-attendees"
                 type="number"
                 value={formData.attendees?.toString() || ''} 
                 onChange={(e) => setFormData({ ...formData, attendees: parseInt(e.target.value) || 0 })}
@@ -78,8 +82,9 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
         </div>
 
         <div className="flex flex-col gap-6">
-          <FormField label="Date" required>
+          <FormField label="Date" required id="event-date">
             <Calendar 
+              id="event-date"
               value={formData.date ? new Date(formData.date) : null}
               onChange={(e) => setFormData({ ...formData, date: e.value?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) || '' })}
               placeholder="Select date" 
@@ -88,15 +93,17 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Time">
+            <FormField label="Time" id="event-time">
                 <Input 
+                    id="event-time"
                     value={formData.time} 
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                     placeholder="10:00 AM - 1:00 PM" 
                 />
             </FormField>
-            <FormField label="Location">
+            <FormField label="Location" id="event-location">
                 <Input 
+                    id="event-location"
                     value={formData.location} 
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     placeholder="Executive Suite" 
@@ -104,8 +111,9 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
             </FormField>
           </div>
 
-          <FormField label="Organizer">
+          <FormField label="Organizer" id="event-organizer">
             <Input 
+              id="event-organizer"
               value={formData.organizer} 
               onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
               placeholder="Department or Team name" 
@@ -115,13 +123,19 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button variant="ghost" onClick={onCancel} className="px-8! rounded-2xl! font-bold text-muted!">
+        <Button 
+          variant="ghost" 
+          onClick={onCancel} 
+          className="px-8! rounded-3xl! font-bold text-muted!"
+          aria-label="Discard event details"
+        >
           Discard
         </Button>
         <Button 
           variant="primary" 
           onClick={() => onSubmit(formData)}
-          className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20"
+          className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
+          aria-label={initialData ? 'Save changes to event' : 'Schedule this event'}
         >
           {initialData ? 'Save Changes' : 'Schedule Event'}
         </Button>
