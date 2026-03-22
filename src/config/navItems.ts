@@ -1,18 +1,17 @@
-import { 
+import {
   BarChart3,
   Briefcase,
   Calendar,
   CreditCard,
   FileText,
+  Heart,
   Image as ImageIcon,
   Key,
   LayoutDashboard,
   Scale,
-  Settings,
   Ticket,
-  Users,
-  Heart,
   UserCircle,
+  Users,
   type LucideIcon
 } from 'lucide-react';
 
@@ -63,7 +62,7 @@ export const navItems: NavItem[] = [
   },
   {
     label: 'Staff',
-    path: '/users',
+    path: '/staff',
     icon: Users,
     role: 'admin',
     category: 'MANAGEMENT',
@@ -105,13 +104,13 @@ export const navItems: NavItem[] = [
     category: 'SYSTEM',
     description: 'Business insights'
   },
-  {
-    label: 'Settings',
-    path: '/settings',
-    icon: Settings,
-    category: 'SYSTEM',
-    description: 'System preferences'
-  },
+  // {
+  //   label: 'Settings',
+  //   path: '/settings',
+  //   icon: Settings,
+  //   category: 'SYSTEM',
+  //   description: 'System preferences'
+  // },
   {
     label: 'Wellness',
     path: '/wellness',
@@ -125,5 +124,12 @@ export const navItems: NavItem[] = [
     icon: UserCircle,
     category: 'SYSTEM',
     description: 'Personal account'
+  },
+  {
+    label: 'Rulebook',
+    path: '/rulebook',
+    icon: FileText,
+    category: 'SYSTEM',
+    description: 'Company Policies'
   }
 ];

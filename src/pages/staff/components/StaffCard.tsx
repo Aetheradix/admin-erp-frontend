@@ -1,0 +1,99 @@
+import { Mail, Phone, Edit2, Trash2 } from 'lucide-react';
+import type { StaffMember } from '../hooks/mockStaff';
+
+interface StaffCardProps {
+  member: StaffMember;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+}
+
+export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Active': return 'bg-success';
+      case 'On Leave': return 'bg-warning';
+      default: return 'bg-muted';
+    }
+  };
+
+  return (
+    <div className="group relative bg-white rounded-[32px] p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
+      {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
+      <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
+        <button 
+          onClick={() => onEdit?.(member.id)}
+          className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          title="Edit Profile"
+        >
+          <Edit2 size={16} />
+        </button>
+        <button 
+          onClick={() => onDelete?.(member.id)}
+          className="w-10 h-10 rounded-xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          title="Remove Member"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      <div className="relative flex flex-col items-center text-center gap-6">
+        {/* Avatar with Status Indicator */}
+        <div className="relative">
+          <div className="w-24 h-24 rounded-[32px] overflow-hidden border-4 border-surface-subtle shadow-inner">
+            <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+          </div>
+          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status)} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
+        </div>
+
+        {/* Identity */}
+        <div className="flex flex-col gap-1">
+          <h3 className="text-xl font-black text-foreground group-hover:text-primary transition-colors duration-300">
+            {member.name}
+          </h3>
+          <span className="text-xs font-black text-primary uppercase tracking-widest bg-primary/5 px-4 py-1.25 rounded-full">
+            {member.role}
+          </span>
+        </div>
+
+        {/* Department & Join Date */}
+        <div className="flex items-center gap-6 py-2 border-y border-border-subtle/50 w-full justify-center">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-black text-muted uppercase tracking-tighter">Department</span>
+            <span className="text-xs font-bold text-foreground">{member.department}</span>
+          </div>
+          <div className="h-4 w-px bg-border-subtle/50" />
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-black text-muted uppercase tracking-tighter">Joined</span>
+            <span className="text-xs font-bold text-foreground">{member.joinDate}</span>
+          </div>
+        </div>
+
+        {/* Skills Tags */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {member.skills.slice(0, 3).map((skill) => (
+            <span key={skill} className="px-3 py-1 rounded-lg bg-surface-subtle text-[10px] font-bold text-muted-foreground border border-border-subtle/50">
+              {skill}
+            </span>
+          ))}
+          {member.skills.length > 3 && (
+            <span className="px-3 py-1 rounded-lg bg-surface-subtle text-[10px] font-bold text-muted">
+              +{member.skills.length - 3}
+            </span>
+          )}
+        </div>
+
+        {/* Contact Quick Actions */}
+        <div className="grid grid-cols-2 gap-3 w-full pt-2">
+          <button className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact">
+            <Mail size={16} className="text-muted group-hover/contact:text-primary" />
+            <span className="text-xs font-black uppercase tracking-wider">Email</span>
+          </button>
+          <button className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact">
+            <Phone size={16} className="text-muted group-hover/contact:text-primary" />
+            <span className="text-xs font-black uppercase tracking-wider">Call</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

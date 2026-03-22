@@ -38,7 +38,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-3 sm:gap-4 ml-auto">
         <Button 
           variant="ghost"
-          className="hidden sm:flex w-10! h-10! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150"
+          className="hidden sm:flex w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150"
         >
           <Settings size={18} className="text-muted transition-transform hover:rotate-45" />
         </Button>
@@ -46,13 +46,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* Notifications */}
         <Button 
           variant="ghost"
-          className="relative w-10! h-10! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 group"
+          className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 group"
         >
           <Bell size={18} className="text-muted group-hover:rotate-12 transition-transform" />
           <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-pill bg-primary ring-2 ring-white"></span>
         </Button>
 
-        <div className="h-8 w-px bg-border-subtle mx-1 hidden sm:block"></div>
+        <div className="h-10 w-px bg-border-subtle mx-1 hidden sm:block"></div>
 
         {/* User Profile */}
         <div 
