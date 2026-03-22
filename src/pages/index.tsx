@@ -20,7 +20,7 @@ const Profile = lazy(() => import('@/pages/profile/Profile'));
 const LoadingScreen = () => (
   <div className="w-full h-screen flex items-center justify-center bg-white">
     <div className="flex flex-col items-center gap-4 animate-pulse">
-       <div className="w-16 h-16 rounded-[24px] bg-primary/20 flex items-center justify-center text-primary">
+       <div className="w-16 h-16 rounded-3xl bg-primary/20 flex items-center justify-center text-primary">
           <i className="pi pi-spin pi-spinner text-3xl" />
        </div>
        <span className="text-[10px] font-black uppercase tracking-widest text-primary">Loading Aetheradix Core...</span>

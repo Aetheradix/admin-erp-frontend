@@ -18,7 +18,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
   } as const;
 
   return (
-    <div className="group bg-white rounded-[32px] border border-border-subtle overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 flex flex-col h-full">
+    <div className="group bg-white rounded-4xl border border-border-subtle overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 flex flex-col h-full">
       {/* Visual Header */}
       <div className="relative h-48 overflow-hidden">
         <img 
@@ -26,14 +26,14 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
           alt={event.title} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end p-6">
           <Badge variant={categoryVariants[event.category]} className="rounded-full px-4 py-1! text-[10px] font-black tracking-widest uppercase border-none backdrop-blur-md bg-white/20! text-white!">
             {event.category}
           </Badge>
         </div>
         
         {/* Date Tablet */}
-        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md rounded-2xl p-3 flex flex-col items-center min-w-[60px] shadow-sm border border-white/20">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md rounded-2xl p-3 flex flex-col items-center min-w-15 shadow-sm border border-white/20">
           <span className="text-[10px] font-black text-primary uppercase tracking-tighter leading-none mb-1">
             {event.date.split(' ')[0]}
           </span>

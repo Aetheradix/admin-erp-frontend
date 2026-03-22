@@ -249,7 +249,7 @@ export function SettingsPage() {
         <SettingSection title="Danger Zone">
            <div className="p-8 rounded-[40px] border border-error/20 bg-error/5 flex flex-col gap-6">
               <div className="flex items-start gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-error/10 flex items-center justify-center text-error flex-shrink-0">
+                 <div className="w-12 h-12 rounded-2xl bg-error/10 flex items-center justify-center text-error shrink-0">
                     <Trash2 size={24} />
                  </div>
                  <div className="flex flex-col gap-1">
@@ -270,7 +270,7 @@ export function SettingsPage() {
       {/* System Status Footer */}
       <div className="mt-10 p-10 rounded-[48px] bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-[24px] bg-white flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500">
+            <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500">
                <Cpu size={32} />
             </div>
             <div className="flex flex-col gap-1">

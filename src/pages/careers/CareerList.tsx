@@ -129,7 +129,7 @@ export function CareerList() {
 
       {/* Values / Perks Banner */}
       <div className="mt-8 p-12 rounded-[48px] bg-foreground text-white relative overflow-hidden group">
-        <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+        <div className="absolute right-0 top-0 w-1/2 h-full bg-linear-to-l from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
           <div className="max-w-xl flex flex-col gap-4">
             <h2 className="text-4xl font-black leading-tight tracking-tight">

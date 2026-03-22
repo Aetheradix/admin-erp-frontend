@@ -17,7 +17,7 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
   };
 
   return (
-    <div className="group relative bg-white rounded-[32px] p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
+    <div className="group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
         <button 
@@ -39,7 +39,7 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
       <div className="relative flex flex-col items-center text-center gap-6">
         {/* Avatar with Status Indicator */}
         <div className="relative">
-          <div className="w-24 h-24 rounded-[32px] overflow-hidden border-4 border-surface-subtle shadow-inner">
+          <div className="w-24 h-24 rounded-4xl overflow-hidden border-4 border-surface-subtle shadow-inner">
             <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
           </div>
           <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status)} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />

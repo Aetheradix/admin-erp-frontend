@@ -22,7 +22,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
       {/* Glass Overlay */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between p-6">
         {/* Top Actions */}
-        <div className="flex justify-end gap-2 translate-y-[-20px] group-hover:translate-y-0 transition-transform duration-500 delay-100">
+        <div className="flex justify-end gap-2 translate-y-5 group-hover:translate-y-0 transition-transform duration-500 delay-100">
            <Button 
             variant="ghost" 
             className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 border-none backdrop-blur-md" 
@@ -33,7 +33,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
         </div>
 
         {/* Bottom Info & Main Actions */}
-        <div className="translate-y-[20px] group-hover:translate-y-0 transition-transform duration-500 delay-150">
+        <div className="translate-y-5 group-hover:translate-y-0 transition-transform duration-500 delay-150">
           <div className="mb-4">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70 mb-1 block">
               {item.category}
