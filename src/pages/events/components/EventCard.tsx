@@ -1,7 +1,6 @@
-import React from 'react';
-import { MapPin, Clock, Users, Edit2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Button } from '@/components/ui/primitives/Button';
+import { Clock, Edit2, MapPin, Trash2, Users } from 'lucide-react';
 import type { ERPEvent } from '../hooks/mockEvents';
 
 interface EventCardProps {

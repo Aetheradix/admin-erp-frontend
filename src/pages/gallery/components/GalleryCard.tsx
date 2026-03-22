@@ -1,6 +1,5 @@
-import React from 'react';
-import { Eye, Edit2, Trash2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
+import { Edit2, Maximize2, Trash2 } from 'lucide-react';
 import type { GalleryItem } from '../hooks/mockGallery';
 
 interface GalleryCardProps {

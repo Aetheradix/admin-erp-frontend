@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 
 import { mockBlogs } from './hooks/mockBlogs';
 import type { Blog } from './hooks/mockBlogs';
-import { useBlogFilters } from './hooks/useBogFilters';
+import { useBlogFilters } from './hooks/useBlogFilters';
 import { BlogTableToolbar } from './components/BlogTableToolbar';
 import { BLOG_COLUMNS } from './components/Blogcolumnconfig';
 

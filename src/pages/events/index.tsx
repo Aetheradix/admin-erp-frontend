@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { EventCard } from './components/EventCard';
-import { mockEvents as initialMockData, type ERPEvent } from './hooks/mockEvents';
-import { Search, Calendar as CalendarIcon, Filter } from 'lucide-react';
-import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
+import { Input } from '@/components/ui/primitives/Input';
+import { Calendar as CalendarIcon, Filter, Search } from 'lucide-react';
 import { Dialog } from 'primereact/dialog';
+import { useState } from 'react';
+import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
+import { mockEvents as initialMockData, type ERPEvent } from './hooks/mockEvents';
 
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
