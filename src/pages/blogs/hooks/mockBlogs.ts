@@ -46,7 +46,7 @@ export const mockBlogs: Blog[] = [
     category: 'Management',
     tags: ['Remote', 'Leadership', 'Productivity'],
     status: 'Published',
-    featuredImage: 'https://images.unsplash.com/photo-1517245318773-b7b71a1637a1?q=80&w=800&auto=format&fit=crop',
+    featuredImage: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     publishDate: '2026-03-18T14:30:00Z',
     views: 856,
     readTime: '8 min'
