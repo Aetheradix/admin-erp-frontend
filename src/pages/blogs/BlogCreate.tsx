@@ -1,17 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { BlogForm } from './components/BlogForm';
-import { type Blog } from './hooks/mockBlogs';
+import { useCreateBlogMutation } from '@/store/api/blogSlice';
 
 const BlogCreate = () => {
   const navigate = useNavigate();
+  const [createBlog, { isLoading }] = useCreateBlogMutation();
 
-  const handleSave = (data: Partial<Blog>) => {
-    console.log('Saving blog:', data);
-    // Add fake delay to show loading
-    setTimeout(() => {
+  const handleSave = async (data: any) => {
+    try {
+      await createBlog(data).unwrap();
       navigate('/blogs');
-    }, 1000);
+    } catch (error) {
+      console.error('Failed to create blog:', error);
+    }
   };
 
   return (
@@ -25,7 +27,7 @@ const BlogCreate = () => {
         ]}
       />
 
-      <BlogForm onSubmit={handleSave} />
+      <BlogForm onSubmit={handleSave} isLoading={isLoading} />
     </div>
   );
 };

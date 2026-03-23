@@ -30,12 +30,12 @@ export const BLOG_COLUMNS: ColumnConfig[] = [
     width: '120px',
     className: 'pl-6',
     headerClassName: 'pl-6',
-    body: (row) => <ImageCell src={row.featuredImage} alt={row.title} />,
+    body: (row) => <ImageCell src={row.image_url || ''} alt={row.title} />,
   },
   {
     key: 'title',
     header: 'Title',
-    body: (row) => <TitleCell title={row.title} excerpt={row.excerpt} />,
+    body: (row) => <TitleCell title={row.title} excerpt={row.excerpt} content={row.content} />,
   },
   {
     key: 'category',

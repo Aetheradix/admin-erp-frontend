@@ -1,23 +1,39 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { BlogForm } from './components/BlogForm';
-import { mockBlogs, type Blog } from './hooks/mockBlogs';
+import { useGetBlogQuery, useUpdateBlogMutation } from '@/store/api/blogSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 const BlogEdit = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   
-  const blog = mockBlogs.find(b => b.id === id);
+  const { data: blog, isLoading: isFetching, isError } = useGetBlogQuery(id as string, { skip: !id });
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
 
-  const handleSave = (data: Partial<Blog>) => {
-    console.log('Updating blog:', data);
-    setTimeout(() => {
+  const handleSave = async (data: any) => {
+    try {
+      await updateBlog({ ...data, id }).unwrap();
       navigate('/blogs');
-    }, 1000);
+    } catch (error) {
+      console.error('Failed to update blog:', error);
+    }
   };
 
-  if (!blog) {
-    return <div>Blog not found</div>;
+  if (isFetching) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
+
+  if (isError || !blog) {
+    return (
+      <div className="flex justify-center items-center h-64 text-red-500">
+        Blog not found or error fetching data.
+      </div>
+    );
   }
 
   return (
@@ -31,7 +47,7 @@ const BlogEdit = () => {
         ]}
       />
 
-      <BlogForm initialData={blog} onSubmit={handleSave} />
+      <BlogForm initialData={blog} onSubmit={handleSave} isLoading={isUpdating} />
     </div>
   );
 };

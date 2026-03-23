@@ -1,25 +1,73 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Mail, Phone, Briefcase, Contact, ShieldCheck, Settings, LogOut, Camera, Sparkles, Edit3 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProfileForm } from './components/ProfileForm';
+import { useAuth } from '@/context/AuthContext';
+import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
 
 const Profile = () => {
+  const { user: authUser, logout: authLogout } = useAuth();
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Local state for the displayed user data, initialized from authUser
   const [user, setUser] = useState({
-    name: 'Jonathan Reeves',
-    designation: 'CEO & Founder',
-    employeeId: 'AX-001-HQ',
-    email: 'j.reeves@aetheradix.io',
-    contactNo: '+1 (555) 012-3456',
-    department: 'Executive',
+    name: authUser?.username || '',
+    designation: authUser?.designation || 'Staff Member',
+    employeeId: authUser?.employee_id || 'N/A',
+    email: authUser?.email || '',
+    contactNo: authUser?.contact_no || '',
+    department: 'General', // Default if not in backend yet
     joinDate: 'Jan 2024',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CEO'
+    image: authUser?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`
   });
 
-  const handleEditSave = (updatedData: any) => {
-    setUser(prev => ({ ...prev, ...updatedData }));
-    setIsEditing(false);
+  // Sync local user state with authUser updates
+  useEffect(() => {
+    if (authUser) {
+      setUser(prev => ({
+        ...prev,
+        name: authUser.username,
+        designation: authUser.designation || 'Staff Member',
+        employeeId: authUser.employee_id || 'N/A',
+        email: authUser.email || '',
+        contactNo: authUser.contact_no || '',
+        image: authUser.image_url || prev.image
+      }));
+    }
+  }, [authUser]);
+
+  const handleEditSave = async (updatedData: any) => {
+    try {
+      const payload = {
+        username: updatedData.name,
+        email: updatedData.email,
+        contact_no: updatedData.contactNo,
+        designation: updatedData.designation,
+      };
+      
+      const result = await updateProfile(payload).unwrap();
+      
+      // Update local storage to persist changes across reloads
+      const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = { ...existingUser, ...result.user };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      setIsEditing(false);
+      // Success will be reflected via auth context re-syncing from localStorage if implemented
+      // For now, we manually update if needed or just wait for next load.
+      // But we call window.location.reload() to ensure global state is refreshed easily
+      window.location.reload();
+    } catch (err: any) {
+      console.error('Failed to update profile:', err);
+      alert(err.data?.message || 'Failed to update profile');
+    }
+  };
+
+  const handleLogout = () => {
+    authLogout();
+    window.location.href = '/auth/login';
   };
 
   return (
@@ -64,7 +112,11 @@ const Profile = () => {
                 <Settings size={16} />
                 <span className="font-bold text-xs uppercase tracking-widest">Account Settings</span>
               </Button>
-              <Button variant="ghost" className="w-full h-12 rounded-3xl! gap-2 text-error hover:bg-error/5 border-none!">
+              <Button 
+                variant="ghost" 
+                onClick={handleLogout}
+                className="w-full h-12 rounded-3xl! gap-2 text-error hover:bg-error/5 border-none!"
+              >
                 <LogOut size={16} />
                 <span className="font-bold text-xs uppercase tracking-widest">Sign Out</span>
               </Button>
@@ -75,14 +127,14 @@ const Profile = () => {
              <div className="absolute right-0 top-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/30 transition-all duration-700" />
              <div className="flex items-center gap-4 relative z-10">
                 <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
-                  <Sparkles size={18} />
+                   <Sparkles size={18} />
                 </div>
                 <span className="text-xs font-black uppercase tracking-widest">Security Clearance</span>
              </div>
              <div className="flex flex-col gap-2 relative z-10">
                 <h4 className="text-lg font-black leading-tight">V3 Access Authorized</h4>
                 <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                  Your account has elevated privileges for financial approvals and staff management.
+                   Your account has elevated privileges for financial approvals and staff management.
                 </p>
              </div>
           </div>
@@ -131,13 +183,15 @@ const Profile = () => {
                    <p className="text-xs font-medium text-muted-foreground max-w-md">
                      * Some information is managed by the HR department. Contact the system administrator for changes to your core identity records.
                    </p>
-                   <Button 
-                    variant="primary" 
-                    onClick={() => setIsEditing(true)}
-                    className="h-12 px-8 rounded-3xl! font-black tracking-widest shadow-lg shadow-primary/20"
-                   >
-                     Apply for Changes
-                   </Button>
+                   {!isEditing && (
+                      <Button 
+                      variant="primary" 
+                      onClick={() => setIsEditing(true)}
+                      className="h-12 px-8 rounded-3xl! font-black tracking-widest shadow-lg shadow-primary/20"
+                      >
+                        Apply for Changes
+                      </Button>
+                   )}
                 </div>
               </>
             ) : (
@@ -173,7 +227,7 @@ const Profile = () => {
                        </div>
                        <div className="flex flex-col">
                           <span className="text-sm font-black text-foreground">{session.device}</span>
-                          <span className="text-[10px] font-bold text-muted">{session.location}</span>
+                           <span className="text-[10px] font-bold text-muted">{session.location}</span>
                        </div>
                     </div>
                     <span className={`text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-success' : 'text-muted'}`}>

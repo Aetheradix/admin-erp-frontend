@@ -1,16 +1,20 @@
 import { Clock, MapPin, Users, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
-import { mockEvents } from '../../events/hooks/mockEvents';
+import { useGetEventsQuery } from '@/store/api/eventApiSlice';
 
 interface AttendancePlannerProps {
   selectedDate: Date;
 }
 
 export function AttendancePlanner({ selectedDate }: AttendancePlannerProps) {
+  const { data: events = [], isLoading } = useGetEventsQuery();
   const dateStr = selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   
-  // Filter events for the selected date (mocking the date matching for simplicity)
-  // In a real app, we would match selectedDate with event.date
-  const dailyEvents = mockEvents.slice(0, 2); // Just for demonstration
+  const dailyTotalEvents = events.filter((event: any) => {
+    const eventDate = new Date(event.event_date);
+    return eventDate.toDateString() === selectedDate.toDateString();
+  });
+
+  const dailyEvents = dailyTotalEvents.slice(0, 3);
 
   return (
     <div className="flex flex-col gap-6 bg-white p-8 rounded-[40px] border border-border-subtle shadow-soft h-full transition-all duration-500 hover:shadow-lg">
@@ -55,10 +59,10 @@ export function AttendancePlanner({ selectedDate }: AttendancePlannerProps) {
             </div>
           ))}
 
-          {dailyEvents.length === 0 && (
+          {dailyTotalEvents.length === 0 && (
             <div className="py-12 flex flex-col items-center justify-center text-center gap-3 opacity-40">
               <Clock size={32} />
-              <p className="text-xs font-bold">No events scheduled for this day.</p>
+              <p className="text-xs font-bold">{isLoading ? 'Syncing schedule...' : 'No events scheduled for this day.'}</p>
             </div>
           )}
         </div>

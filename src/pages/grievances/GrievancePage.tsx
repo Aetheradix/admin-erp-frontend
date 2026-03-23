@@ -3,31 +3,42 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Dialog } from 'primereact/dialog';
 import { GrievanceCard } from './components/GrievanceCard';
 import { GrievanceForm } from './components/GrievanceForm';
-import { mockGrievances as initialMockData, type Grievance } from './hooks/mockGrievances';
+import { useGetGrievancesQuery, useSubmitGrievanceMutation } from '@/store/api/grievanceApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import type { Grievance } from './hooks/mockGrievances';
 import { Scale, Sparkles, Filter, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 export function GrievancePage() {
-  const [grievances, setGrievances] = useState<Grievance[]>(initialMockData);
+  const { data: grievances = [], isLoading, isError } = useGetGrievancesQuery();
+  const [submitGrievance] = useSubmitGrievanceMutation();
+  
   const [showForm, setShowForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const CATEGORIES = ['All', ...new Set(initialMockData.map(g => g.category))];
+  const CATEGORIES = ['All', 'Work Environment', 'Management', 'Harassment', 'Software/Tools', 'Other'];
 
-  const filteredGrievances = grievances.filter(g => 
+  const filteredGrievances = grievances.filter((g: Grievance) => 
     activeCategory === 'All' || g.category === activeCategory
   );
 
-  const handleGrievanceSubmit = (data: Partial<Grievance>) => {
-    const newGrievance: Grievance = {
-      ...data,
-      id: 'G' + (grievances.length + 1),
-      date: new Date().toISOString().split('T')[0],
-    } as Grievance;
-    setGrievances(prev => [newGrievance, ...prev]);
-    setShowForm(false);
+  const handleGrievanceSubmit = async (data: Partial<Grievance>) => {
+    try {
+      await submitGrievance(data).unwrap();
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to submit grievance:', err);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

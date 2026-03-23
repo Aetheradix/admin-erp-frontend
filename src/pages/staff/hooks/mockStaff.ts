@@ -1,14 +1,20 @@
 export interface StaffMember {
-  id: string;
-  name: string;
-  role: string;
-  department: 'Engineering' | 'Design' | 'Product' | 'Marketing' | 'Sales' | 'Operations' | 'HR';
+  id: string | number;
+  name?: string; // Original field, kept for compatibility
+  username?: string; // Backend field
+  role?: string; // Original field
+  designation?: string; // Backend field
+  department: string;
   email: string;
-  phone: string;
+  phone?: string; // Original field
+  contact_no?: string; // Backend field
   status: 'Active' | 'On Leave' | 'Inactive';
-  joinDate: string;
-  image: string;
+  joinDate?: string; // Original field
+  join_date?: string; // Backend field
+  image?: string; // Original field
+  image_url?: string; // Backend field
   skills: string[];
+  employee_id?: string;
 }
 
 export const mockStaff: StaffMember[] = [

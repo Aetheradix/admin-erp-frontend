@@ -6,12 +6,16 @@ import { Dialog } from 'primereact/dialog';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
-import { mockEvents as initialMockData, type ERPEvent } from './hooks/mockEvents';
-
+import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/store/api/eventApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import type { ERPEvent } from './hooks/mockEvents';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 const Events = () => {
-  const [events, setEvents] = useState<ERPEvent[]>(initialMockData);
+  const { data: events = [], isLoading, isError } = useGetEventsQuery();
+  const [createEvent] = useCreateEventMutation();
+  const [deleteEvent] = useDeleteEventMutation();
+  
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -19,9 +23,13 @@ const Events = () => {
 
   const categories = ['All', 'Conference', 'Workshop', 'Social', 'Meeting'];
 
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = events.filter((event: ERPEvent) => {
     const matchesCategory = activeCategory === 'All' || event.category === activeCategory;
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const title = event.title || '';
+    const description = event.description || '';
+    const matchesSearch = 
+      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -31,31 +39,44 @@ const Events = () => {
   };
 
   const handleEdit = (id: string) => {
-    const event = events.find(e => e.id === id);
+    const event = events.find((e: ERPEvent) => String(e.id) === String(id));
     if (event) {
       setEditingEvent(event);
       setShowForm(true);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to cancel this event?')) {
-      setEvents(prev => prev.filter(e => e.id !== id));
+      try {
+        await deleteEvent(id).unwrap();
+      } catch (err) {
+        console.error('Failed to delete event:', err);
+      }
     }
   };
 
-  const handleSubmit = (data: Partial<ERPEvent>) => {
-    if (editingEvent) {
-      setEvents(prev => prev.map(e => e.id === editingEvent.id ? { ...e, ...data } as ERPEvent : e));
-    } else {
-      const newEvent: ERPEvent = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-      } as ERPEvent;
-      setEvents(prev => [newEvent, ...prev]);
+  const handleSubmit = async (data: Partial<ERPEvent>) => {
+    try {
+      if (editingEvent) {
+        // Handle update if implemented on backend, else treat as new or error
+        console.warn('Update event not supported yet on backend');
+      } else {
+        await createEvent(data).unwrap();
+      }
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to save event:', err);
     }
-    setShowForm(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 pb-12">

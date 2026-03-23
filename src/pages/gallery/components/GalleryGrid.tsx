@@ -31,7 +31,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
-        <img src={item.url} alt={item.title} width={1200} height={800} style={{ width: '100%', display: 'block', maxHeight: '75vh', objectFit: 'contain' }} className="rounded-3xl shadow-2xl" />
+        <img src={item.image_url} alt={item.title} width={1200} height={800} style={{ width: '100%', display: 'block', maxHeight: '75vh', objectFit: 'contain' }} className="rounded-3xl shadow-2xl" />
         <div className="text-center group">
             <h4 className="text-white font-black text-3xl tracking-tight mb-2 group-hover:text-primary transition-colors">{item.title}</h4>
             <div className="flex items-center justify-center gap-3">
@@ -45,7 +45,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
   };
 
   const thumbnailTemplate = (item: GalleryItem) => {
-    return <img src={item.url} alt={item.title} width={60} height={60} style={{ width: '60px', borderRadius: '8px' }} />;
+    return <img src={item.image_url} alt={item.title} width={60} height={60} style={{ width: '60px', borderRadius: '8px' }} />;
   };
 
   return (

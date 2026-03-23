@@ -1,19 +1,22 @@
 export interface Blog {
-  id: string;
+  id: string | number;
   title: string;
-  excerpt: string;
+  excerpt?: string;
   content: string;
-  author: {
+  author: string | {
     name: string;
     image?: string;
   };
-  category: string;
-  tags: string[];
+  category: string | null;
+  image_url?: string;
+  featuredImage?: string;
   status: 'Published' | 'Draft' | 'Scheduled';
-  featuredImage: string;
-  publishDate: string;
-  views: number;
-  readTime: string;
+  created_at?: string;
+  updated_at?: string;
+  tags?: string[];
+  publishDate?: string;
+  views?: number;
+  readTime?: string;
 }
 
 export const mockBlogs: Blog[] = [

@@ -4,22 +4,30 @@ import { Dialog } from 'primereact/dialog';
 import { CareerCard } from './components/CareerCard';
 import { CareerTableToolbar } from './components/CareerTableToolbar';
 import { CareerForm } from './components/CareerForm';
-import { mockCareers as initialMockData, type Career } from './hooks/mockCareers';
 import { useCareerFilters } from './hooks/useCareerFilters';
 import { Briefcase, Sparkles } from 'lucide-react';
+import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import type { Career } from './hooks/mockCareers';
 
 export function CareerList() {
-  const [careers, setCareers] = useState<Career[]>(initialMockData);
+  const { data: careers = [], isLoading, isError } = useGetCareersQuery();
+  const [createCareer] = useCreateCareerMutation();
+  const [updateCareer] = useUpdateCareerMutation();
+  const [deleteCareer] = useDeleteCareerMutation();
+  
   const [showForm, setShowForm] = useState(false);
   const [editingCareer, setEditingCareer] = useState<Career | null>(null);
   
   const { searchQuery, setSearchQuery, activeDepartment, setActiveDepartment } = useCareerFilters();
 
-  const filteredCareers = careers.filter((career) => {
+  const filteredCareers = careers.filter((career: Career) => {
     const matchesDepartment = activeDepartment === 'All' || career.department === activeDepartment;
+    const title = career.title || '';
+    const description = career.description || '';
     const matchesSearch = 
-      career.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      career.description.toLowerCase().includes(searchQuery.toLowerCase());
+      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDepartment && matchesSearch;
   });
 
@@ -29,33 +37,46 @@ export function CareerList() {
   };
 
   const handleEdit = (id: string) => {
-    const career = careers.find(c => c.id === id);
+    const career = careers.find((c: Career) => String(c.id) === String(id));
     if (career) {
-      setEditingCareer(career);
+      setEditingCareer({
+        ...career,
+        postedDate: career.postedDate || (career as any).posted_date
+      });
       setShowForm(true);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to remove this position?')) {
-      setCareers(prev => prev.filter(c => c.id !== id));
+      try {
+        await deleteCareer(id).unwrap();
+      } catch (err) {
+        console.error('Failed to delete position:', err);
+      }
     }
   };
 
-  const handleSubmit = (data: Partial<Career>) => {
-    if (editingCareer) {
-      setCareers(prev => prev.map(c => c.id === editingCareer.id ? { ...c, ...data } as Career : c));
-    } else {
-      const newCareer: Career = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-        postedDate: new Date().toISOString().split('T')[0],
-        status: 'Open'
-      } as Career;
-      setCareers(prev => [newCareer, ...prev]);
+  const handleSubmit = async (data: Partial<Career>) => {
+    try {
+      if (editingCareer) {
+        await updateCareer({ id: editingCareer.id, ...data }).unwrap();
+      } else {
+        await createCareer(data).unwrap();
+      }
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to save position:', err);
     }
-    setShowForm(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

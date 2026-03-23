@@ -3,16 +3,13 @@ import { Column } from 'primereact/column';
 import { DataTable } from '@/components/ui/composed/DataTable';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 
-import { mockBlogs } from './hooks/mockBlogs';
-import type { Blog } from './hooks/mockBlogs';
 import { useBlogFilters } from './hooks/useBlogFilters';
 import { BlogTableToolbar } from './components/BlogTableToolbar';
 import { BLOG_COLUMNS } from './components/Blogcolumnconfig';
-
-
+import { useGetBlogsQuery, useDeleteBlogMutation } from '@/store/api/blogSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name'];
-
 
 const BlogList = () => {
   const navigate = useNavigate();
@@ -24,10 +21,34 @@ const BlogList = () => {
     handleCategoryChange 
   } = useBlogFilters();
 
-  const handleDelete = (id: string) => {
-    // TODO: wire to useDeleteBlog() mutation
-    console.log('delete', id);
+  const { data: blogs = [], isLoading, isError } = useGetBlogsQuery();
+  const [deleteBlog] = useDeleteBlogMutation();
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this story?')) {
+      try {
+        await deleteBlog(id).unwrap();
+      } catch (error) {
+        console.error('Failed to delete blog:', error);
+      }
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-64 text-red-500">
+        Error loading blogs. Please check if the backend is running.
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 pb-12">
@@ -51,7 +72,7 @@ const BlogList = () => {
         />
 
         <DataTable
-          value={mockBlogs}
+          value={blogs}
           filters={filters}
           globalFilterFields={GLOBAL_FILTER_FIELDS}
           paginator
@@ -70,7 +91,7 @@ const BlogList = () => {
               style={col.width ? { width: col.width } : undefined}
               className={col.className}
               headerClassName={col.headerClassName}
-              body={(row: Blog) => col.body(row, { onDelete: handleDelete })}
+              body={(row: any) => col.body(row, { onDelete: handleDelete })}
             />
           ))}
         </DataTable>

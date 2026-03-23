@@ -4,31 +4,42 @@ import { Dialog } from 'primereact/dialog';
 import { FinanceStats } from './components/FinanceStats';
 import { ReimbursementCard } from './components/ReimbursementCard';
 import { FinanceForm } from './components/FinanceForm';
-import { mockReimbursements as initialMockData, type Reimbursement } from './hooks/mockFinance';
+import { useGetReimbursementsQuery, useCreateReimbursementMutation } from '@/store/api/financeApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import type { Reimbursement } from './hooks/mockFinance';
 import { Sparkles, Filter, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 export function FinancePage() {
-  const [requests, setRequests] = useState<Reimbursement[]>(initialMockData);
+  const { data: requests = [], isLoading } = useGetReimbursementsQuery();
+  const [createReimbursement] = useCreateReimbursementMutation();
+  
   const [showForm, setShowForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const CATEGORIES = ['All', ...new Set(initialMockData.map(r => r.category))];
+  const CATEGORIES = ['All', 'Travel', 'Equipment', 'Software', 'Meals', 'Medical', 'Office Supplies'];
 
-  const filteredRequests = requests.filter(r => 
+  const filteredRequests = requests.filter((r: Reimbursement) => 
     activeCategory === 'All' || r.category === activeCategory
   );
 
-  const handleRequestSubmit = (data: Partial<Reimbursement>) => {
-    const newRequest: Reimbursement = {
-      ...data,
-      id: 'R' + (requests.length + 1),
-      date: new Date().toISOString().split('T')[0],
-    } as Reimbursement;
-    setRequests(prev => [newRequest, ...prev]);
-    setShowForm(false);
+  const handleRequestSubmit = async (data: Partial<Reimbursement>) => {
+    try {
+      await createReimbursement(data).unwrap();
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to submit reimbursement request:', err);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

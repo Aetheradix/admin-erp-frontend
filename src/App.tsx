@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const AppFeature = lazy(() => import('@/pages/index'));
 
@@ -12,16 +14,20 @@ const LoadingScreen = () => (
        <div className="w-16 h-16 rounded-3xl bg-primary/20 flex items-center justify-center text-primary">
           <i className="pi pi-spin pi-spinner text-3xl" />
        </div>
-       <span className="text-[10px] font-black uppercase tracking-widest text-primary">Initializing Aetheradix...</span>
+       <span className="text-[10px] font-black uppercase tracking-widest text-primary">Initializing AetherERP...</span>
     </div>
   </div>
 );
 
 const ProtectedApp = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return (
@@ -33,7 +39,15 @@ function App() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/signup" element={<SignupPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+        
+        {/* Redirects for convenience */}
+        <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+        <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
+        <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
+        
         <Route element={<ProtectedApp />}>
           <Route path="/*" element={<AppFeature />} />
         </Route>

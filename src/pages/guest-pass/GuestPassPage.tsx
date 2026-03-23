@@ -3,30 +3,42 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Dialog } from 'primereact/dialog';
 import { GuestPassCard } from './components/GuestPassCard';
 import { GuestPassForm } from './components/GuestPassForm';
-import { mockGuestPasses as initialMockData, type GuestPass } from './hooks/mockGuestPass';
+import { useGetGuestPassesQuery, useIssueGuestPassMutation } from '@/store/api/guestPassApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import type { GuestPass } from './hooks/mockGuestPass';
 import { Key, Sparkles, Filter, ShieldCheck, History, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 export function GuestPassPage() {
-  const [passes, setPasses] = useState<GuestPass[]>(initialMockData);
+  const { data: passes = [], isLoading, isError } = useGetGuestPassesQuery();
+  const [issueGuestPass] = useIssueGuestPassMutation();
+  
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
 
   const TABS = ['All', 'Active', 'Pending', 'Expired'];
 
-  const filteredPasses = passes.filter(p => 
+  const filteredPasses = passes.filter((p: GuestPass) => 
     activeTab === 'All' || p.status === activeTab
   );
 
-  const handlePassSubmit = (data: Partial<GuestPass>) => {
-    const newPass: GuestPass = {
-      ...data,
-      id: 'GP' + (passes.length + 1),
-    } as GuestPass;
-    setPasses(prev => [newPass, ...prev]);
-    setShowForm(false);
+  const handlePassSubmit = async (data: Partial<GuestPass>) => {
+    try {
+      await issueGuestPass(data).unwrap();
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to issue guest pass:', err);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

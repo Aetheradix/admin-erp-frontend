@@ -2,16 +2,29 @@ import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { OrgChart } from './components/OrgChart';
 import { ProjectCard } from './components/ProjectCard';
-import { mockProjects, mockHierarchy } from './hooks/mockStats';
+import { mockHierarchy } from './hooks/mockStats';
+import { useGetProjectsQuery, useGetProjectStatsQuery } from '@/store/api/projectApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import { PieChart, TrendingUp, Layers, Archive as ArchiveIcon, Sparkles } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 export function StatsPage() {
+  const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
+  const { data: statsData, isLoading: statsLoading } = useGetProjectStatsQuery();
+  
   const [activeTab, setActiveTab] = useState('Hierarchy');
   const TABS = ['Hierarchy', 'Ongoing Projects', 'Archive'];
 
-  const ongoingProjects = mockProjects.filter(p => p.status !== 'Archived');
-  const archivedProjects = mockProjects.filter(p => p.status === 'Archived');
+  const ongoingProjects = projects.filter((p: any) => p.status !== 'Archived');
+  const archivedProjects = projects.filter((p: any) => p.status === 'Archived');
+
+  if (projectsLoading || statsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -24,8 +37,8 @@ export function StatsPage() {
       {/* High Level Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Active Projects', value: ongoingProjects.length, icon: Layers, color: 'text-primary' },
-          { label: 'Total Employees', value: mockHierarchy.length, icon: PieChart, color: 'text-info' },
+          { label: 'Active Projects', value: statsData?.projects?.active || 0, icon: Layers, color: 'text-primary' },
+          { label: 'Total Employees', value: statsData?.employees?.total || mockHierarchy.length, icon: PieChart, color: 'text-info' },
           { label: 'Completion Rate', value: '92%', icon: TrendingUp, color: 'text-success' },
           { label: 'Historical Data', value: archivedProjects.length, icon: ArchiveIcon, color: 'text-warning' },
         ].map((stat) => (

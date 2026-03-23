@@ -14,7 +14,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
     <div className="group relative break-inside-avoid mb-6 rounded-3xl overflow-hidden border border-border-subtle shadow-sm hover:shadow-xl transition-all duration-500">
       {/* Image */}
       <img
-        src={item.url}
+        src={item.image_url || ''}
         alt={item.title}
         width={400}
         height={500}

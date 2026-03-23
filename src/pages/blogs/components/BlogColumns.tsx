@@ -28,20 +28,25 @@ export function StatusCell({ status }: { status: Blog['status'] }) {
 // ─── Author ───────────────────────────────────────────────────────────────────
 
 export function AuthorCell({ author }: { author: Blog['author'] }) {
+  const authorName = typeof author === 'string' ? author : author?.name || 'Unknown';
+  const authorImg = typeof author === 'string' 
+    ? `https://api.dicebear.com/7.x/notionists/svg?seed=${author}` 
+    : author?.image;
+
   return (
     <div className="flex items-center gap-3">
       <div className="relative">
         <Avatar
-          image={author.image}
+          image={authorImg}
           className="w-9 h-9 rounded-full border-2 border-white shadow-soft"
           width={36}
           height={36}
-          aria-label={`Author: ${author.name}`}
+          aria-label={`Author: ${authorName}`}
         />
         <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success border-2 border-white rounded-full" />
       </div>
       <div className="flex flex-col">
-        <span className="text-sm font-bold text-foreground leading-none">{author.name}</span>
+        <span className="text-sm font-bold text-foreground leading-none">{authorName}</span>
         <span className="text-[10px] text-muted font-medium mt-1 uppercase tracking-tight">Editor</span>
       </div>
     </div>
@@ -50,14 +55,16 @@ export function AuthorCell({ author }: { author: Blog['author'] }) {
 
 // ─── Title ────────────────────────────────────────────────────────────────────
 
-export function TitleCell({ title, excerpt }: { title: string; excerpt: string }) {
+export function TitleCell({ title, excerpt, content }: { title: string; excerpt?: string; content?: string }) {
+  const displayExcerpt = excerpt || (content ? content.replace(/<[^>]*>/g, '').substring(0, 100) + '...' : '');
+
   return (
     <div className="flex flex-col max-w-lg py-2">
       <span className="font-black text-foreground text-base hover:text-primary cursor-pointer transition-colors leading-tight">
         {title}
       </span>
       <span className="text-[11px] text-muted/80 font-medium mt-2 line-clamp-1">
-        {excerpt}
+        {displayExcerpt}
       </span>
     </div>
   );
@@ -65,12 +72,12 @@ export function TitleCell({ title, excerpt }: { title: string; excerpt: string }
 
 // ─── Category ─────────────────────────────────────────────────────────────────
 
-export function CategoryCell({ category }: { category: string }) {
+export function CategoryCell({ category }: { category: string | null }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
       <span className="text-[11px] font-black text-muted uppercase tracking-widest">
-        {category}
+        {category || 'Uncategorized'}
       </span>
     </div>
   );

@@ -1,16 +1,22 @@
-import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
+import { useCreateGalleryItemMutation, useDeleteGalleryItemMutation, useGetGalleryQuery } from '@/store/api/galleryApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { useState } from 'react';
 import { GalleryGrid } from './components/GalleryGrid';
-import { mockGallery as initialMockData, type GalleryItem } from './hooks/mockGallery';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/primitives/Input';
-import { Dialog } from 'primereact/dialog';
-import { GalleryForm } from './components/GalleryForm';
+import type { GalleryItem } from './hooks/mockGallery';
 
 import { Tabs } from '@/components/ui/primitives/Tabs';
+import { Dialog } from 'primereact/dialog';
+import { GalleryForm } from './components/GalleryForm';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/primitives/Input';
+
 
 const Gallery = () => {
-  const [items, setItems] = useState<GalleryItem[]>(initialMockData);
+  const { data: items = [], isLoading } = useGetGalleryQuery();
+  const [createGalleryItem] = useCreateGalleryItemMutation();
+  const [deleteGalleryItem] = useDeleteGalleryItemMutation();
+  
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -18,9 +24,10 @@ const Gallery = () => {
 
   const categories = ['All', 'Events', 'Workplace', 'Team', 'Product'];
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item: GalleryItem) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const title = item.title || '';
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -30,33 +37,44 @@ const Gallery = () => {
   };
 
   const handleEdit = (id: string) => {
-    const item = items.find(i => i.id === id);
+    const item = items.find((i: GalleryItem) => String(i.id) === String(id));
     if (item) {
       setEditingItem(item);
       setShowForm(true);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to remove this asset?')) {
-      setItems(prev => prev.filter(i => i.id !== id));
+      try {
+        await deleteGalleryItem(id).unwrap();
+      } catch (err) {
+        console.error('Failed to delete asset:', err);
+      }
     }
   };
 
-  const handleSubmit = (data: Partial<GalleryItem>) => {
-    if (editingItem) {
-      // Update
-      setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, ...data } as GalleryItem : i));
-    } else {
-      // Create
-      const newItem: GalleryItem = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-      } as GalleryItem;
-      setItems(prev => [newItem, ...prev]);
+  const handleSubmit = async (data: Partial<GalleryItem>) => {
+    try {
+      if (editingItem) {
+        // Update not yet implemented on backend for gallery items based on simple service
+        console.warn('Update gallery item not supported yet on backend');
+      } else {
+        await createGalleryItem(data).unwrap();
+      }
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to save asset:', err);
     }
-    setShowForm(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 pb-12">

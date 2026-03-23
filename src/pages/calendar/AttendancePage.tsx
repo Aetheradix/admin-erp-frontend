@@ -5,23 +5,40 @@ import { AttendanceStats } from './components/AttendanceStats';
 import { AttendanceCalendar } from './components/AttendanceCalendar';
 import { AttendancePlanner } from './components/AttendancePlanner';
 import { AttendanceRequestForm } from './components/AttendanceRequestForm';
-import { mockAttendance, mockRequests, type AttendanceRecord, type AttendanceRequest } from './hooks/mockAttendance';
+import { useGetAttendanceHistoryQuery } from '@/store/api/attendanceSlice';
+import { useGetLeavesQuery, useCreateLeaveRequestMutation } from '@/store/api/leaveSlice';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 export function AttendancePage() {
-  const [records] = useState<AttendanceRecord[]>(mockAttendance);
-  const [requests, setRequests] = useState<AttendanceRequest[]>(mockRequests);
+  const { data: records = [], isLoading: recordsLoading } = useGetAttendanceHistoryQuery();
+  const { data: requests = [], isLoading: requestsLoading } = useGetLeavesQuery();
+  const [createLeaveRequest] = useCreateLeaveRequestMutation();
+  
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date(2026, 2, 22)); // Current date mock
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const handleRequestSubmit = (data: any) => {
-    const newRequest: AttendanceRequest = {
-      ...data,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-    setRequests(prev => [newRequest, ...prev]);
-    setShowRequestForm(false);
+  const handleRequestSubmit = async (data: any) => {
+    try {
+      await createLeaveRequest({
+        type: data.type,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        reason: data.reason
+      }).unwrap();
+      setShowRequestForm(false);
+    } catch (error) {
+      console.error('Failed to submit request:', error);
+    }
   };
+
+  if (recordsLoading || requestsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

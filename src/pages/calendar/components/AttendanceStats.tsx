@@ -1,12 +1,25 @@
 import { CheckCircle2, Home, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { useGetAttendanceStatsQuery } from '@/store/api/attendanceSlice';
 
 export function AttendanceStats() {
+  const { data: statsData, isLoading } = useGetAttendanceStatsQuery();
+
   const stats = [
-    { label: 'Days Present', value: '18', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-    { label: 'Work from Home', value: '4', icon: Home, color: 'text-info', bg: 'bg-info/10' },
-    { label: 'On Leave', value: '2', icon: CalendarIcon, color: 'text-warning', bg: 'bg-warning/10' },
-    { label: 'Avg Check-in', value: '09:12', icon: Clock, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Days Present', value: statsData?.daysPresent || '0', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+    { label: 'Work from Home', value: statsData?.wfhCount || '0', icon: Home, color: 'text-info', bg: 'bg-info/10' },
+    { label: 'On Leave', value: statsData?.leaveCount || '0', icon: CalendarIcon, color: 'text-warning', bg: 'bg-warning/10' },
+    { label: 'Avg Check-in', value: statsData?.avgCheckIn || '--:--', icon: Clock, color: 'text-primary', bg: 'bg-primary/10' },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white h-32 rounded-4xl border border-border-subtle shadow-soft" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">

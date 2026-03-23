@@ -4,12 +4,19 @@ import { Dialog } from 'primereact/dialog';
 import { StaffCard } from './components/StaffCard';
 import { StaffTableToolbar } from './components/StaffTableToolbar';
 import { StaffForm } from './components/StaffForm';
-import { mockStaff as initialMockData, type StaffMember } from './hooks/mockStaff';
 import { useStaffFilters } from './hooks/useStaffFilters';
 import { Users, Sparkles } from 'lucide-react';
 
+import { useGetStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } from '@/store/api/staffApiSlice';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import type { StaffMember } from './hooks/mockStaff';
+
 export function StaffList() {
-  const [staff, setStaff] = useState<StaffMember[]>(initialMockData);
+  const { data: staff = [], isLoading, isError } = useGetStaffQuery();
+  const [createStaff] = useCreateStaffMutation();
+  const [updateStaff] = useUpdateStaffMutation();
+  const [deleteStaff] = useDeleteStaffMutation();
+  
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
   
@@ -20,12 +27,33 @@ export function StaffList() {
     setActiveDepartment,
   } = useStaffFilters();
 
-  const filteredStaff = staff.filter((member) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <ProgressSpinner />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-64 text-red-500">
+        Error loading staff directory. Please ensure the backend is running.
+      </div>
+    );
+  }
+
+  const filteredStaff = staff.filter((member: StaffMember) => {
     const matchesDepartment = activeDepartment === 'All' || member.department === activeDepartment;
+    
+    const name = member.username || member.name || '';
+    const role = member.designation || member.role || '';
+    const skills = member.skills || [];
+
     const matchesSearch = 
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesDepartment && matchesSearch;
   });
 
@@ -35,30 +63,54 @@ export function StaffList() {
   };
 
   const handleEdit = (id: string) => {
-    const member = staff.find(m => m.id === id);
+    const member = staff.find((m: any) => String(m.id) === String(id));
     if (member) {
-      setEditingMember(member);
+      setEditingMember({
+        ...member,
+        name: member.username || member.name,
+        role: member.designation || member.role,
+        phone: member.contact_no || member.phone,
+        image: member.image_url || member.image,
+        joinDate: member.join_date || member.joinDate
+      });
       setShowForm(true);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to remove this staff member?')) {
-      setStaff(prev => prev.filter(m => m.id !== id));
+      try {
+        await deleteStaff(id).unwrap();
+        console.log('Member removed');
+      } catch (err) {
+        console.error('Failed to remove member', err);
+      }
     }
   };
 
-  const handleSubmit = (data: Partial<StaffMember>) => {
-    if (editingMember) {
-      setStaff(prev => prev.map(m => m.id === editingMember.id ? { ...m, ...data } as StaffMember : m));
-    } else {
-      const newMember: StaffMember = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-      } as StaffMember;
-      setStaff(prev => [newMember, ...prev]);
+  const handleSubmit = async (data: any) => {
+    try {
+      const payload = {
+        username: data.name,
+        email: data.email,
+        designation: data.role,
+        department: data.department,
+        contact_no: data.phone,
+        status: data.status,
+        join_date: data.joinDate,
+        skills: data.skills,
+        image_url: data.image
+      };
+
+      if (editingMember) {
+        await updateStaff({ id: editingMember.id, ...payload }).unwrap();
+      } else {
+        await createStaff(payload).unwrap();
+      }
+      setShowForm(false);
+    } catch (err) {
+      console.error('Operation failed', err);
     }
-    setShowForm(false);
   };
 
   return (

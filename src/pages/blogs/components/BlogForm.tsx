@@ -6,18 +6,17 @@ import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { type Blog } from '../hooks/mockBlogs';
 import { Input } from '@/components/ui/primitives/Input';
 
 interface BlogFormProps {
-  initialData?: Blog;
-  onSubmit: (data: Partial<Blog>) => void;
+  initialData?: any;
+  onSubmit: (data: any) => void;
   isLoading?: boolean;
 }
 
 export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<Partial<Blog>>(
+  const [formData, setFormData] = useState<any>(
     initialData || {
       title: '',
       content: '',
@@ -85,6 +84,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               variant="primary" 
               className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-wide text-base active:scale-95 transition-all" 
               loading={isLoading}
+              disabled={isLoading}
             >
               {initialData ? 'Update Post' : 'Publish Story'}
             </Button>
@@ -182,7 +182,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               <input 
                 type="text" 
                 value={formData.tags?.join(', ')}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()) })}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map((t: string) => t.trim()) })}
                 placeholder="e.g. SEO, AI, Design"
                 className="w-full px-5 py-3.5 rounded-2xl border border-border-subtle focus:border-primary outline-none transition-all text-sm font-medium"
               />

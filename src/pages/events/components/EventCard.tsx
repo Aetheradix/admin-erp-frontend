@@ -17,6 +17,10 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
     Meeting: 'secondary',
   } as const;
 
+  const eventDate = new Date(event.event_date);
+  const month = eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  const day = eventDate.getDate();
+
   return (
     <div className="group bg-white rounded-4xl border border-border-subtle overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 flex flex-col h-full">
       {/* Visual Header */}
@@ -29,7 +33,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end p-6">
-          <Badge variant={categoryVariants[event.category]} className="rounded-full px-4 py-1! text-[10px] font-black tracking-widest uppercase border-none backdrop-blur-md bg-white/20! text-white!">
+          <Badge variant={categoryVariants[event.category] || 'primary'} className="rounded-full px-4 py-1! text-[10px] font-black tracking-widest uppercase border-none backdrop-blur-md bg-white/20! text-white!">
             {event.category}
           </Badge>
         </div>
@@ -37,10 +41,10 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
         {/* Date Tablet */}
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md rounded-3xl p-3 flex flex-col items-center min-w-15 shadow-sm border border-white/20">
           <span className="text-[10px] font-black text-primary uppercase tracking-tighter leading-none mb-1">
-            {event.date.split(' ')[0]}
+            {month}
           </span>
           <span className="text-xl font-black text-foreground leading-none">
-            {event.date.split(' ')[1].replace(',', '')}
+            {day}
           </span>
         </div>
 
@@ -78,24 +82,24 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
             </p>
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-y-3 pt-4 border-t border-border-subtle/50">
-           <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-tighter">
-             <Clock size={14} className="text-primary" />
-             <span className="truncate">{event.time.split(' - ')[0]}</span>
-           </div>
-           <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-tighter">
-             <MapPin size={14} className="text-primary" />
-             <span className="truncate">{event.location.split(',')[0]}</span>
-           </div>
-           <div className="flex items-center gap-2 text-muted font-black text-[10px] uppercase tracking-widest">
-             <Users size={14} />
-             <span>{event.attendees}+ Joined</span>
-           </div>
-           <div className="flex items-center gap-2 text-muted font-black text-[10px] uppercase tracking-widest">
-             <span className="w-1 h-1 rounded-full bg-primary/40" />
-             <span className="truncate">{event.organizer}</span>
-           </div>
-        </div>
+         <div className="mt-auto grid grid-cols-2 gap-y-3 pt-4 border-t border-border-subtle/50">
+            <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-tighter">
+              <Clock size={14} className="text-primary" />
+              <span className="truncate">{event.time?.split(' - ')[0] || event.time || 'TBD'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-tighter">
+              <MapPin size={14} className="text-primary" />
+              <span className="truncate">{event.location?.split(',')[0] || event.location || 'Remote'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted font-black text-[10px] uppercase tracking-widest">
+              <Users size={14} />
+              <span>{event.attendees || 0}+ Joined</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted font-black text-[10px] uppercase tracking-widest">
+              <span className="w-1 h-1 rounded-full bg-primary/40" />
+              <span className="truncate">{event.organizer || 'Team'}</span>
+            </div>
+         </div>
 
         <Button variant="secondary" className="w-full mt-2 h-12 rounded-3xl! gap-2 font-black text-xs uppercase tracking-widest border-border-subtle! group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
           Register Now

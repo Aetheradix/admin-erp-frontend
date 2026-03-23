@@ -21,18 +21,18 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
         <button 
-          onClick={() => onEdit?.(member.id)}
+          onClick={() => onEdit?.(String(member.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Edit Profile"
-          aria-label={`Edit ${member.name}'s profile`}
+          aria-label={`Edit ${member.username || member.name}'s profile`}
         >
           <Edit2 size={16} />
         </button>
         <button 
-          onClick={() => onDelete?.(member.id)}
+          onClick={() => onDelete?.(String(member.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Remove Member"
-          aria-label={`Remove ${member.name} from staff`}
+          aria-label={`Remove ${member.username || member.name} from staff`}
         >
           <Trash2 size={16} />
         </button>
@@ -42,7 +42,13 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
         {/* Avatar with Status Indicator */}
         <div className="relative">
           <div className="w-24 h-24 rounded-4xl overflow-hidden border-4 border-surface-subtle shadow-inner">
-            <img src={member.image} alt={member.name} width={96} height={96} className="w-full h-full object-cover" />
+            <img 
+              src={member.image_url || member.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${member.username || member.name}`} 
+              alt={member.username || member.name} 
+              width={96} 
+              height={96} 
+              className="w-full h-full object-cover" 
+            />
           </div>
           <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status)} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
         </div>
@@ -50,10 +56,10 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
         {/* Identity */}
         <div className="flex flex-col gap-1">
           <h3 className="text-xl font-black text-foreground group-hover:text-primary transition-colors duration-300">
-            {member.name}
+            {member.username || member.name}
           </h3>
           <span className="text-xs font-black text-primary uppercase tracking-widest bg-primary/5 px-4 py-1.25 rounded-full">
-            {member.role}
+            {member.designation || member.role}
           </span>
         </div>
 
@@ -66,7 +72,7 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
           <div className="h-4 w-px bg-border-subtle/50" />
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-black text-muted uppercase tracking-tighter">Joined</span>
-            <span className="text-xs font-bold text-foreground">{member.joinDate}</span>
+            <span className="text-xs font-bold text-foreground">{member.join_date || member.joinDate}</span>
           </div>
         </div>
 
