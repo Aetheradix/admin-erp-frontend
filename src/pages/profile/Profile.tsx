@@ -1,80 +1,22 @@
-import { useState, useEffect } from 'react';
 import { User, Mail, Phone, Briefcase, Contact, ShieldCheck, Settings, LogOut, Camera, Sparkles, Edit3, Shield } from 'lucide-react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProfileForm } from './components/ProfileForm';
-import { useAuth } from '@/context/AuthContext';
-import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
+import { useProfile } from './hooks/useProfile';
 import { Dialog } from 'primereact/dialog';
 import { AdminElevationRequest } from '../staff/components/AdminElevationRequest';
 
 const Profile = () => {
-  const { user: authUser, logout: authLogout } = useAuth();
-  const isAdmin = authUser?.role === 'admin';
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [showElevationDialog, setShowElevationDialog] = useState(false);
-  
-  // Local state for the displayed user data, initialized from authUser
-  const [user, setUser] = useState({
-    name: authUser?.username || '',
-    designation: authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
-    employeeId: authUser?.employee_id || 'N/A',
-    email: authUser?.email || '',
-    contactNo: authUser?.contact_no || '',
-    department: 'General', 
-    joinDate: 'Jan 2024',
-    image: authUser?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`
-  });
-
-
-
-  // Sync local user state with authUser updates
-  useEffect(() => {
-    if (authUser) {
-      setUser(prev => ({
-        ...prev,
-        name: authUser.username,
-        designation: authUser.designation || 'Staff Member',
-        employeeId: authUser.employee_id || 'N/A',
-        email: authUser.email || '',
-        contactNo: authUser.contact_no || '',
-        image: authUser.image_url || prev.image
-      }));
-    }
-  }, [authUser]);
-
-  const handleEditSave = async (updatedData: any) => {
-    try {
-      const payload = {
-        username: updatedData.name,
-        email: updatedData.email,
-        contact_no: updatedData.contactNo,
-        designation: updatedData.designation,
-      };
-      
-      const result = await updateProfile(payload).unwrap();
-      
-      // Update local storage to persist changes across reloads
-      const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const updatedUser = { ...existingUser, ...result.user };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      setIsEditing(false);
-      // Success will be reflected via auth context re-syncing from localStorage if implemented
-      // For now, we manually update if needed or just wait for next load.
-      // But we call window.location.reload() to ensure global state is refreshed easily
-      window.location.reload();
-    } catch (err: any) {
-      console.error('Failed to update profile:', err);
-      alert(err.data?.message || 'Failed to update profile');
-    }
-  };
-
-  const handleLogout = () => {
-    authLogout();
-    window.location.href = '/auth/login';
-  };
+  const {
+    user,
+    isAdmin,
+    isEditing,
+    setIsEditing,
+    showElevationDialog,
+    setShowElevationDialog,
+    handleEditSave,
+    handleLogout
+  } = useProfile();
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -93,7 +35,6 @@ const Profile = () => {
         {/* Profile Sidebar */}
         <div className="flex flex-col gap-8">
           <div className="bg-white p-10 rounded-4xl border border-border-subtle shadow-soft flex flex-col items-center text-center gap-6 relative overflow-hidden group">
-            {/* Background Accent */}
             <div className="absolute top-0 left-0 w-full h-32 bg-primary/5 group-hover:bg-primary/10 transition-colors duration-500" />
             
             <div className="relative mt-8">
@@ -171,7 +112,6 @@ const Profile = () => {
                </div>
             </div>
           )}
-
         </div>
 
         {/* Profile Details Content */}
@@ -217,15 +157,13 @@ const Profile = () => {
                    <p className="text-xs font-medium text-muted-foreground max-w-md">
                      * Some information is managed by the HR department. Contact the system administrator for changes to your core identity records.
                    </p>
-                   {!isEditing && (
-                      <Button 
-                      variant="primary" 
-                      onClick={() => setIsEditing(true)}
-                      className="h-12 px-8 rounded-3xl! font-black tracking-widest shadow-lg shadow-primary/20"
-                      >
-                        Apply for Changes
-                      </Button>
-                   )}
+                   <Button 
+                   variant="primary" 
+                   onClick={() => setIsEditing(true)}
+                   className="h-12 px-8 rounded-3xl! font-black tracking-widest shadow-lg shadow-primary/20"
+                   >
+                     Apply for Changes
+                   </Button>
                 </div>
               </>
             ) : (
@@ -288,7 +226,6 @@ const Profile = () => {
         <AdminElevationRequest onSuccess={() => setShowElevationDialog(false)} />
       </Dialog>
     </div>
-
   );
 };
 

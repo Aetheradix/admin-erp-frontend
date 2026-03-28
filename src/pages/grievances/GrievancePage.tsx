@@ -1,36 +1,26 @@
-import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
+import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
+import { EmptySlate } from '@/components/ui/composed/EmptySlate';
+import { ExplorerBar } from '@/components/ui/composed/ExplorerBar';
 import { Dialog } from 'primereact/dialog';
 import { GrievanceCard } from './components/GrievanceCard';
 import { GrievanceForm } from './components/GrievanceForm';
-import { useGetGrievancesQuery, useSubmitGrievanceMutation } from '@/store/api/grievanceApiSlice';
+import { useGrievancePage } from './hooks/useGrievancePage';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import type { Grievance } from './hooks/mockGrievances';
-import { Scale, Sparkles, Filter, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/primitives/Button';
-import { Tabs } from '@/components/ui/primitives/Tabs';
+import { Scale, AlertTriangle } from 'lucide-react';
 
 export function GrievancePage() {
-  const { data: grievances = [], isLoading, isError } = useGetGrievancesQuery();
-  const [submitGrievance] = useSubmitGrievanceMutation();
-  
-  const [showForm, setShowForm] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('All');
-
-  const CATEGORIES = ['All', 'Work Environment', 'Management', 'Harassment', 'Software/Tools', 'Other'];
-
-  const filteredGrievances = grievances.filter((g: Grievance) => 
-    activeCategory === 'All' || g.category === activeCategory
-  );
-
-  const handleGrievanceSubmit = async (data: Partial<Grievance>) => {
-    try {
-      await submitGrievance(data).unwrap();
-      setShowForm(false);
-    } catch (err) {
-      console.error('Failed to submit grievance:', err);
-    }
-  };
+  const {
+    grievances,
+    filteredGrievances,
+    isLoading,
+    showForm,
+    setShowForm,
+    activeCategory,
+    setActiveCategory,
+    CATEGORIES,
+    handleGrievanceSubmit
+  } = useGrievancePage();
 
   if (isLoading) {
     return (
@@ -42,7 +32,6 @@ export function GrievancePage() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
       <PageHeader
         title="Grievance Management"
         description="Share your concerns in a safe, confidential environment. We are committed to your well-being and psychological safety."
@@ -54,7 +43,6 @@ export function GrievancePage() {
         }}
       />
 
-      {/* Trust Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 p-8 rounded-[40px] bg-white border border-border-subtle shadow-soft flex items-center gap-6">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
@@ -74,76 +62,37 @@ export function GrievancePage() {
         </div>
       </div>
 
-      {/* Toolbar & Filters */}
       <div className="flex flex-col gap-8">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-white p-6 rounded-[40px] border border-border-subtle shadow-soft transition-all duration-500 hover:shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-foreground uppercase tracking-widest">Support Portal</h4>
-              <p className="text-xs text-muted font-bold italic">Browsing {filteredGrievances.length} status updates</p>
-            </div>
-          </div>
+        <ExplorerBar
+          title="Support Portal"
+          countLabel={`Browsing ${filteredGrievances.length} status updates`}
+          tabs={CATEGORIES}
+          activeTab={activeCategory}
+          onTabChange={setActiveCategory}
+        />
 
-          <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2 lg:pb-0">
-            <Tabs 
-              items={CATEGORIES}
-              activeItem={activeCategory}
-              onItemChange={setActiveCategory}
-            />
-          </div>
-
-          <Button variant="secondary" className="h-12 px-6 rounded-2xl! gap-2 border-border-subtle!">
-            <Filter size={16} />
-            <span className="font-bold text-xs uppercase tracking-widest">Filter Status</span>
-          </Button>
-        </div>
-
-        {/* Grievances Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredGrievances.map((grievance) => (
             <GrievanceCard key={grievance.id} grievance={grievance} />
           ))}
 
-          {/* Empty State */}
           {filteredGrievances.length === 0 && (
-            <div className="col-span-full py-32 flex flex-col items-center justify-center text-center gap-6 bg-white/50 backdrop-blur-sm rounded-[48px] border-2 border-dashed border-border-strong">
-              <div className="w-24 h-24 rounded-full bg-surface-subtle flex items-center justify-center text-muted/30">
-                <AlertTriangle size={48} />
-              </div>
-              <div className="max-w-md px-6">
-                <h3 className="text-2xl font-black text-foreground mb-2">Clear Records</h3>
-                <p className="text-muted font-medium leading-relaxed">
-                   No concerns match the current filter. Our environment seems to be functioning optimally!
-                </p>
-              </div>
-            </div>
+            <EmptySlate
+              icon={AlertTriangle}
+              title="Clear Records"
+              message="No concerns match the current filter. Our environment seems to be functioning optimally!"
+            />
           )}
         </div>
       </div>
 
-      {/* Governance Footer */}
-      <div className="p-10 rounded-[48px] bg-primary text-white relative overflow-hidden group">
-        <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-foreground/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
-          <div className="max-w-2xl flex flex-col gap-4">
-            <h2 className="text-3xl font-black leading-tight tracking-tight">
-              A Healthier Future <span className="text-foreground">Together</span>
-            </h2>
-            <p className="text-white/80 text-lg font-medium leading-relaxed">
-              Your feedback is essential for our growth as an organization. By sharing your concerns, you 
-              directly contribute to a better, more inclusive workspace for everyone.
-            </p>
-          </div>
-          <Button variant="secondary" className="h-14 px-10 rounded-2xl! font-black tracking-widest bg-white text-primary border-none">
-            Our Rulebook
-          </Button>
-        </div>
-      </div>
+      <CalloutBanner
+        color="primary"
+        title={<>A Healthier Future <span className="text-foreground">Together</span></>}
+        description="Your feedback is essential for our growth as an organization. By sharing your concerns, you directly contribute to a better, more inclusive workspace for everyone."
+        action={{ label: 'Our Rulebook' }}
+      />
 
-      {/* Grievance Modal */}
       <Dialog
         visible={showForm}
         onHide={() => setShowForm(false)}

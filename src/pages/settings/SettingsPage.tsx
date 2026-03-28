@@ -1,6 +1,7 @@
-import { useState } from 'react';
+
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { SettingItem, SettingSection } from './components/SettingUI';
+import { useSettings } from './hooks/useSettings';
 import { 
   Bell, Shield, Palette, Globe, Mail, Lock, Moon, Sun, 
   Monitor, Database, Share2, Trash2, Cpu
@@ -11,25 +12,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { classNames } from 'primereact/utils';
 
 export function SettingsPage() {
-  const [settings, setSettings] = useState({
-    notifications: true,
-    marketingEmails: false,
-    twoFactor: true,
-    darkMode: false,
-    language: 'English',
-    autoArchive: true,
-  });
-
-  const LANGUAGES = [
-    { label: 'English (US)', value: 'English' },
-    { label: 'Hindi', value: 'Hindi' },
-    { label: 'German', value: 'German' },
-    { label: 'French', value: 'French' },
-  ];
-
-  const updateSetting = (key: keyof typeof settings, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-  };
+  const { settings, updateSetting, LANGUAGES, THEME_COLORS } = useSettings();
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -198,7 +181,7 @@ export function SettingsPage() {
             description="Customize the primary highlights of the system interface."
             control={
                <div className="flex items-center gap-2">
-                 {['#F05D5E', '#3B82F6', '#10B981', '#F59E0B'].map(color => (
+                 {THEME_COLORS.map(color => (
                    <div 
                     key={color}
                     className="w-6 h-6 rounded-full cursor-pointer border-2 border-white shadow-sm ring-1 ring-border-subtle hover:scale-125 transition-transform"

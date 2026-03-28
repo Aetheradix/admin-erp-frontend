@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
+import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
+import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { OrgChart } from './components/OrgChart';
 import { ProjectCard } from './components/ProjectCard';
 import { mockHierarchy } from './hooks/mockStats';
@@ -90,30 +92,23 @@ export function StatsPage() {
                 <ProjectCard key={project.id} project={project} />
               ))}
               {archivedProjects.length === 0 && (
-                <div className="col-span-full py-32 flex flex-col items-center justify-center text-center opacity-40">
-                  <ArchiveIcon size={48} />
-                  <p className="text-sm font-black uppercase tracking-widest mt-4">Archive is clean</p>
-                </div>
+                <EmptySlate
+                  variant="ghost"
+                  icon={ArchiveIcon}
+                  title="Archive is clean"
+                  message=""
+                />
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Vision Statement */}
-      <div className="p-12 rounded-[48px] bg-foreground text-white relative overflow-hidden group">
-        <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className="relative z-10 flex flex-col gap-6">
-          <h2 className="text-4xl font-black leading-tight tracking-tight">
-            Charting the <span className="text-primary">Unknown</span>
-          </h2>
-          <p className="text-muted-foreground text-xl font-medium leading-relaxed max-w-3xl">
-            Our organizational growth is driven by transparency and iterative excellence. 
-            By visualizing our structure and project lifecycles, we empower every team member 
-            to understand their impact and align with our global vision.
-          </p>
-        </div>
-      </div>
+      <CalloutBanner
+        padding="lg"
+        title={<>Charting the <span className="text-primary">Unknown</span></>}
+        description="Our organizational growth is driven by transparency and iterative excellence. By visualizing our structure and project lifecycles, we empower every team member to understand their impact and align with our global vision."
+      />
     </div>
   );
 }

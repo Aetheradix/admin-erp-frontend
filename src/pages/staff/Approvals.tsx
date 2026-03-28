@@ -1,53 +1,30 @@
-import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { DataTable } from '@/components/ui/composed/DataTable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
-import { useGetLeavesQuery, useGetLeaveStatsQuery, useUpdateLeaveStatusMutation } from '@/store/api/leaveSlice';
 import { ApprovalDialog } from './components/ApprovalDialog';
-import { Clock, CheckCircle2, XCircle, ListTodo, ShieldCheck, AlertCircle } from 'lucide-react';
+import { ApprovalStats } from './components/ApprovalStats';
+import { useApprovals } from './hooks/useApprovals';
+import { Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import { useNavigate } from 'react-router-dom';
 
 export function Approvals() {
   const navigate = useNavigate();
-  const { data: leaves = [], isLoading } = useGetLeavesQuery();
-  const { data: stats } = useGetLeaveStatsQuery();
-  const [updateStatus, { isLoading: isUpdating }] = useUpdateLeaveStatusMutation();
-  
-  const pendingLeaves = leaves.filter((l: any) => l.status === 'Pending');
-
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-
-  const [showApprovalDialog, setShowApprovalDialog] = useState(false);
-  const [actionType, setActionType] = useState<'Approved' | 'Rejected'>('Approved');
-
-  const counts = stats?.byStatus || {};
-
-
-  const handleAction = (request: any, type: 'Approved' | 'Rejected') => {
-    setSelectedRequest(request);
-    setActionType(type);
-    setShowApprovalDialog(true);
-  };
-
-  const onConfirmAction = async (comment: string) => {
-    if (!selectedRequest) return;
-    
-    try {
-      await updateStatus({
-        id: selectedRequest.id,
-        status: actionType,
-        comment
-      }).unwrap();
-      setShowApprovalDialog(false);
-      setSelectedRequest(null);
-    } catch (err) {
-      console.error('Failed to update status', err);
-    }
-  };
+  const {
+    pendingLeaves,
+    counts,
+    isLoading,
+    isUpdating,
+    selectedRequest,
+    showApprovalDialog,
+    actionType,
+    setShowApprovalDialog,
+    handleAction,
+    onConfirmAction
+  } = useApprovals();
 
   const statusTemplate = (rowData: any) => {
     const status = rowData.status;
@@ -100,7 +77,6 @@ export function Approvals() {
         </Button>
       </div>
     );
-
   };
 
   const userTemplate = (rowData: any) => (
@@ -128,55 +104,11 @@ export function Approvals() {
           icon: 'pi pi-history',
           className: 'px-6! py-3! rounded-2xl! font-black! tracking-widest! text-[10px]!'
         }}
-
-
       />
 
-
-      {/* Stats Summary Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-        <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[32px] border border-border-subtle shadow-soft transition-all hover:shadow-lg hover:-translate-y-1 group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-warning/10 text-warning flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ListTodo size={24} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-3xl font-black text-foreground">{counts.Pending || 0}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted">Pending Review</span>
-            </div>
-          </div>
-          <p className="text-[10px] text-muted font-bold italic leading-relaxed">Requests awaiting administrative decision.</p>
-        </div>
-
-        <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[32px] border border-border-subtle shadow-soft transition-all hover:shadow-lg hover:-translate-y-1 group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-success/10 text-success flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ShieldCheck size={24} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-3xl font-black text-foreground">{counts.Approved || 0}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted">Approved Requests</span>
-            </div>
-          </div>
-          <p className="text-[10px] text-muted font-bold italic leading-relaxed">Successfully processed and admitted applications.</p>
-        </div>
-
-        <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[32px] border border-border-subtle shadow-soft transition-all hover:shadow-lg hover:-translate-y-1 group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-error/10 text-error flex items-center justify-center group-hover:scale-110 transition-transform">
-              <AlertCircle size={24} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-3xl font-black text-foreground">{counts.Rejected || 0}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted">Rejected Requests</span>
-            </div>
-          </div>
-          <p className="text-[10px] text-muted font-bold italic leading-relaxed">Applications that did not meet specific criteria.</p>
-        </div>
-      </div>
+      <ApprovalStats counts={counts} />
 
       <div className="bg-white/50 backdrop-blur-xl rounded-[40px] border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
-
         <DataTable 
           value={pendingLeaves} 
           loading={isLoading}

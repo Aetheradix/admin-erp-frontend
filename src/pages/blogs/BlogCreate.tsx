@@ -1,20 +1,9 @@
-import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { BlogForm } from './components/BlogForm';
-import { useCreateBlogMutation } from '@/store/api/blogSlice';
+import { useBlogs } from './hooks/useBlogs';
 
 const BlogCreate = () => {
-  const navigate = useNavigate();
-  const [createBlog, { isLoading }] = useCreateBlogMutation();
-
-  const handleSave = async (data: any) => {
-    try {
-      await createBlog(data).unwrap();
-      navigate('/blogs');
-    } catch (error) {
-      console.error('Failed to create blog:', error);
-    }
-  };
+  const { handleSave, isLoading } = useBlogs();
 
   return (
     <div className="flex flex-col gap-8">

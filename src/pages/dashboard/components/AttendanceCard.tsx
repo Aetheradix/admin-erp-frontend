@@ -1,76 +1,19 @@
 import { Button } from '@/components/ui/primitives/Button';
-import { useCheckInMutation, useCheckOutMutation, useGetAttendanceStatusQuery } from '@/store/api/attendanceSlice';
-import { useSubmitMoodMutation } from '@/store/api/moodSlice';
-import { LogIn, LogOut, Smile, Meh, Frown } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { LogIn, LogOut } from 'lucide-react';
+import { useAttendance } from '../hooks/useAttendance';
+import { MoodSelector } from './MoodSelector';
+import { formatTime, formatFullDate } from '@/utils/date';
 
 export default function AttendanceCard() {
-  const [time, setTime] = useState(new Date());
-  
-  const { data: status, isLoading: isFetching } = useGetAttendanceStatusQuery();
-  const [checkIn, { isLoading: isCheckingIn }] = useCheckInMutation();
-  const [checkOut, { isLoading: isCheckingOut }] = useCheckOutMutation();
-  
-  const [submitMood, { isLoading: isSubmittingMood }] = useSubmitMoodMutation();
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
-
-  const MOODS = [
-    { value: 1, icon: Frown, label: 'Awful', color: 'text-error' },
-    { value: 2, icon: Frown, label: 'Bad', color: 'text-warning' },
-    { value: 3, icon: Meh, label: 'Okay', color: 'text-info' },
-    { value: 4, icon: Smile, label: 'Good', color: 'text-success' },
-    { value: 5, icon: Smile, label: 'Great', color: 'text-primary' },
-  ];
-
-  const handleMoodSubmit = async (score: number) => {
-    setSelectedMood(score);
-    try {
-      await submitMood({
-        mood_score: score,
-        stress_level: 3, // Default mid-level
-        comments: `Feeling ${MOODS.find(m => m.value === score)?.label}`
-      }).unwrap();
-    } catch (err) {
-      console.error('Mood submission failed:', err);
-    }
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    }).toUpperCase();
-  };
-
-  const handleAttendance = async () => {
-    try {
-      if (status?.status === 'checked-in') {
-        await checkOut().unwrap();
-      } else {
-        await checkIn({ remark: 'Manual check-in from dashboard' }).unwrap();
-      }
-    } catch (error) {
-      console.error('Attendance action failed:', error);
-    }
-  };
-
-  const isLoading = isFetching || isCheckingIn || isCheckingOut;
+  const {
+    time,
+    status,
+    selectedMood,
+    isLoading,
+    isSubmittingMood,
+    handleAttendance,
+    logMood
+  } = useAttendance();
 
   return (
     <div className="bg-white rounded-4xl p-8 border border-border-subtle shadow-soft relative overflow-hidden flex flex-col items-center justify-center min-h-85">
@@ -78,7 +21,7 @@ export default function AttendanceCard() {
         <div className="w-1.5 h-6 bg-primary rounded-full"></div>
         <div>
           <h2 className="text-sm font-bold text-foreground">Attendance Center</h2>
-          <p className="text-[10px] font-medium text-muted">{formatDate(time)}</p>
+          <p className="text-[10px] font-medium text-muted">{formatFullDate(time)}</p>
         </div>
       </div>
       
@@ -107,37 +50,11 @@ export default function AttendanceCard() {
         <span className="font-bold tracking-wide">{status?.status === 'checked-in' ? 'Check Out' : 'Check In'}</span>
       </Button>
 
-      {/* Mood Check-in Section */}
-      <div className="mt-8 w-full">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] font-black text-muted uppercase tracking-widest">How are you feeling?</p>
-          {selectedMood && (
-            <span className="text-[10px] font-bold text-success flex items-center gap-1 animate-in fade-in zoom-in">
-              <div className="w-1 h-1 rounded-full bg-success"></div>
-              LOGGED
-            </span>
-          )}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          {MOODS.map((m) => (
-            <button
-              key={m.value}
-              onClick={() => handleMoodSubmit(m.value)}
-              disabled={isSubmittingMood}
-              className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 border ${
-                selectedMood === m.value 
-                  ? 'bg-primary/5 border-primary/20 shadow-sm' 
-                  : 'bg-surface-subtle border-transparent hover:border-border-subtle hover:bg-surface-elevated'
-              }`}
-            >
-              <m.icon size={20} className={selectedMood === m.value ? 'text-primary' : 'text-muted/60'} />
-              <span className={`text-[8px] font-bold uppercase tracking-tighter ${selectedMood === m.value ? 'text-primary' : 'text-muted'}`}>
-                {m.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <MoodSelector 
+        selectedMood={selectedMood} 
+        isSubmittingMood={isSubmittingMood} 
+        onMoodSelect={logMood} 
+      />
 
       <div className="mt-8 grid grid-cols-2 gap-8 w-full border-t border-border-subtle pt-6">
         <div className="flex flex-col items-center border-r border-border-subtle">

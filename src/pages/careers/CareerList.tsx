@@ -1,74 +1,30 @@
-import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
+import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
+import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { Dialog } from 'primereact/dialog';
 import { CareerCard } from './components/CareerCard';
 import { CareerTableToolbar } from './components/CareerTableToolbar';
 import { CareerForm } from './components/CareerForm';
-import { useCareerFilters } from './hooks/useCareerFilters';
-import { Briefcase, Sparkles } from 'lucide-react';
-import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerApiSlice';
+import { useCareerList } from './hooks/useCareerList';
+import { Sparkles, Briefcase } from 'lucide-react';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import type { Career } from './hooks/mockCareers';
 
 export function CareerList() {
-  const { data: careers = [], isLoading, isError } = useGetCareersQuery();
-  const [createCareer] = useCreateCareerMutation();
-  const [updateCareer] = useUpdateCareerMutation();
-  const [deleteCareer] = useDeleteCareerMutation();
-  
-  const [showForm, setShowForm] = useState(false);
-  const [editingCareer, setEditingCareer] = useState<Career | null>(null);
-  
-  const { searchQuery, setSearchQuery, activeDepartment, setActiveDepartment } = useCareerFilters();
-
-  const filteredCareers = careers.filter((career: Career) => {
-    const matchesDepartment = activeDepartment === 'All' || career.department === activeDepartment;
-    const title = career.title || '';
-    const description = career.description || '';
-    const matchesSearch = 
-      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesDepartment && matchesSearch;
-  });
-
-  const handleCreate = () => {
-    setEditingCareer(null);
-    setShowForm(true);
-  };
-
-  const handleEdit = (id: string) => {
-    const career = careers.find((c: Career) => String(c.id) === String(id));
-    if (career) {
-      setEditingCareer({
-        ...career,
-        postedDate: career.postedDate || (career as any).posted_date
-      });
-      setShowForm(true);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to remove this position?')) {
-      try {
-        await deleteCareer(id).unwrap();
-      } catch (err) {
-        console.error('Failed to delete position:', err);
-      }
-    }
-  };
-
-  const handleSubmit = async (data: Partial<Career>) => {
-    try {
-      if (editingCareer) {
-        await updateCareer({ id: editingCareer.id, ...data }).unwrap();
-      } else {
-        await createCareer(data).unwrap();
-      }
-      setShowForm(false);
-    } catch (err) {
-      console.error('Failed to save position:', err);
-    }
-  };
+  const {
+    filteredCareers,
+    isLoading,
+    showForm,
+    setShowForm,
+    editingCareer,
+    searchQuery,
+    setSearchQuery,
+    activeDepartment,
+    setActiveDepartment,
+    handleCreate,
+    handleEdit,
+    handleDelete,
+    handleSubmit
+  } = useCareerList();
 
   if (isLoading) {
     return (
@@ -80,7 +36,6 @@ export function CareerList() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
       <PageHeader
         title="Impact Careers"
         description="Join a team of visionaries and builders shaping the future of enterprise intelligence."
@@ -92,9 +47,7 @@ export function CareerList() {
         }}
       />
 
-      {/* Main Content Area */}
       <div className="flex flex-col gap-8">
-        {/* Filtering & Search Toolbar */}
         <CareerTableToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -102,7 +55,6 @@ export function CareerList() {
           onDepartmentChange={setActiveDepartment}
         />
 
-        {/* Results Info */}
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-3xl bg-primary/10 flex items-center justify-center text-primary">
@@ -117,7 +69,6 @@ export function CareerList() {
           </div>
         </div>
 
-        {/* Career Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {filteredCareers.map((career) => (
             <CareerCard
@@ -129,53 +80,26 @@ export function CareerList() {
             />
           ))}
 
-          {/* Empty State */}
           {filteredCareers.length === 0 && (
-            <div className="col-span-full py-32 rounded-4xl border-2 border-dashed border-border-strong bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center text-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-surface-subtle flex items-center justify-center text-muted/30">
-                <Briefcase size={48} />
-              </div>
-              <div className="max-w-md px-6">
-                <h3 className="text-2xl font-black text-foreground mb-2">No Matching Roles</h3>
-                <p className="text-muted font-medium leading-relaxed">
-                  We couldn't find any positions matching your criteria. Try adjusting your filters or 
-                  <span className="text-primary cursor-pointer hover:underline mx-1">join our talent network</span>
-                  to stay updated on future openings.
-                </p>
-              </div>
-            </div>
+            <EmptySlate
+              icon={Briefcase}
+              title="No Matching Roles"
+              message={
+                <>We couldn't find any positions matching your criteria. Try adjusting your filters or <span className="text-primary cursor-pointer hover:underline mx-1">join our talent network</span> to stay updated on future openings.</>
+              }
+            />
           )}
         </div>
       </div>
 
-      {/* Values / Perks Banner */}
-      <div className="mt-8 p-12 rounded-4xl bg-foreground text-white relative overflow-hidden group">
-        <div className="absolute right-0 top-0 w-1/2 h-full bg-linear-to-l from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
-          <div className="max-w-xl flex flex-col gap-4">
-            <h2 className="text-4xl font-black leading-tight tracking-tight">
-              Beyond Just a Job. <br />
-              <span className="text-primary">A Culture of Excellence.</span>
-            </h2>
-            <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-              We offer more than just competitive compensation. From visionary projects to a supportive ecosystem, 
-              we provide the environment for you to do the best work of your life.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-8 w-full lg:w-auto">
-            <div className="flex flex-col gap-1">
-              <span className="text-3xl font-black text-primary">100%</span>
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Remote-First</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-3xl font-black text-primary">Equity</span>
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Ownership Stake</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CalloutBanner
+        padding="lg"
+        title={<>Beyond Just a Job. <br /><span className="text-primary">A Culture of Excellence.</span></>}
+        description="We offer more than just competitive compensation. From visionary projects to a supportive ecosystem, we provide the environment for you to do the best work of your life."
+        action={{ label: 'Meet the Team' }}
+        className="mt-8"
+      />
 
-      {/* Career Form Modal */}
       <Dialog
         visible={showForm}
         onHide={() => setShowForm(false)}

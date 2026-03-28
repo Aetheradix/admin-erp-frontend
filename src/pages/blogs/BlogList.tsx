@@ -1,18 +1,16 @@
-import { useNavigate } from 'react-router-dom';
 import { Column } from 'primereact/column';
 import { DataTable } from '@/components/ui/composed/DataTable';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { useBlogFilters } from './hooks/useBlogFilters';
+import { useBlogs } from './hooks/useBlogs';
 import { BlogTableToolbar } from './components/BlogTableToolbar';
 import { BLOG_COLUMNS } from './components/Blogcolumnconfig';
-import { useGetBlogsQuery, useDeleteBlogMutation } from '@/store/api/blogSlice';
-import { ProgressSpinner } from 'primereact/progressspinner';
 
 const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name'];
 
 const BlogList = () => {
-  const navigate = useNavigate();
   const { 
     searchValue, 
     activeCategory, 
@@ -21,18 +19,7 @@ const BlogList = () => {
     handleCategoryChange 
   } = useBlogFilters();
 
-  const { data: blogs = [], isLoading, isError } = useGetBlogsQuery();
-  const [deleteBlog] = useDeleteBlogMutation();
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this story?')) {
-      try {
-        await deleteBlog(id).unwrap();
-      } catch (error) {
-        console.error('Failed to delete blog:', error);
-      }
-    }
-  };
+  const { blogs, isLoading, isError, handleDelete, navigate } = useBlogs();
 
   if (isLoading) {
     return (
@@ -76,7 +63,7 @@ const BlogList = () => {
           filters={filters}
           globalFilterFields={GLOBAL_FILTER_FIELDS}
           paginator
-          rows={5}
+          rows={10}
           className="blog-datatable border-none"
           scrollable={true}
           breakpoint="960px"
