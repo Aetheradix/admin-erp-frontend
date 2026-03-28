@@ -11,7 +11,7 @@ interface BlogTableToolbarProps {
   onCategoryChange: (category: string) => void;
 }
 
-const CATEGORIES = ['All', ...new Set(mockBlogs.map(blog => blog.category))];
+const CATEGORIES = ['All', ...new Set(mockBlogs.map(blog => blog.category).filter(Boolean))] as string[];
 
 export function BlogTableToolbar({ 
   searchValue, 

@@ -8,6 +8,7 @@ const EventsModule = lazy(() => import('@/pages/events'));
 const GalleryModule = lazy(() => import('@/pages/gallery'));
 const CareersModule = lazy(() => import('@/pages/careers'));
 const StaffModule = lazy(() => import('@/pages/staff'));
+const CheckInModule = lazy(() => import('@/pages/checkin'));
 const AttendanceModule = lazy(() => import('@/pages/calendar'));
 const FinanceModule = lazy(() => import('@/pages/finance'));
 const GrievanceModule = lazy(() => import('@/pages/grievances'));
@@ -55,6 +56,7 @@ const AppFeature = () => {
         <Route path="/events/*" element={isAllowed('Events') ? <EventsModule /> : <Navigate to="/" replace />} />
         <Route path="/careers/*" element={isAllowed('Careers') ? <CareersModule /> : <Navigate to="/" replace />} />
         <Route path="/staff/*" element={<StaffModule />} /> {/* Usually admin only anyway */}
+        <Route path="/checkin/*" element={<CheckInModule />} />
         <Route path="/calendar/*" element={isAllowed('Attendance') ? <AttendanceModule /> : <Navigate to="/" replace />} />
         <Route path="/finance/*" element={isAllowed('Finance') ? <FinanceModule /> : <Navigate to="/" replace />} />
         <Route path="/grievances/*" element={isAllowed('Grievances') ? <GrievanceModule /> : <Navigate to="/" replace />} />

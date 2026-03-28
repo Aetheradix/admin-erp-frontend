@@ -1,4 +1,3 @@
-import AttendanceCard from './components/AttendanceCard';
 import CalendarCard from './components/CalendarCard';
 import ProfitChartCard from './components/ProfitChartCard';
 import { ProjectList } from './components/ProjectList';
@@ -20,14 +19,6 @@ const Dashboard = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-          >
-            <AttendanceCard />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
             className="flex-1"
           >
             <CalendarCard />

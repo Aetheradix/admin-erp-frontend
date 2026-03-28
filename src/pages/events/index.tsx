@@ -12,7 +12,7 @@ import type { ERPEvent } from './hooks/mockEvents';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 const Events = () => {
-  const { data: events = [], isLoading, isError } = useGetEventsQuery();
+  const { data: events = [], isLoading } = useGetEventsQuery();
   const [createEvent] = useCreateEventMutation();
   const [deleteEvent] = useDeleteEventMutation();
   

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useApproveAdminMutation } from '@/store/api/authApiSlice';
+import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -9,7 +9,7 @@ const AdminApproval = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const navigate = useNavigate();
-  const [approveAdmin] = useApproveAdminMutation();
+  const [approveAdmin] = usePromoteToAdminMutation();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
   const [message, setMessage] = useState('');

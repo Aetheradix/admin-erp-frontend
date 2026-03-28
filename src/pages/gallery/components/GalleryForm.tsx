@@ -18,7 +18,7 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
   const [formData, setFormData] = useState<Partial<GalleryItem>>({
     title: '',
     category: 'Workplace',
-    url: '',
+    image_url: '',
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
   });
 
@@ -42,9 +42,9 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
         <div className="flex flex-col gap-4">
           <label className="text-sm font-black text-foreground uppercase tracking-widest">Media Asset</label>
           <div className="aspect-square w-full rounded-4xl border-2 border-dashed border-border-subtle bg-surface-subtle flex flex-col items-center justify-center gap-4 group hover:border-primary/50 hover:bg-primary/5 transition-all overflow-hidden relative shadow-inner">
-            {formData.url ? (
+            {formData.image_url ? (
                 <>
-                  <img src={formData.url} alt="Preview" width={400} height={400} className="w-full h-full object-cover" />
+                  <img src={formData.image_url} alt="Preview" width={400} height={400} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 hover:opacity-100 transition-all flex items-center justify-center">
                     <Button variant="primary" className="rounded-full! p-4!" aria-label="Change image">
                       <i className="pi pi-pencil text-xl"></i>
@@ -74,8 +74,8 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
             <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-3">Asset Source</p>
             <Input 
               id="gallery-source"
-              value={formData.url} 
-              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+              value={formData.image_url} 
+              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
               placeholder="Paste image URL if not uploading..." 
               className="text-[11px]! py-3!"
               aria-label="Image URL"

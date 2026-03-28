@@ -15,6 +15,7 @@ import {
   CheckCircle,
   History,
   Settings2,
+  Clock,
   type LucideIcon
 } from 'lucide-react';
 
@@ -30,6 +31,13 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
+  {
+    label: 'Check-In',
+    path: '/checkin',
+    icon: Clock,
+    category: 'OVERVIEW',
+    description: 'Attendance Center'
+  },
   {
     label: 'Dashboard',
     path: '/',
