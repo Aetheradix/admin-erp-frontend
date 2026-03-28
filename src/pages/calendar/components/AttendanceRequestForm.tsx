@@ -11,18 +11,20 @@ interface AttendanceRequestFormProps {
 }
 
 const REQUEST_TYPES = [
-  { label: 'Work from Home', value: 'WFH' },
-  { label: 'Day Off / Leave', value: 'Day Off' },
+  { label: 'Work from Home', value: 'Work from home' },
+  { label: 'Day Off / Leave', value: 'Day Off/Leave' },
   { label: 'Sick Leave', value: 'Sick Leave' },
+  { label: 'Holiday / Special', value: 'Holiday' },
 ];
 
 export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestFormProps) => {
   const [formData, setFormData] = useState({
-    type: 'WFH',
+    type: 'Work from home',
     reason: '',
     startDate: null as Date | null,
     endDate: null as Date | null,
   });
+
 
   const handleApply = () => {
     if (!formData.startDate || !formData.reason) return;

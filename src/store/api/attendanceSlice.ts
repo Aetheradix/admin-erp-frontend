@@ -33,8 +33,10 @@ export const attendanceSlice = apiSlice.injectEndpoints({
     }),
     getAttendanceStats: builder.query<any, void>({
       query: () => '/attendance/stats',
+      transformResponse: (response: any) => response.data,
       providesTags: ['Attendance'],
     }),
+
     getAttendanceHistory: builder.query<any[], void>({
       query: () => '/attendance/history',
       providesTags: ['Attendance'],

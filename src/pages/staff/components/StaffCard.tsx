@@ -1,13 +1,15 @@
-import { Mail, Phone, Edit2, Trash2 } from 'lucide-react';
+import { Mail, Phone, Edit2, Trash2, Shield } from 'lucide-react';
 import type { StaffMember } from '../hooks/mockStaff';
 
 interface StaffCardProps {
   member: StaffMember;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onPromote?: (id: string) => void;
 }
 
-export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
+export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProps) {
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active': return 'bg-success';
@@ -29,7 +31,16 @@ export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
           <Edit2 size={16} />
         </button>
         <button 
+          onClick={() => onPromote?.(String(member.id))}
+          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+          title="Promote to Admin"
+          aria-label={`Promote ${member.username || member.name} to Administrator`}
+        >
+          <Shield size={16} />
+        </button>
+        <button 
           onClick={() => onDelete?.(String(member.id))}
+
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Remove Member"
           aria-label={`Remove ${member.username || member.name} from staff`}

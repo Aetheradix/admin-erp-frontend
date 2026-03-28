@@ -16,7 +16,17 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: userData,
       }),
     }),
+    promoteToAdmin: builder.mutation({
+
+      query: (userId) => ({
+        url: '/auth/promote-to-admin',
+        method: 'POST',
+        body: { userId },
+      }),
+    }),
     updateProfile: builder.mutation({
+
+
       query: (data) => ({
         url: '/auth/profile',
         method: 'PUT',
@@ -44,15 +54,47 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    getDepartments: builder.query({
+      query: () => '/metadata/departments',
+    }),
+    requestAdminElevation: builder.mutation({
+      query: (data) => ({
+        url: '/auth/request-elevation',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    getAdminElevationRequests: builder.query<any[], void>({
+      query: () => '/auth/elevation-requests',
+      providesTags: ['User'],
+    }),
+    processAdminElevation: builder.mutation({
+      query: (data) => ({
+        url: '/auth/elevation-requests/process',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
   useRegisterMutation,
+  usePromoteToAdminMutation,
   useUpdateProfileMutation,
   useRequestOTPMutation,
   useLoginWithOTPMutation,
   useResetPasswordMutation,
+  useGetDepartmentsQuery,
+  useRequestAdminElevationMutation,
+  useGetAdminElevationRequestsQuery,
+  useProcessAdminElevationMutation,
 } = authApiSlice;
+
+
+
+
 

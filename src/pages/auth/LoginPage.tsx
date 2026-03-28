@@ -37,6 +37,7 @@ const LoginPage = () => {
     try {
       await requestOTP({ email }).unwrap();
       setOtpSent(true);
+      // navigate('/'); 
     } catch (err) {
       console.error('OTP Request failed', err);
     }
@@ -163,6 +164,7 @@ const LoginPage = () => {
             className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
             disabled={!otpSent || !otp}
             loading={isOtpLoginLoading}
+
           >
             VERIFY & LOGIN
           </Button>

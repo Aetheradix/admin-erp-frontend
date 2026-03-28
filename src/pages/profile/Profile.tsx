@@ -1,27 +1,33 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Briefcase, Contact, ShieldCheck, Settings, LogOut, Camera, Sparkles, Edit3 } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Contact, ShieldCheck, Settings, LogOut, Camera, Sparkles, Edit3, Shield } from 'lucide-react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProfileForm } from './components/ProfileForm';
 import { useAuth } from '@/context/AuthContext';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
+import { Dialog } from 'primereact/dialog';
+import { AdminElevationRequest } from '../staff/components/AdminElevationRequest';
 
 const Profile = () => {
   const { user: authUser, logout: authLogout } = useAuth();
+  const isAdmin = authUser?.role === 'admin';
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [isEditing, setIsEditing] = useState(false);
+  const [showElevationDialog, setShowElevationDialog] = useState(false);
   
   // Local state for the displayed user data, initialized from authUser
   const [user, setUser] = useState({
     name: authUser?.username || '',
-    designation: authUser?.designation || 'Staff Member',
+    designation: authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
     employeeId: authUser?.employee_id || 'N/A',
     email: authUser?.email || '',
     contactNo: authUser?.contact_no || '',
-    department: 'General', // Default if not in backend yet
+    department: 'General', 
     joinDate: 'Jan 2024',
     image: authUser?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`
   });
+
+
 
   // Sync local user state with authUser updates
   useEffect(() => {
@@ -123,21 +129,49 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="bg-foreground p-8 rounded-4xl text-white flex flex-col gap-6 group overflow-hidden relative">
-             <div className="absolute right-0 top-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/30 transition-all duration-700" />
-             <div className="flex items-center gap-4 relative z-10">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
-                   <Sparkles size={18} />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest">Security Clearance</span>
-             </div>
-             <div className="flex flex-col gap-2 relative z-10">
-                <h4 className="text-lg font-black leading-tight">V3 Access Authorized</h4>
-                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                   Your account has elevated privileges for financial approvals and staff management.
-                </p>
-             </div>
-          </div>
+          {isAdmin ? (
+            <div className="bg-foreground p-8 rounded-4xl text-white flex flex-col gap-6 group overflow-hidden relative">
+              <div className="absolute right-0 top-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/30 transition-all duration-700" />
+              <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                    <Sparkles size={18} />
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-widest">Security Clearance</span>
+              </div>
+              <div className="flex flex-col gap-2 relative z-10">
+                  <h4 className="text-lg font-black leading-tight">V3 Access Authorized</h4>
+                  <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                    Your account has elevated privileges for financial approvals and staff management.
+                  </p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white p-8 rounded-4xl border border-dashed border-primary/30 flex flex-col gap-6 group overflow-hidden relative hover:bg-primary/5 transition-all duration-500">
+               <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary transition-all group-hover:rotate-12">
+                     <Shield size={18} />
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-widest text-muted">Security Tier 1</span>
+               </div>
+               <div className="flex flex-col gap-4 relative z-10">
+                  <div className="flex flex-col gap-1">
+                    <h4 className="text-lg font-black leading-tight text-foreground">Elevated Access</h4>
+                    <p className="text-[10px] text-muted-foreground font-bold leading-relaxed italic">
+                      Need administrative privileges for approvals or staff management? Apply for a security tier upgrade.
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setShowElevationDialog(true)}
+                    className="w-full h-12 rounded-3xl! border-primary/20 hover:border-primary! hover:bg-primary! hover:text-white! transition-all group/btn"
+                  >
+                    <Shield className="mr-2 group-hover/btn:animate-pulse" size={14} />
+                    <span className="font-bold text-[10px] uppercase tracking-widest">Request Admin Access</span>
+                  </Button>
+               </div>
+            </div>
+          )}
+
         </div>
 
         {/* Profile Details Content */}
@@ -239,7 +273,22 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      <Dialog
+        visible={showElevationDialog}
+        onHide={() => setShowElevationDialog(false)}
+        header="Administrative Elevation"
+        modal
+        className="w-full max-w-lg mx-4"
+        pt={{
+            root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
+            mask: { className: 'backdrop-blur-md bg-black/40' }
+        }}
+      >
+        <AdminElevationRequest onSuccess={() => setShowElevationDialog(false)} />
+      </Dialog>
     </div>
+
   );
 };
 

@@ -12,8 +12,13 @@ import {
   Ticket,
   UserCircle,
   Users,
+  CheckCircle,
+  History,
+  Settings2,
   type LucideIcon
 } from 'lucide-react';
+
+
 
 export interface NavItem {
   label: string;
@@ -68,6 +73,32 @@ export const navItems: NavItem[] = [
     category: 'MANAGEMENT',
     description: 'Manage employees'
   },
+  {
+    label: 'Approvals',
+    path: '/staff/approvals',
+    icon: CheckCircle,
+    role: 'admin',
+    category: 'MANAGEMENT',
+    description: 'Approve requests'
+  },
+  {
+    label: 'Approval History',
+    path: '/staff/history',
+    icon: History,
+    role: 'admin',
+    category: 'MANAGEMENT',
+    description: 'Past request logs'
+  },
+  {
+    label: 'Feature Management',
+    path: '/staff/feature-control',
+    icon: Settings2,
+    role: 'admin',
+    category: 'MANAGEMENT',
+    description: 'Dynamic feature controls'
+  },
+
+
   {
     label: 'Attendance',
     path: '/calendar',

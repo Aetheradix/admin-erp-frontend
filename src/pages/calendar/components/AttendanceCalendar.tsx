@@ -5,11 +5,12 @@ import type { AttendanceRecord } from '../hooks/mockAttendance';
 
 interface AttendanceCalendarProps {
   records: AttendanceRecord[];
+  requests?: any[];
   onDateSelect: (date: Date) => void;
 }
 
-export function AttendanceCalendar({ records, onDateSelect }: AttendanceCalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2, 1)); // March 2026
+export function AttendanceCalendar({ records, requests = [], onDateSelect }: AttendanceCalendarProps) {
+  const [currentMonth, setCurrentMonth] = useState(new Date()); 
 
   const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
@@ -28,25 +29,47 @@ export function AttendanceCalendar({ records, onDateSelect }: AttendanceCalendar
     return records.find(r => r.date === dateStr);
   };
 
+  const getDayRequest = (day: number) => {
+    const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    d.setHours(0,0,0,0);
+    
+    return requests.find(req => {
+      const start = new Date(req.start_date);
+      start.setHours(0,0,0,0);
+      const end = req.end_date ? new Date(req.end_date) : start;
+      end.setHours(0,0,0,0);
+      return d >= start && d <= end;
+    });
+  };
+
   const getDayTypeIcon = (type: string) => {
     switch (type) {
       case 'Work from Office': return <Building2 size={12} />;
       case 'Work from Home': return <Home size={12} />;
-      case 'On Leave': return <CalendarIcon size={12} />;
+      case 'Work from home': return <Home size={12} />;
+      case 'On Leave':
+      case 'Day Off/Leave':
+      case 'Sick Leave': return <CalendarIcon size={12} />;
       case 'Holiday': return <Sun size={12} />;
       default: return null;
     }
   };
 
-  const getDayTypeStyles = (type: string) => {
+  const getDayTypeStyles = (type: string, status?: string) => {
+    const isPending = status === 'Pending';
+    
     switch (type) {
       case 'Work from Office': return 'bg-primary/10 text-primary border-primary/20';
-      case 'Work from Home': return 'bg-info/10 text-info border-info/20';
-      case 'On Leave': return 'bg-warning/10 text-warning border-warning/20';
+      case 'Work from Home':
+      case 'Work from home': return isPending ? 'bg-info/5 text-info/50 border-info/10 border-dashed' : 'bg-info/10 text-info border-info/20';
+      case 'On Leave':
+      case 'Day Off/Leave':
+      case 'Sick Leave': return isPending ? 'bg-warning/5 text-warning/50 border-warning/10 border-dashed' : 'bg-warning/10 text-warning border-warning/20';
       case 'Holiday': return 'bg-muted/10 text-muted border-muted/20';
       default: return 'bg-surface-subtle border-transparent';
     }
   };
+
 
   return (
     <div className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden animate-in fade-in duration-700">
@@ -83,6 +106,9 @@ export function AttendanceCalendar({ records, onDateSelect }: AttendanceCalendar
         {Array.from({ length: numDays }).map((_, i) => {
           const day = i + 1;
           const record = getDayRecord(day);
+          const request = getDayRequest(day);
+          const displayItem = request || record;
+
           return (
             <div 
               key={day} 
@@ -91,22 +117,26 @@ export function AttendanceCalendar({ records, onDateSelect }: AttendanceCalendar
             >
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-black text-foreground group-hover:text-primary transition-colors">{day}</span>
-                {record && (
+                {displayItem && (
                   <div className={classNames(
                     "flex flex-col gap-1 text-[8px] font-black uppercase tracking-tighter p-2 rounded-xl border transition-transform duration-500 group-hover:scale-105",
-                    getDayTypeStyles(record.type)
+                    getDayTypeStyles(displayItem.type, displayItem.status)
                   )}>
                     <div className="flex items-center gap-1">
-                      {getDayTypeIcon(record.type)}
-                      <span className="truncate">{record.type}</span>
+                      {getDayTypeIcon(displayItem.type)}
+                      <span className="truncate">{displayItem.type}</span>
                     </div>
-                    {record.checkIn && (
-                      <span className="opacity-60">{record.checkIn} - {record.checkOut}</span>
+                    {displayItem.status === 'Pending' && (
+                      <span className="opacity-60 italic">Approval Pending</span>
+                    )}
+                    {displayItem.checkIn && (
+                      <span className="opacity-60">{displayItem.checkIn} - {displayItem.checkOut}</span>
                     )}
                   </div>
                 )}
               </div>
             </div>
+
           );
         })}
       </div>

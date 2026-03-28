@@ -4,12 +4,14 @@ import { useLoginMutation } from '../store/api/authApiSlice';
 export interface User {
   id: string;
   username: string;
+  email: string;
   role: 'admin' | 'employee';
   image_url?: string;
   designation?: string;
   employee_id?: string;
   contact_no?: string;
 }
+
 
 interface AuthContextType {
   isAuthenticated: boolean;

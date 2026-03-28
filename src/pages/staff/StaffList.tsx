@@ -8,6 +8,9 @@ import { useStaffFilters } from './hooks/useStaffFilters';
 import { Users, Sparkles } from 'lucide-react';
 
 import { useGetStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } from '@/store/api/staffApiSlice';
+import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
+
+
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { StaffMember } from './hooks/mockStaff';
 
@@ -16,9 +19,22 @@ export function StaffList() {
   const [createStaff] = useCreateStaffMutation();
   const [updateStaff] = useUpdateStaffMutation();
   const [deleteStaff] = useDeleteStaffMutation();
+  const [promoteToAdmin] = usePromoteToAdminMutation();
   
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
+
+  const handlePromote = async (id: string) => {
+    if (window.confirm('Are you sure you want to promote this member to Administrator?')) {
+      try {
+        await promoteToAdmin(id).unwrap();
+        alert('Member promoted to administrator successfully!');
+      } catch (err: any) {
+        alert(err.data?.message || 'Failed to promote member.');
+      }
+    }
+  };
+
   
   const { 
     searchQuery, 
@@ -161,7 +177,9 @@ export function StaffList() {
               member={member}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onPromote={handlePromote}
             />
+
           ))}
 
           {/* Empty State */}

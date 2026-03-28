@@ -9,6 +9,7 @@ export interface ERPEvent {
   image: string;
   organizer: string;
   attendees: number;
+  date: string;
 }
 
 // export const mockEvents: ERPEvent[] = [

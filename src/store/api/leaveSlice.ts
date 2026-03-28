@@ -6,6 +6,11 @@ export const leaveSlice = apiSlice.injectEndpoints({
       query: () => '/leaves',
       providesTags: ['Leaves'],
     }),
+    getLeaveStats: builder.query<any, void>({
+      query: () => '/leaves/stats',
+      providesTags: ['Leaves'],
+    }),
+
     createLeaveRequest: builder.mutation<any, any>({
       query: (leaveData) => ({
         url: '/leaves',
@@ -14,14 +19,15 @@ export const leaveSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Leaves'],
     }),
-    updateLeaveStatus: builder.mutation<any, { id: string; status: string }>({
-      query: ({ id, status }) => ({
+    updateLeaveStatus: builder.mutation<any, { id: number; status: string; comment?: string }>({
+      query: ({ id, status, comment }) => ({
         url: `/leaves/${id}/status`,
         method: 'PUT',
-        body: { status },
+        body: { status, comment },
       }),
       invalidatesTags: ['Leaves'],
     }),
+
     deleteLeaveRequest: builder.mutation<any, string>({
       query: (id) => ({
         url: `/leaves/${id}`,
@@ -34,7 +40,9 @@ export const leaveSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetLeavesQuery,
+  useGetLeaveStatsQuery,
   useCreateLeaveRequestMutation,
   useUpdateLeaveStatusMutation,
   useDeleteLeaveRequestMutation,
 } = leaveSlice;
+
