@@ -21,12 +21,8 @@ const SignupPage = () => {
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const { data: departmentsData, isLoading: isLoadingDepts } = useGetDepartmentsQuery({});
 
-  console.log('Departments Data:', departmentsData);
-
   const deptOptions = departmentsData?.data?.map((dep: any) => dep.department_name);
 
-
-  console.log('Department Options:', deptOptions);
   useEffect(() => {
     if (Array.isArray(deptOptions) && deptOptions.length > 0 && !department) {
       setDepartment(deptOptions[0]);
