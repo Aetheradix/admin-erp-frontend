@@ -1,5 +1,6 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Dialog } from 'primereact/dialog';
+import { Toast } from 'primereact/toast';
 import { StaffCard } from './components/StaffCard';
 import { StaffTableToolbar } from './components/StaffTableToolbar';
 import { StaffForm } from './components/StaffForm';
@@ -25,6 +26,7 @@ export function StaffList() {
     handleEdit,
     handleDelete,
     handleSubmit,
+    toast,
     onAddMember
   } = useStaff();
 
@@ -46,6 +48,31 @@ export function StaffList() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <Toast 
+        ref={toast} 
+        pt={{
+          root: { className: 'w-full max-w-sm p-4' },
+          message: (options: any) => ({
+            className: `mb-4 rounded-2xl shadow-2xl border overflow-hidden backdrop-blur-xl ${
+              options.props?.message?.severity === 'success' ? 'bg-green-50/90 border-green-200' :
+              options.props?.message?.severity === 'error' ? 'bg-red-50/90 border-red-200' :
+              'bg-white/90 border-gray-200'
+            }`
+          }),
+          content: { className: 'flex items-start p-5 gap-4' },
+          icon: (options: any) => ({
+            className: `text-2xl mt-0.5 ${
+              options.props?.message?.severity === 'success' ? 'text-green-600' :
+              options.props?.message?.severity === 'error' ? 'text-red-600' :
+              'text-primary'
+            }`
+          }),
+          text: { className: 'flex-1 flex flex-col gap-1.5' },
+          summary: { className: 'font-black text-gray-900 text-base tracking-tight' },
+          detail: { className: 'text-sm font-medium text-gray-600' },
+          closeButton: { className: 'w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center hover:bg-black/5 transition-colors text-gray-500 ml-auto' }
+        }}
+      />
       <PageHeader
         title="Team Directory"
         description="Empower your workforce by managing profiles, roles, and expertise in a premium unified workspace."

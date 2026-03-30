@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Calendar as CalendarIcon, Filter, Search } from 'lucide-react';
 import { Dialog } from 'primereact/dialog';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
@@ -47,13 +48,17 @@ const Events = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to cancel this event?')) {
-      try {
-        await deleteEvent(id).unwrap();
-      } catch (err) {
-        console.error('Failed to delete event:', err);
+    showConfirm({
+      message: 'Are you sure you want to cancel this event?',
+      header: 'Confirm Deletion',
+      accept: async () => {
+        try {
+          await deleteEvent(id).unwrap();
+        } catch (err) {
+          console.error('Failed to delete event:', err);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (data: Partial<ERPEvent>) => {

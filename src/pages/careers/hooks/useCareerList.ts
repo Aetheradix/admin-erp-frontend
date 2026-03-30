@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerApiSlice';
 import { useCareerFilters } from './useCareerFilters';
 import type { Career } from './mockCareers';
@@ -41,13 +42,17 @@ export const useCareerList = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to remove this position?')) {
-      try {
-        await deleteCareer(id).unwrap();
-      } catch (err) {
-        console.error('Failed to delete position:', err);
+    showConfirm({
+      message: 'Are you sure you want to remove this position?',
+      header: 'Confirm Deletion',
+      accept: async () => {
+        try {
+          await deleteCareer(id).unwrap();
+        } catch (err) {
+          console.error('Failed to delete position:', err);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (data: Partial<Career>) => {

@@ -7,6 +7,7 @@ import type { GalleryItem } from './hooks/mockGallery';
 
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Dialog } from 'primereact/dialog';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { GalleryForm } from './components/GalleryForm';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';
@@ -45,13 +46,17 @@ const Gallery = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to remove this asset?')) {
-      try {
-        await deleteGalleryItem(id).unwrap();
-      } catch (err) {
-        console.error('Failed to delete asset:', err);
+    showConfirm({
+      message: 'Are you sure you want to remove this asset?',
+      header: 'Confirm Deletion',
+      accept: async () => {
+        try {
+          await deleteGalleryItem(id).unwrap();
+        } catch (err) {
+          console.error('Failed to delete asset:', err);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (data: Partial<GalleryItem>) => {

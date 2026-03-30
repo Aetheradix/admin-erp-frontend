@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { 
   useGetBlogsQuery, 
   useGetBlogQuery, 
@@ -33,13 +34,17 @@ export const useBlogs = (id?: string) => {
   };
 
   const handleDelete = async (blogId: string) => {
-    if (window.confirm('Are you sure you want to delete this story?')) {
-      try {
-        await deleteBlog(blogId).unwrap();
-      } catch (error) {
-        console.error('Failed to delete blog:', error);
+    showConfirm({
+      message: 'Are you sure you want to delete this story?',
+      header: 'Confirm Deletion',
+      accept: async () => {
+        try {
+          await deleteBlog(blogId).unwrap();
+        } catch (error) {
+          console.error('Failed to delete blog:', error);
+        }
       }
-    }
+    });
   };
 
   return {

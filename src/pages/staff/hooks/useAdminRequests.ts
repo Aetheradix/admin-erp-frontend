@@ -4,7 +4,7 @@ import { useGetAdminElevationRequestsQuery, useProcessAdminElevationMutation } f
 export const useAdminRequests = () => {
     const { data: requests = [], isLoading, refetch } = useGetAdminElevationRequestsQuery();
     const [processRequest] = useProcessAdminElevationMutation();
-    
+
     const [selectedRequest, setSelectedRequest] = useState<any>(null);
     const [comment, setComment] = useState('');
     const [isApprove, setIsApprove] = useState(true);

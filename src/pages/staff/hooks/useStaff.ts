@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { Toast } from 'primereact/toast';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { useGetStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } from '@/store/api/staffApiSlice';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { useStaffFilters } from './useStaffFilters';
@@ -11,20 +13,26 @@ export const useStaff = () => {
   const [deleteStaff] = useDeleteStaffMutation();
   const [promoteToAdmin] = usePromoteToAdminMutation();
 
+  const toast = useRef<Toast>(null);
+
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
 
   const { searchQuery, setSearchQuery, activeDepartment, setActiveDepartment } = useStaffFilters();
 
   const handlePromote = async (id: string) => {
-    if (window.confirm('Are you sure you want to promote this member to Administrator?')) {
-      try {
-        await promoteToAdmin(id).unwrap();
-        alert('Member promoted to administrator successfully!');
-      } catch (err: any) {
-        alert(err.data?.message || 'Failed to promote member.');
+    showConfirm({
+      message: 'Are you sure you want to promote this member to Administrator?',
+      header: 'Confirm Promotion',
+      accept: async () => {
+        try {
+          await promoteToAdmin(id).unwrap();
+          toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member promoted to administrator successfully!', life: 3000 });
+        } catch (err: any) {
+          toast.current?.show({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to promote member.', life: 3000 });
+        }
       }
-    }
+    });
   };
 
   const handleEdit = (id: string) => {
@@ -43,13 +51,19 @@ export const useStaff = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to remove this staff member?')) {
-      try {
-        await deleteStaff(id).unwrap();
-      } catch (err) {
-        console.error('Failed to remove member', err);
+    showConfirm({
+      message: 'Are you sure you want to remove this staff member?',
+      header: 'Confirm Deletion',
+      accept: async () => {
+        try {
+          await deleteStaff(id).unwrap();
+          toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Staff member removed successfully.', life: 3000 });
+        } catch (err) {
+          console.error('Failed to remove member', err);
+          toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to remove member.', life: 3000 });
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (data: any) => {
@@ -68,12 +82,15 @@ export const useStaff = () => {
 
       if (editingMember) {
         await updateStaff({ id: editingMember.id, ...payload }).unwrap();
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Staff member updated successfully.', life: 3000 });
       } else {
         await createStaff(payload).unwrap();
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Staff member added successfully.', life: 3000 });
       }
       setShowForm(false);
     } catch (err) {
       console.error('Operation failed', err);
+      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Operation failed.', life: 3000 });
     }
   };
 
@@ -106,6 +123,7 @@ export const useStaff = () => {
     handleEdit,
     handleDelete,
     handleSubmit,
+    toast,
     onAddMember: () => { setEditingMember(null); setShowForm(true); }
   };
 };
