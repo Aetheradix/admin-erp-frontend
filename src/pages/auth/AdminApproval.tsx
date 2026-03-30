@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { showToast } from '@/components/ui/composed/Toast';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
@@ -26,9 +27,11 @@ const AdminApproval = () => {
         const result = await approveAdmin(token).unwrap();
         setStatus('success');
         setMessage(result.message || 'Admin account has been activated successfully!');
+        showToast({ severity: 'success', summary: 'Activated', detail: result.message || 'Admin account activated!', life: 3000 });
       } catch (err: any) {
         setStatus('error');
         setMessage(err.data?.message || 'Failed to approve admin account. The token may be expired.');
+        showToast({ severity: 'error', summary: 'Failed', detail: err.data?.message || 'Failed to approve admin account.', life: 3000 });
       }
     };
 

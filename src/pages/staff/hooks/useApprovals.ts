@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGetLeavesQuery, useGetLeaveStatsQuery, useUpdateLeaveStatusMutation } from '@/store/api/leaveSlice';
+import { showToast } from '@/components/ui/composed/Toast';
 
 export const useApprovals = () => {
   const { data: leaves = [], isLoading } = useGetLeavesQuery();
@@ -27,10 +28,12 @@ export const useApprovals = () => {
         status: actionType,
         comment
       }).unwrap();
+      showToast({ severity: 'success', summary: 'Success', detail: `Leave ${actionType.toLowerCase()} successfully.`, life: 3000 });
       setShowApprovalDialog(false);
       setSelectedRequest(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update status', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to update leave status.', life: 3000 });
     }
   };
 

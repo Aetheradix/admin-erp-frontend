@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Calendar as CalendarIcon, Filter, Search } from 'lucide-react';
 import { Dialog } from 'primereact/dialog';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
+import { showToast } from '@/components/ui/composed/Toast';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
@@ -54,8 +55,10 @@ const Events = () => {
       accept: async () => {
         try {
           await deleteEvent(id).unwrap();
-        } catch (err) {
+          showToast({ severity: 'success', summary: 'Cancelled', detail: 'Event cancelled successfully.', life: 3000 });
+        } catch (err: any) {
           console.error('Failed to delete event:', err);
+          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to cancel event', life: 3000 });
         }
       }
     });
@@ -64,14 +67,15 @@ const Events = () => {
   const handleSubmit = async (data: Partial<ERPEvent>) => {
     try {
       if (editingEvent) {
-        // Handle update if implemented on backend, else treat as new or error
         console.warn('Update event not supported yet on backend');
       } else {
         await createEvent(data).unwrap();
+        showToast({ severity: 'success', summary: 'Scheduled', detail: 'Event scheduled successfully!', life: 3000 });
       }
       setShowForm(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save event:', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to save event', life: 3000 });
     }
   };
 

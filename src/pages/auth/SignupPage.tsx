@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { showToast } from '@/components/ui/composed/Toast';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Input } from '@/components/ui/primitives/Input';
@@ -33,7 +34,7 @@ const SignupPage = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords don't match");
+      showToast({ severity: 'error', summary: 'Error', detail: "Passwords don't match", life: 3000 });
       return;
     }
     try {
@@ -46,7 +47,7 @@ const SignupPage = () => {
       }).unwrap();
       setIsSuccess(true);
     } catch (err: any) {
-      alert(err.data?.message || 'Signup failed');
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Signup failed', life: 3000 });
       console.error('Signup failed', err);
     }
   };

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGetAdminElevationRequestsQuery, useProcessAdminElevationMutation } from '@/store/api/authApiSlice';
+import { showToast } from '@/components/ui/composed/Toast';
 
 export const useAdminRequests = () => {
     const { data: requests = [], isLoading, refetch } = useGetAdminElevationRequestsQuery();
@@ -23,11 +24,13 @@ export const useAdminRequests = () => {
                 status: isApprove ? 'Approved' : 'Rejected',
                 adminComment: comment
             }).unwrap();
+            showToast({ severity: 'success', summary: 'Success', detail: `Request ${isApprove ? 'approved' : 'rejected'}.`, life: 3000 });
             setShowDialog(false);
             setComment('');
             refetch();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to process request:', error);
+            showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Failed to process request.', life: 3000 });
         }
     };
 

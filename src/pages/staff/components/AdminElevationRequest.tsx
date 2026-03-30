@@ -4,6 +4,7 @@ import { Shield, Send, AlertCircle } from 'lucide-react';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Message } from 'primereact/message';
+import { showToast } from '@/components/ui/composed/Toast';
 
 
 interface AdminElevationRequestProps {
@@ -20,9 +21,11 @@ export function AdminElevationRequest({ onSuccess }: AdminElevationRequestProps)
 
         try {
             await requestElevation({ reason }).unwrap();
+            showToast({ severity: 'success', summary: 'Success', detail: 'Elevation request submitted.', life: 3000 });
             if (onSuccess) onSuccess();
-        } catch (err) {
+        } catch (err: any) {
             console.error('Elevation request failed:', err);
+            showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to submit request.', life: 3000 });
         }
     };
 

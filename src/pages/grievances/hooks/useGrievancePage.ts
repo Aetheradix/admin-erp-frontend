@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGetGrievancesQuery, useSubmitGrievanceMutation } from '@/store/api/grievanceApiSlice';
+import { showToast } from '@/components/ui/composed/Toast';
 import type { Grievance } from './mockGrievances';
 
 const CATEGORIES = ['All', 'Work Environment', 'Management', 'Harassment', 'Software/Tools', 'Other'];
@@ -19,8 +20,10 @@ export const useGrievancePage = () => {
     try {
       await submitGrievance(data).unwrap();
       setShowForm(false);
-    } catch (err) {
+      showToast({ severity: 'success', summary: 'Submitted', detail: 'Grievance submitted successfully.', life: 3000 });
+    } catch (err: any) {
       console.error('Failed to submit grievance:', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to submit grievance.', life: 3000 });
     }
   };
 

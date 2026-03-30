@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { showToast } from '@/components/ui/composed/Toast';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { 
   useGetBlogsQuery, 
@@ -27,9 +28,11 @@ export const useBlogs = (id?: string) => {
       } else {
         await createBlog(data).unwrap();
       }
+      showToast({ severity: 'success', summary: 'Success', detail: `Post ${id ? 'updated' : 'created'} successfully!`, life: 3000 });
       navigate('/blogs');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save blog:', error);
+      showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Failed to save post', life: 3000 });
     }
   };
 
@@ -40,8 +43,10 @@ export const useBlogs = (id?: string) => {
       accept: async () => {
         try {
           await deleteBlog(blogId).unwrap();
-        } catch (error) {
+          showToast({ severity: 'success', summary: 'Success', detail: 'Post deleted successfully!', life: 3000 });
+        } catch (error: any) {
           console.error('Failed to delete blog:', error);
+          showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Failed to delete post', life: 3000 });
         }
       }
     });

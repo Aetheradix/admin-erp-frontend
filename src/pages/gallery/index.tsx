@@ -8,6 +8,7 @@ import type { GalleryItem } from './hooks/mockGallery';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Dialog } from 'primereact/dialog';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
+import { showToast } from '@/components/ui/composed/Toast';
 import { GalleryForm } from './components/GalleryForm';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';
@@ -52,8 +53,10 @@ const Gallery = () => {
       accept: async () => {
         try {
           await deleteGalleryItem(id).unwrap();
-        } catch (err) {
+          showToast({ severity: 'success', summary: 'Deleted', detail: 'Asset removed successfully.', life: 3000 });
+        } catch (err: any) {
           console.error('Failed to delete asset:', err);
+          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to delete asset', life: 3000 });
         }
       }
     });
@@ -62,14 +65,15 @@ const Gallery = () => {
   const handleSubmit = async (data: Partial<GalleryItem>) => {
     try {
       if (editingItem) {
-        // Update not yet implemented on backend for gallery items based on simple service
         console.warn('Update gallery item not supported yet on backend');
       } else {
         await createGalleryItem(data).unwrap();
+        showToast({ severity: 'success', summary: 'Uploaded', detail: 'Asset uploaded successfully!', life: 3000 });
       }
       setShowForm(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save asset:', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to upload asset', life: 3000 });
     }
   };
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
+import { showToast } from '@/components/ui/composed/Toast';
 import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerApiSlice';
 import { useCareerFilters } from './useCareerFilters';
 import type { Career } from './mockCareers';
@@ -48,8 +49,10 @@ export const useCareerList = () => {
       accept: async () => {
         try {
           await deleteCareer(id).unwrap();
-        } catch (err) {
+          showToast({ severity: 'success', summary: 'Success', detail: 'Position removed successfully!', life: 3000 });
+        } catch (err: any) {
           console.error('Failed to delete position:', err);
+          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to delete position', life: 3000 });
         }
       }
     });
@@ -59,12 +62,15 @@ export const useCareerList = () => {
     try {
       if (editingCareer) {
         await updateCareer({ id: editingCareer.id, ...data }).unwrap();
+        showToast({ severity: 'success', summary: 'Success', detail: 'Position updated successfully!', life: 3000 });
       } else {
         await createCareer(data).unwrap();
+        showToast({ severity: 'success', summary: 'Success', detail: 'New position posted successfully!', life: 3000 });
       }
       setShowForm(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save position:', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to save position', life: 3000 });
     }
   };
 

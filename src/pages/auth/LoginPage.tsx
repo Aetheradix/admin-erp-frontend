@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { showToast } from '@/components/ui/composed/Toast';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Input } from '@/components/ui/primitives/Input';
@@ -28,8 +29,9 @@ const LoginPage = () => {
       //authLogin handles the actual mutation and state update
       await authLogin({ email, password });
       navigate('/');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login failed', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Login failed', life: 3000 });
     }
   };
 
@@ -37,9 +39,10 @@ const LoginPage = () => {
     try {
       await requestOTP({ email }).unwrap();
       setOtpSent(true);
-      // navigate('/'); 
-    } catch (err) {
+      showToast({ severity: 'success', summary: 'Success', detail: 'OTP sent to your email!', life: 3000 });
+    } catch (err: any) {
       console.error('OTP Request failed', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to send OTP', life: 3000 });
     }
   };
 
@@ -53,8 +56,9 @@ const LoginPage = () => {
         localStorage.setItem('user', JSON.stringify(response.admin));
         window.location.href = '/dashboard';
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('OTP Login failed', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Invalid OTP or login failed', life: 3000 });
     }
   };
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { Toast } from '@/components/ui/composed/Toast';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -10,6 +11,7 @@ interface AuthLayoutProps {
 export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+      <Toast />
       {/* Left Side - Dark Hero Section (Inspired by the reference image) */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-[#0a0a0b] relative overflow-hidden group">
         {/* Abstract Background Gradients */}

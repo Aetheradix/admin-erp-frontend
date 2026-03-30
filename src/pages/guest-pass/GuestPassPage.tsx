@@ -4,6 +4,7 @@ import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { ExplorerBar } from '@/components/ui/composed/ExplorerBar';
 import { Dialog } from 'primereact/dialog';
+import { showToast } from '@/components/ui/composed/Toast';
 import { GuestPassCard } from './components/GuestPassCard';
 import { GuestPassForm } from './components/GuestPassForm';
 import { useGetGuestPassesQuery, useIssueGuestPassMutation } from '@/store/api/guestPassApiSlice';
@@ -28,8 +29,10 @@ export function GuestPassPage() {
     try {
       await issueGuestPass(data).unwrap();
       setShowForm(false);
-    } catch (err) {
+      showToast({ severity: 'success', summary: 'Issued', detail: 'Guest pass issued successfully.', life: 3000 });
+    } catch (err: any) {
       console.error('Failed to issue guest pass:', err);
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to issue pass.', life: 3000 });
     }
   };
 

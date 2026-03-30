@@ -1,4 +1,5 @@
 import { useGetFeaturePermissionsQuery, useToggleFeatureMutation } from '@/store/api/permissionSlice';
+import { showToast } from '@/components/ui/composed/Toast';
 
 export const useFeatureControl = () => {
     const { data: permissions = [], isLoading } = useGetFeaturePermissionsQuery();
@@ -7,8 +8,10 @@ export const useFeatureControl = () => {
     const handleToggle = async (feature_name: string, department: string, is_enabled: boolean) => {
         try {
             await toggleFeature({ feature_name, department, is_enabled }).unwrap();
-        } catch (err) {
+            showToast({ severity: 'success', summary: 'Success', detail: `Feature ${is_enabled ? 'enabled' : 'disabled'} for ${department}.`, life: 3000 });
+        } catch (err: any) {
             console.error('Failed to toggle feature:', err);
+            showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to toggle feature.', life: 3000 });
         }
     };
 

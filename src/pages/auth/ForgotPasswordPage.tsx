@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { showToast } from '@/components/ui/composed/Toast';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Input } from '@/components/ui/primitives/Input';
@@ -31,7 +32,7 @@ const ForgotPasswordPage = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert("Passwords don't match");
+      showToast({ severity: 'error', summary: 'Error', detail: "Passwords don't match", life: 3000 });
       return;
     }
     try {

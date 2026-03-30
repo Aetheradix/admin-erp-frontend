@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
+import { showToast } from '@/components/ui/composed/Toast';
 
 export const useProfile = () => {
   const { user: authUser, logout: authLogout } = useAuth();
@@ -50,7 +51,7 @@ export const useProfile = () => {
       window.location.reload();
     } catch (err: any) {
       console.error('Failed to update profile:', err);
-      alert(err.data?.message || 'Failed to update profile');
+      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to update profile', life: 3000 });
     }
   };
 

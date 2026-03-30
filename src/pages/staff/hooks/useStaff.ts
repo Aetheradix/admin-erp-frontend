@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Toast } from 'primereact/toast';
+import { useState } from 'react';
+import { showToast } from '@/components/ui/composed/Toast';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { useGetStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } from '@/store/api/staffApiSlice';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
@@ -13,8 +13,6 @@ export const useStaff = () => {
   const [deleteStaff] = useDeleteStaffMutation();
   const [promoteToAdmin] = usePromoteToAdminMutation();
 
-  const toast = useRef<Toast>(null);
-
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
 
@@ -27,9 +25,9 @@ export const useStaff = () => {
       accept: async () => {
         try {
           await promoteToAdmin(id).unwrap();
-          toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member promoted to administrator successfully!', life: 3000 });
+          showToast({ severity: 'success', summary: 'Success', detail: 'Member promoted to administrator successfully!', life: 3000 });
         } catch (err: any) {
-          toast.current?.show({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to promote member.', life: 3000 });
+          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to promote member.', life: 3000 });
         }
       }
     });
@@ -57,10 +55,10 @@ export const useStaff = () => {
       accept: async () => {
         try {
           await deleteStaff(id).unwrap();
-          toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Staff member removed successfully.', life: 3000 });
+          showToast({ severity: 'success', summary: 'Success', detail: 'Staff member removed successfully.', life: 3000 });
         } catch (err) {
           console.error('Failed to remove member', err);
-          toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to remove member.', life: 3000 });
+          showToast({ severity: 'error', summary: 'Error', detail: 'Failed to remove member.', life: 3000 });
         }
       }
     });
@@ -82,15 +80,15 @@ export const useStaff = () => {
 
       if (editingMember) {
         await updateStaff({ id: editingMember.id, ...payload }).unwrap();
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Staff member updated successfully.', life: 3000 });
+        showToast({ severity: 'success', summary: 'Success', detail: 'Staff member updated successfully.', life: 3000 });
       } else {
         await createStaff(payload).unwrap();
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Staff member added successfully.', life: 3000 });
+        showToast({ severity: 'success', summary: 'Success', detail: 'Staff member added successfully.', life: 3000 });
       }
       setShowForm(false);
     } catch (err) {
       console.error('Operation failed', err);
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Operation failed.', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: 'Operation failed.', life: 3000 });
     }
   };
 
@@ -123,7 +121,6 @@ export const useStaff = () => {
     handleEdit,
     handleDelete,
     handleSubmit,
-    toast,
     onAddMember: () => { setEditingMember(null); setShowForm(true); }
   };
 };

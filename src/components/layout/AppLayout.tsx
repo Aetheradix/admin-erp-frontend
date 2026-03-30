@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
+import { Toast } from '@/components/ui/composed/Toast';
 
 
 const AppLayout = () => {
@@ -14,6 +15,7 @@ const AppLayout = () => {
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden selection:bg-primary selection:text-background relative font-body ">
       <ConfirmDialog />
+      <Toast />
       {/* Sidebar Overlay for Mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
