@@ -18,6 +18,8 @@ const Profile = () => {
     handleLogout
   } = useProfile();
 
+  console.log('User Data:', user);
+
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <PageHeader

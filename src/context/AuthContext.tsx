@@ -9,7 +9,8 @@ export interface User {
   image_url?: string;
   designation?: string;
   employee_id?: string;
-  contact_no?: string;
+  contact_number?: string;
+  department?: string;
 }
 
 

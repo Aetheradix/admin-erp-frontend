@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { showToast } from '@/components/ui/composed/Toast';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
-import { Input } from '@/components/ui/primitives/Input';
+import { showToast } from '@/components/ui/composed/Toast';
 import { Button } from '@/components/ui/primitives/Button';
+import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
-import { useRegisterMutation, useGetDepartmentsQuery } from '@/store/api/authApiSlice';
+import { useGetDepartmentsQuery, useRegisterMutation } from '@/store/api/authApiSlice';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SignupPage = () => {
   const [username, setUsername] = useState('');
@@ -21,9 +21,9 @@ const SignupPage = () => {
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const { data: departmentsData, isLoading: isLoadingDepts } = useGetDepartmentsQuery({});
 
-  const deptOptions = departmentsData?.success 
-    ? departmentsData.data.map((dept: string) => ({ label: dept, value: dept })) 
-    : [];
+  console.log('Departments Data:', departmentsData);
+
+  const deptOptions = departmentsData?.data?.map((dep: any) => dep.department_name);
 
   useEffect(() => {
     if (deptOptions.length > 0 && !department) {
@@ -38,10 +38,10 @@ const SignupPage = () => {
       return;
     }
     try {
-      await register({ 
-        username, 
-        email, 
-        password, 
+      await register({
+        username,
+        email,
+        password,
         contact_number: contactNumber,
         department: department || 'Engineering'
       }).unwrap();
@@ -54,7 +54,7 @@ const SignupPage = () => {
 
   if (isSuccess) {
     return (
-      <AuthLayout 
+      <AuthLayout
         title="Account Created"
         subtitle="YOUR SECURE WORKSPACE IS NOW READY FOR USE."
       >
@@ -68,9 +68,9 @@ const SignupPage = () => {
               Your employee account has been successfully activated. You can now log in to access your ERP dashboard and tools.
             </p>
           </div>
-          <Button 
+          <Button
             onClick={() => navigate('/auth/login')}
-            variant="primary" 
+            variant="primary"
             className="w-full h-14 rounded-2xl! shadow-lg shadow-emerald-500/20 font-black tracking-widest text-sm"
           >
             GO TO LOGIN
@@ -82,15 +82,15 @@ const SignupPage = () => {
   }
 
   return (
-    <AuthLayout 
+    <AuthLayout
       title="Get Beta Access"
       subtitle="JOIN THE NEXT GENERATION OF ENTERPRISE RESOURCE PLANNING."
     >
       <form onSubmit={handleSignup} className="space-y-6">
         <FormField label="Full Name" required>
-          <Input 
-            type="text" 
-            placeholder="e.g. Ameer Ismail" 
+          <Input
+            type="text"
+            placeholder="e.g. Ameer Ismail"
             value={username}
             onChange={(e: any) => setUsername(e.target.value)}
             className="h-14 rounded-2xl!"
@@ -98,9 +98,9 @@ const SignupPage = () => {
         </FormField>
 
         <FormField label="Work Email" required>
-          <Input 
-            type="email" 
-            placeholder="e.g. agimonopoly@gmail.com" 
+          <Input
+            type="email"
+            placeholder="e.g. agimonopoly@gmail.com"
             value={email}
             onChange={(e: any) => setEmail(e.target.value)}
             className="h-14 rounded-2xl!"
@@ -109,9 +109,9 @@ const SignupPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
           <FormField label="Contact Number">
-            <Input 
-              type="text" 
-              placeholder="e.g. +91 9876543210" 
+            <Input
+              type="text"
+              placeholder="e.g. +91 9876543210"
               value={contactNumber}
               onChange={(e: any) => setContactNumber(e.target.value)}
               className="h-14 rounded-2xl!"
@@ -119,7 +119,7 @@ const SignupPage = () => {
           </FormField>
 
           <FormField label="Department">
-            <Select 
+            <Select
               value={department}
               options={deptOptions}
               onChange={(e) => setDepartment(e.value)}
@@ -129,11 +129,11 @@ const SignupPage = () => {
             />
           </FormField>
         </div>
-        
+
         <FormField label="Create Password" required>
-          <Input 
-            type="password" 
-            placeholder="••••••••" 
+          <Input
+            type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e: any) => setPassword(e.target.value)}
             className="h-14 rounded-2xl!"
@@ -141,18 +141,18 @@ const SignupPage = () => {
         </FormField>
 
         <FormField label="Confirm Password" required>
-          <Input 
-            type="password" 
-            placeholder="••••••••" 
+          <Input
+            type="password"
+            placeholder="••••••••"
             value={confirmPassword}
             onChange={(e: any) => setConfirmPassword(e.target.value)}
             className="h-14 rounded-2xl!"
           />
         </FormField>
 
-        <Button 
-          type="submit" 
-          variant="primary" 
+        <Button
+          type="submit"
+          variant="primary"
           className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
           loading={isRegistering}
         >
