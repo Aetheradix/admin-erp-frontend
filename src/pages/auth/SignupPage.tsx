@@ -25,9 +25,11 @@ const SignupPage = () => {
 
   const deptOptions = departmentsData?.data?.map((dep: any) => dep.department_name);
 
+
+  console.log('Department Options:', deptOptions);
   useEffect(() => {
-    if (deptOptions.length > 0 && !department) {
-      setDepartment(deptOptions[0].value);
+    if (Array.isArray(deptOptions) && deptOptions.length > 0 && !department) {
+      setDepartment(deptOptions[0]);
     }
   }, [deptOptions, department]);
 
