@@ -15,11 +15,13 @@ export const useProfile = () => {
     designation: authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
     employeeId: authUser?.employee_id || 'N/A',
     email: authUser?.email || '',
-    contactNo: authUser?.contact_no || '',
-    department: 'General',
-    joinDate: 'Jan 2024',
+    contactNo: authUser?.contact_number || '',
+    department: authUser?.department,
+    joinDate: authUser?.join_date ,
     image: authUser?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`
   });
+
+  console.log(user)
 
   useEffect(() => {
     if (authUser) {
@@ -29,8 +31,10 @@ export const useProfile = () => {
         designation: authUser.designation || 'Staff Member',
         employeeId: authUser.employee_id || 'N/A',
         email: authUser.email || '',
-        contactNo: authUser.contact_no || '',
-        image: authUser.image_url || prev.image
+        contactNo: authUser.contact_number || '',
+        image: authUser.image_url || prev.image,
+        department: authUser.department,
+        joinDate: authUser.join_date,
       }));
     }
   }, [authUser]);
@@ -42,6 +46,7 @@ export const useProfile = () => {
         email: updatedData.email,
         contact_no: updatedData.contactNo,
         designation: updatedData.designation,
+        department: updatedData.department,
       };
       const result = await updateProfile(payload).unwrap();
       const existingUser = JSON.parse(localStorage.getItem('user') || '{}');

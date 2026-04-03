@@ -3,8 +3,7 @@ import { FeatureCard } from './components/FeatureCard';
 import { useFeatureControl } from './hooks/useFeatureControl';
 import { Settings2, Calendar, Layout, CreditCard, Users, AlertCircle, Key, CheckCircle2 } from 'lucide-react';
 import { ProgressSpinner } from 'primereact/progressspinner';
-
-const DEPARTMENTS = ['HR', 'Sales', 'Engineering', 'Marketing', 'Product', 'Design'];
+import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 
 const FEATURES = [
   { id: 'Finance', icon: CreditCard, description: 'Payroll, reimbursements and financial reporting.', color: 'emerald' },
@@ -19,9 +18,13 @@ const FEATURES = [
 ];
 
 export function FeatureControl() {
-  const { isLoading, handleToggle, isEnabled } = useFeatureControl();
+  const { isLoading: isPermissionsLoading, handleToggle, isEnabled } = useFeatureControl();
+  const { data: departmentsData, isLoading: isDeptsLoading } = useGetDepartmentsQuery({});
+  
+  const departments = departmentsData?.data ?? [];
+  const departmentNames = departments.map((d: any) => d.department_name);
 
-  if (isLoading) {
+  if (isPermissionsLoading || isDeptsLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen gap-6 bg-surface-base">
         <div className="animate-pulse flex flex-col items-center">
@@ -46,7 +49,7 @@ export function FeatureControl() {
           <FeatureCard 
             key={feature.id}
             feature={feature}
-            departments={DEPARTMENTS}
+            departments={departmentNames}
             isEnabled={isEnabled}
             onToggle={handleToggle}
           />

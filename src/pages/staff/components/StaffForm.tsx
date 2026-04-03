@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { Calendar } from '@/components/ui/primitives/Calendar';
 import { useEffect, useState } from 'react';
+import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 import type { StaffMember } from '../hooks/mockStaff';
 
 interface StaffFormProps {
@@ -13,15 +14,7 @@ interface StaffFormProps {
   onCancel: () => void;
 }
 
-const DEPARTMENTS = [
-  { label: 'Engineering', value: 'Engineering' },
-  { label: 'Design', value: 'Design' },
-  { label: 'Product', value: 'Product' },
-  { label: 'Marketing', value: 'Marketing' },
-  { label: 'Sales', value: 'Sales' },
-  { label: 'Operations', value: 'Operations' },
-  { label: 'HR', value: 'HR' },
-];
+
 
 const STATUS_OPTIONS = [
   { label: 'Active', value: 'Active' },
@@ -30,10 +23,17 @@ const STATUS_OPTIONS = [
 ];
 
 export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) => {
+  const { data: departmentsData } = useGetDepartmentsQuery({});
+  const departments = departmentsData?.data ?? [];
+  const departmentOptions = departments.map((d: any) => ({
+    label: d.department_name,
+    value: d.department_name
+  }));
+
   const [formData, setFormData] = useState<Partial<StaffMember>>({
     name: '',
     role: '',
-    department: 'Engineering',
+    department: '',
     email: '',
     phone: '',
     status: 'Active',
@@ -43,6 +43,7 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
   });
 
   const [skillsString, setSkillsString] = useState('');
+  
 
   useEffect(() => {
     if (initialData) {
@@ -85,7 +86,7 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
             <FormField label="Department" id="staff-dept">
               <Select 
                 id="staff-dept"
-                options={DEPARTMENTS}
+                options={departmentOptions}
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.value })}
                 placeholder="Select department"

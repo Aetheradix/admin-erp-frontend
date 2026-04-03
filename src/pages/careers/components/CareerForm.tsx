@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { useEffect, useState } from 'react';
+import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 import type { Career } from '../hooks/mockCareers';
 
 interface CareerFormProps {
@@ -11,16 +12,6 @@ interface CareerFormProps {
   onSubmit: (data: Partial<Career>) => void;
   onCancel: () => void;
 }
-
-const DEPARTMENTS = [
-  { label: 'Engineering', value: 'Engineering' },
-  { label: 'Design', value: 'Design' },
-  { label: 'Product', value: 'Product' },
-  { label: 'Marketing', value: 'Marketing' },
-  { label: 'Sales', value: 'Sales' },
-  { label: 'Operations', value: 'Operations' },
-  { label: 'HR', value: 'HR' },
-];
 
 const JOB_TYPES = [
   { label: 'Full-time', value: 'Full-time' },
@@ -30,9 +21,16 @@ const JOB_TYPES = [
 ];
 
 export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps) => {
+  const { data: departmentsData } = useGetDepartmentsQuery({});
+  const departments = departmentsData?.data ?? [];
+  const departmentOptions = departments.map((d: any) => ({
+    label: d.department_name,
+    value: d.department_name
+  }));
+
   const [formData, setFormData] = useState<Partial<Career>>({
     title: '',
-    department: 'Engineering',
+    department: '',
     location: 'Remote',
     type: 'Full-time',
     salary: '',
@@ -42,6 +40,13 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
     status: 'Open',
     postedDate: new Date().toISOString().split('T')[0],
   });
+
+  useEffect(() => {
+    if (!initialData && departmentOptions.length > 0 && !formData.department) {
+      setFormData(prev => ({ ...prev, department: departmentOptions[0].value }));
+    }
+  }, [departmentOptions, initialData, formData.department]);
+
 
   const [reqsString, setReqsString] = useState('');
   const [benefitsString, setBenefitsString] = useState('');
@@ -87,7 +92,7 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Department">
               <Select 
-                options={DEPARTMENTS}
+                options={departmentOptions}
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.value })}
               />

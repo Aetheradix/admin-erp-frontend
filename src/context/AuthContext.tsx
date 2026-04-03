@@ -11,6 +11,7 @@ export interface User {
   employee_id?: string;
   contact_number?: string;
   department?: string;
+  join_date?: string;
 }
 
 

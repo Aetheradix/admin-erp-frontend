@@ -1,10 +1,11 @@
 import { User, Mail, Phone, Briefcase, Contact, ShieldCheck, Settings, LogOut, Camera, Sparkles, Edit3, Shield } from 'lucide-react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Button } from '@/components/ui/primitives/Button';
-import { ProfileForm } from './components/ProfileForm';
+
 import { useProfile } from './hooks/useProfile';
 import { Dialog } from 'primereact/dialog';
 import { AdminElevationRequest } from '../staff/components/AdminElevationRequest';
+import { ProfileForm } from './components/ProfileForm';
 
 const Profile = () => {
   const {
@@ -169,13 +170,13 @@ const Profile = () => {
                 </div>
               </>
             ) : (
-              <ProfileForm 
+              <ProfileForm
                 initialData={{
-                  name: user.name,
-                  email: user.email,
-                  contactNo: user.contactNo,
-                  department: user.department,
-                  designation: user.designation
+                  name: user.name || '',
+                  email: user.email || '',
+                  contactNo: user.contactNo || '',
+                  department: user.department || '',
+                  designation: user.designation || ''
                 }}
                 onSave={handleEditSave}
                 onCancel={() => setIsEditing(false)}
@@ -183,7 +184,7 @@ const Profile = () => {
             )}
           </div>
 
-          <div className="bg-surface-subtle/50 p-10 rounded-4xl border border-dashed border-border-strong flex flex-col gap-6">
+          {/* <div className="bg-surface-subtle/50 p-10 rounded-4xl border border-dashed border-border-strong flex flex-col gap-6">
             <div className="flex flex-col gap-1">
               <h4 className="text-lg font-black text-foreground uppercase tracking-tight">Active Sessions</h4>
               <p className="text-[10px] font-black text-muted uppercase tracking-wider">Security monitoring & session management</p>
@@ -210,7 +211,7 @@ const Profile = () => {
                  </div>
                ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

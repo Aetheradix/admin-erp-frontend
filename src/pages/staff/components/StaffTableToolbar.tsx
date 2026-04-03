@@ -2,7 +2,7 @@ import { Search, Filter, UserPlus } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { mockStaff } from '../hooks/mockStaff';
+import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 
 interface StaffTableToolbarProps {
   searchQuery: string;
@@ -12,8 +12,6 @@ interface StaffTableToolbarProps {
   onAddNewStaff: () => void;
 }
 
-const DEPARTMENTS = ['All', ...new Set(mockStaff.map((s) => s.department))];
-
 export function StaffTableToolbar({
   searchQuery,
   onSearchChange,
@@ -21,6 +19,10 @@ export function StaffTableToolbar({
   onDepartmentChange,
   onAddNewStaff,
 }: StaffTableToolbarProps) {
+  const { data: departmentsData } = useGetDepartmentsQuery({});
+  const departments = departmentsData?.data ?? [];
+  const DEPARTMENTS = ['All', ...departments.map((d: any) => d.department_name)];
+
   return (
     <div className="flex flex-col gap-6 bg-white p-6 rounded-[40px] border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
@@ -29,7 +31,7 @@ export function StaffTableToolbar({
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={20} />
           <Input
             value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Search by name, role, or skills..."
             className="pl-14! h-14! rounded-2xl! text-sm! font-medium! border-border-subtle! group-hover:border-primary/30 transition-all duration-300"
           />

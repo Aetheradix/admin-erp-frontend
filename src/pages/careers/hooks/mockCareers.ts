@@ -1,7 +1,7 @@
 export interface Career {
   id: string;
   title: string;
-  department: 'Engineering' | 'Design' | 'Product' | 'Marketing' | 'Sales' | 'Operations' | 'HR';
+  department: string;
   location: string;
   type: 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
   salary: string;
