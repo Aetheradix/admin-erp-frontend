@@ -33,7 +33,7 @@ export default function GeneralSettings() {
           </Card>
 
           <Card title="Notifications" style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }} loading={loading}>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space vertical size="large" style={{ width: '100%' }}>
               {notifications.map((item, i) => (
                 <React.Fragment key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -49,7 +49,7 @@ export default function GeneralSettings() {
 
         <Col xs={24} lg={8}>
           <Card title="Danger Zone" style={{ borderRadius: 16, border: '1px solid rgba(225,29,72,0.2)' }}>
-            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Space vertical size="middle" style={{ width: '100%' }}>
               <div>
                 <Text strong style={{ display: 'block', marginBottom: 4 }}>Export Data</Text>
                 <Text style={{ color: 'var(--muted)', fontSize: 13, display: 'block', marginBottom: 8 }}>Download all your organization data.</Text>

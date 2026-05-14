@@ -62,7 +62,7 @@ export default function Finance() {
                   <Text strong style={{ fontSize: 13 }}>{item.name}</Text>
                   <Text style={{ fontSize: 12, color: 'var(--muted)' }}>${(item.spent / 1000).toFixed(0)}k / ${(item.budget / 1000).toFixed(0)}k</Text>
                 </div>
-                <Progress percent={Math.round((item.spent / item.budget) * 100)} strokeColor={item.color} trailColor="rgba(0,0,0,0.04)" size="small" />
+                <Progress percent={Math.round((item.spent / item.budget) * 100)} strokeColor={item.color} railColor="rgba(0,0,0,0.04)" size="small" />
               </div>
             ))}
           </Card>

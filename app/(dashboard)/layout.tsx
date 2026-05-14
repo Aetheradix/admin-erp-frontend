@@ -75,7 +75,7 @@ const menuSections = [
     label: 'FINANCE',
     items: [
       getItem('Finance', '/finance', <DollarOutlined />, [
-        getItem('Overview', '/finance'),
+        getItem('Overview', '/finance/overview'),
         getItem('Invoices', '/finance/invoices'),
         getItem('Expenses', '/finance/expenses'),
         getItem('Payroll', '/finance/payroll'),
@@ -96,7 +96,7 @@ const menuSections = [
     label: 'INSIGHTS',
     items: [
       getItem('Analytics', '/analytics', <BarChartOutlined />, [
-        getItem('Overview', '/analytics'),
+        getItem('Overview', '/analytics/overview'),
         getItem('Reports', '/analytics/reports'),
       ]),
     ],
@@ -139,7 +139,11 @@ export default function DashboardLayout({
     .map((item: any) => item?.key as string);
 
   const handleMenuClick = (info: { key: string }) => {
-    router.push(info.key);
+    // Map overview keys back to their parent paths for navigation
+    const targetPath = info.key.endsWith('/overview') 
+      ? info.key.replace('/overview', '') 
+      : info.key;
+    router.push(targetPath);
   };
 
   const handleUserMenuClick = (info: { key: string }) => {

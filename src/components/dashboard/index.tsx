@@ -27,7 +27,7 @@ const { Text } = Typography;
 const recentActivity = [
   {
     color: '#E8583A',
-    children: (
+    content: (
       <>
         <Text strong style={{ fontSize: 13 }}>Sarah Chen</Text>{' '}
         <Text style={{ color: 'var(--muted)', fontSize: 13 }}>completed task</Text>{' '}
@@ -39,7 +39,7 @@ const recentActivity = [
   },
   {
     color: '#0284c7',
-    children: (
+    content: (
       <>
         <Text strong style={{ fontSize: 13 }}>Marcus Johnson</Text>{' '}
         <Text style={{ color: 'var(--muted)', fontSize: 13 }}>created invoice</Text>{' '}
@@ -51,7 +51,7 @@ const recentActivity = [
   },
   {
     color: '#059669',
-    children: (
+    content: (
       <>
         <Text strong style={{ fontSize: 13 }}>Emily Watson</Text>{' '}
         <Text style={{ color: 'var(--muted)', fontSize: 13 }}>added 3 members to</Text>{' '}
@@ -63,7 +63,7 @@ const recentActivity = [
   },
   {
     color: '#d97706',
-    children: (
+    content: (
       <>
         <Text strong style={{ fontSize: 13 }}>Alex Rivera</Text>{' '}
         <Text style={{ color: 'var(--muted)', fontSize: 13 }}>updated project status to</Text>{' '}
@@ -75,7 +75,7 @@ const recentActivity = [
   },
   {
     color: '#e11d48',
-    children: (
+    content: (
       <>
         <Text strong style={{ fontSize: 13 }}>System</Text>{' '}
         <Text style={{ color: 'var(--muted)', fontSize: 13 }}>flagged expense report</Text>{' '}
@@ -229,7 +229,7 @@ export default function Dashboard() {
                             ? '#d97706'
                             : '#e11d48'
                       }
-                      trailColor="rgba(0,0,0,0.04)"
+                      railColor="rgba(0,0,0,0.04)"
                       size="small"
                       style={{ marginBottom: 0 }}
                     />

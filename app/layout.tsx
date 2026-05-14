@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jakartaSans.variable}`}>
+    <html lang="en" className={`${jakartaSans.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
         <AntdProvider>{children}</AntdProvider>
       </body>

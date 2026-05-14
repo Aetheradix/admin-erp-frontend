@@ -37,7 +37,7 @@ export default function Analytics() {
                   <Text strong style={{ fontSize: 14 }}>{dept.name}</Text>
                   <div><Text style={{ color: 'var(--muted)', fontSize: 12, marginRight: 12 }}>{dept.tasks} tasks</Text><Text strong style={{ fontSize: 14 }}>{dept.score}%</Text></div>
                 </div>
-                <Progress percent={dept.score} strokeColor={dept.color} trailColor="rgba(0,0,0,0.04)" size="small" showInfo={false} />
+                <Progress percent={dept.score} strokeColor={dept.color} railColor="rgba(0,0,0,0.04)" size="small" showInfo={false} />
               </div>
             ))}
           </Card>

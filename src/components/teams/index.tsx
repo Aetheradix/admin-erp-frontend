@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import { Card, Button, Input, Avatar, Tag, Row, Col, Typography, Segmented } from 'antd';
 import { PlusOutlined, SearchOutlined, TeamOutlined, AppstoreOutlined, BarsOutlined } from '@ant-design/icons';

@@ -176,7 +176,7 @@ export default function OrgProfilePage() {
             label: 'Preferences',
             children: (
               <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space vertical size="large" style={{ width: '100%' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <Text strong>Email Notifications</Text>
