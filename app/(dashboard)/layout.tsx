@@ -1,36 +1,25 @@
 'use client';
-
-import React, { useState } from 'react';
-import { Layout, Menu, Input, Avatar, Badge, Dropdown, Button, Typography, Tooltip } from 'antd';
 import {
-  DashboardOutlined,
-  ProjectOutlined,
-  CheckSquareOutlined,
   BankOutlined,
-  TeamOutlined,
-  UserOutlined,
-  DollarOutlined,
-  ShoppingOutlined,
   BarChartOutlined,
-  SettingOutlined,
   BellOutlined,
-  SearchOutlined,
+  CheckSquareOutlined,
+  DashboardOutlined,
+  DollarOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  LogoutOutlined,
-  FileTextOutlined,
-  ApartmentOutlined,
-  SafetyCertificateOutlined,
-  ApiOutlined,
-  AuditOutlined,
-  ShoppingCartOutlined,
-  SwapOutlined,
-  FundProjectionScreenOutlined,
-  WalletOutlined,
-  ProfileOutlined,
+  ProjectOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  ShoppingOutlined,
+  TeamOutlined,
+  UserOutlined
 } from '@ant-design/icons';
-import { usePathname, useRouter } from 'next/navigation';
 import type { MenuProps } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Input, Layout, Menu, Tooltip, Typography } from 'antd';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 const { Sider, Header, Content } = Layout;
 const { Text } = Typography;

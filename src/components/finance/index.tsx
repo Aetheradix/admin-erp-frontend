@@ -1,13 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Row, Col, Card, Typography, List, Button, Progress, Spin } from 'antd';
+import { Col, List, Progress, Spin } from 'antd';
 import { DollarOutlined, FileTextOutlined, WalletOutlined, CreditCardOutlined, ArrowRightOutlined, RiseOutlined } from '@ant-design/icons';
-import PageHeader from '@/src/components/ui/PageHeader';
-import StatCard from '@/src/components/ui/StatCard';
+import { PageHeader, StatCard, AppRow, AppCard, AppText, AppButton } from '@/src/components/ui';
 import { useFinance } from './hooks/useFinance';
-
-const { Text } = Typography;
 
 export default function Finance() {
   const { transactions, budgetItems, loading } = useFinance();
@@ -20,7 +17,7 @@ export default function Finance() {
     <div>
       <PageHeader title="Finance" subtitle="Financial overview and key metrics." breadcrumbs={[{ title: 'Finance' }, { title: 'Overview' }]} />
 
-      <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
+      <AppRow marginBottom={24}>
         <Col xs={24} sm={12} lg={6}>
           <StatCard title="Total Revenue" value="$284,500" icon={<DollarOutlined />} color="#059669" bgColor="rgba(5,150,105,0.08)" accentColor="#059669" trend={{ value: '+12.5%', direction: 'up' }} />
         </Col>
@@ -33,41 +30,41 @@ export default function Finance() {
         <Col xs={24} sm={12} lg={6}>
           <StatCard title="Net Profit" value="$216,660" icon={<RiseOutlined />} color="#0284c7" bgColor="rgba(2,132,199,0.08)" accentColor="#0284c7" trend={{ value: '+18.7%', direction: 'up' }} />
         </Col>
-      </Row>
+      </AppRow>
 
-      <Row gutter={[20, 20]}>
+      <AppRow>
         <Col xs={24} lg={14}>
-          <Card title={<><CreditCardOutlined style={{ marginRight: 8 }} />Recent Transactions</>}
-            extra={<Button type="link" style={{ fontWeight: 600, padding: 0 }}>View All <ArrowRightOutlined /></Button>}
-            style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
+          <AppCard title={<><CreditCardOutlined style={{ marginRight: 8 }} />Recent Transactions</>}
+            extra={<AppButton type="link" style={{ padding: 0 }}>View All <ArrowRightOutlined /></AppButton>}>
             <List dataSource={transactions} renderItem={(item) => (
               <List.Item style={{ padding: '12px 0', border: 'none' }}>
                 <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <Text strong style={{ fontSize: 14 }}>{item.description}</Text>
+                    <AppText strong style={{ fontSize: 14 }}>{item.description}</AppText>
                     <br />
-                    <Text style={{ fontSize: 12, color: 'var(--muted)' }}>{item.date}</Text>
+                    <AppText muted small>{item.date}</AppText>
                   </div>
-                  <Text strong style={{ fontSize: 15, color: item.type === 'income' ? 'var(--success)' : 'var(--error)' }}>{item.amount}</Text>
+                  <AppText strong style={{ fontSize: 15, color: item.type === 'income' ? 'var(--success)' : 'var(--error)' }}>{item.amount}</AppText>
                 </div>
               </List.Item>
             )} />
-          </Card>
+          </AppCard>
         </Col>
         <Col xs={24} lg={10}>
-          <Card title="Budget Utilization" style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
+          <AppCard title="Budget Utilization">
             {budgetItems.map((item) => (
               <div key={item.name} style={{ marginBottom: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <Text strong style={{ fontSize: 13 }}>{item.name}</Text>
-                  <Text style={{ fontSize: 12, color: 'var(--muted)' }}>${(item.spent / 1000).toFixed(0)}k / ${(item.budget / 1000).toFixed(0)}k</Text>
+                  <AppText strong small>{item.name}</AppText>
+                  <AppText muted small>${(item.spent / 1000).toFixed(0)}k / ${(item.budget / 1000).toFixed(0)}k</AppText>
                 </div>
                 <Progress percent={Math.round((item.spent / item.budget) * 100)} strokeColor={item.color} railColor="rgba(0,0,0,0.04)" size="small" />
               </div>
             ))}
-          </Card>
+          </AppCard>
         </Col>
-      </Row>
+      </AppRow>
     </div>
   );
 }
+

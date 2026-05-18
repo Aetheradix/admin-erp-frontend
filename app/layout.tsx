@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import AntdProvider from "@/src/providers/AntdProvider";
+import MouseGlow from "@/src/components/ui/MouseGlow";
 
 const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -24,7 +25,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jakartaSans.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
-        <AntdProvider>{children}</AntdProvider>
+        <AntdProvider>
+          <MouseGlow />{children}</AntdProvider>
       </body>
     </html>
   );
