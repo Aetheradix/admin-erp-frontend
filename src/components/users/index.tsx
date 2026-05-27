@@ -8,10 +8,12 @@ import PageHeader from '@/src/components/ui/PageHeader';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import { useUsers } from './hooks/useUsers';
 import { User } from './types';
+import UserModal from './components/UserModal';
 
 export default function Users() {
   const router = useRouter();
-  const { users, totalUsers, loading, search, setSearch } = useUsers();
+  const { users, totalUsers, loading, search, setSearch, addUser } = useUsers();
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const columns = [
     {
@@ -36,7 +38,13 @@ export default function Users() {
   return (
     <div>
       <PageHeader title="Users" subtitle={`${totalUsers} users in your organization.`} breadcrumbs={[{ title: 'Users' }]}
-        actions={<Space><Button icon={<DownloadOutlined />} style={{ borderRadius: 10, fontWeight: 600 }}>Export</Button><Button type="primary" icon={<PlusOutlined />} size="large" style={{ borderRadius: 10, fontWeight: 600 }}>Invite User</Button></Space>}
+        actions={<Space><Button icon={<DownloadOutlined />} style={{ borderRadius: 10, fontWeight: 600 }}>Export</Button><Button type="primary" icon={<PlusOutlined />} size="large" style={{ borderRadius: 10, fontWeight: 600 }} onClick={() => setIsModalOpen(true)}>Invite User</Button></Space>}
+      />
+
+      <UserModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onSubmit={addUser}
       />
       <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
         <div style={{ marginBottom: 20 }}>

@@ -27,13 +27,23 @@ export const useTasks = () => {
     return tasks.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()));
   }, [tasks, search]);
 
-  return { 
-    tasks: filteredTasks, 
+  const addTask = (data: Omit<Task, 'id' | 'status'>) => {
+    const newTask: Task = {
+      ...data,
+      id: `TSK-${Math.floor(Math.random() * 10000)}`,
+      status: 'todo',
+    };
+    setTasks((prev) => [newTask, ...prev]);
+  };
+
+  return {
+    tasks: filteredTasks,
     totalTasks: tasks.length,
-    loading, 
-    search, 
+    loading,
+    search,
     setSearch,
     view,
-    setView
+    setView,
+    addTask
   };
 };

@@ -26,11 +26,23 @@ export const useExpenses = () => {
     return expenses.filter((e) => e.description.toLowerCase().includes(search.toLowerCase()));
   }, [expenses, search]);
 
+  const addExpense = (data: Omit<Expense, 'id' | 'status' | 'date' | 'submittedBy'>) => {
+    const newExpense: Expense = {
+      ...data,
+      id: `EXP-${Math.floor(Math.random() * 10000)}`,
+      status: 'pending',
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      submittedBy: 'Current User',
+    };
+    setExpenses((prev) => [newExpense, ...prev]);
+  };
+
   return {
     expenses: filteredExpenses,
     totalExpenses: expenses.length,
     loading,
     search,
     setSearch,
+    addExpense,
   };
 };

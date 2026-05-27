@@ -8,18 +8,22 @@ import PageHeader from '@/src/components/ui/PageHeader';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import { useInvoices } from './hooks/useInvoices';
 import { Invoice } from './types';
+import InvoiceModal from './components/InvoiceModal';
 
 export default function Invoices() {
   const router = useRouter();
-  const { invoices, totalInvoices, loading, search, setSearch } = useInvoices();
+  const { invoices, totalInvoices, loading, search, setSearch, addInvoice } = useInvoices();
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const columns = [
-    { title: 'Invoice', dataIndex: 'id', key: 'id', render: (id: string) => (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--primary-soft)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileTextOutlined /></div>
-        <span style={{ fontWeight: 600 }}>{id}</span>
-      </div>
-    )},
+    {
+      title: 'Invoice', dataIndex: 'id', key: 'id', render: (id: string) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--primary-soft)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileTextOutlined /></div>
+          <span style={{ fontWeight: 600 }}>{id}</span>
+        </div>
+      )
+    },
     { title: 'Client', dataIndex: 'client', key: 'client' },
     { title: 'Amount', dataIndex: 'amount', key: 'amount', render: (a: string) => <span style={{ fontWeight: 700 }}>{a}</span> },
     { title: 'Date', dataIndex: 'date', key: 'date', render: (d: string) => <span style={{ color: 'var(--muted)', fontSize: 13 }}>{d}</span> },
@@ -30,8 +34,14 @@ export default function Invoices() {
 
   return (
     <div>
-      <PageHeader title="Invoices" subtitle={`${totalInvoices} invoices total.`} breadcrumbs={[{ title: 'Finance', href: '/finance' }, { title: 'Invoices' }]}
-        actions={<Space><Button icon={<DownloadOutlined />} style={{ borderRadius: 10, fontWeight: 600 }}>Export</Button><Button type="primary" icon={<PlusOutlined />} size="large" style={{ borderRadius: 10, fontWeight: 600 }}>New Invoice</Button></Space>}
+      <PageHeader title="Invoices" subtitle={`${totalInvoices} invoices generated.`} breadcrumbs={[{ title: 'Finance', href: '/finance' }, { title: 'Invoices' }]}
+        actions={<Space><Button icon={<DownloadOutlined />} style={{ borderRadius: 10, fontWeight: 600 }}>Export</Button><Button type="primary" icon={<PlusOutlined />} size="large" style={{ borderRadius: 10, fontWeight: 600 }} onClick={() => setIsModalOpen(true)}>New Invoice</Button></Space>}
+      />
+
+      <InvoiceModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onSubmit={addInvoice}
       />
       <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
         <div style={{ marginBottom: 20 }}>

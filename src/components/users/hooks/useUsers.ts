@@ -29,11 +29,23 @@ export const useUsers = () => {
     );
   }, [users, search]);
 
-  return { 
-    users: filteredUsers, 
+  const addUser = (data: Omit<User, 'id' | 'status' | 'lastActive' | 'avatar'>) => {
+    const newUser: User = {
+      ...data,
+      id: `USR-${Math.floor(Math.random() * 10000)}`,
+      status: 'active',
+      lastActive: 'Just now',
+      avatar: data.name.charAt(0).toUpperCase(),
+    };
+    setUsers((prev) => [newUser, ...prev]);
+  };
+
+  return {
+    users: filteredUsers,
     totalUsers: users.length,
-    loading, 
-    search, 
-    setSearch 
+    loading,
+    search,
+    setSearch,
+    addUser,
   };
 };

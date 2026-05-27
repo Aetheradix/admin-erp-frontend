@@ -9,18 +9,22 @@ import StatusBadge from '@/src/components/ui/StatusBadge';
 import { useItems } from './hooks/useItems';
 import { catColors } from './mockData';
 import { InventoryItem } from './types';
+import ItemModal from './components/ItemModal';
 
 export default function Items() {
   const router = useRouter();
-  const { items, totalItems, loading, search, setSearch } = useItems();
+  const { items, totalItems, loading, search, setSearch, addItem } = useItems();
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const columns = [
-    { title: 'Item', dataIndex: 'name', key: 'name', render: (n: string, r: InventoryItem) => (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(2,132,199,0.08)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingOutlined /></div>
-        <div><div style={{ fontWeight: 600 }}>{n}</div><div style={{ fontSize: 12, color: 'var(--muted)' }}>{r.sku}</div></div>
-      </div>
-    )},
+    {
+      title: 'Item', dataIndex: 'name', key: 'name', render: (n: string, r: InventoryItem) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(2,132,199,0.08)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingOutlined /></div>
+          <div><div style={{ fontWeight: 600 }}>{n}</div><div style={{ fontSize: 12, color: 'var(--muted)' }}>{r.sku}</div></div>
+        </div>
+      )
+    },
     { title: 'Category', dataIndex: 'category', key: 'category', render: (c: string) => <Tag color={catColors[c]} style={{ borderRadius: 6, border: 'none', fontWeight: 600 }}>{c}</Tag> },
     { title: 'Qty', dataIndex: 'quantity', key: 'quantity', render: (q: number) => <span style={{ fontWeight: 700, color: q === 0 ? 'var(--error)' : q < 10 ? 'var(--warning)' : 'inherit' }}>{q}</span> },
     { title: 'Price', dataIndex: 'price', key: 'price', render: (p: string) => <span style={{ fontWeight: 600 }}>{p}</span> },
@@ -30,8 +34,13 @@ export default function Items() {
 
   return (
     <div>
-      <PageHeader title="Item Catalog" subtitle={`${totalItems} items in inventory.`} breadcrumbs={[{ title: 'Inventory' }, { title: 'Items' }]}
-        actions={<Space><Button icon={<DownloadOutlined />} style={{ borderRadius: 10, fontWeight: 600 }}>Export</Button><Button type="primary" icon={<PlusOutlined />} size="large" style={{ borderRadius: 10, fontWeight: 600 }}>Add Item</Button></Space>}
+      <PageHeader title="Inventory Items" subtitle={`${totalItems} items in stock.`} breadcrumbs={[{ title: 'Stock', href: '/stock' }, { title: 'Items' }]}
+        actions={<Space><Button icon={<DownloadOutlined />} style={{ borderRadius: 10, fontWeight: 600 }}>Export</Button><Button type="primary" icon={<PlusOutlined />} size="large" style={{ borderRadius: 10, fontWeight: 600 }} onClick={() => setIsModalOpen(true)}>New Item</Button></Space>}
+      />
+      <ItemModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onSubmit={addItem}
       />
       <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
         <div style={{ marginBottom: 20 }}><Input prefix={<SearchOutlined style={{ color: 'var(--muted)' }} />} placeholder="Search items..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 320, borderRadius: 10 }} allowClear /></div>

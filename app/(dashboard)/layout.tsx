@@ -67,6 +67,7 @@ const menuSections = [
         getItem('Overview', '/finance/overview'),
         getItem('Invoices', '/finance/invoices'),
         getItem('Expenses', '/finance/expenses'),
+        getItem('Reimbursements', '/finance/reimbursements'),
         getItem('Payroll', '/finance/payroll'),
       ]),
     ],
@@ -129,8 +130,8 @@ export default function DashboardLayout({
 
   const handleMenuClick = (info: { key: string }) => {
     // Map overview keys back to their parent paths for navigation
-    const targetPath = info.key.endsWith('/overview') 
-      ? info.key.replace('/overview', '') 
+    const targetPath = info.key.endsWith('/overview')
+      ? info.key.replace('/overview', '')
       : info.key;
     router.push(targetPath);
   };

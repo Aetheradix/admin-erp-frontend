@@ -23,11 +23,21 @@ export const useInvoices = () => {
   }, []);
 
   const filteredInvoices = useMemo(() => {
-    return invoices.filter((i) => 
-      i.id.toLowerCase().includes(search.toLowerCase()) || 
+    return invoices.filter((i) =>
+      i.id.toLowerCase().includes(search.toLowerCase()) ||
       i.client.toLowerCase().includes(search.toLowerCase())
     );
   }, [invoices, search]);
+
+  const addInvoice = (data: Omit<Invoice, 'id' | 'status' | 'date'>) => {
+    const newInvoice: Invoice = {
+      ...data,
+      id: `INV-${Math.floor(Math.random() * 10000)}`,
+      status: 'pending',
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    };
+    setInvoices((prev) => [newInvoice, ...prev]);
+  };
 
   return {
     invoices: filteredInvoices,
@@ -35,5 +45,6 @@ export const useInvoices = () => {
     loading,
     search,
     setSearch,
+    addInvoice,
   };
 };

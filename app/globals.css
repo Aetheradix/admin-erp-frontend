@@ -410,7 +410,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .dashboard-content-area {
   min-height: calc(100vh - var(--header-height));
-  padding: 24px;
+  padding: 24px ;
   transition: margin-left 0.3s cubic-bezier(0.2, 0, 0, 1);
 }
 

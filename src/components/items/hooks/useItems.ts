@@ -26,11 +26,21 @@ export const useItems = () => {
     return items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()) || i.sku.toLowerCase().includes(search.toLowerCase()));
   }, [items, search]);
 
+  const addItem = (data: Omit<InventoryItem, 'id' | 'status'>) => {
+    const newItem: InventoryItem = {
+      ...data,
+      id: `ITM-${Math.floor(Math.random() * 10000)}`,
+      status: 'active',
+    };
+    setItems((prev) => [newItem, ...prev]);
+  };
+
   return {
     items: filteredItems,
     totalItems: items.length,
     loading,
     search,
     setSearch,
+    addItem,
   };
 };
