@@ -160,10 +160,68 @@ export default function DashboardLayout({
           borderRight: '1px solid var(--border-subtle)',
         }}
       >
-        {/* Logo */}
-        <div className="sidebar-logo" onClick={() => router.push('/dashboard')}>
-          <div className="sidebar-logo-icon">A</div>
-          {!collapsed && <span className="sidebar-logo-text">AetherERP</span>}
+        {/* Sidebar Header: Logo & Toggle */}
+        <div
+          className="sidebar-header"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'space-between',
+            padding: '0 24px',
+            borderBottom: '1px solid var(--border-subtle)',
+            height: 'var(--header-height)',
+          }}
+        >
+          <div
+            className="sidebar-logo"
+            onClick={() => router.push('/dashboard')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              cursor: 'pointer',
+              borderBottom: 'none',
+              padding: 0,
+            }}
+          >
+            <div className="sidebar-logo-icon">A</div>
+            {!collapsed && <span className="sidebar-logo-text">AetherERP</span>}
+          </div>
+
+          {!collapsed && (
+            <Button
+              type="text"
+              icon={<MenuFoldOutlined />}
+              onClick={() => setCollapsed(true)}
+              style={{
+                fontSize: 16,
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 8,
+              }}
+            />
+          )}
+
+          {collapsed && (
+            <Button
+              type="text"
+              icon={<MenuUnfoldOutlined />}
+              onClick={() => setCollapsed(false)}
+              style={{
+                fontSize: 16,
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 8,
+                marginTop: 8
+              }}
+            />
+          )}
         </div>
 
         {/* Navigation */}
@@ -185,19 +243,11 @@ export default function DashboardLayout({
           ))}
         </div>
 
-        {/* Sidebar Footer / Collapse Toggle */}
-        <div className="sidebar-footer" style={{ textAlign: 'center' }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: 16,
-              width: '100%',
-              height: 40,
-              borderRadius: 10,
-            }}
-          />
+        {/* Sidebar Footer */}
+        <div className="sidebar-footer" style={{ padding: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ color: 'var(--muted)', fontSize: 11, textAlign: 'center' }}>
+            © 2026 AetherERP v1.4
+          </div>
         </div>
       </Sider>
 
