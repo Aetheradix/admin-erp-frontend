@@ -18,80 +18,17 @@ import {
   ThunderboltOutlined,
   RiseOutlined,
 } from '@ant-design/icons';
-import PageHeader from '@/src/components/ui/PageHeader';
-import StatCard from '@/src/components/ui/StatCard';
+import { PageHeader, StatCard, AppContainer, ContainerHeader } from '@/src/components/ui';
 import { useDashboard } from './hooks/useDashboard';
+import { recentActivity } from './constants/dashboard-mock-data';
 
 const { Text } = Typography;
-
-const recentActivity = [
-  {
-    color: '#E8583A',
-    content: (
-      <>
-        <Text strong style={{ fontSize: 13 }}>Sarah Chen</Text>{' '}
-        <Text style={{ color: 'var(--muted)', fontSize: 13 }}>completed task</Text>{' '}
-        <Tag color="green" style={{ borderRadius: 6, border: 'none' }}>UI Redesign</Tag>
-        <br />
-        <Text style={{ fontSize: 11, color: 'var(--muted)' }}>2 minutes ago</Text>
-      </>
-    ),
-  },
-  {
-    color: '#0284c7',
-    content: (
-      <>
-        <Text strong style={{ fontSize: 13 }}>Marcus Johnson</Text>{' '}
-        <Text style={{ color: 'var(--muted)', fontSize: 13 }}>created invoice</Text>{' '}
-        <Tag color="blue" style={{ borderRadius: 6, border: 'none' }}>INV-2024-089</Tag>
-        <br />
-        <Text style={{ fontSize: 11, color: 'var(--muted)' }}>15 minutes ago</Text>
-      </>
-    ),
-  },
-  {
-    color: '#059669',
-    content: (
-      <>
-        <Text strong style={{ fontSize: 13 }}>Emily Watson</Text>{' '}
-        <Text style={{ color: 'var(--muted)', fontSize: 13 }}>added 3 members to</Text>{' '}
-        <Tag color="purple" style={{ borderRadius: 6, border: 'none' }}>Marketing Team</Tag>
-        <br />
-        <Text style={{ fontSize: 11, color: 'var(--muted)' }}>1 hour ago</Text>
-      </>
-    ),
-  },
-  {
-    color: '#d97706',
-    content: (
-      <>
-        <Text strong style={{ fontSize: 13 }}>Alex Rivera</Text>{' '}
-        <Text style={{ color: 'var(--muted)', fontSize: 13 }}>updated project status to</Text>{' '}
-        <Tag color="gold" style={{ borderRadius: 6, border: 'none' }}>In Review</Tag>
-        <br />
-        <Text style={{ fontSize: 11, color: 'var(--muted)' }}>3 hours ago</Text>
-      </>
-    ),
-  },
-  {
-    color: '#e11d48',
-    content: (
-      <>
-        <Text strong style={{ fontSize: 13 }}>System</Text>{' '}
-        <Text style={{ color: 'var(--muted)', fontSize: 13 }}>flagged expense report</Text>{' '}
-        <Tag color="red" style={{ borderRadius: 6, border: 'none' }}>Overdue</Tag>
-        <br />
-        <Text style={{ fontSize: 11, color: 'var(--muted)' }}>5 hours ago</Text>
-      </>
-    ),
-  },
-];
 
 export default function Dashboard() {
   const { stats, quickActions, activeProjects, loading } = useDashboard();
 
   return (
-    <div>
+    <AppContainer fluid>
       <PageHeader
         title="Dashboard"
         subtitle="Welcome back, John! Here's what's happening today."
@@ -113,10 +50,11 @@ export default function Dashboard() {
         }}
         styles={{ body: { padding: '20px 24px' } }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <ThunderboltOutlined style={{ color: 'var(--primary)', fontSize: 16 }} />
-          <Text strong style={{ fontSize: 15 }}>Quick Actions</Text>
-        </div>
+        <ContainerHeader
+          title="Quick Actions"
+          icon={<ThunderboltOutlined />}
+          style={{ marginBottom: 16 }}
+        />
         <Row gutter={[12, 12]}>
           {quickActions.map((action, i) => (
             <Col xs={12} sm={6} key={i}>
@@ -160,10 +98,11 @@ export default function Dashboard() {
         <Col xs={24} lg={14}>
           <Card
             title={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <RiseOutlined style={{ color: 'var(--primary)' }} />
-                <span>Active Projects</span>
-              </div>
+              <ContainerHeader
+                title="Active Projects"
+                icon={<RiseOutlined />}
+                style={{ marginBottom: 0 }}
+              />
             }
             extra={
               <Button type="link" style={{ fontWeight: 600, padding: 0 }}>
@@ -243,10 +182,11 @@ export default function Dashboard() {
         <Col xs={24} lg={10}>
           <Card
             title={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ClockCircleOutlined style={{ color: 'var(--primary)' }} />
-                <span>Recent Activity</span>
-              </div>
+              <ContainerHeader
+                title="Recent Activity"
+                icon={<ClockCircleOutlined />}
+                style={{ marginBottom: 0 }}
+              />
             }
             extra={
               <Button type="link" style={{ fontWeight: 600, padding: 0 }}>
@@ -262,6 +202,6 @@ export default function Dashboard() {
           </Card>
         </Col>
       </Row>
-    </div>
+    </AppContainer>
   );
 }

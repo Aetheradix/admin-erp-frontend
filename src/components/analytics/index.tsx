@@ -7,7 +7,7 @@ import {
   ArrowRightOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
-import PageHeader from "@/src/components/ui/PageHeader";
+import { PageHeader, AppContainer, ContainerHeader } from "@/src/components/ui";
 import { useAnalytics } from "./hooks/useAnalytics";
 import { typeColors } from "./mockData";
 
@@ -17,7 +17,7 @@ export default function Analytics() {
   const { metrics, departments, reports, loading } = useAnalytics();
 
   return (
-    <div>
+    <AppContainer fluid>
       <PageHeader
         title="Analytics"
         subtitle="Performance metrics and insights."
@@ -61,10 +61,11 @@ export default function Analytics() {
         <Col xs={24} lg={14}>
           <Card
             title={
-              <>
-                <TrophyOutlined style={{ marginRight: 8 }} />
-                Department Performance
-              </>
+              <ContainerHeader
+                title="Department Performance"
+                icon={<TrophyOutlined />}
+                style={{ marginBottom: 0 }}
+              />
             }
             style={{
               borderRadius: 16,
@@ -114,10 +115,11 @@ export default function Analytics() {
         <Col xs={24} lg={10}>
           <Card
             title={
-              <>
-                <BarChartOutlined style={{ marginRight: 8 }} />
-                Recent Reports
-              </>
+              <ContainerHeader
+                title="Recent Reports"
+                icon={<BarChartOutlined />}
+                style={{ marginBottom: 0 }}
+              />
             }
             extra={
               <Button
@@ -173,6 +175,6 @@ export default function Analytics() {
           </Card>
         </Col>
       </Row>
-    </div>
+    </AppContainer>
   );
 }

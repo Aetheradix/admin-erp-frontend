@@ -1,115 +1,15 @@
 'use client';
-import {
-  BankOutlined,
-  BarChartOutlined,
-  BellOutlined,
-  CheckSquareOutlined,
-  DashboardOutlined,
-  DollarOutlined,
-  LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  ProjectOutlined,
-  SearchOutlined,
-  SettingOutlined,
-  ShoppingOutlined,
-  TeamOutlined,
-  UserOutlined
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Avatar, Badge, Button, Dropdown, Input, Layout, Menu, Tooltip, Typography } from 'antd';
+
+import { Layout } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { menuSections } from '@/src/config/menu-config';
+import SidebarHeader from '@/src/layout/dashboard/SidebarHeader';
+import SidebarNav from '@/src/layout/dashboard/SidebarNav';
+import SidebarFooter from '@/src/layout/dashboard/SidebarFooter';
+import DashboardHeader from '@/src/layout/dashboard/DashboardHeader';
 
-const { Sider, Header, Content } = Layout;
-const { Text } = Typography;
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-function getItem(
-  label: React.ReactNode,
-  key: string,
-  icon?: React.ReactNode,
-  children?: MenuItem[],
-): MenuItem {
-  return { key, icon, children, label } as MenuItem;
-}
-
-const menuSections = [
-  {
-    label: 'MAIN',
-    items: [
-      getItem('Dashboard', '/dashboard', <DashboardOutlined />),
-    ],
-  },
-  {
-    label: 'ORGANIZATION',
-    items: [
-      getItem('Organization', '/org', <BankOutlined />, [
-        getItem('Company Profile', '/org/profile'),
-        getItem('Branches', '/org/branches'),
-      ]),
-      getItem('Teams', '/teams', <TeamOutlined />),
-      getItem('Users', '/users', <UserOutlined />),
-    ],
-  },
-  {
-    label: 'OPERATIONS',
-    items: [
-      getItem('Projects', '/projects', <ProjectOutlined />),
-      getItem('Tasks', '/tasks', <CheckSquareOutlined />),
-    ],
-  },
-  {
-    label: 'FINANCE',
-    items: [
-      getItem('Finance', '/finance', <DollarOutlined />, [
-        getItem('Overview', '/finance/overview'),
-        getItem('Invoices', '/finance/invoices'),
-        getItem('Expenses', '/finance/expenses'),
-        getItem('Reimbursements', '/finance/reimbursements'),
-        getItem('Payroll', '/finance/payroll'),
-      ]),
-    ],
-  },
-  {
-    label: 'INVENTORY',
-    items: [
-      getItem('Inventory', '/inventory', <ShoppingOutlined />, [
-        getItem('Items', '/inventory/items'),
-        getItem('Stock Levels', '/inventory/stock'),
-        getItem('Movements', '/inventory/stock-movements'),
-      ]),
-    ],
-  },
-  {
-    label: 'INSIGHTS',
-    items: [
-      getItem('Analytics', '/analytics', <BarChartOutlined />, [
-        getItem('Overview', '/analytics/overview'),
-        getItem('Reports', '/analytics/reports'),
-      ]),
-    ],
-  },
-  {
-    label: 'ADMIN',
-    items: [
-      getItem('Settings', '/settings', <SettingOutlined />, [
-        getItem('General', '/settings/general'),
-        getItem('Roles & Permissions', '/settings/roles'),
-        getItem('Integrations', '/settings/integrations'),
-        getItem('Audit Log', '/settings/audit-log'),
-      ]),
-    ],
-  },
-];
-
-const userMenuItems: MenuProps['items'] = [
-  { key: 'profile', label: 'My Profile', icon: <UserOutlined /> },
-  { key: 'settings', label: 'Settings', icon: <SettingOutlined /> },
-  { type: 'divider' },
-  { key: 'logout', label: 'Sign Out', icon: <LogoutOutlined />, danger: true },
-];
+const { Sider, Content } = Layout;
 
 export default function DashboardLayout({
   children,
@@ -129,7 +29,6 @@ export default function DashboardLayout({
     .map((item: any) => item?.key as string);
 
   const handleMenuClick = (info: { key: string }) => {
-    // Map overview keys back to their parent paths for navigation
     const targetPath = info.key.endsWith('/overview')
       ? info.key.replace('/overview', '')
       : info.key;
@@ -146,7 +45,6 @@ export default function DashboardLayout({
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {/* Sidebar */}
       <Sider
         collapsible
         collapsed={collapsed}
@@ -160,173 +58,24 @@ export default function DashboardLayout({
           borderRight: '1px solid var(--border-subtle)',
         }}
       >
-        {/* Sidebar Header: Logo & Toggle */}
-        <div
-          className="sidebar-header"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'space-between',
-            padding: '0 24px',
-            borderBottom: '1px solid var(--border-subtle)',
-            height: 'var(--header-height)',
-          }}
-        >
-          <div
-            className="sidebar-logo"
-            onClick={() => router.push('/dashboard')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              cursor: 'pointer',
-              borderBottom: 'none',
-              padding: 0,
-            }}
-          >
-            <div className="sidebar-logo-icon">A</div>
-            {!collapsed && <span className="sidebar-logo-text">AetherERP</span>}
-          </div>
-
-          {!collapsed && (
-            <Button
-              type="text"
-              icon={<MenuFoldOutlined />}
-              onClick={() => setCollapsed(true)}
-              style={{
-                fontSize: 16,
-                width: 32,
-                height: 32,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 8,
-              }}
-            />
-          )}
-
-          {collapsed && (
-            <Button
-              type="text"
-              icon={<MenuUnfoldOutlined />}
-              onClick={() => setCollapsed(false)}
-              style={{
-                fontSize: 16,
-                width: 32,
-                height: 32,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 8,
-                marginTop: 8
-              }}
-            />
-          )}
-        </div>
-
-        {/* Navigation */}
-        <div className="sidebar-nav no-scrollbar">
-          {menuSections.map((section) => (
-            <div key={section.label}>
-              {!collapsed && (
-                <div className="sidebar-section-label">{section.label}</div>
-              )}
-              <Menu
-                mode="inline"
-                selectedKeys={[pathname]}
-                defaultOpenKeys={openKeys}
-                onClick={handleMenuClick}
-                items={section.items}
-                style={{ border: 'none', background: 'transparent' }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Sidebar Footer */}
-        <div className="sidebar-footer" style={{ padding: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <div style={{ color: 'var(--muted)', fontSize: 11, textAlign: 'center' }}>
-            © 2026 AetherERP v1.4
-          </div>
-        </div>
+        <SidebarHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+        <SidebarNav
+          collapsed={collapsed}
+          pathname={pathname}
+          openKeys={openKeys}
+          handleMenuClick={handleMenuClick}
+        />
+        <SidebarFooter />
       </Sider>
 
-      {/* Main Content */}
       <Layout style={{ marginLeft: siderWidth, transition: 'margin-left 0.3s cubic-bezier(0.2,0,0,1)' }}>
-        {/* Header */}
-        <Header
-          className="dashboard-header"
-          style={{ left: siderWidth }}
-        >
-          <div className="header-search">
-            <Input
-              prefix={<SearchOutlined style={{ color: 'var(--muted)' }} />}
-              placeholder="Search anything..."
-              style={{
-                borderRadius: 10,
-                background: 'var(--surface-subtle)',
-                border: 'none',
-                width: 300,
-              }}
-              allowClear
-            />
-          </div>
-
-          <div className="header-actions">
-            <Tooltip title="Notifications">
-              <Badge count={3} size="small" offset={[-4, 4]}>
-                <Button
-                  type="text"
-                  icon={<BellOutlined style={{ fontSize: 18 }} />}
-                  style={{ borderRadius: 10, width: 40, height: 40 }}
-                />
-              </Badge>
-            </Tooltip>
-
-            <Dropdown
-              menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
-              trigger={['click']}
-              placement="bottomRight"
-            >
-              <div className="header-user-info">
-                <Avatar
-                  style={{
-                    background: 'var(--primary)',
-                    fontWeight: 700,
-                    fontSize: 14,
-                  }}
-                  size={36}
-                >
-                  JD
-                </Avatar>
-                <div style={{ lineHeight: 1.3 }}>
-                  <Text
-                    strong
-                    style={{ fontSize: 13, display: 'block' }}
-                  >
-                    John Doe
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      color: 'var(--muted)',
-                      display: 'block',
-                    }}
-                  >
-                    Admin
-                  </Text>
-                </div>
-              </div>
-            </Dropdown>
-          </div>
-        </Header>
-
-        {/* Content */}
+        <DashboardHeader
+          siderWidth={siderWidth}
+          handleUserMenuClick={handleUserMenuClick}
+        />
         <Content
           className="dashboard-content-area"
-          style={{
-            marginTop: 'var(--header-height)',
-          }}
+          style={{ marginTop: 'var(--header-height)' }}
         >
           {children}
         </Content>
