@@ -1,6 +1,5 @@
-import React from 'react';
-import { Avatar, Tag, Button } from 'antd';
 import StatusBadge from '@/src/components/ui/StatusBadge';
+import { Avatar, Button, Tag } from 'antd';
 import { User } from '../types';
 
 export const getUserColumns = (router: { push: (path: string) => void }) => [
