@@ -3,7 +3,7 @@ import { Avatar, Tag, Button } from 'antd';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import { User } from '../types';
 
-export const getUserColumns = (router: any) => [
+export const getUserColumns = (router: { push: (path: string) => void }) => [
     {
         title: 'User',
         dataIndex: 'name',
