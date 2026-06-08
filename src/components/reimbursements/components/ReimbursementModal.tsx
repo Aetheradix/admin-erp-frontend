@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Modal, Form, Input, Select, InputNumber, Button } from 'antd';
-import { Reimbursement } from '../types';
+import { Form, Input, InputNumber, Modal, Select } from 'antd';
 import { categoryColors } from '../mockData';
+import { Reimbursement } from '../types';
 
 interface ReimbursementModalProps {
     open: boolean;

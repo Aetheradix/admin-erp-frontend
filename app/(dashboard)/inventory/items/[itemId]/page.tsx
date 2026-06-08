@@ -4,7 +4,7 @@ import PageHeader from '@/src/components/ui/PageHeader';
 import StatCard from '@/src/components/ui/StatCard';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import { EditOutlined, HistoryOutlined, ShoppingOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Descriptions, Row, Table, Tag, Typography } from 'antd';
+import { Button, Card, Col, Descriptions, Row, Table, Tag } from 'antd';
 
 const item = { id: 'ITM-001', name: 'MacBook Pro 16"', category: 'Electronics', sku: 'MBP-16-2026', quantity: 24, price: '$2,499', status: 'active' as const, description: 'Apple MacBook Pro 16-inch with M4 Pro chip, 36GB RAM, 512GB SSD.', supplier: 'Apple Inc.', minStock: 5, location: 'Warehouse A - Shelf 3' };
 

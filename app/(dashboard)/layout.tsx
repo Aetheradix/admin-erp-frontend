@@ -1,13 +1,13 @@
 'use client';
 
+import { menuSections } from '@/src/config/menu-config';
+import DashboardHeader from '@/src/layout/dashboard/DashboardHeader';
+import SidebarFooter from '@/src/layout/dashboard/SidebarFooter';
+import SidebarHeader from '@/src/layout/dashboard/SidebarHeader';
+import SidebarNav from '@/src/layout/dashboard/SidebarNav';
 import { Layout } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { menuSections } from '@/src/config/menu-config';
-import SidebarHeader from '@/src/layout/dashboard/SidebarHeader';
-import SidebarNav from '@/src/layout/dashboard/SidebarNav';
-import SidebarFooter from '@/src/layout/dashboard/SidebarFooter';
-import DashboardHeader from '@/src/layout/dashboard/DashboardHeader';
 
 const { Sider, Content } = Layout;
 

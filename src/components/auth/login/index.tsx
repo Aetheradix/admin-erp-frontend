@@ -22,7 +22,7 @@ export default function Login() {
       {/* Auth Mode Toggle */}
       <Segmented
         value={authMode}
-        onChange={(val) => setAuthMode(val as any)}
+        onChange={(val) => setAuthMode(val as 'PASSWORD' | 'OTP')} //Please check again
         options={[
           { label: 'PASSWORD', value: 'PASSWORD', icon: <LockOutlined /> },
           { label: 'SECURE OTP', value: 'OTP', icon: <SafetyOutlined /> },

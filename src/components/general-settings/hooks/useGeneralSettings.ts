@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { AppConfig, NotificationPreference } from '../types';
+import { useEffect, useState } from 'react';
 import { initialAppConfig, notificationPreferences as mockPrefs } from '../mockData';
+import { AppConfig, NotificationPreference } from '../types';
 
 export const useGeneralSettings = () => {
-  const [config, setConfig] = useState<AppConfig>(initialAppConfig);
+  const [config] = useState<AppConfig>(initialAppConfig);
   const [notifications, setNotifications] = useState<NotificationPreference[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 

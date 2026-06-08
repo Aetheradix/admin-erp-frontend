@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
-import { MailOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useForgotPassword } from './hooks/useForgotPassword';
 

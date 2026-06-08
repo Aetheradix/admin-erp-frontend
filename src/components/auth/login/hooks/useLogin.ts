@@ -9,6 +9,7 @@ export const useLogin = () => {
     setLoading(true);
     // Mock login — redirect to dashboard
     return new Promise((resolve) => {
+      console.log('Logging in with values:', values);
       setTimeout(() => {
         setLoading(false);
         window.location.href = '/dashboard';
