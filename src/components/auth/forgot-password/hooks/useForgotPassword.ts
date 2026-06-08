@@ -7,6 +7,7 @@ export const useForgotPassword = () => {
   const handleSubmit = async (values: { email: string }) => {
     setLoading(true);
     return new Promise((resolve) => {
+      console.log('Submitting forgot password with values:', values);
       setTimeout(() => {
         setLoading(false);
         setSubmitted(true);

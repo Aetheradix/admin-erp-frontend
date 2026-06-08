@@ -4,7 +4,7 @@ import { HomeOutlined } from '@ant-design/icons';
 import { Breadcrumb, Space, Typography } from 'antd';
 import React from 'react';
 
-const { Title } = Typography;
+// const { Title } = Typography; not being used, so commenting out to satisfy linter | but in future might be useful for styling the title differently than h1
 
 export interface BreadcrumbItem {
   title: string;

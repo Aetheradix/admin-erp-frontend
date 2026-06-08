@@ -8,6 +8,7 @@ export const useRegister = () => {
     setLoading(true);
     // Mock registration — redirect to dashboard
     return new Promise((resolve) => {
+      console.log('Registering with values:', values);
       setTimeout(() => {
         setLoading(false);
         window.location.href = '/dashboard';
