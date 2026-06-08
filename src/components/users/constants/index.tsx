@@ -38,7 +38,7 @@ export const getUserColumns = (router: any) => [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => <StatusBadge status={s} />
+        render: (s: User['status']) => <StatusBadge status={s} />
     },
     {
         title: 'Last Active',
@@ -49,7 +49,7 @@ export const getUserColumns = (router: any) => [
     {
         title: '',
         key: 'action',
-        render: (_: any, r: User) => (
+        render: (_: unknown, r: User) => (
             <Button
                 type="link"
                 onClick={(e) => {

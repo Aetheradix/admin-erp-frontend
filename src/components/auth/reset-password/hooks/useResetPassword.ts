@@ -4,7 +4,7 @@ export const useResetPassword = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
 
-  const handleReset = async (values: any) => {
+  const handleReset = async (values: { email: string }) => {
     setLoading(true);
     return new Promise((resolve) => {
       console.log('Resetting password with values:', values); 

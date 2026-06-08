@@ -25,7 +25,7 @@ export default function DashboardLayout({
   // Find currently open submenu keys
   const openKeys = menuSections
     .flatMap((s) => s.items)
-    .filter((item): item is { key: string; children: any[] } =>
+    .filter((item): item is { key: string; children: { key: string }[] } =>
       !!item && 'children' in item && !!item.children && pathname.startsWith(item.key as string)
     )
     .map((item) => item.key);

@@ -6,9 +6,18 @@ import { TeamOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 
 const { Text } = Typography;
+interface Team {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  department: string;
+  members: number;
+}
+
 
 interface TeamCardProps {
-    team: any;
+    team: Team;
     view: 'grid' | 'list';
 }
 

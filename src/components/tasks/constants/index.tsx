@@ -50,7 +50,7 @@ export const tableColumns = [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => (
+        render: (s: 'todo' | 'in-progress' | 'review' | 'completed') => (
             <StatusBadge
                 status={s === 'todo' ? 'pending' : s === 'review' ? 'pending' : s}
                 label={s === 'todo' ? 'To Do' : s === 'review' ? 'Review' : undefined}

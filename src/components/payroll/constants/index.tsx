@@ -79,6 +79,6 @@ export const payrollColumns = [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => <StatusBadge status={s} />
+        render: (s: PayrollEntry['status']) => <StatusBadge status={s} />
     },
 ];

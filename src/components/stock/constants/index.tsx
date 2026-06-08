@@ -36,7 +36,7 @@ export const getStockColumns = () => [
     {
         title: 'Min / Max',
         key: 'range',
-        render: (_: any, r: StockItem) => (
+        render: (_: unknown, r: StockItem) => (
             <Text style={{ color: 'var(--muted)', fontSize: 13 }}>
                 {r.minStock} / {r.maxStock}
             </Text>
@@ -45,7 +45,7 @@ export const getStockColumns = () => [
     {
         title: 'Stock Level',
         key: 'level',
-        render: (_: any, r: StockItem) => {
+        render: (_: unknown, r: StockItem) => {
             const pct = Math.round((r.inStock / r.maxStock) * 100);
             return <Progress percent={pct} size="small" strokeColor={levelConfig[r.level].color} style={{ maxWidth: 120 }} />;
         }

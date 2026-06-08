@@ -6,7 +6,14 @@ import { Card, Typography, Switch, Tag, Button } from 'antd';
 const { Text } = Typography;
 
 interface IntegrationCardProps {
-    integration: any;
+    integration: {
+        name: string;
+        description: string;
+        category: string;
+        connected: boolean;
+        color: string;
+        icon: React.ReactNode;
+    };
     loading: boolean;
 }
 

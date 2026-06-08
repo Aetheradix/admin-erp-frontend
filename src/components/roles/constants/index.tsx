@@ -52,7 +52,7 @@ export const getRoleColumns = () => [
         title: p.charAt(0).toUpperCase() + p.slice(1),
         key: p,
         align: 'center' as const,
-        render: (_: any, r: Role) => <Checkbox checked={r.permissions[p]} disabled />,
+        render: (_: unknown, r: Role) => <Checkbox checked={r.permissions[p]} disabled />,
     })),
     {
         title: '',
