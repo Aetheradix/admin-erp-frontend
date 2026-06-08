@@ -1,29 +1,38 @@
 'use client';
 
 import React from 'react';
-import { Card, Table, Row, Col, Avatar, Typography, Tag, Button, Timeline, Descriptions } from 'antd';
+import { Card, Table, Row, Col, Avatar, Typography, Tag, Button, Timeline } from 'antd';
 import { EditOutlined, TeamOutlined, UserAddOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import PageHeader from '@/src/components/ui/PageHeader';
 import StatCard from '@/src/components/ui/StatCard';
-import StatusBadge from '@/src/components/ui/StatusBadge';
+import StatusBadge, { StatusType } from '@/src/components/ui/StatusBadge';
 
 const { Text } = Typography;
 
 const team = { id: 't1', name: 'Engineering', description: 'Core product development team building the next generation of AetherERP.', members: 24, department: 'Technology', color: '#0284c7', lead: 'Sarah Chen' };
 
-const members = [
-  { id: '1', name: 'Sarah Chen', email: 'sarah@acme.com', role: 'Team Lead', status: 'active' as const, joined: 'Jan 2023' },
-  { id: '2', name: 'Marcus Johnson', email: 'marcus@acme.com', role: 'Sr. Developer', status: 'active' as const, joined: 'Mar 2023' },
-  { id: '3', name: 'Priya Sharma', email: 'priya@acme.com', role: 'Developer', status: 'active' as const, joined: 'Jun 2023' },
-  { id: '4', name: 'James Wilson', email: 'james@acme.com', role: 'DevOps Engineer', status: 'active' as const, joined: 'Aug 2023' },
-  { id: '5', name: 'Ana Martinez', email: 'ana@acme.com', role: 'QA Lead', status: 'active' as const, joined: 'Sep 2023' },
-  { id: '6', name: 'Tom Baker', email: 'tom@acme.com', role: 'Developer', status: 'inactive' as const, joined: 'Nov 2023' },
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: StatusType;
+  joined: string;
+}
+
+const members: TeamMember[] = [
+  { id: '1', name: 'Sarah Chen', email: 'sarah@acme.com', role: 'Team Lead', status: 'active', joined: 'Jan 2023' },
+  { id: '2', name: 'Marcus Johnson', email: 'marcus@acme.com', role: 'Sr. Developer', status: 'active', joined: 'Mar 2023' },
+  { id: '3', name: 'Priya Sharma', email: 'priya@acme.com', role: 'Developer', status: 'active', joined: 'Jun 2023' },
+  { id: '4', name: 'James Wilson', email: 'james@acme.com', role: 'DevOps Engineer', status: 'active', joined: 'Aug 2023' },
+  { id: '5', name: 'Ana Martinez', email: 'ana@acme.com', role: 'QA Lead', status: 'active', joined: 'Sep 2023' },
+  { id: '6', name: 'Tom Baker', email: 'tom@acme.com', role: 'Developer', status: 'inactive', joined: 'Nov 2023' },
 ];
 
 const columns = [
   {
     title: 'Name', dataIndex: 'name', key: 'name',
-    render: (name: string, r: any) => (
+    render: (name: string, r: TeamMember) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <Avatar style={{ background: team.color, fontWeight: 700 }} size={32}>{name.split(' ').map(n => n[0]).join('')}</Avatar>
         <div>
@@ -35,7 +44,7 @@ const columns = [
   },
   { title: 'Role', dataIndex: 'role', key: 'role', render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
   { title: 'Joined', dataIndex: 'joined', key: 'joined', render: (v: string) => <Text style={{ color: 'var(--muted)' }}>{v}</Text> },
-  { title: 'Status', dataIndex: 'status', key: 'status', render: (s: any) => <StatusBadge status={s} /> },
+  { title: 'Status', dataIndex: 'status', key: 'status', render: (s: StatusType) => <StatusBadge status={s} /> },
 ];
 
 const activities = [

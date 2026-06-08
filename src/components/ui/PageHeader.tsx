@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Breadcrumb, Button, Space, Typography } from 'antd';
+import { Breadcrumb, Space, Typography } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export interface BreadcrumbItem {
   title: string;
@@ -28,11 +28,11 @@ export default function PageHeader({
 }: PageHeaderProps) {
   const breadcrumbItems = breadcrumbs
     ? [
-        { title: <HomeOutlined />, href: '/dashboard' },
-        ...breadcrumbs.map((b) => ({
-          title: b.href ? <a href={b.href}>{b.title}</a> : b.title,
-        })),
-      ]
+      { title: <HomeOutlined />, href: '/dashboard' },
+      ...breadcrumbs.map((b) => ({
+        title: b.href ? <a href={b.href}>{b.title}</a> : b.title,
+      })),
+    ]
     : undefined;
 
   return (

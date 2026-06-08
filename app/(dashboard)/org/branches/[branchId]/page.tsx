@@ -2,12 +2,21 @@
 
 import React from 'react';
 import { Card, Tabs, Table, Row, Col, Avatar, Typography, Tag, Descriptions, Button } from 'antd';
-import { EnvironmentOutlined, UserOutlined, EditOutlined, TeamOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, UserOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons';
 import PageHeader from '@/src/components/ui/PageHeader';
 import StatCard from '@/src/components/ui/StatCard';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 
 const { Text } = Typography;
+
+interface BranchMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  status: 'active' | 'inactive';
+}
 
 const branchData = {
   id: 'b1',
@@ -23,18 +32,18 @@ const branchData = {
   projects: 12,
 };
 
-const members = [
-  { id: '1', name: 'John Doe', email: 'john@acme.com', role: 'Branch Manager', department: 'Management', status: 'active' as const },
-  { id: '2', name: 'Sarah Chen', email: 'sarah@acme.com', role: 'Lead Developer', department: 'Engineering', status: 'active' as const },
-  { id: '3', name: 'Mike Ross', email: 'mike@acme.com', role: 'Designer', department: 'Design', status: 'active' as const },
-  { id: '4', name: 'Emily Watson', email: 'emily@acme.com', role: 'HR Manager', department: 'HR', status: 'active' as const },
-  { id: '5', name: 'Alex Rivera', email: 'alex@acme.com', role: 'Sales Lead', department: 'Sales', status: 'inactive' as const },
+const members: BranchMember[] = [
+  { id: '1', name: 'John Doe', email: 'john@acme.com', role: 'Branch Manager', department: 'Management', status: 'active' },
+  { id: '2', name: 'Sarah Chen', email: 'sarah@acme.com', role: 'Lead Developer', department: 'Engineering', status: 'active' },
+  { id: '3', name: 'Mike Ross', email: 'mike@acme.com', role: 'Designer', department: 'Design', status: 'active' },
+  { id: '4', name: 'Emily Watson', email: 'emily@acme.com', role: 'HR Manager', department: 'HR', status: 'active' },
+  { id: '5', name: 'Alex Rivera', email: 'alex@acme.com', role: 'Sales Lead', department: 'Sales', status: 'inactive' },
 ];
 
 const memberColumns = [
   {
     title: 'Name', dataIndex: 'name', key: 'name',
-    render: (name: string, r: any) => (
+    render: (name: string, r: BranchMember) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <Avatar style={{ background: 'var(--primary)', fontWeight: 700 }} size={32}>{name.split(' ').map(n => n[0]).join('')}</Avatar>
         <div>
@@ -46,7 +55,7 @@ const memberColumns = [
   },
   { title: 'Role', dataIndex: 'role', key: 'role' },
   { title: 'Department', dataIndex: 'department', key: 'department', render: (d: string) => <Tag color="blue" style={{ borderRadius: 6, border: 'none' }}>{d}</Tag> },
-  { title: 'Status', dataIndex: 'status', key: 'status', render: (s: any) => <StatusBadge status={s} /> },
+  { title: 'Status', dataIndex: 'status', key: 'status', render: (s: BranchMember['status']) => <StatusBadge status={s} /> },
 ];
 
 export default function BranchDetailPage() {

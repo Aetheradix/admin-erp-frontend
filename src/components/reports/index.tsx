@@ -11,20 +11,22 @@ import { AnalyticsReport } from './types';
 
 export default function Reports() {
   const router = useRouter();
-  const { reports, totalReports, loading, search, setSearch } = useReports();
+  const { reports, loading, search, setSearch } = useReports();
 
   const columns = [
-    { title: 'Report', dataIndex: 'title', key: 'title', render: (t: string) => (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,0.08)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileTextOutlined /></div>
-        <span style={{ fontWeight: 600 }}>{t}</span>
-      </div>
-    )},
+    {
+      title: 'Report', dataIndex: 'title', key: 'title', render: (t: string) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,0.08)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileTextOutlined /></div>
+          <span style={{ fontWeight: 600 }}>{t}</span>
+        </div>
+      )
+    },
     { title: 'Type', dataIndex: 'type', key: 'type', render: (t: string) => <Tag color={typeColors[t]} style={{ borderRadius: 6, border: 'none', fontWeight: 600 }}>{t}</Tag> },
     { title: 'Created By', dataIndex: 'createdBy', key: 'createdBy' },
     { title: 'Date', dataIndex: 'date', key: 'date', render: (d: string) => <span style={{ color: 'var(--muted)', fontSize: 13 }}>{d}</span> },
     { title: 'Status', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={s === 'Published' ? 'green' : 'default'} style={{ borderRadius: 6, border: 'none', fontWeight: 600 }}>{s}</Tag> },
-    { title: '', key: 'action', render: (_: any, r: AnalyticsReport) => <Button type="link" onClick={(e) => { e.stopPropagation(); router.push(`/analytics/reports/${r.id}`); }} style={{ fontWeight: 600 }}>View →</Button> },
+    { title: '', key: 'action', render: (_: unknown, r: AnalyticsReport) => <Button type="link" onClick={(e) => { e.stopPropagation(); router.push(`/analytics/reports/${r.id}`); }} style={{ fontWeight: 600 }}>View →</Button> },
   ];
 
   return (

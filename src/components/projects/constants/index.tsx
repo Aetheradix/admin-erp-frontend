@@ -11,7 +11,7 @@ export const priorityColors: Record<string, string> = {
     Low: 'blue'
 };
 
-export const getProjectColumns = (router: any) => [
+export const getProjectColumns = (router: { push: (url: string) => void }) => [
     {
         title: 'Project',
         dataIndex: 'name',
@@ -38,13 +38,13 @@ export const getProjectColumns = (router: any) => [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => <StatusBadge status={s} />
+        render: (s: Project['status']) => <StatusBadge status={s} />
     },
     {
         title: 'Priority',
         dataIndex: 'priority',
         key: 'priority',
-        render: (p: string) => (
+        render: (p: keyof typeof priorityColors) => (
             <Tag color={priorityColors[p]} style={{ borderRadius: 6, fontWeight: 600, border: 'none' }}>
                 {p}
             </Tag>
@@ -73,7 +73,7 @@ export const getProjectColumns = (router: any) => [
     {
         title: '',
         key: 'action',
-        render: (_: any, r: Project) => (
+        render: (_: unknown, r: Project) => (
             <Button
                 type="link"
                 onClick={(e) => {

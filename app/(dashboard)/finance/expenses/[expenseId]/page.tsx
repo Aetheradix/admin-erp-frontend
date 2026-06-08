@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, Descriptions, Typography, Tag, Button, Row, Col, Divider } from 'antd';
+import { Card, Descriptions, Typography, Tag, Button, Row, Col } from 'antd';
 import { EditOutlined, DeleteOutlined, CheckOutlined } from '@ant-design/icons';
 import PageHeader from '@/src/components/ui/PageHeader';
 import StatusBadge from '@/src/components/ui/StatusBadge';

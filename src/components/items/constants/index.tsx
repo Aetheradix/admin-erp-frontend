@@ -5,7 +5,7 @@ import StatusBadge from '@/src/components/ui/StatusBadge';
 import { catColors } from '../mockData';
 import { InventoryItem } from '../types';
 
-export const getItemColumns = (router: any) => [
+export const getItemColumns = (router: { push: (url: string) => void }) => [
     {
         title: 'Item',
         dataIndex: 'name',
@@ -35,7 +35,7 @@ export const getItemColumns = (router: any) => [
         title: 'Category',
         dataIndex: 'category',
         key: 'category',
-        render: (c: string) => (
+        render: (c: keyof typeof catColors) => (
             <Tag color={catColors[c]} style={{ borderRadius: 6, border: 'none', fontWeight: 600 }}>
                 {c}
             </Tag>
@@ -64,12 +64,12 @@ export const getItemColumns = (router: any) => [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => <StatusBadge status={s} />
+        render: (s: InventoryItem['status']) => <StatusBadge status={s} />
     },
     {
         title: '',
         key: 'action',
-        render: (_: any, r: InventoryItem) => (
+        render: (_: unknown, r: InventoryItem) => (
             <Button
                 type="link"
                 onClick={(e) => {

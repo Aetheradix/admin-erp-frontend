@@ -3,9 +3,7 @@
 import React from 'react';
 import { Card, CardProps } from 'antd';
 
-export interface AppCardProps extends CardProps {
-  // Add any custom props here if needed
-}
+export type AppCardProps = CardProps;
 
 const AppCard: React.FC<AppCardProps> = ({ style, ...props }) => {
   const defaultStyle: React.CSSProperties = {

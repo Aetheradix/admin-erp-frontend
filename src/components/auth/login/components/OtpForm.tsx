@@ -3,11 +3,13 @@
 import React from 'react';
 import { Button, Form, Input } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
+import { LoginFormValues } from '../types';
 
 interface OtpFormProps {
     loading: boolean;
-    onFinish: (values: any) => void;
+    onFinish: (values: LoginFormValues) => void;
 }
+
 
 const OtpForm: React.FC<OtpFormProps> = ({ loading, onFinish }) => {
     return (

@@ -8,7 +8,7 @@ export const mockReimbursements: Reimbursement[] = [
         amount: '$1,250.00',
         date: '2024-05-15',
         submittedBy: 'John Doe',
-        status: 'Pending',
+        status: 'pending',
     },
     {
         id: 'REIMB-002',
@@ -17,7 +17,7 @@ export const mockReimbursements: Reimbursement[] = [
         amount: '$85.50',
         date: '2024-05-16',
         submittedBy: 'Jane Smith',
-        status: 'Approved',
+        status: 'approved',
     },
     {
         id: 'REIMB-003',
@@ -26,7 +26,7 @@ export const mockReimbursements: Reimbursement[] = [
         amount: '$120.00',
         date: '2024-05-18',
         submittedBy: 'Mike Johnson',
-        status: 'Paid',
+        status: 'paid',
     },
     {
         id: 'REIMB-004',
@@ -35,7 +35,7 @@ export const mockReimbursements: Reimbursement[] = [
         amount: '$450.00',
         date: '2024-05-20',
         submittedBy: 'Sarah Wilson',
-        status: 'Rejected',
+        status: 'rejected',
     },
     {
         id: 'REIMB-005',
@@ -44,7 +44,7 @@ export const mockReimbursements: Reimbursement[] = [
         amount: '$340.25',
         date: '2024-05-22',
         submittedBy: 'John Doe',
-        status: 'Pending',
+        status: 'pending',
     },
 ];
 

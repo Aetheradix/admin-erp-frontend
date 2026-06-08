@@ -6,8 +6,6 @@ import StatusBadge from '@/src/components/ui/StatusBadge';
 import { EditOutlined, HistoryOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Descriptions, Row, Table, Tag, Typography } from 'antd';
 
-const { Text } = Typography;
-
 const item = { id: 'ITM-001', name: 'MacBook Pro 16"', category: 'Electronics', sku: 'MBP-16-2026', quantity: 24, price: '$2,499', status: 'active' as const, description: 'Apple MacBook Pro 16-inch with M4 Pro chip, 36GB RAM, 512GB SSD.', supplier: 'Apple Inc.', minStock: 5, location: 'Warehouse A - Shelf 3' };
 
 const movements = [
@@ -19,7 +17,7 @@ const movements = [
 
 const movementColumns = [
   { title: 'Type', dataIndex: 'type', key: 'type', render: (t: string) => <Tag color={t === 'IN' ? 'green' : 'red'} style={{ borderRadius: 6, border: 'none', fontWeight: 700 }}>{t === 'IN' ? '↓ Stock In' : '↑ Stock Out'}</Tag> },
-  { title: 'Quantity', dataIndex: 'quantity', key: 'quantity', render: (q: number, r: any) => <span style={{ fontWeight: 700, color: r.type === 'IN' ? 'var(--success)' : 'var(--error)' }}>{r.type === 'IN' ? '+' : '-'}{q}</span> },
+  { title: 'Quantity', dataIndex: 'quantity', key: 'quantity', render: (q: number, r: { type: string }) => <span style={{ fontWeight: 700, color: r.type === 'IN' ? 'var(--success)' : 'var(--error)' }}>{r.type === 'IN' ? '+' : '-'}{q}</span> },
   { title: 'Date', dataIndex: 'date', key: 'date' },
   { title: 'Reference', dataIndex: 'reference', key: 'reference', render: (r: string) => <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{r}</span> },
   { title: 'By', dataIndex: 'by', key: 'by' },

@@ -29,7 +29,7 @@ export function useReimbursements() {
             ...data,
             id: `REIM-${Math.floor(Math.random() * 10000)}`,
             date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-            status: 'Pending',
+            status: 'pending',
             submittedBy: 'Current User', // Placeholder
         };
         setReimbursements((prev) => [newReimbursement, ...prev]);

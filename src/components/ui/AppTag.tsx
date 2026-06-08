@@ -3,9 +3,7 @@
 import React from 'react';
 import { Tag, TagProps } from 'antd';
 
-export interface AppTagProps extends TagProps {
-  // Add any custom props here if needed
-}
+export type AppTagProps = TagProps;
 
 const AppTag: React.FC<AppTagProps> = ({ style, ...props }) => {
   const defaultStyle: React.CSSProperties = {

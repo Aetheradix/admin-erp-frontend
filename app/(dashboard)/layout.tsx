@@ -25,8 +25,10 @@ export default function DashboardLayout({
   // Find currently open submenu keys
   const openKeys = menuSections
     .flatMap((s) => s.items)
-    .filter((item: any) => item?.children && pathname.startsWith(item.key as string))
-    .map((item: any) => item?.key as string);
+    .filter((item): item is { key: string; children: any[] } =>
+      !!item && 'children' in item && !!item.children && pathname.startsWith(item.key as string)
+    )
+    .map((item) => item.key);
 
   const handleMenuClick = (info: { key: string }) => {
     const targetPath = info.key.endsWith('/overview')

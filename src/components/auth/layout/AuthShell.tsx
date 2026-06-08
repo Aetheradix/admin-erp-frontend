@@ -23,7 +23,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <h1 className="auth-brand-heading">
-            Your team's brain,
+            Your team&apos;s brain,
             <br />
             <em>always</em> accessible.
           </h1>

@@ -1,4 +1,4 @@
-export type ReimbursementStatus = 'Pending' | 'Approved' | 'Rejected' | 'Paid';
+export type ReimbursementStatus = 'pending' | 'approved' | 'rejected' | 'paid';
 
 export interface Reimbursement {
   id: string;

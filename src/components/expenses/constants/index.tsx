@@ -5,7 +5,7 @@ import StatusBadge from '@/src/components/ui/StatusBadge';
 import { categoryColors } from '../mockData';
 import { Expense } from '../types';
 
-export const getExpenseColumns = (router: any) => [
+export const getExpenseColumns = (router: { push: (url: string) => void }) => [
     {
         title: 'Expense',
         dataIndex: 'description',
@@ -35,7 +35,7 @@ export const getExpenseColumns = (router: any) => [
         title: 'Category',
         dataIndex: 'category',
         key: 'category',
-        render: (c: string) => (
+        render: (c: keyof typeof categoryColors) => (
             <Tag color={categoryColors[c]} style={{ borderRadius: 6, border: 'none', fontWeight: 600 }}>
                 {c}
             </Tag>
@@ -58,12 +58,12 @@ export const getExpenseColumns = (router: any) => [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => <StatusBadge status={s} />
+        render: (s: Expense['status']) => <StatusBadge status={s} />
     },
     {
         title: '',
         key: 'action',
-        render: (_: any, r: Expense) => (
+        render: (_: unknown, r: Expense) => (
             <Button
                 type="link"
                 onClick={(e) => {

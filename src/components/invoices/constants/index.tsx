@@ -4,7 +4,7 @@ import { FileTextOutlined } from '@ant-design/icons';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import { Invoice } from '../types';
 
-export const getInvoiceColumns = (router: any) => [
+export const getInvoiceColumns = (router: { push: (url: string) => void }) => [
     {
         title: 'Invoice',
         dataIndex: 'id',
@@ -50,12 +50,12 @@ export const getInvoiceColumns = (router: any) => [
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (s: any) => <StatusBadge status={s} />
+        render: (s: Invoice['status']) => <StatusBadge status={s} />
     },
     {
         title: '',
         key: 'action',
-        render: (_: any, r: Invoice) => (
+        render: (_: unknown, r: Invoice) => (
             <Button
                 type="link"
                 onClick={(e) => {

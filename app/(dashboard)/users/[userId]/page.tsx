@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, Row, Col, Avatar, Typography, Tag, Descriptions, Tabs, Table, Timeline, Button, Checkbox, Divider } from 'antd';
+import { Card, Row, Col, Avatar, Typography, Tag, Descriptions, Tabs, Timeline, Button, Checkbox, Divider } from 'antd';
 import { EditOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import PageHeader from '@/src/components/ui/PageHeader';
 import StatusBadge from '@/src/components/ui/StatusBadge';
@@ -14,9 +14,9 @@ const permissions = ['View Projects', 'Edit Projects', 'Create Tasks', 'Manage T
 const userPerms = ['View Projects', 'Edit Projects', 'Create Tasks', 'Manage Team', 'View Reports', 'Export Data'];
 
 const activities = [
-  { color: '#0284c7' as const, children: <><Text strong style={{ fontSize: 13 }}>Completed task</Text> <Tag color="green" style={{ borderRadius: 6, border: 'none' }}>API Integration</Tag><br/><Text style={{ fontSize: 11, color: 'var(--muted)' }}>1 hour ago</Text></> },
-  { color: '#059669' as const, children: <><Text strong style={{ fontSize: 13 }}>Pushed 3 commits</Text> <Text style={{ color: 'var(--muted)', fontSize: 13 }}>to main branch</Text><br/><Text style={{ fontSize: 11, color: 'var(--muted)' }}>3 hours ago</Text></> },
-  { color: '#d97706' as const, children: <><Text strong style={{ fontSize: 13 }}>Reviewed PR</Text> <Tag color="blue" style={{ borderRadius: 6, border: 'none' }}>#245</Tag><br/><Text style={{ fontSize: 11, color: 'var(--muted)' }}>Yesterday</Text></> },
+  { color: '#0284c7' as const, children: <><Text strong style={{ fontSize: 13 }}>Completed task</Text> <Tag color="green" style={{ borderRadius: 6, border: 'none' }}>API Integration</Tag><br /><Text style={{ fontSize: 11, color: 'var(--muted)' }}>1 hour ago</Text></> },
+  { color: '#059669' as const, children: <><Text strong style={{ fontSize: 13 }}>Pushed 3 commits</Text> <Text style={{ color: 'var(--muted)', fontSize: 13 }}>to main branch</Text><br /><Text style={{ fontSize: 11, color: 'var(--muted)' }}>3 hours ago</Text></> },
+  { color: '#d97706' as const, children: <><Text strong style={{ fontSize: 13 }}>Reviewed PR</Text> <Tag color="blue" style={{ borderRadius: 6, border: 'none' }}>#245</Tag><br /><Text style={{ fontSize: 11, color: 'var(--muted)' }}>Yesterday</Text></> },
 ];
 
 export default function UserDetailPage() {
@@ -44,34 +44,40 @@ export default function UserDetailPage() {
         </Col>
         <Col xs={24} lg={16}>
           <Tabs defaultActiveKey="overview" items={[
-            { key: 'overview', label: 'Overview', children: (
-              <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
-                <Descriptions column={{ xs: 1, md: 2 }} labelStyle={{ fontWeight: 600, color: 'var(--muted)', fontSize: 13 }}>
-                  <Descriptions.Item label="Full Name">{user.name}</Descriptions.Item>
-                  <Descriptions.Item label="Role"><Tag color="blue" style={{ borderRadius: 6, border: 'none' }}>{user.role}</Tag></Descriptions.Item>
-                  <Descriptions.Item label="Department">{user.department}</Descriptions.Item>
-                  <Descriptions.Item label="Status"><StatusBadge status={user.status} /></Descriptions.Item>
-                  <Descriptions.Item label="Joined">{user.joined}</Descriptions.Item>
-                  <Descriptions.Item label="Location">{user.location}</Descriptions.Item>
-                </Descriptions>
-              </Card>
-            )},
-            { key: 'permissions', label: 'Permissions', children: (
-              <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }} title={<><SafetyCertificateOutlined style={{ marginRight: 8 }} />Role Permissions</>}>
-                <Row gutter={[16, 12]}>
-                  {permissions.map((p) => (
-                    <Col xs={24} sm={12} key={p}>
-                      <Checkbox checked={userPerms.includes(p)} style={{ fontSize: 14 }}>{p}</Checkbox>
-                    </Col>
-                  ))}
-                </Row>
-              </Card>
-            )},
-            { key: 'activity', label: 'Activity', children: (
-              <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
-                <Timeline items={activities} />
-              </Card>
-            )},
+            {
+              key: 'overview', label: 'Overview', children: (
+                <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
+                  <Descriptions column={{ xs: 1, md: 2 }} labelStyle={{ fontWeight: 600, color: 'var(--muted)', fontSize: 13 }}>
+                    <Descriptions.Item label="Full Name">{user.name}</Descriptions.Item>
+                    <Descriptions.Item label="Role"><Tag color="blue" style={{ borderRadius: 6, border: 'none' }}>{user.role}</Tag></Descriptions.Item>
+                    <Descriptions.Item label="Department">{user.department}</Descriptions.Item>
+                    <Descriptions.Item label="Status"><StatusBadge status={user.status} /></Descriptions.Item>
+                    <Descriptions.Item label="Joined">{user.joined}</Descriptions.Item>
+                    <Descriptions.Item label="Location">{user.location}</Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              )
+            },
+            {
+              key: 'permissions', label: 'Permissions', children: (
+                <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }} title={<><SafetyCertificateOutlined style={{ marginRight: 8 }} />Role Permissions</>}>
+                  <Row gutter={[16, 12]}>
+                    {permissions.map((p) => (
+                      <Col xs={24} sm={12} key={p}>
+                        <Checkbox checked={userPerms.includes(p)} style={{ fontSize: 14 }}>{p}</Checkbox>
+                      </Col>
+                    ))}
+                  </Row>
+                </Card>
+              )
+            },
+            {
+              key: 'activity', label: 'Activity', children: (
+                <Card style={{ borderRadius: 16, border: '1px solid var(--border-subtle)' }}>
+                  <Timeline items={activities} />
+                </Card>
+              )
+            },
           ]} />
         </Col>
       </Row>

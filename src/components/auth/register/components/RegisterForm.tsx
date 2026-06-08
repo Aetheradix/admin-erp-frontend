@@ -8,10 +8,11 @@ import {
     UserOutlined,
     TeamOutlined,
 } from '@ant-design/icons';
+import { RegisterFormValues } from '../types';
 
 interface RegisterFormProps {
     loading: boolean;
-    onFinish: (values: any) => void;
+    onFinish: (values:  RegisterFormValues) => void; 
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ loading, onFinish }) => {

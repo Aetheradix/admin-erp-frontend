@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Card, Row, Col, Descriptions, Table, Typography, Tag, Button, Divider } from 'antd';
-import { PrinterOutlined, DownloadOutlined, SendOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Table, Typography, Button, Divider } from 'antd';
+import { PrinterOutlined, DownloadOutlined, SendOutlined } from '@ant-design/icons';
 import PageHeader from '@/src/components/ui/PageHeader';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 
@@ -42,7 +42,7 @@ export default function InvoiceDetailPage() {
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 18 }}>A</div>
                 <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px' }}>AetherERP</span>
               </div>
-              <Text style={{ color: 'var(--muted)', fontSize: 13, lineHeight: 1.8 }}>123 Innovation Drive<br/>San Francisco, CA 94107<br/>billing@aetheRP.com</Text>
+              <Text style={{ color: 'var(--muted)', fontSize: 13, lineHeight: 1.8 }}>123 Innovation Drive<br />San Francisco, CA 94107<br />billing@aetheRP.com</Text>
             </div>
           </Col>
           <Col xs={24} md={12} style={{ textAlign: 'right' }}>
@@ -56,7 +56,7 @@ export default function InvoiceDetailPage() {
           <Col xs={24} md={8}>
             <Text style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Bill To</Text>
             <Text strong style={{ fontSize: 15, display: 'block' }}>{invoice.client}</Text>
-            <Text style={{ color: 'var(--muted)', fontSize: 13 }}>{invoice.clientAddress}<br/>{invoice.email}</Text>
+            <Text style={{ color: 'var(--muted)', fontSize: 13 }}>{invoice.clientAddress}<br />{invoice.email}</Text>
           </Col>
           <Col xs={24} md={8}>
             <Text style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Invoice Date</Text>

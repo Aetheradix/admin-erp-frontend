@@ -4,10 +4,11 @@ import React from 'react';
 import { Button, Form, Input } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import { LoginFormValues } from '../types';
 
 interface LoginFormProps {
-    loading: boolean;
-    onFinish: (values: any) => void;
+  loading: boolean;
+  onFinish: (values: LoginFormValues) => Promise<unknown> | void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ loading, onFinish }) => {

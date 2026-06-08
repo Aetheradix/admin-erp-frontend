@@ -6,9 +6,7 @@ import { TitleProps } from 'antd/es/typography/Title';
 
 const { Title } = Typography;
 
-export interface AppTitleProps extends TitleProps {
-  // Add any custom props here if needed
-}
+export type AppTitleProps = TitleProps;
 
 const AppTitle: React.FC<AppTitleProps> = ({ style, ...props }) => {
   const defaultStyle: React.CSSProperties = {
