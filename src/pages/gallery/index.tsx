@@ -1,12 +1,12 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { useCreateGalleryItemMutation, useDeleteGalleryItemMutation, useGetGalleryQuery } from '@/store/api/galleryApiSlice';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useState } from 'react';
 import { GalleryGrid } from './components/GalleryGrid';
 import type { GalleryItem } from './hooks/mockGallery';
 
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { showToast } from '@/components/ui/composed/Toast';
 import { GalleryForm } from './components/GalleryForm';

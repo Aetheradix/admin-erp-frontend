@@ -1,7 +1,6 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { DataTable } from '@/components/ui/composed/DataTable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
+import { Column, DataTable } from '@/components/ui/composed/DataTable';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { ApprovalDialog } from './components/ApprovalDialog';

@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { StaffCard } from './components/StaffCard';
 import { StaffTableToolbar } from './components/StaffTableToolbar';
 import { StaffForm } from './components/StaffForm';
@@ -7,7 +7,7 @@ import { StaffEmptyState } from './components/StaffEmptyState';
 import { StaffStatsSection } from './components/StaffStatsSection';
 import { useStaff } from './hooks/useStaff';
 import { Sparkles } from 'lucide-react';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 export function StaffList() {
   const {

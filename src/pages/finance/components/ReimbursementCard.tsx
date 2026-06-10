@@ -1,5 +1,5 @@
 import { Receipt, Clock, CheckCircle2, XCircle, FileText, ChevronRight } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import type { Reimbursement } from '../hooks/mockFinance';
 
 interface ReimbursementCardProps {
@@ -54,7 +54,7 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
         </p>
 
         <div className="flex items-center justify-between pt-6 border-t border-border-subtle/50">
-          <div className={classNames(
+          <div className={cn(
             "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
             getStatusStyles(request.status)
           )}>

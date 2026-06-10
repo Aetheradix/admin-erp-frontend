@@ -2,11 +2,11 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { ExplorerBar } from '@/components/ui/composed/ExplorerBar';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { GrievanceCard } from './components/GrievanceCard';
 import { GrievanceForm } from './components/GrievanceForm';
 import { useGrievancePage } from './hooks/useGrievancePage';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { Scale, AlertTriangle } from 'lucide-react';
 
 export function GrievancePage() {

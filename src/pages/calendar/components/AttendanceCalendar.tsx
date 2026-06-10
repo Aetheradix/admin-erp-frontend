@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Home, Building2, Calendar as CalendarIcon, Sun } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import type { AttendanceRecord } from '../hooks/mockAttendance';
 
 interface AttendanceCalendarProps {
@@ -118,7 +118,7 @@ export function AttendanceCalendar({ records, requests = [], onDateSelect }: Att
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-black text-foreground group-hover:text-primary transition-colors">{day}</span>
                 {displayItem && (
-                  <div className={classNames(
+                  <div className={cn(
                     "flex flex-col gap-1 text-[8px] font-black uppercase tracking-tighter p-2 rounded-xl border transition-transform duration-500 group-hover:scale-105",
                     getDayTypeStyles(displayItem.type, displayItem.status)
                   )}>

@@ -6,7 +6,7 @@ import { OrgChart } from './components/OrgChart';
 import { ProjectCard } from './components/ProjectCard';
 import { mockHierarchy } from './hooks/mockStats';
 import { useGetProjectsQuery, useGetProjectStatsQuery } from '@/store/api/projectApiSlice';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { PieChart, TrendingUp, Layers, Archive as ArchiveIcon, Sparkles } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 

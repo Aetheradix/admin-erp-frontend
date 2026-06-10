@@ -1,15 +1,13 @@
 import React from 'react';
-import { RadioButton, type RadioButtonProps } from 'primereact/radiobutton';
-import { classNames } from 'primereact/utils';
+import { Radio as AntRadio } from 'antd';
+import type { RadioProps as AntRadioProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const Radio = React.forwardRef<RadioButton, RadioButtonProps>(({ className, ...props }, ref) => {
+export const Radio = React.forwardRef<unknown, AntRadioProps>(({ className, ...props }, ref) => {
   return (
-    <RadioButton
-      ref={ref}
-      className={classNames(
-        'transition-all duration-200',
-        className
-      )}
+    <AntRadio
+      ref={ref as React.Ref<never>}
+      className={cn('transition-all duration-200', className)}
       {...props}
     />
   );

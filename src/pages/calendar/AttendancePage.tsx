@@ -1,12 +1,12 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { AttendanceStats } from './components/AttendanceStats';
 import { AttendanceCalendar } from './components/AttendanceCalendar';
 import { AttendancePlanner } from './components/AttendancePlanner';
 import { AttendanceRequestForm } from './components/AttendanceRequestForm';
 import { RecentRequests } from './components/RecentRequests';
 import { useAttendancePage } from './hooks/useAttendancePage';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 export function AttendancePage() {
   const {

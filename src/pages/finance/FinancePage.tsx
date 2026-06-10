@@ -2,12 +2,12 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { ExplorerBar } from '@/components/ui/composed/ExplorerBar';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { FinanceStats } from './components/FinanceStats';
 import { ReimbursementCard } from './components/ReimbursementCard';
 import { FinanceForm } from './components/FinanceForm';
 import { useFinancePage } from './hooks/useFinancePage';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { Receipt } from 'lucide-react';
 
 export function FinancePage() {

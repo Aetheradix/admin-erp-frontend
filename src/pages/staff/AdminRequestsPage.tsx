@@ -4,8 +4,8 @@ import { AdminRequestCard } from './components/AdminRequestCard';
 import { AdminRequestDialog } from './components/AdminRequestDialog';
 import { useAdminRequests } from './hooks/useAdminRequests';
 import { Shield } from 'lucide-react';
-import { Dialog } from 'primereact/dialog';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { Dialog } from '@/components/ui/composed/Dialog';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 export default function AdminRequestsPage() {
     const {

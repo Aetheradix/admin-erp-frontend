@@ -1,6 +1,6 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { DataTable } from '@/components/ui/composed/DataTable';
-import { Column } from 'primereact/column';
+import { Column } from '@/components/ui/composed/DataTable';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { useGetLeavesQuery } from '@/store/api/leaveSlice';
 import { Clock, CheckCircle2, XCircle, Calendar as CalendarIcon } from 'lucide-react';
@@ -93,7 +93,7 @@ export function ApprovalHistory() {
           <Column 
             field="updated_at" 
             header="Processed On" 
-            body={(rowData) => <span className="text-[10px] font-black text-muted/60 uppercase">{formatDate(rowData.updated_at)}</span>} 
+            body={(rowData: { updated_at?: string }) => <span className="text-[10px] font-black text-muted/60 uppercase">{formatDate(rowData.updated_at)}</span>} 
             sortable
           />
         </DataTable>

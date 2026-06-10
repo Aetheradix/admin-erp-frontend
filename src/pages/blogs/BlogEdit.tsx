@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { BlogForm } from './components/BlogForm';
 import { useBlogs } from './hooks/useBlogs';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 const BlogEdit = () => {
   const { id } = useParams();

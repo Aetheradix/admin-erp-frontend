@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { Building2, MapPin, Globe, Calendar, Users, Mail, Phone, ExternalLink } from 'lucide-react';
+import { Building2, MapPin, Globe, Calendar, Users, Mail, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const companyInfo = {

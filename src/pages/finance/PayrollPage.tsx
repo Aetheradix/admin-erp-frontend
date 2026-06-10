@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { DollarSign, MoreHorizontal, User, Calendar, CreditCard } from 'lucide-react';
+import { MoreHorizontal, User, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const payroll = [

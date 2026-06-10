@@ -2,14 +2,14 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Calendar as CalendarIcon, Filter, Search } from 'lucide-react';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
 import { showToast } from '@/components/ui/composed/Toast';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
 import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/store/api/eventApiSlice';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import type { ERPEvent } from './hooks/mockEvents';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Shield, Check, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
-import { InputSwitch } from 'primereact/inputswitch';
+import { InputSwitch } from '@/components/ui/primitives/Switch';
 
 interface Role {
     name: string;

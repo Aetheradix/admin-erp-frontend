@@ -1,5 +1,5 @@
 import { Box, CheckCircle2, Clock, Archive, User, Calendar, AlertTriangle } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import type { Project } from '../hooks/mockStats';
 
 interface ProjectCardProps {
@@ -39,7 +39,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <span className="text-[10px] font-black text-muted uppercase tracking-widest">{project.client}</span>
           </div>
         </div>
-        <div className={classNames(
+        <div className={cn(
           "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
           getStatusStyles(project.status)
         )}>

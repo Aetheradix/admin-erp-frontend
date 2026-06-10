@@ -1,5 +1,5 @@
 import { Clock, CheckCircle2, AlertCircle, MessageSquare, Shield, ChevronRight } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import type { Grievance } from '../hooks/mockGrievances';
 
 interface GrievanceCardProps {
@@ -78,7 +78,7 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
       </div>
 
       <div className="mt-auto flex items-center justify-between pt-6 border-t border-border-subtle/50">
-        <div className={classNames(
+        <div className={cn(
           "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
           getStatusStyles(grievance.status)
         )}>

@@ -1,5 +1,5 @@
-import { Toast as PRToast } from 'primereact/toast';
-import { useRef, useEffect } from 'react';
+import { App } from 'antd';
+import { useEffect } from 'react';
 
 type ToastSeverity = 'success' | 'info' | 'warn' | 'error';
 
@@ -17,33 +17,31 @@ export const showToast = (options: ToastOptions) => {
   window.dispatchEvent(event);
 };
 
+const severityMap: Record<ToastSeverity, 'success' | 'info' | 'warning' | 'error'> = {
+  success: 'success',
+  info: 'info',
+  warn: 'warning',
+  error: 'error',
+};
+
 export const Toast = () => {
-  const toast = useRef<PRToast>(null);
+  const { notification } = App.useApp();
 
   useEffect(() => {
-    const handleShowToast = (e: any) => {
-      const { severity = 'info', summary = 'Notification', detail, life = 3000 } = e.detail;
-      toast.current?.show({ severity, summary, detail, life });
+    const handleShowToast = (e: Event) => {
+      const { severity = 'info', summary = 'Notification', detail, life = 3000 } = (e as CustomEvent<ToastOptions>).detail;
+      notification[severityMap[severity as ToastSeverity]]({
+        message: summary,
+        description: detail,
+        placement: 'topRight',
+        duration: life / 1000,
+        className: 'rounded-[20px] shadow-2xl font-body',
+      });
     };
 
     window.addEventListener(TOAST_EVENT, handleShowToast);
     return () => window.removeEventListener(TOAST_EVENT, handleShowToast);
-  }, []);
+  }, [notification]);
 
-  return (
-    <PRToast 
-      ref={toast} 
-      position="top-right"
-      pt={{
-        root: { className: 'z-[10000]' },
-        message: { className: 'rounded-[20px] shadow-2xl backdrop-blur-md border-none px-6 py-4 mb-4 font-body animate-in slide-in-from-right duration-300' },
-        content: { className: 'flex items-center gap-4' },
-        icon: { className: 'text-2xl' },
-        text: { className: 'flex flex-col gap-0.5' },
-        summary: { className: 'font-black text-xs uppercase tracking-widest' },
-        detail: { className: 'text-sm font-medium opacity-80 leading-tight' },
-        closeButton: { className: 'opacity-40 hover:opacity-100 transition-opacity ml-auto' }
-      }}
-    />
-  );
+  return null;
 };

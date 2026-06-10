@@ -1,13 +1,14 @@
 import React from 'react';
-import { InputText, type InputTextProps } from 'primereact/inputtext';
-import { classNames } from 'primereact/utils';
+import { Input as AntInput } from 'antd';
+import type { InputProps as AntInputProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const Input = React.forwardRef<HTMLInputElement, InputTextProps>(({ className, ...props }, ref) => {
+export const Input = React.forwardRef<unknown, AntInputProps>(({ className, ...props }, ref) => {
   return (
-    <InputText
-      ref={ref}
-      className={classNames(
-        '!w-full !px-5 !py-4 !border !border-border-subtle !rounded-2xl !bg-white !text-foreground focus:!border-primary/50 !transition-all !duration-200 !outline-none placeholder:!text-muted/50 font-medium text-sm !shadow-xs',
+    <AntInput
+      ref={ref as React.Ref<never>}
+      className={cn(
+        'w-full px-5 py-4 border-border-subtle rounded-2xl bg-white text-foreground font-medium text-sm shadow-xs',
         className
       )}
       {...props}

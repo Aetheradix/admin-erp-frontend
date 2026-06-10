@@ -1,15 +1,20 @@
 import React from 'react';
-import { Dropdown as PRDropdown, type DropdownProps as PRDropdownProps } from 'primereact/dropdown';
-import { classNames } from 'primereact/utils';
+import { Select } from '../primitives/Select';
+import type { SelectProps } from 'antd';
 
-export const Dropdown = React.forwardRef<PRDropdown, PRDropdownProps>(({ className, ...props }, ref) => {
+interface PrimeDropdownChangeEvent {
+  value: unknown;
+}
+
+interface DropdownProps extends Omit<SelectProps, 'onChange'> {
+  onChange?: (e: PrimeDropdownChangeEvent) => void;
+}
+
+export const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(({ onChange, ...props }, ref) => {
   return (
-    <PRDropdown
+    <Select
       ref={ref}
-      className={classNames(
-        'w-full border border-border-subtle rounded-card bg-surface-elevated text-foreground focus:border-primary transition-all duration-200 outline-none',
-        className
-      )}
+      onChange={(e) => onChange?.({ value: e.value })}
       {...props}
     />
   );

@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { FileText, Download, Filter, Calendar } from 'lucide-react';
+import { FileText, Download, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const reports = [

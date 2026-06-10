@@ -1,6 +1,6 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
-import { Clock, User, Shield, Terminal, Search } from 'lucide-react';
+import { Clock, User, Terminal, Search } from 'lucide-react';
 import { useState } from 'react';
 
 const logs = [

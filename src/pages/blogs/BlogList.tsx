@@ -1,7 +1,6 @@
-import { Column } from 'primereact/column';
-import { DataTable } from '@/components/ui/composed/DataTable';
+import { Column, DataTable } from '@/components/ui/composed/DataTable';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 import { useBlogFilters } from './hooks/useBlogFilters';
 import { useBlogs } from './hooks/useBlogs';

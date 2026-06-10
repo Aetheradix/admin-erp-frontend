@@ -1,4 +1,5 @@
-import { Calendar } from 'primereact/calendar';
+import { Calendar } from '@/components/ui/primitives/Calendar';
+import { EllipsisOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 
 export default function CalendarCard() {
@@ -32,7 +33,7 @@ export default function CalendarCard() {
           aria-label="Calendar options"
           className="w-8 h-8 rounded-full bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-colors"
         >
-          <i className="pi pi-ellipsis-h text-muted" aria-hidden="true"></i>
+          <EllipsisOutlined className="text-muted" aria-hidden="true" />
         </button>
       </div>
 

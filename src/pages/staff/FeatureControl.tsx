@@ -2,7 +2,7 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { FeatureCard } from './components/FeatureCard';
 import { useFeatureControl } from './hooks/useFeatureControl';
 import { Settings2, Calendar, Layout, CreditCard, Users, AlertCircle, Key, CheckCircle2 } from 'lucide-react';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 
 const FEATURES = [

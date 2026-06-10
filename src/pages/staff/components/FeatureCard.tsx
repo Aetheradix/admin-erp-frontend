@@ -1,5 +1,5 @@
 import { Check, Plus } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 
 interface FeatureCardProps {
     feature: any;
@@ -13,7 +13,7 @@ export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: Featu
         <div className="group relative bg-white/40 backdrop-blur-3xl p-10 rounded-[48px] border border-white/60 shadow-subtle hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 transition-all duration-500 overflow-hidden">
             <div className="flex items-start justify-between mb-8">
                 <div className="flex items-center gap-5">
-                    <div className={classNames(
+                    <div className={cn(
                         "w-16 h-16 rounded-[24px] flex items-center justify-center transition-transform duration-700 group-hover:rotate-12 group-hover:scale-110",
                         `bg-${feature.color}-500/10 text-${feature.color}-600`
                     )}>
@@ -37,7 +37,7 @@ export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: Featu
                         <button
                             key={dept}
                             onClick={() => onToggle(feature.id, dept, !active)}
-                            className={classNames(
+                            className={cn(
                                 "flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
                                 active 
                                     ? "bg-primary text-white shadow-xl shadow-primary/20 scale-100" 
@@ -51,7 +51,7 @@ export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: Featu
                 })}
             </div>
 
-            <div className={classNames(
+            <div className={cn(
                 "absolute -bottom-10 -right-10 w-40 h-40 opacity-5 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none blur-3xl rounded-full",
                 `bg-${feature.color}-600`
             )} />

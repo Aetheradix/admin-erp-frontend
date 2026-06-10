@@ -1,12 +1,11 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 
 interface EmptySlateProps {
   icon: LucideIcon;
   title: string;
   message: ReactNode;
-  /** 'card' = white bg + dashed border (for grids), 'ghost' = transparent + reduced opacity (for simple lists) */
   variant?: 'card' | 'ghost';
   className?: string;
 }
@@ -20,7 +19,7 @@ export const EmptySlate = ({
 }: EmptySlateProps) => {
   if (variant === 'ghost') {
     return (
-      <div className={classNames('col-span-full py-20 flex flex-col items-center justify-center text-center opacity-40', className)}>
+      <div className={cn('col-span-full py-20 flex flex-col items-center justify-center text-center opacity-40', className)}>
         <Icon size={48} />
         <p className="text-sm font-black mt-4">{title}</p>
       </div>
@@ -28,7 +27,7 @@ export const EmptySlate = ({
   }
 
   return (
-    <div className={classNames(
+    <div className={cn(
       'col-span-full py-32 flex flex-col items-center justify-center text-center gap-6 bg-white/50 backdrop-blur-sm rounded-[48px] border-2 border-dashed border-border-strong',
       className
     )}>

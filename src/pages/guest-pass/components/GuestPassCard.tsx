@@ -1,5 +1,5 @@
 import { User, Key, Share2, ShieldCheck, QrCode } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import type { GuestPass } from '../hooks/mockGuestPass';
 
 interface GuestPassCardProps {
@@ -65,7 +65,7 @@ export function GuestPassCard({ pass }: GuestPassCardProps) {
         </div>
 
         <div className="flex items-center justify-between pt-2">
-           <div className={classNames(
+           <div className={cn(
             "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
             getStatusStyles(pass.status)
           )}>

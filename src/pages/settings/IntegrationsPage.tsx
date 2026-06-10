@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { Slack, Github, Mail, CreditCard, Layers, Smartphone, Zap, MessageSquare } from 'lucide-react';
+import { Slack, Github, Mail, CreditCard, Layers, Zap, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { InputSwitch } from 'primereact/inputswitch';
+import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Button } from '@/components/ui/primitives/Button';
 import { useState } from 'react';
 
@@ -17,7 +17,9 @@ const integrations = [
 ];
 
 export function IntegrationsPage() {
-    const [activeItems, setActiveItems] = useState(integrations.reduce((acc, item) => ({ ...acc, [item.id]: item.connected }), {}));
+    const [activeItems, setActiveItems] = useState<Record<number, boolean>>(
+      integrations.reduce<Record<number, boolean>>((acc, item) => ({ ...acc, [item.id]: item.connected }), {})
+    );
 
     const toggle = (id: number) => {
         setActiveItems(prev => ({ ...prev, [id]: !prev[id] }));

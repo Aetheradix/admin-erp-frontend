@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { FilterMatchMode } from 'primereact/api';
-import type { DataTableFilterMeta } from 'primereact/datatable';
+import { FilterMatchMode, type DataTableFilterMeta } from '@/components/ui/composed/DataTable';
 
 
 export function useBlogFilters() {
