@@ -36,12 +36,18 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       transformResponse: (response: any) => response.data,
       providesTags: ['Attendance'],
     }),
-
     getAttendanceHistory: builder.query<any[], void>({
       query: () => '/attendance/history',
       providesTags: ['Attendance'],
       transformResponse: (response: any) => response.data || response,
     }),
+    getAttendanceRecords: builder.query<any[], void>({
+      query: () => '/attendance/get-info',
+      providesTags: ['Attendance'],
+      transformResponse: (response: any) => response.data || response,
+    }),
+    
+    
   }),
 });
 
@@ -50,5 +56,6 @@ export const {
   useCheckOutMutation,
   useGetAttendanceStatusQuery,
   useGetAttendanceHistoryQuery,
-  useGetAttendanceStatsQuery
+  useGetAttendanceStatsQuery,
+  useGetAttendanceRecordsQuery,
 } = attendanceSlice;

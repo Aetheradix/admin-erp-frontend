@@ -21,6 +21,11 @@ export const guestpassSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['GuestPasses'],
     }),
+    useGetGuestPassesRecords: builder.query<any[], void>({
+      query: () => '/guestpasses',
+      providesTags: ['GuestPasses'],
+    }),
+
   }),
 });
 
@@ -28,4 +33,5 @@ export const {
   useGetPassesQuery,
   useIssuePassMutation,
   useRevokePassMutation,
+  useUseGetGuestPassesRecordsQuery,
 } = guestpassSlice;

@@ -3,7 +3,7 @@ import { apiSlice } from './apiSlice';
 export const grievanceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getGrievances: builder.query<any[], void>({
-      query: () => '/grievances',
+      query: () => '/grievances/all-grievances',
       providesTags: ['Grievances'],
       transformResponse: (response: any) => {
         const data = response.data || response;
@@ -17,7 +17,7 @@ export const grievanceApiSlice = apiSlice.injectEndpoints({
     }),
     submitGrievance: builder.mutation<any, any>({
       query: (grievanceData) => ({
-        url: '/grievances',
+        url: '/grievances/create',
         method: 'POST',
         body: {
           subject: grievanceData.title,
@@ -36,6 +36,19 @@ export const grievanceApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Grievances'],
     }),
+    getActiveConcerns: builder.query<any[], void>({
+      query: () => '/grievances/all-grievances',
+      providesTags: ['Grievances'],
+      transformResponse: (response: any) => {
+        const data = response.data || response;
+        return data.map((g: any) => ({
+          ...g,
+          title: g.subject || g.title,
+          isAnonymous: !!g.is_anonymous,
+          date: g.created_at ? new Date(g.created_at).toISOString().split('T')[0] : g.date,
+        }));
+      },
+    }),
   }),
 });
 
@@ -43,4 +56,5 @@ export const {
   useGetGrievancesQuery,
   useSubmitGrievanceMutation,
   useUpdateGrievanceStatusMutation,
+  useGetActiveConcernsQuery,
 } = grievanceApiSlice;

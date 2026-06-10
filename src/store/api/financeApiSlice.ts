@@ -37,6 +37,19 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Reimbursements'],
     }),
+    getReimbursementsRecords: builder.query<any[], void>({
+      query: () => '/reimbursements',
+      providesTags: ['Reimbursements'],
+      transformResponse: (response: any) => {
+        const data = response.data || response;
+        return data.map((r: any) => ({
+          ...r,
+          item: r.title,
+          date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : r.date,
+          receiptUrl: r.receipt_url,
+        }));
+      },
+    }),
   }),
 });
 
@@ -44,4 +57,5 @@ export const {
   useGetReimbursementsQuery,
   useCreateReimbursementMutation,
   useUpdateReimbursementStatusMutation,
+  useGetReimbursementsRecordsQuery,
 } = financeApiSlice;

@@ -29,6 +29,10 @@ export const reimbursementSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Reimbursements'],
     }),
+     getReimbursementsRecords: builder.query<any[], void>({
+      query: () => '/reimbursements',
+      providesTags: ['Reimbursements'],
+    }),
   }),
 });
 
@@ -37,4 +41,5 @@ export const {
   useCreateReimbursementMutation,
   useUpdateReimbursementStatusMutation,
   useDeleteReimbursementMutation,
+  useGetReimbursementsRecordsQuery,
 } = reimbursementSlice;
