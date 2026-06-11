@@ -40,7 +40,7 @@ export function AuditLogPage() {
             />
 
             {/* Search Toolbar */}
-            <div className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-6 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-6 flex items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
                     <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                     <input
@@ -48,12 +48,12 @@ export function AuditLogPage() {
                         placeholder="Search logs by user, action, or target..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-subtle border-none text-sm font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="w-full pl-11 pr-4 py-3 rounded-md bg-surface-subtle border-none text-sm font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="px-4 py-2 bg-surface-subtle rounded-xl text-[10px] font-black uppercase tracking-widest text-muted">All Time</div>
-                    <div className="px-4 py-2 bg-surface-subtle rounded-xl text-[10px] font-black uppercase tracking-widest text-muted">Filter</div>
+                    <div className="px-4 py-2 bg-surface-subtle rounded-md text-[10px] font-black uppercase tracking-widest text-muted">All Time</div>
+                    <div className="px-4 py-2 bg-surface-subtle rounded-md text-[10px] font-black uppercase tracking-widest text-muted">Filter</div>
                 </div>
             </div>
 
@@ -61,7 +61,7 @@ export function AuditLogPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden"
+                className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden"
             >
                 <div className="p-8 pb-4 border-b border-border-subtle flex items-center gap-3">
                     <Terminal size={18} className="text-primary" />

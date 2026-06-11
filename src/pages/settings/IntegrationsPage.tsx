@@ -18,7 +18,7 @@ const integrations = [
 
 export function IntegrationsPage() {
     const [activeItems, setActiveItems] = useState<Record<number, boolean>>(
-      integrations.reduce<Record<number, boolean>>((acc, item) => ({ ...acc, [item.id]: item.connected }), {})
+        integrations.reduce<Record<number, boolean>>((acc, item) => ({ ...acc, [item.id]: item.connected }), {})
     );
 
     const toggle = (id: number) => {
@@ -44,10 +44,10 @@ export function IntegrationsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: i * 0.08 }}
-                        className="bg-white rounded-[40px] border border-border-subtle shadow-soft p-10 flex flex-col gap-8 group hover:shadow-lg transition-all duration-300"
+                        className="bg-white rounded-xl border border-border-subtle shadow-soft p-10 flex flex-col gap-8 group hover:shadow-lg transition-all duration-300"
                     >
                         <div className="flex items-start justify-between">
-                            <div className="w-16 h-16 rounded-3xl bg-surface-subtle flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-xs border border-white/50" style={{ color: app.color }}>
+                            <div className="w-16 h-16 rounded-xl bg-surface-subtle flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-xs border border-white/50" style={{ color: app.color }}>
                                 <app.icon size={32} />
                             </div>
                             <InputSwitch checked={activeItems[app.id]} onChange={() => toggle(app.id)} />
@@ -63,7 +63,7 @@ export function IntegrationsPage() {
                         </div>
 
                         <div className="pt-6 border-t border-border-subtle/50 flex items-center justify-end">
-                            <Button variant="secondary" className="h-10 px-8 rounded-xl font-black tracking-widest text-[10px] uppercase shadow-sm border border-border-subtle">
+                            <Button variant="secondary" className="h-10 px-8 rounded-md font-black tracking-widest text-[10px] uppercase shadow-sm border border-border-subtle">
                                 {activeItems[app.id] ? 'Configure' : 'Connect'}
                             </Button>
                         </div>

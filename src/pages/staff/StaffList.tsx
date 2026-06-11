@@ -53,7 +53,7 @@ export function StaffList() {
           label: 'Onboard Member',
           onClick: onAddMember,
           icon: 'pi pi-user-plus',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className: 'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -68,7 +68,7 @@ export function StaffList() {
 
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center text-primary">
               <Sparkles size={18} />
             </div>
             <div>
@@ -106,7 +106,7 @@ export function StaffList() {
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
-          root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
+          root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' }
         }}
       >

@@ -25,10 +25,10 @@ export const showConfirm = ({
     centered: true,
     className: 'premium-confirm-dialog',
     okButtonProps: {
-      className: 'px-6 py-2.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20',
+      className: 'px-6 py-2.5 bg-primary text-white rounded-lg font-semibold shadow-lg shadow-primary/20',
     },
     cancelButtonProps: {
-      className: 'px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold border-none',
+      className: 'px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold border-none',
     },
     onOk: accept,
     onCancel: reject,

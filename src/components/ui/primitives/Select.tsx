@@ -19,7 +19,7 @@ export const Select = React.forwardRef(function SelectInner<T = unknown>(
   return (
     <AntSelect<T>
       ref={ref as React.Ref<never>}
-      className={cn('w-full [&_.ant-select-selector]:!h-14 [&_.ant-select-selector]:!rounded-2xl [&_.ant-select-selector]:!px-2', className)}
+      className={cn('w-full [&_.ant-select-selector]:!h-12 [&_.ant-select-selector]:!rounded-md [&_.ant-select-selector]:!px-3', className)}
       onChange={(value) => onChange?.({ value })}
       {...props}
     />

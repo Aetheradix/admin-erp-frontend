@@ -35,7 +35,7 @@ export const Toast = () => {
         description: detail,
         placement: 'topRight',
         duration: life / 1000,
-        className: 'rounded-[20px] shadow-2xl font-body',
+        className: 'rounded-lg shadow-2xl font-body',
       });
     };
 

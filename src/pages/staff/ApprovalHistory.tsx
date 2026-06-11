@@ -9,7 +9,7 @@ import { formatDate } from '@/utils/date';
 
 export function ApprovalHistory() {
   const { data: allLeaves = [], isLoading } = useGetLeavesQuery();
-  
+
   // Filter for ONLY Approved or Rejected requests
   const historyLeaves = allLeaves.filter((l: any) => l.status !== 'Pending');
 
@@ -35,7 +35,7 @@ export function ApprovalHistory() {
 
   const userTemplate = (rowData: any) => (
     <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-xs">
+      <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-xs">
         {rowData.username.substring(0, 2).toUpperCase()}
       </div>
       <div className="flex flex-col">
@@ -74,11 +74,11 @@ export function ApprovalHistory() {
       />
 
 
-      <div className="bg-white/50 backdrop-blur-xl rounded-[40px] border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
-        <DataTable 
-          value={historyLeaves} 
+      <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
+        <DataTable
+          value={historyLeaves}
           loading={isLoading}
-          paginator 
+          paginator
           rows={10}
           className="p-4"
           emptyMessage="No processed history found."
@@ -90,10 +90,10 @@ export function ApprovalHistory() {
           <Column field="reason" header="Reason" className="text-xs font-bold text-muted max-w-xs" />
           <Column field="status" header="Decision" body={statusTemplate} sortable />
           <Column header="Admin Feedback" body={commentTemplate} />
-          <Column 
-            field="updated_at" 
-            header="Processed On" 
-            body={(rowData: { updated_at?: string }) => <span className="text-[10px] font-black text-muted/60 uppercase">{formatDate(rowData.updated_at)}</span>} 
+          <Column
+            field="updated_at"
+            header="Processed On"
+            body={(rowData: { updated_at?: string }) => <span className="text-[10px] font-black text-muted/60 uppercase">{formatDate(rowData.updated_at)}</span>}
             sortable
           />
         </DataTable>

@@ -10,11 +10,11 @@ interface FeatureCardProps {
 
 export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: FeatureCardProps) => {
     return (
-        <div className="group relative bg-white/40 backdrop-blur-3xl p-10 rounded-[48px] border border-white/60 shadow-subtle hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 transition-all duration-500 overflow-hidden">
+        <div className="group relative bg-white/40 backdrop-blur-3xl p-10 rounded-3xl border border-white/60 shadow-subtle hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 transition-all duration-500 overflow-hidden">
             <div className="flex items-start justify-between mb-8">
                 <div className="flex items-center gap-5">
                     <div className={cn(
-                        "w-16 h-16 rounded-[24px] flex items-center justify-center transition-transform duration-700 group-hover:rotate-12 group-hover:scale-110",
+                        "w-16 h-16 rounded-xl flex items-center justify-center transition-transform duration-700 group-hover:rotate-12 group-hover:scale-110",
                         `bg-${feature.color}-500/10 text-${feature.color}-600`
                     )}>
                         <feature.icon size={28} />
@@ -38,9 +38,9 @@ export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: Featu
                             key={dept}
                             onClick={() => onToggle(feature.id, dept, !active)}
                             className={cn(
-                                "flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                                active 
-                                    ? "bg-primary text-white shadow-xl shadow-primary/20 scale-100" 
+                                "flex items-center gap-2.5 px-5 py-3 rounded-md text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                                active
+                                    ? "bg-primary text-white shadow-xl shadow-primary/20 scale-100"
                                     : "bg-surface-subtle text-muted/60 hover:bg-surface-base hover:text-muted scale-[0.98] hover:scale-100 border border-transparent hover:border-border-subtle"
                             )}
                         >

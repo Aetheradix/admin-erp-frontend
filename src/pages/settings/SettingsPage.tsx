@@ -40,7 +40,7 @@ export function SettingsPage() {
             label="Display Density"
             description="Choose between compact and spacious interface layouts."
             control={
-              <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl">
+              <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-lg">
                 <Button variant="ghost" className="h-10 px-4 rounded-lg! bg-white shadow-xs text-primary!">Compact</Button>
                 <Button variant="ghost" className="h-10 px-4 rounded-lg! text-muted!">Spacious</Button>
               </div>
@@ -142,15 +142,15 @@ export function SettingsPage() {
             label="Integration API Access"
             description="Manage tokens for external system connections and bots."
             control={
-              <Button variant="secondary" className="h-10 px-4 rounded-xl! font-bold text-xs uppercase underline">Manage Tokens</Button>
+              <Button variant="secondary" className="h-10 px-4 rounded-md! font-bold text-xs uppercase underline">Manage Tokens</Button>
             }
           />
         </SettingSection>
 
         <SettingSection title="Danger Zone">
-          <div className="p-8 rounded-4xl border border-error/20 bg-error/5 flex flex-col gap-6">
+          <div className="p-8 rounded-2xl border border-error/20 bg-error/5 flex flex-col gap-6">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-3xl bg-error/10 flex items-center justify-center text-error shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-error shrink-0">
                 <Trash2 size={24} />
               </div>
               <div className="flex flex-col gap-1">
@@ -161,16 +161,16 @@ export function SettingsPage() {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" className="w-full h-14 rounded-3xl! border-error/30! text-error! hover:bg-error/10 font-black uppercase tracking-widest shadow-lg shadow-error/5">
+            <Button variant="ghost" className="w-full h-14 rounded-xl! border-error/30! text-error! hover:bg-error/10 font-black uppercase tracking-widest shadow-lg shadow-error/5">
               Reset Cache & Logout
             </Button>
           </div>
         </SettingSection>
       </div>
 
-      <div className="mt-10 p-10 rounded-4xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
+      <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
         <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500">
+          <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500">
             <Cpu size={32} />
           </div>
           <div className="flex flex-col gap-1">
@@ -178,7 +178,7 @@ export function SettingsPage() {
             <p className="text-xs font-medium text-muted-foreground">Version 2.4.0 (Aetheradix Core) • Last optimized 12 hours ago</p>
           </div>
         </div>
-        <Button variant="primary" className="h-14 px-10 rounded-3xl! font-black tracking-widest shadow-xl shadow-primary/20 bg-primary! text-white!">
+        <Button variant="primary" className="h-14 px-10 rounded-xl! font-black tracking-widest shadow-xl shadow-primary/20 bg-primary! text-white!">
           Check for Updates
         </Button>
       </div>

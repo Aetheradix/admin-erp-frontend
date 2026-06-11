@@ -75,7 +75,7 @@ export function TeamsPage() {
                     { label: 'Active Projects', value: teams.reduce((a, t) => a + t.projects, 0) },
                     { label: 'Departments', value: new Set(teams.map(t => t.department)).size },
                 ].map((stat) => (
-                    <div key={stat.label} className="bg-white p-6 rounded-[28px] border border-border-subtle shadow-soft flex flex-col gap-1">
+                    <div key={stat.label} className="bg-white p-6 rounded-xl border border-border-subtle shadow-soft flex flex-col gap-1">
                         <span className="text-2xl font-black text-foreground">{stat.value}</span>
                         <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">{stat.label}</span>
                     </div>
@@ -85,12 +85,12 @@ export function TeamsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {teams.map((team, i) => (
                     <motion.div key={team.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.08 }}
-                        className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300 relative overflow-hidden"
+                        className="bg-white rounded-2xl border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300 relative overflow-hidden"
                     >
-                        <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-[32px]" style={{ backgroundColor: team.color }} />
+                        <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl" style={{ backgroundColor: team.color }} />
                         <div className="flex items-start justify-between pt-2">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${team.color}15` }}>
+                                <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${team.color}15` }}>
                                     <Users size={24} style={{ color: team.color }} />
                                 </div>
                                 <div>
@@ -114,7 +114,7 @@ export function TeamsPage() {
             {/* Create Team Dialog */}
             <Dialog visible={showForm} onHide={() => setShowForm(false)} header="Create New Team" modal
                 className="w-full max-w-xl mx-4" contentClassName="p-8" headerClassName="px-8 pt-8 pb-4 text-xl font-black tracking-tight border-none"
-                pt={{ root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' }, mask: { className: 'backdrop-blur-md bg-black/40' } }}
+                pt={{ root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' }, mask: { className: 'backdrop-blur-md bg-black/40' } }}
             >
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-2">
@@ -134,8 +134,8 @@ export function TeamsPage() {
                         <Input type="number" placeholder="1" value={String(form.members)} onChange={(e) => setForm({ ...form, members: Number(e.target.value) || 1 })} />
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
-                        <Button variant="ghost" label="Cancel" onClick={() => { setShowForm(false); setForm(emptyForm); }} className="rounded-xl!" />
-                        <Button label="Create Team" onClick={handleSubmit} icon="pi pi-check" className="rounded-xl! px-8!" />
+                        <Button variant="ghost" label="Cancel" onClick={() => { setShowForm(false); setForm(emptyForm); }} className="rounded-md!" />
+                        <Button label="Create Team" onClick={handleSubmit} icon="pi pi-check" className="rounded-md! px-8!" />
                     </div>
                 </div>
             </Dialog>

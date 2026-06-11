@@ -105,7 +105,7 @@ export function TasksPage() {
 
             <div className="grid grid-cols-3 gap-6">
                 {Object.entries(counts).map(([status, count]) => (
-                    <div key={status} className={`rounded-[28px] border p-6 shadow-soft flex items-center justify-between ${statusColors[status]}`}>
+                    <div key={status} className={`rounded-xl border p-6 shadow-soft flex items-center justify-between ${statusColors[status]}`}>
                         <div className="flex flex-col gap-1">
                             <span className="text-2xl font-black text-foreground">{count}</span>
                             <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">{status}</span>
@@ -114,7 +114,7 @@ export function TasksPage() {
                 ))}
             </div>
 
-            <div className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-4 px-8 flex items-center justify-between">
+            <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-4 px-8 flex items-center justify-between">
                 <span className="text-sm font-black text-foreground uppercase tracking-wider">Task Board</span>
                 <Tabs items={TABS} activeItem={activeTab} onItemChange={setActiveTab} />
             </div>
@@ -122,12 +122,12 @@ export function TasksPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((task, i) => (
                     <motion.div key={task.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.05 }}
-                        className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300">
+                        className="bg-white rounded-xl border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300">
                         <div className="flex items-start justify-between">
                             <h3 className="text-sm font-bold text-foreground leading-snug flex-1 pr-3">{task.title}</h3>
-                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}>{task.priority}</span>
+                            <span className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}>{task.priority}</span>
                         </div>
-                        <span className="text-xs font-medium text-primary/80 bg-primary/5 self-start px-3 py-1 rounded-full">{task.project}</span>
+                        <span className="text-xs font-medium text-primary/80 bg-primary/5 self-start px-3 py-1 rounded">{task.project}</span>
                         <div className="flex items-center justify-between pt-3 border-t border-border-subtle/50">
                             <div className="flex items-center gap-2 text-muted"><User size={13} /><span className="text-xs font-medium">{task.assignee}</span></div>
                             <div className="flex items-center gap-1.5 text-muted"><Calendar size={13} /><span className="text-xs font-medium">{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div>
@@ -139,7 +139,7 @@ export function TasksPage() {
             {/* New Task Dialog */}
             <Dialog visible={showForm} onHide={() => setShowForm(false)} header="Create New Task" modal
                 className="w-full max-w-xl mx-4" contentClassName="p-8" headerClassName="px-8 pt-8 pb-4 text-xl font-black tracking-tight border-none"
-                pt={{ root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' }, mask: { className: 'backdrop-blur-md bg-black/40' } }}
+                pt={{ root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' }, mask: { className: 'backdrop-blur-md bg-black/40' } }}
             >
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-2">
@@ -171,8 +171,8 @@ export function TasksPage() {
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
-                        <Button variant="ghost" label="Cancel" onClick={() => { setShowForm(false); setForm(emptyForm); }} className="rounded-xl!" />
-                        <Button label="Create Task" onClick={handleSubmit} icon="pi pi-check" className="rounded-xl! px-8!" />
+                        <Button variant="ghost" label="Cancel" onClick={() => { setShowForm(false); setForm(emptyForm); }} className="rounded-md!" />
+                        <Button label="Create Task" onClick={handleSubmit} icon="pi pi-check" className="rounded-md! px-8!" />
                     </div>
                 </div>
             </Dialog>

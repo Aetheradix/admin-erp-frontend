@@ -23,7 +23,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
       <div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-xl transition-colors duration-200 group overflow-hidden ${isChildActive || isParentActive ? 'text-white' : 'text-white/40 hover:text-white'
+          className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${isChildActive || isParentActive ? 'text-white' : 'text-white/40 hover:text-white'
             }`}
         >
           {/* Torch glow */}
@@ -107,7 +107,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                     to={child.path}
                     end={child.path === item.path}
                     className={({ isActive }) =>
-                      `block px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${isActive
+                      `block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 ${isActive
                         ? 'text-primary bg-primary/10'
                         : 'text-white/40 hover:text-white/80 hover:bg-white/5'
                       }`
@@ -131,7 +131,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
       end={item.path === '/'}
       aria-label={`Navigate to ${item.label}`}
       className={({ isActive }) =>
-        `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-xl transition-colors duration-200 group overflow-hidden ${isActive ? 'text-white' : 'text-white/40 hover:text-white'
+        `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${isActive ? 'text-white' : 'text-white/40 hover:text-white'
         }`
       }
     >

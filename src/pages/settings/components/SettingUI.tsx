@@ -8,9 +8,9 @@ interface SettingItemProps {
 
 export function SettingItem({ icon: Icon, label, description, control }: SettingItemProps) {
   return (
-    <div className="flex items-center justify-between p-6 bg-white rounded-3xl border border-border-subtle shadow-xs hover:shadow-soft transition-all duration-300">
+    <div className="flex items-center justify-between p-6 bg-white rounded-xl border border-border-subtle shadow-xs hover:shadow-soft transition-all duration-300">
       <div className="flex items-start gap-5">
-        <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary shrink-0">
+        <div className="w-12 h-12 rounded-lg bg-surface-subtle flex items-center justify-center text-primary shrink-0">
           <Icon size={24} />
         </div>
         <div className="flex flex-col gap-1">

@@ -20,7 +20,7 @@ const FEATURES = [
 export function FeatureControl() {
   const { isLoading: isPermissionsLoading, handleToggle, isEnabled } = useFeatureControl();
   const { data: departmentsData, isLoading: isDeptsLoading } = useGetDepartmentsQuery({});
-  
+
   const departments = departmentsData?.data ?? [];
   const departmentNames = departments.map((d: any) => d.department_name);
 
@@ -28,8 +28,8 @@ export function FeatureControl() {
     return (
       <div className="flex flex-col justify-center items-center h-screen gap-6 bg-surface-base">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-             <ProgressSpinner style={{ width: '32px', height: '32px' }} strokeWidth="8" animationDuration="1s" />
+          <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+            <ProgressSpinner style={{ width: '32px', height: '32px' }} strokeWidth="8" animationDuration="1s" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Synchronizing Permissions...</span>
         </div>
@@ -46,7 +46,7 @@ export function FeatureControl() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-10">
         {FEATURES.map((feature) => (
-          <FeatureCard 
+          <FeatureCard
             key={feature.id}
             feature={feature}
             departments={departmentNames}
@@ -56,8 +56,8 @@ export function FeatureControl() {
         ))}
       </div>
 
-      <div className="mt-10 p-10 bg-gradient-to-br from-primary/5 to-primary/10 rounded-[48px] border border-primary/10 flex flex-col md:flex-row items-center gap-8 shadow-inner shadow-primary/5">
-        <div className="p-5 bg-white shadow-xl rounded-[24px] text-primary">
+      <div className="mt-10 p-10 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/10 flex flex-col md:flex-row items-center gap-8 shadow-inner shadow-primary/5">
+        <div className="p-5 bg-white shadow-xl rounded-lg text-primary">
           <Settings2 size={32} />
         </div>
         <div className="flex flex-col gap-2 text-center md:text-left">

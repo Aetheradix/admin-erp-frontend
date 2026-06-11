@@ -59,7 +59,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
       icon={resolvedIcon}
       className={cn(
         'transition-all duration-200 font-medium shadow-sm flex items-center justify-center gap-2',
-        !className?.includes('rounded-') && '!rounded-full',
+        !className?.includes('rounded-') && '!rounded-md',
         variantClasses[variant],
         sizeClasses[size],
         className

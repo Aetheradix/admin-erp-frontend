@@ -39,7 +39,7 @@ export function FinancePage() {
           label: 'File New Request',
           onClick: () => setShowForm(true),
           icon: 'pi pi-credit-card',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className: 'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -84,7 +84,7 @@ export function FinancePage() {
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
-          root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
+          root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' }
         }}
       >

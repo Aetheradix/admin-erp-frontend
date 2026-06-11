@@ -8,7 +8,7 @@ export const Input = React.forwardRef<unknown, AntInputProps>(({ className, ...p
     <AntInput
       ref={ref as React.Ref<never>}
       className={cn(
-        'w-full px-5 py-4 border-border-subtle rounded-2xl bg-white text-foreground font-medium text-sm shadow-xs',
+        'w-full px-4 py-3 border-border-subtle rounded-md bg-white text-foreground font-medium text-sm shadow-xs',
         className
       )}
       {...props}

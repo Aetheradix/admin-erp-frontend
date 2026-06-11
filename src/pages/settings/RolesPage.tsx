@@ -56,7 +56,7 @@ export function RolesPage() {
             />
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-                className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden">
+                className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-border-subtle bg-surface-subtle/30">
@@ -73,7 +73,7 @@ export function RolesPage() {
                             <tr key={role.name} className="border-b border-border-subtle/50 hover:bg-surface-subtle/50 transition-colors">
                                 <td className="px-10 py-8">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-2xl bg-error/5 flex items-center justify-center text-error border border-error/10"><Shield size={18} /></div>
+                                        <div className="w-10 h-10 rounded-lg bg-error/5 flex items-center justify-center text-error border border-error/10"><Shield size={18} /></div>
                                         <div className="flex flex-col">
                                             <span className="text-base font-black text-foreground tracking-tight">{role.name}</span>
                                             <span className="text-[10px] font-medium text-muted-foreground leading-tight italic">{role.description}</span>
@@ -93,7 +93,7 @@ export function RolesPage() {
                                     </td>
                                 ))}
                                 <td className="px-10 py-8">
-                                    <button className="p-2 rounded-xl border border-border-subtle text-muted hover:text-primary hover:bg-primary/5 transition-all"><Edit2 size={16} /></button>
+                                    <button className="p-2 rounded-md border border-border-subtle text-muted hover:text-primary hover:bg-primary/5 transition-all"><Edit2 size={16} /></button>
                                 </td>
                             </tr>
                         ))}
@@ -104,7 +104,7 @@ export function RolesPage() {
             {/* Create Role Dialog */}
             <Dialog visible={showForm} onHide={() => setShowForm(false)} header="Create New Role" modal
                 className="w-full max-w-xl mx-4" contentClassName="p-8" headerClassName="px-8 pt-8 pb-4 text-xl font-black tracking-tight border-none"
-                pt={{ root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' }, mask: { className: 'backdrop-blur-md bg-black/40' } }}
+                pt={{ root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' }, mask: { className: 'backdrop-blur-md bg-black/40' } }}
             >
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-2">
@@ -119,7 +119,7 @@ export function RolesPage() {
                         <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Permissions</label>
                         <div className="grid grid-cols-2 gap-3">
                             {PERMISSION_KEYS.map((key) => (
-                                <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-surface-subtle">
+                                <div key={key} className="flex items-center justify-between p-3 rounded-md bg-surface-subtle">
                                     <span className="text-xs font-bold text-foreground capitalize">{key}</span>
                                     <InputSwitch checked={form.permissions[key]} onChange={() => togglePermission(key)} />
                                 </div>
@@ -127,8 +127,8 @@ export function RolesPage() {
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
-                        <Button variant="ghost" label="Cancel" onClick={() => { setShowForm(false); setForm(emptyForm); }} className="rounded-xl!" />
-                        <Button label="Create Role" onClick={handleSubmit} icon="pi pi-check" className="rounded-xl! px-8!" />
+                        <Button variant="ghost" label="Cancel" onClick={() => { setShowForm(false); setForm(emptyForm); }} className="rounded-md!" />
+                        <Button label="Create Role" onClick={handleSubmit} icon="pi pi-check" className="rounded-md! px-8!" />
                     </div>
                 </div>
             </Dialog>

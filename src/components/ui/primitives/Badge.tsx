@@ -25,7 +25,7 @@ export const Badge = ({ variant = 'primary', className, children, value }: Badge
     <Tag
       bordered
       className={cn(
-        'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border m-0 inline-flex items-center',
+        'px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border m-0 inline-flex items-center',
         variantClasses[variant],
         className
       )}
