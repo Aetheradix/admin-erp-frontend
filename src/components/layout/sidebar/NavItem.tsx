@@ -107,8 +107,8 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                     to={child.path}
                     end={child.path === item.path}
                     className={({ isActive }) =>
-                      `block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 ${isActive
-                        ? 'text-primary bg-primary/10'
+                      `block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 animated-underline ${isActive
+                        ? 'text-white bg-primary/20'
                         : 'text-white/40 hover:text-white/80 hover:bg-white/5'
                       }`
                     }

@@ -10,6 +10,8 @@ import {
   Users,
   Users2,
   Clock,
+  FileText,
+  Image,
   type LucideIcon
 } from 'lucide-react';
 
@@ -108,6 +110,20 @@ export const navItems: NavItem[] = [
       { label: 'Stock Levels', path: '/inventory/stock-levels' },
       { label: 'Movements', path: '/inventory/movements' },
     ]
+  },
+  {
+    label: 'Blogs',
+    path: '/blogs',
+    icon: FileText,
+    category: 'MANAGEMENT',
+    description: 'Content management'
+  },
+  {
+    label: 'Gallery',
+    path: '/gallery',
+    icon: Image,
+    category: 'MANAGEMENT',
+    description: 'Asset library'
   },
 
   // ── SYSTEM ────────────────────────────────────────
