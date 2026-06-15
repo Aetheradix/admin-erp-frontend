@@ -1,75 +1,106 @@
-# React + TypeScript + Vite
+# Admin Erp Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, fast, and feature-rich React frontend application for managing an organisation. This project is built using React 19, Vite, TypeScript, and features a robust stack for styling, state management, and API integration.
 
-Currently, two official plugins are available:
+## 🚀 Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Core:** [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) & [PrimeReact](https://primereact.org/) for pre-built UI components
+- **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (Global State) & [TanStack React Query](https://tanstack.com/query/latest) (Server State/API Data)
+- **Routing:** [React Router v7](https://reactrouter.com/)
+- **Form Handling & Validation:** [React Hook Form](https://react-hook-form.com/) with [Joi](https://joi.dev/) validation
+- **Animations:** [Motion (Framer Motion)](https://motion.dev/)
+- **Charting:** [Chart.js](https://www.chartjs.org/)
 
-## React Compiler
+## 📂 Project Structure
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+The project follows a feature-based architecture to keep code modular and scalable:
 
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── assets/         # Static assets (images, fonts, global icons)
+├── config/         # Application-wide configurations and constants
+├── features/       # Feature-specific modules (each contains its own pages, components, etc.)
+│   ├── home/       # Home/Dashboard functionality
+│   ├── hrms/       # Human Resource Management System
+│   ├── master/     # Master data management
+│   ├── settings/   # Application and user settings
+│   └── students/   # Student management system
+├── services/       # API services and global utilities
+├── shared/         # Shared/reusable components, hooks, and utilities across features
+└── types/          # Global TypeScript type definitions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠 Prerequisites
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Make sure you have the following installed on your machine:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Node.js**: v20 or higher (Docker uses v24)
+- **npm** (comes with Node.js)
+
+## 🏃 Getting Started
+
+1. **Clone the repository** (if you haven't already):
+
+   ```bash
+   git clone <repository-url>
+   cd ums-frontend
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+   The application will be running at `http://localhost:5173` (or the port specified by Vite).
+
+## 📜 Available Scripts
+
+In the project directory, you can run:
+
+- `npm run dev`: Starts the Vite development server.
+- `npm run build`: Type-checks the TypeScript code and builds the app for production.
+- `npm run build-local`: Similar to build, but uses the local environment configuration.
+- `npm run preview`: Bootstraps a local web server to preview the production build.
+- `npm run lint`: Runs ESLint to find and fix problems in your code.
+- `npm run type-check`: Runs TypeScript compiler to verify typings without emitting files.
+
+## 🐳 Docker Support
+
+The project includes Docker configuration for easy deployment and containerized development.
+
+### Running with Docker Compose
+
+Start the application using Docker Compose:
+
+```bash
+docker compose up --build
 ```
+
+The application will be available at `http://localhost:5200`.
+
+### Building and Running Docker Image Manually
+
+1. Build the image:
+
+   ```bash
+   docker build -t ums-frontend .
+   ```
+
+   _(Note: Use `--platform=linux/amd64` if building on an ARM machine like Mac M1/M2 for an AMD64 cloud provider.)_
+
+2. Run the container:
+   ```bash
+   docker run -p 5200:5200 ums-frontend
+   ```
+
+## 🧹 Code Quality
+
+- **ESLint** & **Prettier**: Configured to ensure consistent code styling and catch issues early.
+- **Husky** & **lint-staged**: Pre-commit hooks are set up to run Prettier and format fi
