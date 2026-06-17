@@ -1,7 +1,6 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { DataTable } from '@/components/ui/composed/DataTable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
+import { Column, DataTable } from '@/components/ui/composed/DataTable';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { ApprovalDialog } from './components/ApprovalDialog';
@@ -59,18 +58,18 @@ export function Approvals() {
 
     return (
       <div className="flex items-center gap-2">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="small"
-          className="h-9 px-4! rounded-xl! border-green-500/20! text-green-600! hover:bg-green-50!"
+          className="h-9 px-4! rounded-md! border-green-500/20! text-green-600! hover:bg-green-50!"
           onClick={() => handleAction(rowData, 'Approved')}
         >
           Approve
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="small"
-          className="h-9 px-4! rounded-xl! border-red-500/20! text-red-600! hover:bg-red-50!"
+          className="h-9 px-4! rounded-md! border-red-500/20! text-red-600! hover:bg-red-50!"
           onClick={() => handleAction(rowData, 'Rejected')}
         >
           Reject
@@ -102,17 +101,17 @@ export function Approvals() {
           label: 'View History Logs',
           onClick: () => { navigate('/staff/history'); },
           icon: 'pi pi-history',
-          className: 'px-6! py-3! rounded-2xl! font-black! tracking-widest! text-[10px]!'
+          className: 'px-6! py-3! rounded-lg! font-black! tracking-widest! text-[10px]!'
         }}
       />
 
       <ApprovalStats counts={counts} />
 
-      <div className="bg-white/50 backdrop-blur-xl rounded-[40px] border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
-        <DataTable 
-          value={pendingLeaves} 
+      <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
+        <DataTable
+          value={pendingLeaves}
           loading={isLoading}
-          paginator 
+          paginator
           rows={10}
           className="p-4"
           emptyMessage="No pending requests found."
@@ -134,11 +133,11 @@ export function Approvals() {
         contentClassName="p-8"
         headerClassName="px-8 pt-8 pb-2 text-xl font-black tracking-tight"
         pt={{
-          root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' },
+          root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/20' }
         }}
       >
-        <ApprovalDialog 
+        <ApprovalDialog
           type={actionType}
           request={selectedRequest}
           onConfirm={onConfirmAction}

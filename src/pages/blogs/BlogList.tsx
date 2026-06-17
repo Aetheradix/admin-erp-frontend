@@ -1,22 +1,22 @@
-import { Column } from 'primereact/column';
-import { DataTable } from '@/components/ui/composed/DataTable';
+import { Column, DataTable } from '@/components/ui/composed/DataTable';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 import { useBlogFilters } from './hooks/useBlogFilters';
 import { useBlogs } from './hooks/useBlogs';
 import { BlogTableToolbar } from './components/BlogTableToolbar';
 import { BLOG_COLUMNS } from './components/Blogcolumnconfig';
+import { BlogFeatured } from './components/BlogFeatured';
 
 const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name'];
 
 const BlogList = () => {
-  const { 
-    searchValue, 
-    activeCategory, 
-    filters, 
-    handleSearchChange, 
-    handleCategoryChange 
+  const {
+    searchValue,
+    activeCategory,
+    filters,
+    handleSearchChange,
+    handleCategoryChange
   } = useBlogFilters();
 
   const { blogs, isLoading, isError, handleDelete, navigate } = useBlogs();
@@ -31,8 +31,8 @@ const BlogList = () => {
 
   if (isError) {
     return (
-      <div className="flex justify-center items-center h-64 text-red-500">
-        Error loading blogs. Please check if the backend is running.
+      <div className="flex justify-center items-center h-64 text-red-500 font-bold bg-error/5 rounded-3xl border border-error/10">
+        Error loading blogs. Please verify backend connectivity.
       </div>
     );
   }
@@ -40,17 +40,19 @@ const BlogList = () => {
   return (
     <div className="flex flex-col gap-8 pb-12">
       <PageHeader
-        title="Content Management"
-        description="Craft, curate, and command your digital narratives with a premium workspace."
+        title="Digital Narratives"
+        description="Curate and command your brand's voice with a premium, high-velocity workspace."
         primaryAction={{
           label: 'Craft New Story',
           onClick: () => navigate('/blogs/create'),
           icon: 'pi pi-plus',
-          className: 'px-8! py-3.5! rounded-xl! font-black! tracking-wide! shadow-lg! shadow-primary/20!',
+          className: 'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
         }}
       />
 
-      <div className="bg-white rounded-[40px] p-2 border border-border-subtle shadow-soft overflow-hidden">
+      <BlogFeatured blogs={blogs} />
+
+      <div className="bg-white/60 backdrop-blur-3xl rounded-[3rem] p-4 border border-white shadow-soft overflow-hidden">
         <BlogTableToolbar
           searchValue={searchValue}
           onSearchChange={handleSearchChange}

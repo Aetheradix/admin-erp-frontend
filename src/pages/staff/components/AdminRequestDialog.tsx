@@ -1,5 +1,5 @@
-import { Button } from 'primereact/button';
-import { InputTextarea } from 'primereact/inputtextarea';
+import { Button } from '@/components/ui/primitives/Button';
+import { InputTextarea } from '@/components/ui/primitives/Textarea';
 
 interface AdminRequestDialogProps {
     isApprove: boolean;

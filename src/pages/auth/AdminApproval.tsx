@@ -4,7 +4,7 @@ import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { showToast } from '@/components/ui/composed/Toast';
 import { Button } from '@/components/ui/primitives/Button';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 const AdminApproval = () => {
   const [searchParams] = useSearchParams();

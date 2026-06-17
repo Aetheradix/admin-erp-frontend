@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../primitives/Button';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
 
 interface PageHeaderProps {
@@ -19,32 +19,34 @@ interface PageHeaderProps {
   className?: string;
 }
 
-export const PageHeader = ({ 
-  title, 
-  subtitle, 
+export const PageHeader = ({
+  title,
+  subtitle,
   description,
-  actions, 
+  actions,
   primaryAction,
   breadcrumbs,
-  back, 
-  className 
+  back,
+  className
 }: PageHeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className={classNames('flex flex-col gap-4 mb-8', className)}>
-      {/* Breadcrumbs */}
+    <div className={cn('flex flex-col gap-4 mb-8', className)}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-muted/60 mb-1">
+        <nav className="flex items-center gap-2 text-[10px] uppercase font-black tracking-[0.2em] text-foreground/40 mb-1">
           {breadcrumbs.map((crumb, i) => (
             <React.Fragment key={i}>
-              {i > 0 && <span className="opacity-30">/</span>}
+              {i > 0 && <span className="opacity-20 translate-y-[1px]">/</span>}
               {crumb.url ? (
-                <button onClick={() => navigate(crumb.url!)} className="hover:text-primary transition-colors">
+                <button
+                  onClick={() => navigate(crumb.url!)}
+                  className="hover:text-primary transition-all duration-300 animated-underline active:scale-95"
+                >
                   {crumb.label}
                 </button>
               ) : (
-                <span className="text-muted">{crumb.label}</span>
+                <span className="text-foreground/80">{crumb.label}</span>
               )}
             </React.Fragment>
           ))}
@@ -54,10 +56,10 @@ export const PageHeader = ({
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           {back && (
-            <Button 
-              icon="pi pi-arrow-left" 
-              variant="ghost" 
-              size="small" 
+            <Button
+              icon="pi pi-arrow-left"
+              variant="ghost"
+              size="small"
               onClick={() => navigate(-1)}
               className="rounded-full h-10 w-10 p-0"
             />
@@ -71,15 +73,15 @@ export const PageHeader = ({
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {actions}
           {primaryAction && (
-            <Button 
+            <Button
               label={primaryAction.label}
               icon={primaryAction.icon}
               onClick={primaryAction.onClick}
-              className={classNames('px-6 py-3 rounded-xl shadow-lg shadow-primary/10', primaryAction.className)}
+              className={cn('px-6 py-3 rounded-xl shadow-lg shadow-primary/10', primaryAction.className)}
             />
           )}
         </div>

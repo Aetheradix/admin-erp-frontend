@@ -2,12 +2,12 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { ExplorerBar } from '@/components/ui/composed/ExplorerBar';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { FinanceStats } from './components/FinanceStats';
 import { ReimbursementCard } from './components/ReimbursementCard';
 import { FinanceForm } from './components/FinanceForm';
 import { useFinancePage } from './hooks/useFinancePage';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { Receipt } from 'lucide-react';
 
 export function FinancePage() {
@@ -39,7 +39,7 @@ export function FinancePage() {
           label: 'File New Request',
           onClick: () => setShowForm(true),
           icon: 'pi pi-credit-card',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className: 'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -84,7 +84,7 @@ export function FinancePage() {
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
-          root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
+          root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' }
         }}
       >

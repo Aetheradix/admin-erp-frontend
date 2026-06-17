@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '../primitives/Input';
 import { Button } from '../primitives/Button';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 
 interface SearchBarProps {
   value?: string;
@@ -19,9 +19,8 @@ export const SearchBar = ({ value, onChange, onSearch, placeholder = 'Search...'
   };
 
   return (
-    <div className={classNames('relative flex items-center w-full max-w-md gap-2', className)}>
+    <div className={cn('relative flex items-center w-full max-w-md gap-2', className)}>
       <div className="relative flex-1">
-        {/* <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted" /> */}
         <Input
           value={value}
           onChange={onChange}
@@ -30,9 +29,9 @@ export const SearchBar = ({ value, onChange, onSearch, placeholder = 'Search...'
           className="pl-10 pr-4"
         />
       </div>
-      <Button 
-        icon="pi pi-sliders-h" 
-        variant="secondary" 
+      <Button
+        icon="pi pi-sliders-h"
+        variant="secondary"
         size="medium"
         className="rounded-card"
         onClick={() => onSearch && onSearch(value || '')}

@@ -1,13 +1,13 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { CareerCard } from './components/CareerCard';
 import { CareerTableToolbar } from './components/CareerTableToolbar';
 import { CareerForm } from './components/CareerForm';
 import { useCareerList } from './hooks/useCareerList';
 import { Sparkles, Briefcase } from 'lucide-react';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 export function CareerList() {
   const {

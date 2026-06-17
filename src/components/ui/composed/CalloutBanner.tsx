@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 
 interface CalloutBannerProps {
   title: ReactNode;
@@ -28,7 +28,7 @@ export const CalloutBanner = ({
   const glowFrom = color === 'primary' ? 'from-foreground/20' : 'from-primary/20';
 
   return (
-    <div className={classNames(`${padCls} rounded-[48px] ${bgCls} relative overflow-hidden group`, className)}>
+    <div className={cn(`${padCls} rounded-[48px] ${bgCls} relative overflow-hidden group`, className)}>
       <div className={`absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l ${glowFrom} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000`} />
       <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
         <div className="max-w-2xl flex flex-col gap-4">

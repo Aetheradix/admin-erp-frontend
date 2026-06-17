@@ -1,5 +1,5 @@
 import React from 'react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 
 interface FormFieldProps {
   label?: string;
@@ -14,7 +14,7 @@ interface FormFieldProps {
 
 export const FormField = ({ label, error, help, children, className, id, required, description }: FormFieldProps) => {
   return (
-    <div className={classNames('mb-4 w-full flex flex-col gap-1.5', className)}>
+    <div className={cn('mb-4 w-full flex flex-col gap-1.5', className)}>
       {label && (
         <label htmlFor={id} className="text-sm font-semibold text-foreground/80 ml-1">
           {label}

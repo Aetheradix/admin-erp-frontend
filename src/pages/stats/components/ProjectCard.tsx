@@ -1,5 +1,5 @@
 import { Box, CheckCircle2, Clock, Archive, User, Calendar, AlertTriangle } from 'lucide-react';
-import { classNames } from 'primereact/utils';
+import { cn } from '@/utils/cn';
 import type { Project } from '../hooks/mockStats';
 
 interface ProjectCardProps {
@@ -28,10 +28,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
   };
 
   return (
-    <div className="group bg-white p-8 rounded-4xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex flex-col gap-6">
+    <div className="group bg-white p-8 rounded-2xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-3xl bg-surface-subtle flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
+          <div className="w-12 h-12 rounded-xl bg-surface-subtle flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
             <Box size={24} />
           </div>
           <div className="flex flex-col">
@@ -39,8 +39,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <span className="text-[10px] font-black text-muted uppercase tracking-widest">{project.client}</span>
           </div>
         </div>
-        <div className={classNames(
-          "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+        <div className={cn(
+          "flex items-center gap-2 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest border",
           getStatusStyles(project.status)
         )}>
           {getStatusIcon(project.status)}
@@ -54,9 +54,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <span>{project.progress}%</span>
         </div>
         <div className="h-2 w-full bg-surface-subtle rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary rounded-full transition-all duration-1000 group-hover:bg-primary" 
-            style={{ width: `${project.progress}%` }} 
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-1000 group-hover:bg-primary"
+            style={{ width: `${project.progress}%` }}
           />
         </div>
       </div>

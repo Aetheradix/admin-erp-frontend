@@ -1,13 +1,11 @@
-import { Divider as PRDivider, type DividerProps as PRDividerProps } from 'primereact/divider';
-import { classNames } from 'primereact/utils';
+import { Divider as AntDivider } from 'antd';
+import type { DividerProps as AntDividerProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const Divider = ({ className, ...props }: PRDividerProps) => {
+export const Divider = ({ className, ...props }: AntDividerProps) => {
   return (
-    <PRDivider
-      className={classNames(
-        'before:border-border-subtle my-6',
-        className
-      )}
+    <AntDivider
+      className={cn('border-border-subtle my-6', className)}
       {...props}
     />
   );

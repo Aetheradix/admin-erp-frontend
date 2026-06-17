@@ -1,13 +1,16 @@
 import React from 'react';
-import { InputTextarea, type InputTextareaProps } from 'primereact/inputtextarea';
-import { classNames } from 'primereact/utils';
+import { Input } from 'antd';
+import type { TextAreaProps } from 'antd/es/input';
+import { cn } from '@/utils/cn';
 
-export const Textarea = React.forwardRef<HTMLTextAreaElement, InputTextareaProps>(({ className, ...props }, ref) => {
+const { TextArea: AntTextArea } = Input;
+
+export const Textarea = React.forwardRef<unknown, TextAreaProps>(({ className, ...props }, ref) => {
   return (
-    <InputTextarea
-      ref={ref}
-      className={classNames(
-        'w-full px-5 py-4 border border-border-subtle rounded-2xl bg-white text-foreground focus:border-primary/50 transition-all duration-200 outline-none placeholder:text-muted/50 font-medium text-sm shadow-xs min-h-[120px]',
+    <AntTextArea
+      ref={ref as React.Ref<never>}
+      className={cn(
+        'w-full px-5 py-4 border-border-subtle rounded-2xl bg-white text-foreground font-medium text-sm shadow-xs min-h-[120px]',
         className
       )}
       {...props}
@@ -16,3 +19,5 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, InputTextareaProps
 });
 
 Textarea.displayName = 'Textarea';
+
+export const InputTextarea = Textarea;

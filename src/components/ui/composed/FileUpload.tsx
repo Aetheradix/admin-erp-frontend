@@ -1,21 +1,59 @@
 import React from 'react';
-import { FileUpload as PRFileUpload, type FileUploadProps as PRFileUploadProps } from 'primereact/fileupload';
-import { classNames } from 'primereact/utils';
+import { Upload } from 'antd';
+import type { UploadProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const FileUpload = React.forwardRef<PRFileUpload, PRFileUploadProps>(({ className, ...props }, ref) => {
+interface FileUploadProps extends Omit<UploadProps, 'onChange'> {
+  mode?: 'basic' | 'advanced';
+  name?: string;
+  accept?: string;
+  maxFileSize?: number;
+  chooseLabel?: string;
+  uploadLabel?: string;
+  cancelLabel?: string;
+  contentClassName?: string;
+  auto?: boolean;
+  onUpload?: (e: { files: File[] }) => void;
+}
+
+export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(({
+  className,
+  mode = 'advanced',
+  accept,
+  maxFileSize,
+  auto,
+  onUpload,
+  ...props
+}, ref) => {
+  const beforeUpload: UploadProps['beforeUpload'] = (file) => {
+    if (maxFileSize && file.size > maxFileSize) {
+      return Upload.LIST_IGNORE;
+    }
+    if (auto && onUpload) {
+      onUpload({ files: [file] });
+    }
+    return false;
+  };
+
   return (
-    <PRFileUpload
-      ref={ref}
-      className={classNames(
-        'rounded-card border border-border-subtle bg-white shadow-soft',
-        className
-      )}
-      contentClassName="bg-surface-subtle border-t border-border-strong px-6 py-8 flex flex-col items-center justify-center gap-4"
-      chooseLabel="Attach Files"
-      uploadLabel="Upload All"
-      cancelLabel="Remove All"
-      {...props}
-    />
+    <div ref={ref} className={cn('rounded-card', className)}>
+      <Upload
+        showUploadList={mode === 'basic' ? false : true}
+        accept={accept}
+        beforeUpload={beforeUpload}
+        multiple={false}
+        className={cn(mode === 'basic' && 'w-full h-full [&_.ant-upload]:w-full [&_.ant-upload]:h-full')}
+        {...props}
+      >
+        {mode === 'advanced' ? (
+          <div className="bg-surface-subtle border-t border-border-strong px-6 py-8 flex flex-col items-center justify-center gap-4 cursor-pointer">
+            <span className="font-bold text-primary">Attach Files</span>
+          </div>
+        ) : (
+          <span className="sr-only">Upload file</span>
+        )}
+      </Upload>
+    </div>
   );
 });
 

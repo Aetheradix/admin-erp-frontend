@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { PrimeProvider } from './PrimeProvider';
+import { AntdProvider } from './AntdProvider';
 import { AuthProvider } from '../context/AuthContext';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
@@ -7,11 +7,11 @@ import { store } from '@/store';
 export const AppProviders = ({ children }: { children: ReactNode }) => {
   return (
     <Provider store={store}>
-      <PrimeProvider>
+      <AntdProvider>
         <AuthProvider>
           {children}
         </AuthProvider>
-      </PrimeProvider>
+      </AntdProvider>
     </Provider>
   );
 };

@@ -9,41 +9,57 @@ const Dashboard = () => {
   const { projects, stats } = useDashboardData();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-12">
       <h1 className="sr-only">AetherERP Dashboard</h1>
-      <div className="grid grid-cols-12 gap-6 lg:gap-8">
 
-        {/* Left Column - 4 cols */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
+      {/* Top Welcome Section (Optional but adds premium feel) */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-8"
+      >
+        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Operational Overview</span>
+        <h2 className="text-4xl font-extrabold text-foreground tracking-tight mt-1">Hello, Gullu Don</h2>
+      </motion.div>
+
+      <div className="grid grid-cols-12 gap-8">
+        {/* Main Column - 8 cols */}
+        <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex-1"
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <CalendarCard />
+            <ProjectList projects={projects} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <ProfitChartCard />
           </motion.div>
         </div>
 
-        {/* Right Column - 8 cols */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
-
-          {/* Projects Section */}
-          <ProjectList projects={projects} />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Stats Summary */}
+        {/* Sidebar Column - 4 cols */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
             <StatsSummary stats={stats} />
+          </motion.div>
 
-            {/* Profit Chart */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <ProfitChartCard />
-            </motion.div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <CalendarCard />
+          </motion.div>
         </div>
       </div>
     </div>

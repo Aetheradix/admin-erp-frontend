@@ -1,18 +1,28 @@
 import React from 'react';
-import { InputSwitch, type InputSwitchProps } from 'primereact/inputswitch';
-import { classNames } from 'primereact/utils';
+import { Switch as AntSwitch } from 'antd';
+import type { SwitchProps as AntSwitchProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const Switch = React.forwardRef<InputSwitch, InputSwitchProps>(({ className, ...props }, ref) => {
+interface PrimeSwitchChangeEvent {
+  value: boolean;
+  originalEvent?: React.SyntheticEvent;
+}
+
+interface SwitchProps extends Omit<AntSwitchProps, 'onChange'> {
+  onChange?: (e: PrimeSwitchChangeEvent) => void;
+}
+
+export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({ className, onChange, ...props }, ref) => {
   return (
-    <InputSwitch
+    <AntSwitch
       ref={ref}
-      className={classNames(
-        'transition-all duration-200',
-        className
-      )}
+      className={cn('transition-all duration-200', className)}
+      onChange={(checked, event) => onChange?.({ value: checked, originalEvent: event })}
       {...props}
     />
   );
 });
 
 Switch.displayName = 'Switch';
+
+export const InputSwitch = Switch;

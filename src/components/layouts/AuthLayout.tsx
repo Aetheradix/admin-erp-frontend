@@ -17,7 +17,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         {/* Abstract Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[100px] mix-blend-screen" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[100px] mix-blend-screen" />
         </div>
 
         {/* Logo/Brand */}
@@ -54,7 +54,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
               <span className="text-primary italic">always</span> accessible.
             </h1>
             <p className="text-lg text-white/40 font-medium leading-relaxed">
-              AetherERP keeps your collective intelligence flowing across every tool, 
+              AetherERP keeps your collective intelligence flowing across every tool,
               every conversation, every decision. Never loose context again.
             </p>
           </motion.div>
@@ -86,7 +86,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
           >
             <h2 className="text-4xl font-black text-black mb-2 tracking-tight">{title}</h2>
             {subtitle && <p className="text-muted font-medium mb-8 uppercase text-[10px] tracking-widest">{subtitle}</p>}
-            
+
             <div className="mt-8">
               {children}
             </div>
@@ -97,10 +97,10 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         <div className="absolute bottom-12 left-0 w-full hidden lg:flex flex-col items-center px-8">
           <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em] mb-6">Backed By the Best</p>
           <div className="flex items-center justify-center gap-12 opacity-30 grayscale saturate-0">
-             <span className="font-black text-xl italic tracking-tighter">LOGOIPSUM</span>
-             <span className="font-black text-xl italic tracking-tighter uppercase">Generic</span>
-             <span className="font-black text-xl italic tracking-tighter">LOGO</span>
-             <span className="font-black text-xl italic tracking-tighter">IPSUM</span>
+            <span className="font-black text-xl italic tracking-tighter">LOGOIPSUM</span>
+            <span className="font-black text-xl italic tracking-tighter uppercase">Generic</span>
+            <span className="font-black text-xl italic tracking-tighter">LOGO</span>
+            <span className="font-black text-xl italic tracking-tighter">IPSUM</span>
           </div>
         </div>
       </div>

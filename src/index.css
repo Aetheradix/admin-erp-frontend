@@ -1,6 +1,3 @@
-@import "primereact/resources/themes/lara-light-cyan/theme.css";
-@import "primereact/resources/primereact.min.css";
-@import "primeicons/primeicons.css";
 @import "tailwindcss";
 
 
@@ -9,7 +6,8 @@
   --background: #f5f4f2;
   --foreground: #1a1a1a;
   --primary-foreground: #0d0d0d;
-  --muted: #6b635e; /* Darkened for WCAG AA compliance */
+  --muted: #6b635e;
+  /* Darkened for WCAG AA compliance */
 
   /* Surface & Card Colors */
   --surface-elevated: #ffffff;
@@ -28,21 +26,25 @@
   --accent-light: #fde8e4;
 
   /* Semantic Colors */
-  --success: #059669; /* Darkened for WCAG AA */
-  --warning: #d97706; /* Darkened for WCAG AA */
-  --error: #e11d48; /* Darkened for WCAG AA */
-  --info: #0284c7; /* Darkened for WCAG AA */
+  --success: #059669;
+  /* Darkened for WCAG AA */
+  --warning: #d97706;
+  /* Darkened for WCAG AA */
+  --error: #e11d48;
+  /* Darkened for WCAG AA */
+  --info: #E8583A;
+  /* brand aligned instead of blue */
 
   /* Shape Tokens */
-  --radius-shell: 1.5rem;
-  --radius-card: 1rem;
+  --radius-shell: 0.75rem;
+  --radius-card: 0.5rem;
   --radius-pill: 9999px;
 
   /* Shadow Tokens */
-  --shadow-soft: 0 4px 20px rgba(232, 88, 58, 0.04);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(232, 88, 58, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(232, 88, 58, 0.02);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 12px 24px -6px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
 
   /* Typography */
   --font-body: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -61,7 +63,8 @@
 }
 
 @layer base {
-  button:not([aria-label]), 
+
+  button:not([aria-label]),
   a:not([aria-label]):has(svg) {
     /* Accessibility marker: Ensure icon-buttons have aria-labels */
     outline-color: transparent;
@@ -122,6 +125,7 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    user-select: none;
   }
 
   ::-webkit-scrollbar {
@@ -147,27 +151,62 @@
     color: var(--primary);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-body);
     font-weight: 700;
     line-height: 1.2;
     color: var(--foreground);
   }
 
-  /* Utility to hide scrollbars */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none !important;
-  }
-
   .no-scrollbar {
     -ms-overflow-style: none !important;
     scrollbar-width: none !important;
   }
+
+  /* Premium Link Styling */
+  a,
+  .link-style {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+  }
+
+  a:hover {
+    color: var(--primary);
+  }
+
+  /* Realistic Underline Animation for links */
+  .animated-underline {
+    position: relative;
+  }
+
+  .animated-underline::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: var(--primary);
+    transition: width 0.3s ease;
+  }
+
+  .animated-underline:hover::after {
+    width: 100%;
+  }
 }
 
 @layer components {
+
   /* Blog DataTable Customizations */
-  .blog-datatable .p-datatable-thead > tr > th {
+  .blog-datatable .ant-table-thead>tr>th {
     background: transparent !important;
     color: var(--muted) !important;
     font-size: 10px !important;
@@ -178,85 +217,70 @@
     border-bottom: 1px solid var(--border-subtle) !important;
   }
 
-  .blog-datatable .p-datatable-tbody > tr {
+  .blog-datatable .ant-table-tbody>tr {
     transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
   }
 
-  .blog-datatable .p-datatable-tbody > tr:hover {
+  .blog-datatable .ant-table-tbody>tr:hover>td {
     background-color: var(--surface-subtle) !important;
   }
 
-  .blog-datatable .p-datatable-tbody > tr > td {
+  .blog-datatable .ant-table-tbody>tr>td {
     padding: 1.25rem 1rem !important;
     border: none !important;
   }
 
-  .blog-datatable .p-paginator {
+  .blog-datatable .ant-pagination {
     border: none !important;
     padding: 1.5rem !important;
     background: transparent !important;
   }
 
-  .blog-datatable .p-paginator .p-paginator-pages .p-paginator-page {
+  .blog-datatable .ant-pagination .ant-pagination-item {
     border-radius: 12px !important;
     font-weight: 700 !important;
     font-size: 0.875rem !important;
     min-width: 2.5rem !important;
     height: 2.5rem !important;
+    line-height: 2.5rem !important;
     transition: all 0.2s !important;
   }
 
-  .blog-datatable .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  .blog-datatable .ant-pagination .ant-pagination-item-active {
     background: var(--primary) !important;
+    border-color: var(--primary) !important;
+  }
+
+  .blog-datatable .ant-pagination .ant-pagination-item-active a {
     color: white !important;
-    box-shadow: 0 4px 12px var(--primary-glow) !important;
   }
 
-  /* Dropdown Premium Styling */
-  .p-dropdown-panel {
-    background: #ffffff !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: 1rem !important;
-    box-shadow: var(--shadow-lg) !important;
-    padding: 0.5rem !important;
-    margin-top: 4px !important;
-    z-index: 9999 !important;
-  }
-
-  .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
-    padding: 0.75rem 1rem !important;
+  /* Ant Design Select Premium Styling */
+  .ant-select-dropdown {
     border-radius: 0.75rem !important;
-    margin-bottom: 2px !important;
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    transition: all 0.2s !important;
-    color: var(--foreground) !important;
+    box-shadow: var(--shadow-lg) !important;
+    padding: 0.4rem !important;
   }
 
-  .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+  .ant-select-item {
+    border-radius: 0.5rem !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+  }
+
+  .ant-select-item-option-selected {
     background: var(--primary-soft) !important;
     color: var(--primary) !important;
   }
 
-  .p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
-    background: var(--surface-subtle) !important;
-    color: var(--foreground) !important;
+  .premium-dialog .ant-modal-content {
+    border-radius: 1rem !important;
+    overflow: hidden;
+    padding: 0 !important;
   }
 
-  .p-dropdown-panel .p-dropdown-header {
-    background: transparent !important;
-    padding: 0.5rem !important;
-    border-bottom: 1px solid var(--border-subtle) !important;
-  }
-
-  .p-dropdown-trigger {
-    color: var(--muted) !important;
-    padding-right: 1rem !important;
-  }
-
-  .p-dropdown-label {
-    padding-left: 1.25rem !important;
-    font-size: 0.875rem !important;
+  .premium-confirm-dialog .ant-modal-content {
+    border-radius: 0.75rem !important;
   }
 }

@@ -3,12 +3,12 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { ExplorerBar } from '@/components/ui/composed/ExplorerBar';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { showToast } from '@/components/ui/composed/Toast';
 import { GuestPassCard } from './components/GuestPassCard';
 import { GuestPassForm } from './components/GuestPassForm';
 import { useGetGuestPassesQuery, useIssueGuestPassMutation } from '@/store/api/guestPassApiSlice';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import type { GuestPass } from './hooks/mockGuestPass';
 import { Key, ShieldCheck, History, AlertCircle } from 'lucide-react';
 

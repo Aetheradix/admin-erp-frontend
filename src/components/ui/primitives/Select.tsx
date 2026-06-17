@@ -1,22 +1,27 @@
 import React from 'react';
-import { Dropdown as PRDropdown, type DropdownProps as PRDropdownProps } from 'primereact/dropdown';
-import { classNames } from 'primereact/utils';
+import { Select as AntSelect } from 'antd';
+import type { SelectProps as AntSelectProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const Select = React.forwardRef<PRDropdown, PRDropdownProps>(({ className, ...props }, ref) => {
+interface PrimeSelectChangeEvent<T = unknown> {
+  value: T;
+  originalEvent?: React.SyntheticEvent;
+}
+
+interface SelectProps<T = unknown> extends Omit<AntSelectProps<T>, 'onChange'> {
+  onChange?: (e: PrimeSelectChangeEvent<T>) => void;
+}
+
+export const Select = React.forwardRef(function SelectInner<T = unknown>(
+  { className, onChange, ...props }: SelectProps<T>,
+  ref: React.Ref<unknown>
+) {
   return (
-    <PRDropdown
-      ref={ref}
-      className={classNames(
-        '!w-full !border !border-border-subtle !rounded-2xl !bg-white !text-foreground focus:!border-primary/50 !transition-all !duration-200 !outline-none !shadow-xs !h-14 flex items-center',
-        className
-      )}
-      pt={{
-        input: { className: 'px-5 font-medium text-sm text-foreground' },
-        trigger: { className: 'pr-4' }
-      }}
+    <AntSelect<T>
+      ref={ref as React.Ref<never>}
+      className={cn('w-full [&_.ant-select-selector]:!h-12 [&_.ant-select-selector]:!rounded-md [&_.ant-select-selector]:!px-3', className)}
+      onChange={(value) => onChange?.({ value })}
       {...props}
     />
   );
-});
-
-Select.displayName = 'Select';
+}) as <T = unknown>(props: SelectProps<T> & { ref?: React.Ref<unknown> }) => React.ReactElement;

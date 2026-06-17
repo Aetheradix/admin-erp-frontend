@@ -20,7 +20,7 @@ interface ProfileFormProps {
 
 export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps) => {
   const [formData, setFormData] = useState(initialData);
-  const { data: departmentsData, isLoading: isLoadingDepts } = useGetDepartmentsQuery({});
+  const { data: departmentsData } = useGetDepartmentsQuery({});
   const departments = departmentsData?.data ?? [];
   const departmentOptions = departments.map(({ department_name }: { id: string, department_name: string }) => ({
     label: department_name,

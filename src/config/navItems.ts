@@ -1,25 +1,26 @@
 import {
   BarChart3,
   Briefcase,
-  Calendar,
+  Building2,
+  CheckSquare,
   CreditCard,
-  FileText,
-  Image as ImageIcon,
-  Key,
   LayoutDashboard,
-  Scale,
+  Package,
   Settings,
-  Ticket,
-  UserCircle,
   Users,
-  CheckCircle,
-  History,
-  Settings2,
+  Users2,
   Clock,
+  FileText,
+  Image,
   type LucideIcon
 } from 'lucide-react';
 
 
+
+export interface NavChild {
+  label: string;
+  path: string;
+}
 
 export interface NavItem {
   label: string;
@@ -28,16 +29,11 @@ export interface NavItem {
   role?: 'admin' | 'employee' | string;
   category?: 'OVERVIEW' | 'MANAGEMENT' | 'SYSTEM';
   description?: string;
+  children?: NavChild[];
 }
 
 export const navItems: NavItem[] = [
-  {
-    label: 'Check-In',
-    path: '/checkin',
-    icon: Clock,
-    category: 'OVERVIEW',
-    description: 'Attendance Center'
-  },
+  // ── OVERVIEW ──────────────────────────────────────
   {
     label: 'Dashboard',
     path: '/',
@@ -46,122 +42,114 @@ export const navItems: NavItem[] = [
     description: 'Overview of operations'
   },
   {
-    label: 'Blogs',
-    path: '/blogs',
-    icon: FileText,
+    label: 'Check-In',
+    path: '/checkin',
+    icon: Clock,
     category: 'OVERVIEW',
-    description: 'Manage content'
+    description: 'Attendance Center'
+  },
+
+  // ── MANAGEMENT ────────────────────────────────────
+  {
+    label: 'Organization',
+    path: '/org',
+    icon: Building2,
+    category: 'MANAGEMENT',
+    description: 'Company profile'
   },
   {
-    label: 'Gallery',
-    path: '/gallery',
-    icon: ImageIcon,
-    category: 'OVERVIEW',
-    description: 'Media management'
+    label: 'Teams',
+    path: '/teams',
+    icon: Users2,
+    category: 'MANAGEMENT',
+    description: 'Team management'
   },
   {
-    label: 'Events',
-    path: '/events',
-    icon: Ticket,
-    category: 'OVERVIEW',
-    description: 'Schedule events'
-  },
-  {
-    label: 'Careers',
-    path: '/careers',
-    icon: Briefcase,
-    category: 'OVERVIEW',
-    description: 'Talent acquisition'
-  },
-  {
-    label: 'Staff',
-    path: '/staff',
+    label: 'Users',
+    path: '/users',
     icon: Users,
-    role: 'admin',
     category: 'MANAGEMENT',
-    description: 'Manage employees'
+    description: 'User directory'
   },
   {
-    label: 'Approvals',
-    path: '/staff/approvals',
-    icon: CheckCircle,
+    label: 'Projects',
+    path: '/staff',
+    icon: Briefcase,
     role: 'admin',
     category: 'MANAGEMENT',
-    description: 'Approve requests'
+    description: 'Manage projects'
   },
   {
-    label: 'Approval History',
-    path: '/staff/history',
-    icon: History,
-    role: 'admin',
+    label: 'Tasks',
+    path: '/tasks',
+    icon: CheckSquare,
     category: 'MANAGEMENT',
-    description: 'Past request logs'
-  },
-  {
-    label: 'Feature Management',
-    path: '/staff/feature-control',
-    icon: Settings2,
-    role: 'admin',
-    category: 'MANAGEMENT',
-    description: 'Dynamic feature controls'
-  },
-
-
-  {
-    label: 'Attendance',
-    path: '/calendar',
-    icon: Calendar,
-    category: 'MANAGEMENT',
-    description: 'Personal schedule'
+    description: 'Task management'
   },
   {
     label: 'Finance',
     path: '/finance',
     icon: CreditCard,
     category: 'MANAGEMENT',
-    description: 'Reimbursements'
+    description: 'Financial management',
+    children: [
+      { label: 'Overview', path: '/finance' },
+      { label: 'Invoices', path: '/finance/invoices' },
+      { label: 'Expenses', path: '/finance/expenses' },
+      { label: 'Payroll', path: '/finance/payroll' },
+    ]
   },
   {
-    label: 'Grievances',
-    path: '/grievances',
-    icon: Scale,
+    label: 'Inventory',
+    path: '/inventory',
+    icon: Package,
     category: 'MANAGEMENT',
-    description: 'Support & Help'
+    description: 'Stock management',
+    children: [
+      { label: 'Items', path: '/inventory' },
+      { label: 'Stock Levels', path: '/inventory/stock-levels' },
+      { label: 'Movements', path: '/inventory/movements' },
+    ]
   },
   {
-    label: 'Guest Pass',
-    path: '/guest-pass',
-    icon: Key,
+    label: 'Blogs',
+    path: '/blogs',
+    icon: FileText,
     category: 'MANAGEMENT',
-    description: 'Visitor management'
+    description: 'Content management'
   },
+  {
+    label: 'Gallery',
+    path: '/gallery',
+    icon: Image,
+    category: 'MANAGEMENT',
+    description: 'Asset library'
+  },
+
+  // ── SYSTEM ────────────────────────────────────────
   {
     label: 'Analytics',
-    path: '/stats',
+    path: '/analytics',
     icon: BarChart3,
     role: 'admin',
     category: 'SYSTEM',
-    description: 'Business insights'
+    description: 'Business insights',
+    children: [
+      { label: 'Overview', path: '/analytics' },
+      { label: 'Reports', path: '/analytics/reports' },
+    ]
   },
   {
     label: 'Settings',
     path: '/settings',
     icon: Settings,
     category: 'SYSTEM',
-    description: 'System preferences'
+    description: 'System preferences',
+    children: [
+      { label: 'General', path: '/settings' },
+      { label: 'Roles & Permissions', path: '/settings/roles' },
+      { label: 'Integrations', path: '/settings/integrations' },
+      { label: 'Audit Log', path: '/settings/audit-log' },
+    ]
   },
-  {
-    label: 'Profile',
-    path: '/profile',
-    icon: UserCircle,
-    category: 'SYSTEM',
-    description: 'Personal account'
-  },
-  {
-    label: 'Rulebook',
-    path: '/rulebook',
-    icon: FileText,
-    category: 'SYSTEM',
-    description: 'Company Policies'
-  }
 ];

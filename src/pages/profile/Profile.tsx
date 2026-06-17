@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Button } from '@/components/ui/primitives/Button';
 
 import { useProfile } from './hooks/useProfile';
-import { Dialog } from 'primereact/dialog';
+import { Dialog } from '@/components/ui/composed/Dialog';
 import { AdminElevationRequest } from '../staff/components/AdminElevationRequest';
 import { ProfileForm } from './components/ProfileForm';
 

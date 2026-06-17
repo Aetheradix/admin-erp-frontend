@@ -1,15 +1,13 @@
 import React from 'react';
-import { Checkbox as PRCheckbox, type CheckboxProps as PRCheckboxProps } from 'primereact/checkbox';
-import { classNames } from 'primereact/utils';
+import { Checkbox as AntCheckbox } from 'antd';
+import type { CheckboxProps as AntCheckboxProps } from 'antd';
+import { cn } from '@/utils/cn';
 
-export const Checkbox = React.forwardRef<PRCheckbox, PRCheckboxProps>(({ className, ...props }, ref) => {
+export const Checkbox = React.forwardRef<unknown, AntCheckboxProps>(({ className, ...props }, ref) => {
   return (
-    <PRCheckbox
-      ref={ref}
-      className={classNames(
-        'transition-all duration-200',
-        className
-      )}
+    <AntCheckbox
+      ref={ref as React.Ref<never>}
+      className={cn('transition-all duration-200', className)}
       {...props}
     />
   );

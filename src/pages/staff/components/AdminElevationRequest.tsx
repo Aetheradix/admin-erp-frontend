@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useRequestAdminElevationMutation } from '@/store/api/authApiSlice';
 import { Shield, Send, AlertCircle } from 'lucide-react';
-import { Button } from 'primereact/button';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Message } from 'primereact/message';
+import { Button } from '@/components/ui/primitives/Button';
+import { InputTextarea } from '@/components/ui/primitives/Textarea';
+import { Message } from '@/components/ui/composed/Message';
 import { showToast } from '@/components/ui/composed/Toast';
 
 

@@ -6,14 +6,14 @@ import { OrgChart } from './components/OrgChart';
 import { ProjectCard } from './components/ProjectCard';
 import { mockHierarchy } from './hooks/mockStats';
 import { useGetProjectsQuery, useGetProjectStatsQuery } from '@/store/api/projectApiSlice';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { PieChart, TrendingUp, Layers, Archive as ArchiveIcon, Sparkles } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 export function StatsPage() {
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
   const { data: statsData, isLoading: statsLoading } = useGetProjectStatsQuery();
-  
+
   const [activeTab, setActiveTab] = useState('Hierarchy');
   const TABS = ['Hierarchy', 'Ongoing Projects', 'Archive'];
 
@@ -44,8 +44,8 @@ export function StatsPage() {
           { label: 'Completion Rate', value: '92%', icon: TrendingUp, color: 'text-success' },
           { label: 'Historical Data', value: archivedProjects.length, icon: ArchiveIcon, color: 'text-warning' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white p-6 rounded-[32px] border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group">
-            <div className={`w-14 h-14 rounded-2xl bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
+          <div key={stat.label} className="bg-white p-6 rounded-2xl border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group">
+            <div className={`w-14 h-14 rounded-lg bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
               <stat.icon size={28} />
             </div>
             <div className="flex flex-col">
@@ -58,14 +58,14 @@ export function StatsPage() {
 
       {/* Navigation Tabs */}
       <div className="flex flex-col gap-8">
-        <div className="bg-white p-4 rounded-[40px] border border-border-subtle shadow-soft flex items-center justify-between px-8">
+        <div className="bg-white p-4 rounded-3xl border border-border-subtle shadow-soft flex items-center justify-between px-8">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+            <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
               <Sparkles size={18} />
             </div>
             <span className="text-sm font-black text-foreground uppercase tracking-widest">Strategy Portal</span>
           </div>
-          <Tabs 
+          <Tabs
             items={TABS}
             activeItem={activeTab}
             onItemChange={setActiveTab}
