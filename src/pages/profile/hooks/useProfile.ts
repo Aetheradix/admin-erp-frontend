@@ -39,7 +39,7 @@ export const useProfile = () => {
     }
   }, [authUser]);
 
-  const handleEditSave = async (updatedData: any) => {
+  const handleEditSave = async (updatedData: { name: string; email: string; contactNo: string; designation: string; department: string }) => {
     try {
       const payload = {
         username: updatedData.name,
@@ -54,9 +54,10 @@ export const useProfile = () => {
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setIsEditing(false);
       window.location.reload();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } };
       console.error('Failed to update profile:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to update profile', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to update profile', life: 3000 });
     }
   };
 

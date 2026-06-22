@@ -5,15 +5,17 @@ import { Select } from '@/components/ui/primitives/Select';
 import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 import { useState } from 'react';
 
+interface ProfileFormData {
+  name: string;
+  email: string;
+  contactNo: string;
+  department: string;
+  designation: string;
+}
+
 interface ProfileFormProps {
-  initialData: {
-    name: string;
-    email: string;
-    contactNo: string;
-    department: string;
-    designation: string;
-  };
-  onSave: (data: any) => void;
+  initialData: ProfileFormData;
+  onSave: (data: ProfileFormData) => void;
   onCancel: () => void;
 }
 
@@ -64,7 +66,7 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
             id="profile-dept"
             options={departmentOptions}
             value={formData.department}
-            onChange={(e:any) => setFormData({ ...formData, department: e.value })}
+            onChange={(e: { value: string }) => setFormData({ ...formData, department: e.value })}
             placeholder="Select department"
           />
         </FormField>

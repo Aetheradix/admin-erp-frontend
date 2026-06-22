@@ -1,5 +1,5 @@
 import { Mail, Phone, Edit2, Trash2, Shield } from 'lucide-react';
-import type { StaffMember } from '../hooks/mockStaff';
+import type { StaffMember } from '@/types/models';
 
 interface StaffCardProps {
   member: StaffMember;
@@ -22,7 +22,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
     <div className="group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
-        <button 
+        <button
           onClick={() => onEdit?.(String(member.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Edit Profile"
@@ -30,7 +30,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         >
           <Edit2 size={16} />
         </button>
-        <button 
+        <button
           onClick={() => onPromote?.(String(member.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Promote to Admin"
@@ -38,7 +38,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         >
           <Shield size={16} />
         </button>
-        <button 
+        <button
           onClick={() => onDelete?.(String(member.id))}
 
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
@@ -53,12 +53,12 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         {/* Avatar with Status Indicator */}
         <div className="relative">
           <div className="w-24 h-24 rounded-4xl overflow-hidden border-4 border-surface-subtle shadow-inner">
-            <img 
-              src={member.image_url || member.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${member.username || member.name}`} 
-              alt={member.username || member.name} 
-              width={96} 
-              height={96} 
-              className="w-full h-full object-cover" 
+            <img
+              src={member.image_url || member.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${member.username || member.name}`}
+              alt={member.username || member.name}
+              width={96}
+              height={96}
+              className="w-full h-full object-cover"
             />
           </div>
           <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status ?? 'Active')} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
@@ -103,14 +103,14 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
 
         {/* Contact Quick Actions */}
         <div className="grid grid-cols-2 gap-3 w-full pt-2">
-          <button 
+          <button
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
             aria-label={`Send email to ${member.name}`}
           >
             <Mail size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Email</span>
           </button>
-          <button 
+          <button
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
             aria-label={`Call ${member.name}`}
           >

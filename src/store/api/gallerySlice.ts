@@ -1,12 +1,18 @@
+import type { GalleryItem } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapGalleryItem } from './mappers';
 
 export const gallerySlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getGallery: builder.query<any[], void>({
+    getGallery: builder.query<GalleryItem[], void>({
       query: () => '/gallery',
       providesTags: ['Gallery'],
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapGalleryItem(item as Record<string, unknown>)) : [];
+      },
     }),
-    uploadGalleryItem: builder.mutation<any, any>({
+    uploadGalleryItem: builder.mutation<GalleryItem, Partial<GalleryItem>>({
       query: (item) => ({
         url: '/gallery',
         method: 'POST',
@@ -14,7 +20,7 @@ export const gallerySlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Gallery'],
     }),
-    deleteGalleryItem: builder.mutation<any, string>({
+    deleteGalleryItem: builder.mutation<{ success: boolean }, string | number>({
       query: (id) => ({
         url: `/gallery/${id}`,
         method: 'DELETE',

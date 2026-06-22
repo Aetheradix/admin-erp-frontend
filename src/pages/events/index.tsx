@@ -8,9 +8,9 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
-import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/store/api/eventApiSlice';
+import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/store/api/eventSlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
-import type { ERPEvent } from './hooks/mockEvents';
+import type { ERPEvent } from '@/types/models';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 
 const Events = () => {
@@ -56,9 +56,10 @@ const Events = () => {
         try {
           await deleteEvent(id).unwrap();
           showToast({ severity: 'success', summary: 'Cancelled', detail: 'Event cancelled successfully.', life: 3000 });
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const apiError = err as { data?: { message?: string } };
           console.error('Failed to delete event:', err);
-          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to cancel event', life: 3000 });
+          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to cancel event', life: 3000 });
         }
       }
     });
@@ -73,9 +74,10 @@ const Events = () => {
         showToast({ severity: 'success', summary: 'Scheduled', detail: 'Event scheduled successfully!', life: 3000 });
       }
       setShowForm(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } };
       console.error('Failed to save event:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to save event', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to save event', life: 3000 });
     }
   };
 

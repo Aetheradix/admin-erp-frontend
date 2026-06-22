@@ -2,8 +2,10 @@ import { motion } from 'framer-motion';
 import { Plus, Filter, Search } from 'lucide-react';
 import ProjectCard from './ProjectCard';
 
+import type { Project } from '@/types/models';
+
 interface ProjectListProps {
-  projects: any[];
+  projects: Project[];
 }
 
 export const ProjectList = ({ projects }: ProjectListProps) => {

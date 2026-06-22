@@ -8,7 +8,7 @@ export const attendanceSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAttendanceStatus: builder.query<{ status: 'checked-in' | 'checked-out' | null; lastAction?: string | null; dbStatus?: string | null }, void>({
       query: () => '/attendance/status',
-      transformResponse: (response: any) => {
+      transformResponse: (response: { data?: { status: string; record?: { check_in_time?: string } } }) => {
         if (!response.data || !response.data.status) {
           return { status: null, lastAction: null, dbStatus: null };
         }

@@ -1,13 +1,34 @@
+import { StaffMember } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapStaffMember } from './mappers';
 
 export const userSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getUsers: builder.query<any[], void>({
+    getUsers: builder.query<StaffMember[], void>({
       query: () => '/users',
-      transformResponse: (response: any) => response.data,
       providesTags: ['User'],
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapStaffMember(item as Record<string, unknown>)) : [];
+      },
     }),
-    updateUserRole: builder.mutation<any, { id: string; role: 'admin' | 'user' }>({
+    createStaff: builder.mutation<StaffMember, Partial<StaffMember>>({
+      query: (staff) => ({
+        url: '/users',
+        method: 'POST',
+        body: staff,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    updateStaff: builder.mutation<StaffMember, Partial<StaffMember> & { id: string | number }>({
+      query: (staff) => ({
+        url: `/users/${staff.id}`,
+        method: 'PUT',
+        body: staff,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    updateUserRole: builder.mutation<{ success: boolean }, { id: string | number; role: 'admin' | 'user' }>({
       query: ({ id, role }) => ({
         url: `/users/${id}/role`,
         method: 'PUT',
@@ -15,7 +36,7 @@ export const userSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
-    deleteUser: builder.mutation<any, string>({
+    deleteUser: builder.mutation<{ success: boolean }, string | number>({
       query: (id) => ({
         url: `/users/${id}`,
         method: 'DELETE',
@@ -27,6 +48,8 @@ export const userSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetUsersQuery,
+  useCreateStaffMutation,
+  useUpdateStaffMutation,
   useUpdateUserRoleMutation,
   useDeleteUserMutation,
 } = userSlice;

@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
+import React from 'react';
+
 interface Invoice {
     id: string;
     client: string;
@@ -17,7 +19,7 @@ interface Invoice {
     date: string;
 }
 
-const statusIcons: Record<string, { icon: any; color: string }> = {
+const statusIcons: Record<string, { icon: React.ElementType; color: string }> = {
     Paid: { icon: CheckCircle, color: 'text-success' },
     Pending: { icon: Clock, color: 'text-warning' },
     Overdue: { icon: AlertCircle, color: 'text-error' },

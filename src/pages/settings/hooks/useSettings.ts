@@ -19,7 +19,7 @@ export const useSettings = () => {
     autoArchive: true,
   });
 
-  const updateSetting = (key: keyof typeof settings, value: any) => {
+  const updateSetting = <K extends keyof typeof settings>(key: K, value: typeof settings[K]) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 

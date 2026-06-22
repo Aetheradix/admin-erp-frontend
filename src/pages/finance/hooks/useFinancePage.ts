@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGetReimbursementsQuery, useCreateReimbursementMutation } from '@/store/api/financeApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import type { Reimbursement } from './mockFinance';
+import type { Reimbursement } from '@/types/models';
 
 const CATEGORIES = ['All', 'Travel', 'Equipment', 'Software', 'Meals', 'Medical', 'Office Supplies'];
 
@@ -21,9 +21,10 @@ export const useFinancePage = () => {
       await createReimbursement(data).unwrap();
       setShowForm(false);
       showToast({ severity: 'success', summary: 'Success', detail: 'Reimbursement request submitted.', life: 3000 });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } };
       console.error('Failed to submit reimbursement request:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to submit request.', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to submit request.', life: 3000 });
     }
   };
 

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerApiSlice';
+import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerSlice';
 import { useCareerFilters } from './useCareerFilters';
-import type { Career } from './mockCareers';
+import type { Career } from '@/types/models';
 
 export const useCareerList = () => {
   const { data: careers = [], isLoading, isError } = useGetCareersQuery();
@@ -50,9 +50,10 @@ export const useCareerList = () => {
         try {
           await deleteCareer(id).unwrap();
           showToast({ severity: 'success', summary: 'Success', detail: 'Position removed successfully!', life: 3000 });
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const apiError = err as { data?: { message?: string } };
           console.error('Failed to delete position:', err);
-          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to delete position', life: 3000 });
+          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to delete position', life: 3000 });
         }
       }
     });
@@ -68,9 +69,10 @@ export const useCareerList = () => {
         showToast({ severity: 'success', summary: 'Success', detail: 'New position posted successfully!', life: 3000 });
       }
       setShowForm(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } };
       console.error('Failed to save position:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to save position', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to save position', life: 3000 });
     }
   };
 

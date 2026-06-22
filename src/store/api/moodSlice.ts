@@ -1,12 +1,14 @@
+import type { MoodEntry } from '@/types/models';
 import { apiSlice } from './apiSlice';
 
 export const moodSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getMoods: builder.query<any[], void>({
+    getMoods: builder.query<MoodEntry[], void>({
       query: () => '/moods',
       providesTags: ['Mood'],
+      transformResponse: (response: { data: MoodEntry[] }) => response.data,
     }),
-    submitMood: builder.mutation<any, any>({
+    submitMood: builder.mutation<MoodEntry, Partial<MoodEntry>>({
       query: (data) => ({
         url: '/moods',
         method: 'POST',
@@ -14,9 +16,10 @@ export const moodSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Mood'],
     }),
-    getMoodStats: builder.query<any[], void>({
+    getMoodStats: builder.query<{ average: number; count: number }[], void>({
       query: () => '/moods/stats',
       providesTags: ['Mood'],
+      transformResponse: (response: { data: { average: number; count: number }[] }) => response.data,
     }),
   }),
 });

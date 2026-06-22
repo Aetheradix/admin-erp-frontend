@@ -1,12 +1,18 @@
+import type { Project, ProjectStatsData } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapProject } from './mappers';
 
 export const projectSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProjects: builder.query<any[], void>({
+    getProjects: builder.query<Project[], void>({
       query: () => '/projects',
       providesTags: ['Projects'],
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapProject(item as Record<string, unknown>)) : [];
+      },
     }),
-    createProject: builder.mutation<any, any>({
+    createProject: builder.mutation<Project, Partial<Project>>({
       query: (data) => ({
         url: '/projects',
         method: 'POST',
@@ -14,7 +20,7 @@ export const projectSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Projects'],
     }),
-    getProjectStats: builder.query<any, void>({
+    getProjectStats: builder.query<ProjectStatsData, void>({
       query: () => '/projects/summary',
       providesTags: ['Projects'],
     }),

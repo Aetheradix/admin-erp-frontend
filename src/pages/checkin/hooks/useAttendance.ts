@@ -26,9 +26,10 @@ export const useAttendance = () => {
         await checkIn({ remark: 'Manual check-in from dashboard' }).unwrap();
         showToast({ severity: 'success', summary: 'Checked In', detail: 'Welcome! You have been successfully checked in.', life: 3000 });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as { data?: { message?: string } };
       console.error('Attendance action failed:', error);
-      showToast({ severity: 'error', summary: 'Attendance Error', detail: error.data?.message || 'Action failed', life: 3000 });
+      showToast({ severity: 'error', summary: 'Attendance Error', detail: apiError.data?.message || 'Action failed', life: 3000 });
     }
   };
 
@@ -41,9 +42,10 @@ export const useAttendance = () => {
         comments: `Feeling ${label}`
       }).unwrap();
       showToast({ severity: 'success', summary: 'Mood Logged', detail: `You're feeling ${label.toLowerCase()} today. Thanks for sharing!`, life: 3000 });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } };
       console.error('Mood submission failed:', err);
-      showToast({ severity: 'error', summary: 'Mood Logging Error', detail: err.data?.message || 'Failed to log mood', life: 3000 });
+      showToast({ severity: 'error', summary: 'Mood Logging Error', detail: apiError.data?.message || 'Failed to log mood', life: 3000 });
     }
   };
 

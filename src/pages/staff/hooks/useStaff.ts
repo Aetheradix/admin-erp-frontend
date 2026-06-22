@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
-import { useGetStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } from '@/store/api/staffApiSlice';
+import { useGetUsersQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteUserMutation } from '@/store/api/userSlice';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { useStaffFilters } from './useStaffFilters';
-import type { StaffMember } from './mockStaff';
+import type { StaffMember } from '@/types/models';
 
 export const useStaff = () => {
-  const { data: staff = [], isLoading, isError } = useGetStaffQuery();
+  const { data: staff = [], isLoading, isError } = useGetUsersQuery();
   const [createStaff] = useCreateStaffMutation();
   const [updateStaff] = useUpdateStaffMutation();
-  const [deleteStaff] = useDeleteStaffMutation();
+  const [deleteStaff] = useDeleteUserMutation();
   const [promoteToAdmin] = usePromoteToAdminMutation();
 
   const [showForm, setShowForm] = useState(false);
@@ -26,8 +26,9 @@ export const useStaff = () => {
         try {
           await promoteToAdmin(id).unwrap();
           showToast({ severity: 'success', summary: 'Success', detail: 'Member promoted to administrator successfully!', life: 3000 });
-        } catch (err: any) {
-          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to promote member.', life: 3000 });
+        } catch (err: unknown) {
+          const apiError = err as { data?: { message?: string } };
+          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to promote member.', life: 3000 });
         }
       }
     });
@@ -64,7 +65,7 @@ export const useStaff = () => {
     });
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Partial<StaffMember> & { name?: string; role?: string; phone?: string; image?: string }) => {
     try {
       const payload = {
         username: data.name,
@@ -86,7 +87,7 @@ export const useStaff = () => {
         showToast({ severity: 'success', summary: 'Success', detail: 'Staff member added successfully.', life: 3000 });
       }
       setShowForm(false);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Operation failed', err);
       showToast({ severity: 'error', summary: 'Error', detail: 'Operation failed.', life: 3000 });
     }

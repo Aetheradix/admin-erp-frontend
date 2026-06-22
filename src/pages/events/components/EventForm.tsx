@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { useEffect, useState } from 'react';
-import type { ERPEvent } from '../hooks/mockEvents';
+import type { ERPEvent } from '@/types/models';
 
 interface EventFormProps {
   initialData?: ERPEvent | null;
@@ -28,7 +28,9 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      queueMicrotask(() => {
+        setFormData(initialData);
+      });
     }
   }, [initialData]);
 
@@ -44,26 +46,26 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-6">
           <FormField label="Event Title" required id="event-title">
-            <Input 
+            <Input
               id="event-title"
-              value={formData.title} 
+              value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g. Annual Tech Summit" 
+              placeholder="e.g. Annual Tech Summit"
             />
           </FormField>
 
           <FormField label="Description" id="event-description">
-            <Textarea 
+            <Textarea
               id="event-description"
-              value={formData.description} 
+              value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Tell us what this event is about..." 
+              placeholder="Tell us what this event is about..."
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Category" id="event-category">
-              <Select 
+              <Select
                 id="event-category"
                 options={categories}
                 value={formData.category}
@@ -71,10 +73,10 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
               />
             </FormField>
             <FormField label="Attendees" id="event-attendees">
-              <Input 
+              <Input
                 id="event-attendees"
                 type="number"
-                value={formData.attendees?.toString() || ''} 
+                value={formData.attendees?.toString() || ''}
                 onChange={(e) => setFormData({ ...formData, attendees: parseInt(e.target.value) || 0 })}
               />
             </FormField>
@@ -83,56 +85,56 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
 
         <div className="flex flex-col gap-6">
           <FormField label="Date" required id="event-date">
-            <Calendar 
+            <Calendar
               id="event-date"
               value={formData.date ? new Date(formData.date) : null}
               onChange={(e) => setFormData({ ...formData, date: e.value?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) || '' })}
-              placeholder="Select date" 
+              placeholder="Select date"
               dateFormat="MM d, yy"
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Time" id="event-time">
-                <Input 
-                    id="event-time"
-                    value={formData.time} 
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    placeholder="10:00 AM - 1:00 PM" 
-                />
+              <Input
+                id="event-time"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                placeholder="10:00 AM - 1:00 PM"
+              />
             </FormField>
             <FormField label="Location" id="event-location">
-                <Input 
-                    id="event-location"
-                    value={formData.location} 
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Executive Suite" 
-                />
+              <Input
+                id="event-location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="Executive Suite"
+              />
             </FormField>
           </div>
 
           <FormField label="Organizer" id="event-organizer">
-            <Input 
+            <Input
               id="event-organizer"
-              value={formData.organizer} 
+              value={formData.organizer}
               onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
-              placeholder="Department or Team name" 
+              placeholder="Department or Team name"
             />
           </FormField>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button 
-          variant="ghost" 
-          onClick={onCancel} 
+        <Button
+          variant="ghost"
+          onClick={onCancel}
           className="px-8! rounded-3xl! font-bold text-muted!"
           aria-label="Discard event details"
         >
           Discard
         </Button>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={() => onSubmit(formData)}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
           aria-label={initialData ? 'Save changes to event' : 'Schedule this event'}

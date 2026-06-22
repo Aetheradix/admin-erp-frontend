@@ -8,10 +8,10 @@ export default function ProfitChartCard() {
     datasets: [
       {
         label: 'Profit',
-        backgroundColor: (context: any) => {
+        backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D; chartArea: { bottom: number; top: number } } }) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
-          if (!chartArea) return null;
+          if (!chartArea) return undefined;
           const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
           gradient.addColorStop(0, 'rgba(232, 88, 58, 0)');
           gradient.addColorStop(0.2, 'rgba(232, 88, 58, 0.4)');
@@ -42,7 +42,7 @@ export default function ProfitChartCard() {
         cornerRadius: 12,
         displayColors: false,
         callbacks: {
-          label: (context: any) => ` $${context.raw}k Profit`
+          label: (context: { raw: number }) => ` $${context.raw}k Profit`
         }
       }
     },

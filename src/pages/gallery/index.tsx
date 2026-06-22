@@ -1,9 +1,9 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { useCreateGalleryItemMutation, useDeleteGalleryItemMutation, useGetGalleryQuery } from '@/store/api/galleryApiSlice';
+import { useUploadGalleryItemMutation, useDeleteGalleryItemMutation, useGetGalleryQuery } from '@/store/api/gallerySlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useState } from 'react';
 import { GalleryGrid } from './components/GalleryGrid';
-import type { GalleryItem } from './hooks/mockGallery';
+import type { GalleryItem } from '@/types/models';
 import { motion } from 'framer-motion';
 
 import { Tabs } from '@/components/ui/primitives/Tabs';
@@ -42,7 +42,7 @@ const GalleryStats = ({ total }: { total: number }) => (
 
 const Gallery = () => {
   const { data: items = [], isLoading } = useGetGalleryQuery();
-  const [createGalleryItem] = useCreateGalleryItemMutation();
+  const [uploadGalleryItem] = useUploadGalleryItemMutation();
   const [deleteGalleryItem] = useDeleteGalleryItemMutation();
 
   const [activeCategory, setActiveCategory] = useState('All');
@@ -80,9 +80,10 @@ const Gallery = () => {
         try {
           await deleteGalleryItem(id).unwrap();
           showToast({ severity: 'success', summary: 'Deleted', detail: 'Asset removed successfully.', life: 3000 });
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const apiError = err as { data?: { message?: string } };
           console.error('Failed to delete asset:', err);
-          showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to delete asset', life: 3000 });
+          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to delete asset', life: 3000 });
         }
       }
     });
@@ -93,13 +94,14 @@ const Gallery = () => {
       if (editingItem) {
         console.warn('Update gallery item not supported yet on backend');
       } else {
-        await createGalleryItem(data).unwrap();
+        await uploadGalleryItem(data).unwrap();
         showToast({ severity: 'success', summary: 'Uploaded', detail: 'Asset uploaded successfully!', life: 3000 });
       }
       setShowForm(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } };
       console.error('Failed to save asset:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to upload asset', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to upload asset', life: 3000 });
     }
   };
 

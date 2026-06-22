@@ -54,7 +54,7 @@ export function RolesPage() {
         {
             title: 'Role',
             key: 'role',
-            render: (_, record) => (
+            render: (_: unknown, record: Role) => (
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg bg-error/5 flex items-center justify-center text-error border border-error/10"><Shield size={18} /></div>
                     <div className="flex flex-col">

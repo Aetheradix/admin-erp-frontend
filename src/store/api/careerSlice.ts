@@ -1,12 +1,13 @@
+import type { Career } from '@/types/models';
 import { apiSlice } from './apiSlice';
 
 export const careerSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getCareers: builder.query<any[], void>({
+    getCareers: builder.query<Career[], void>({
       query: () => '/careers',
       providesTags: ['Career'],
     }),
-    createCareer: builder.mutation<any, any>({
+    createCareer: builder.mutation<Career, Partial<Career>>({
       query: (career) => ({
         url: '/careers',
         method: 'POST',
@@ -14,15 +15,15 @@ export const careerSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Career'],
     }),
-    updateCareer: builder.mutation<any, any>({
+    updateCareer: builder.mutation<Career, Partial<Career> & { id: string | number }>({
       query: (career) => ({
-        url: `/careers/${career.id || career.key}`,
+        url: `/careers/${career.id}`,
         method: 'PUT',
         body: career,
       }),
       invalidatesTags: ['Career'],
     }),
-    deleteCareer: builder.mutation<any, string>({
+    deleteCareer: builder.mutation<{ success: boolean }, string | number>({
       query: (id) => ({
         url: `/careers/${id}`,
         method: 'DELETE',

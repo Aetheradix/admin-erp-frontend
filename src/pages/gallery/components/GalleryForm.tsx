@@ -4,7 +4,7 @@ import { Select } from '@/components/ui/primitives/Select';
 import { FormField } from '@/components/ui/composed/FormField';
 import { FileUpload } from '@/components/ui/composed/FileUpload';
 import { Button } from '@/components/ui/primitives/Button';
-import type { GalleryItem } from '../hooks/mockGallery';
+import type { GalleryItem } from '@/types/models';
 
 interface GalleryFormProps {
   initialData?: GalleryItem | null;
@@ -24,7 +24,9 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      queueMicrotask(() => {
+        setFormData(initialData);
+      });
     }
   }, [initialData]);
 

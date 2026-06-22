@@ -6,7 +6,7 @@ export default function CalendarCard() {
   // Mock data for highlighted dates
   const highlightedDates = [2, 3, 10, 14, 22, 24];
 
-  const dateTemplate = (date: any) => {
+  const dateTemplate = (date: { day: number }) => {
     const isHighlighted = highlightedDates.includes(date.day);
 
     if (isHighlighted) {

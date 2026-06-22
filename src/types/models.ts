@@ -36,6 +36,7 @@ export interface AttendanceRequest {
   admin_comment?: string;
 }
 
+
 export interface AttendanceStatsData {
   daysPresent?: number | string;
   wfhCount?: number | string;
@@ -136,14 +137,27 @@ export interface StaffMember {
 
 export interface Project {
   id: string | number;
-  name: string;
-  client: string;
-  progress: number;
-  status: string;
+  title: string;
+  name?: string;
+  client?: string;
+  tasks?: number;
+  value?: string;
+  color?: string;
   category: string;
-  leadId: string;
-  startDate: string;
+  participants?: number;
+  progress?: number;
+  status?: string;
+  leadId?: string;
+  startDate?: string;
   endDate?: string;
+}
+
+export interface MoodEntry {
+  id: string | number;
+  mood_score: number;
+  stress_level: number;
+  comments: string;
+  created_at?: string;
 }
 
 export interface ProjectStatsData {
