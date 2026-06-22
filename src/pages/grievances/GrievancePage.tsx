@@ -51,7 +51,7 @@ export function GrievancePage() {
           <div className="flex flex-col gap-1">
             <h3 className="text-xl font-black text-foreground">Zero Retaliation Policy</h3>
             <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-              Our grievance process is built on trust and accessibility. We guarantee that no employee 
+              Our grievance process is built on trust and accessibility. We guarantee that no employee
               will face adverse consequences for raising valid concerns or issues.
             </p>
           </div>
@@ -72,7 +72,7 @@ export function GrievancePage() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredGrievances.map((grievance) => (
+          {filteredGrievances.map((grievance: any) => (
             <GrievanceCard key={grievance.id} grievance={grievance} />
           ))}
 

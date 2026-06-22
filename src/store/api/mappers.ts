@@ -199,6 +199,7 @@ export const mapStaffMember = (member: Record<string, unknown>): StaffMember => 
 
 export const mapProject = (project: Record<string, unknown>): Project => ({
   id: project.id as string | number,
+  title: String(project.title ?? project.name ?? ''),
   name: String(project.name ?? ''),
   client: String(project.client ?? 'Internal'),
   progress: Number(project.progress ?? 0),

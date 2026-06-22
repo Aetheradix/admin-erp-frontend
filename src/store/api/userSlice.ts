@@ -1,4 +1,4 @@
-import { StaffMember } from '@/types/models';
+import type { StaffMember } from '@/types/models';
 import { apiSlice } from './apiSlice';
 import { mapStaffMember } from './mappers';
 

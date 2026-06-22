@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetGrievancesQuery, useSubmitGrievanceMutation } from '@/store/api/grievanceApiSlice';
+import { useGetGrievancesQuery, useSubmitGrievanceMutation } from '@/store/api/grievanceSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import type { Grievance } from './mockGrievances';
 

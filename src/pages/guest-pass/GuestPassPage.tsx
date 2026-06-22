@@ -7,14 +7,14 @@ import { Dialog } from '@/components/ui/composed/Dialog';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { GuestPassCard } from './components/GuestPassCard';
 import { GuestPassForm } from './components/GuestPassForm';
-import { useGetGuestPassesQuery, useIssueGuestPassMutation } from '@/store/api/guestPassApiSlice';
+import { useGetPassesQuery, useIssuePassMutation } from '@/store/api/guestpassSlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import type { GuestPass } from './hooks/mockGuestPass';
 import { Key, ShieldCheck, History, AlertCircle } from 'lucide-react';
 
 export function GuestPassPage() {
-  const { data: passes = [], isLoading } = useGetGuestPassesQuery();
-  const [issueGuestPass] = useIssueGuestPassMutation();
+  const { data: passes = [], isLoading } = useGetPassesQuery();
+  const [issuePass] = useIssuePassMutation();
 
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
@@ -27,7 +27,7 @@ export function GuestPassPage() {
 
   const handlePassSubmit = async (data: Partial<GuestPass>) => {
     try {
-      await issueGuestPass(data).unwrap();
+      await issuePass(data).unwrap();
       setShowForm(false);
       showToast({ severity: 'success', summary: 'Issued', detail: 'Guest pass issued successfully.', life: 3000 });
     } catch (err: any) {
@@ -61,8 +61,8 @@ export function GuestPassPage() {
       {/* Guest Pass Overview Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Active Passes', value: passes.filter(p => p.status === 'Active').length, icon: ShieldCheck, color: 'text-success' },
-          { label: 'Pending Arrival', value: passes.filter(p => p.status === 'Pending').length, icon: AlertCircle, color: 'text-warning' },
+          { label: 'Active Passes', value: passes.filter((p: any) => p.status === 'Active').length, icon: ShieldCheck, color: 'text-success' },
+          { label: 'Pending Arrival', value: passes.filter((p: any) => p.status === 'Pending').length, icon: AlertCircle, color: 'text-warning' },
           { label: 'Total Visits', value: '142', icon: History, color: 'text-primary' },
           { label: 'Security Level', value: 'High', icon: Key, color: 'text-info' },
         ].map((stat) => (
@@ -90,7 +90,7 @@ export function GuestPassPage() {
 
         {/* Passes Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPasses.map((pass) => (
+          {filteredPasses.map((pass: any) => (
             <GuestPassCard key={pass.id} pass={pass} />
           ))}
 

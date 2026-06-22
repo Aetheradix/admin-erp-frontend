@@ -41,9 +41,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
         <div className={cn(
           "flex items-center gap-2 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest border",
-          getStatusStyles(project.status)
+          getStatusStyles(project.status || 'Ongoing')
         )}>
-          {getStatusIcon(project.status)}
+          {getStatusIcon(project.status || 'Ongoing')}
           <span>{project.status}</span>
         </div>
       </div>

@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useGetLeavesQuery, useGetLeaveStatsQuery, useUpdateLeaveStatusMutation } from '@/store/api/leaveSlice';
+import { useGetLeavesQuery, useUpdateLeaveStatusMutation } from '@/store/api/leaveSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useApprovals = () => {
   const { data: leaves = [], isLoading } = useGetLeavesQuery();
-  const { data: stats } = useGetLeaveStatsQuery();
   const [updateStatus, { isLoading: isUpdating }] = useUpdateLeaveStatusMutation();
 
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -12,7 +11,12 @@ export const useApprovals = () => {
   const [actionType, setActionType] = useState<'Approved' | 'Rejected'>('Approved');
 
   const pendingLeaves = leaves.filter((l: any) => l.status === 'Pending');
-  const counts = stats?.byStatus || {};
+
+  const counts = {
+    Pending: pendingLeaves.length,
+    Approved: leaves.filter((l: any) => l.status === 'Approved').length,
+    Rejected: leaves.filter((l: any) => l.status === 'Rejected').length
+  };
 
   const handleAction = (request: any, type: 'Approved' | 'Rejected') => {
     setSelectedRequest(request);

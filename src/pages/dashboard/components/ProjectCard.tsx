@@ -4,14 +4,21 @@ import { MoreHorizontal, Plus, ArrowUpRight } from 'lucide-react';
 
 interface ProjectCardProps {
   title: string;
-  tasks: number;
-  value: string;
-  color: string;
-  category: string;
-  participants: number;
+  tasks?: number;
+  value?: string;
+  color?: string;
+  category?: string;
+  participants?: number;
 }
 
-export default function ProjectCard({ title, tasks, value, color, category, participants }: ProjectCardProps) {
+export default function ProjectCard({
+  title,
+  tasks = 0,
+  value = '$ 0',
+  color = '#4F46E5',
+  category = 'GENERAL',
+  participants = 0
+}: ProjectCardProps) {
   return (
     <motion.div
       whileHover={{ y: -8, scale: 1.02 }}

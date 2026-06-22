@@ -12,6 +12,7 @@ export const mockProjects: import('@/types/models').Project[] = [
   {
     id: 'P1',
     name: 'AetherCore 2.0',
+    title: 'AetherCore 2.0',
     client: 'Internal',
     progress: 75,
     status: 'Ongoing',
@@ -22,6 +23,7 @@ export const mockProjects: import('@/types/models').Project[] = [
   {
     id: 'P2',
     name: 'Radix Bridge',
+    title: 'Radix Bridge',
     client: 'Stellar Corp',
     progress: 100,
     status: 'Completed',
@@ -33,6 +35,7 @@ export const mockProjects: import('@/types/models').Project[] = [
   {
     id: 'P3',
     name: 'Lumina UI Kit',
+    title: 'Lumina UI Kit',
     client: 'Open Source',
     progress: 20,
     status: 'Ongoing',
@@ -43,6 +46,7 @@ export const mockProjects: import('@/types/models').Project[] = [
   {
     id: 'P4',
     name: 'Legacy Sync',
+    title: 'Legacy Sync',
     client: 'Internal',
     progress: 10,
     status: 'Archived',
