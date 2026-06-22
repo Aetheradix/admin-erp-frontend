@@ -1,16 +1,16 @@
 import React, { useMemo } from 'react';
 import { Table } from 'antd';
 import { cn } from '@/utils/cn';
-import { extractColumns, applyFilters, type ColumnProps } from './DataTable.utils';
+import { extractColumns, applyFilters, type ColumnProps, type DataTableFilterMeta } from './DataTable.utils';
 
 export { FilterMatchMode } from './DataTable.utils';
 export type { DataTableFilterMeta } from './DataTable.utils';
 
-export const Column = <T,>(_: ColumnProps<T>) => null;
+export const Column = <T,>(_props: ColumnProps<T>) => null;
 
 interface DataTableProps<T extends object> {
   value?: T[];
-  filters?: any;
+  filters?: DataTableFilterMeta;
   globalFilterFields?: string[];
   paginator?: boolean;
   rows?: number;

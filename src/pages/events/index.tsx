@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Calendar as CalendarIcon, Filter, Search } from 'lucide-react';
 import { Dialog } from '@/components/ui/composed/Dialog';
-import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';

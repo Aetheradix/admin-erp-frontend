@@ -29,9 +29,9 @@ const LoginPage = () => {
       //authLogin handles the actual mutation and state update
       await authLogin({ email, password });
       navigate('/');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login failed', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Login failed', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }).data?.message || 'Login failed', life: 3000 });
     }
   };
 
@@ -40,9 +40,9 @@ const LoginPage = () => {
       await requestOTP({ email }).unwrap();
       setOtpSent(true);
       showToast({ severity: 'success', summary: 'Success', detail: 'OTP sent to your email!', life: 3000 });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('OTP Request failed', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to send OTP', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }) .data?.message || 'Failed to send OTP', life: 3000 });
     }
   };
 
@@ -56,9 +56,10 @@ const LoginPage = () => {
         localStorage.setItem('user', JSON.stringify(response.admin));
         window.location.href = '/dashboard';
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('OTP Login failed', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Invalid OTP or login failed', life: 3000 });
+      const errorMessage = (err as { data?: { message?: string } })?.data?.message || 'Invalid OTP or login failed';
+      showToast({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
     }
   };
 

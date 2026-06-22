@@ -1,4 +1,4 @@
-import { Modal } from 'antd';
+import { Modal, type ButtonProps } from 'antd';
 import React from 'react';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
@@ -24,10 +24,10 @@ export const showConfirm = ({
         className: 'premium-confirm-dialog',
         okButtonProps: {
             className: 'px-6 py-2.5 bg-primary text-white rounded-lg font-semibold shadow-lg shadow-primary/20',
-        } as any,
+        } as ButtonProps,
         cancelButtonProps: {
             className: 'px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold border-none',
-        } as any,
+        } as ButtonProps,
         onOk: accept,
         onCancel: reject,
     });
