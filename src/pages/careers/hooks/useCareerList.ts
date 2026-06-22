@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerApiSlice';
 import { useCareerFilters } from './useCareerFilters';
 import type { Career } from './mockCareers';
@@ -20,7 +20,7 @@ export const useCareerList = () => {
     const matchesDepartment = activeDepartment === 'All' || career.department === activeDepartment;
     const title = career.title || '';
     const description = career.description || '';
-    const matchesSearch = 
+    const matchesSearch =
       title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDepartment && matchesSearch;

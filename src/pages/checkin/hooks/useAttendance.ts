@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCheckInMutation, useCheckOutMutation, useGetAttendanceStatusQuery } from '@/store/api/attendanceSlice';
 import { useSubmitMoodMutation } from '@/store/api/moodSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useAttendance = () => {
   const [time, setTime] = useState(new Date());

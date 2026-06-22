@@ -4,7 +4,7 @@ import { Shield, Send, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import { InputTextarea } from '@/components/ui/primitives/Textarea';
 import { Message } from '@/components/ui/composed/Message';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 
 interface AdminElevationRequestProps {
@@ -69,9 +69,9 @@ export function AdminElevationRequest({ onSuccess }: AdminElevationRequestProps)
 
             {isError && (
                 <div className="animate-in slide-in-from-top-2">
-                    <Message 
-                        severity="error" 
-                        text={(error as any)?.data?.message || 'Failed to submit request. Please try again later.'} 
+                    <Message
+                        severity="error"
+                        text={(error as any)?.data?.message || 'Failed to submit request. Please try again later.'}
                         className="w-full rounded-2xl p-4 border border-error/10 font-bold"
                     />
                 </div>

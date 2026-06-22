@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Input } from '@/components/ui/primitives/Input';
@@ -44,7 +44,7 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <AuthLayout 
+    <AuthLayout
       title={step === 1 ? "Forgot Password" : "Reset Password"}
       subtitle={step === 1 ? "ENTER YOUR EMAIL TO RECEIVE A SECURITY RESET CODE." : "ENTER THE CODE SENT TO YOUR EMAIL AND YOUR NEW PASSWORD."}
     >
@@ -59,18 +59,18 @@ const ForgotPasswordPage = () => {
             className="space-y-6"
           >
             <FormField label="Work Email" required>
-              <Input 
-                type="email" 
-                placeholder="e.g. agimonopoly@gmail.com" 
+              <Input
+                type="email"
+                placeholder="e.g. agimonopoly@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-14 rounded-2xl!"
               />
             </FormField>
 
-            <Button 
-              type="submit" 
-              variant="primary" 
+            <Button
+              type="submit"
+              variant="primary"
               className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
               loading={isOtpRequestLoading}
             >
@@ -87,9 +87,9 @@ const ForgotPasswordPage = () => {
             className="space-y-6"
           >
             <FormField label="Enter 6-digit Code" required>
-              <Input 
-                type="text" 
-                placeholder="000000" 
+              <Input
+                type="text"
+                placeholder="000000"
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
@@ -98,9 +98,9 @@ const ForgotPasswordPage = () => {
             </FormField>
 
             <FormField label="New Password" required>
-              <Input 
-                type="password" 
-                placeholder="••••••••" 
+              <Input
+                type="password"
+                placeholder="••••••••"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="h-14 rounded-2xl!"
@@ -108,18 +108,18 @@ const ForgotPasswordPage = () => {
             </FormField>
 
             <FormField label="Confirm New Password" required>
-              <Input 
-                type="password" 
-                placeholder="••••••••" 
+              <Input
+                type="password"
+                placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="h-14 rounded-2xl!"
               />
             </FormField>
 
-            <Button 
-              type="submit" 
-              variant="primary" 
+            <Button
+              type="submit"
+              variant="primary"
               className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
               loading={isResetLoading}
             >

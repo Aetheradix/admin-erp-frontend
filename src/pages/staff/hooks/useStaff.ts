@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { showToast } from '@/components/ui/composed/Toast';
-import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
+import { showToast } from '@/components/ui/composed/Toast.utils';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
 import { useGetStaffQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteStaffMutation } from '@/store/api/staffApiSlice';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { useStaffFilters } from './useStaffFilters';
@@ -98,7 +98,7 @@ export const useStaff = () => {
     const role = member.designation || member.role || '';
     const skills = member.skills || [];
 
-    const matchesSearch = 
+    const matchesSearch =
       name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       role.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));

@@ -1,5 +1,5 @@
 import { useGetFeaturePermissionsQuery, useToggleFeatureMutation } from '@/store/api/permissionSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useFeatureControl = () => {
     const { data: permissions = [], isLoading } = useGetFeaturePermissionsQuery();

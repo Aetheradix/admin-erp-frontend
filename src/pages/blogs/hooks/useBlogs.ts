@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { showToast } from '@/components/ui/composed/Toast';
-import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
-import { 
-  useGetBlogsQuery, 
-  useGetBlogQuery, 
-  useCreateBlogMutation, 
-  useUpdateBlogMutation, 
-  useDeleteBlogMutation 
+import { showToast } from '@/components/ui/composed/Toast.utils';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
+import {
+  useGetBlogsQuery,
+  useGetBlogQuery,
+  useCreateBlogMutation,
+  useUpdateBlogMutation,
+  useDeleteBlogMutation
 } from '@/store/api/blogSlice';
 
 export const useBlogs = (id?: string) => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGetReimbursementsQuery, useCreateReimbursementMutation } from '@/store/api/financeApiSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import type { Reimbursement } from './mockFinance';
 
 const CATEGORIES = ['All', 'Travel', 'Equipment', 'Software', 'Meals', 'Medical', 'Office Supplies'];
@@ -12,7 +12,7 @@ export const useFinancePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const filteredRequests = requests.filter((r: Reimbursement) => 
+  const filteredRequests = requests.filter((r: Reimbursement) =>
     activeCategory === 'All' || r.category === activeCategory
   );
 

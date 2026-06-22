@@ -21,7 +21,6 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(({
   mode = 'advanced',
   accept,
   maxFileSize,
-  auto,
   onUpload,
   ...props
 }, ref) => {

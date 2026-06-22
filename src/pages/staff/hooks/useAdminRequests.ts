@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGetAdminElevationRequestsQuery, useProcessAdminElevationMutation } from '@/store/api/authApiSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useAdminRequests = () => {
     const { data: requests = [], isLoading, refetch } = useGetAdminElevationRequestsQuery();

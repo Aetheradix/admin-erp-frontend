@@ -15,10 +15,16 @@ export interface User {
 }
 
 
+export interface LoginCredentials {
+  username?: string;
+  email?: string;
+  password?: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (credentials: any) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -47,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: LoginCredentials) => {
     try {
       const response = await loginApi(credentials).unwrap();
       if (response && response.token) {

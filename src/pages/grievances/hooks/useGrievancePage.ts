@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGetGrievancesQuery, useSubmitGrievanceMutation } from '@/store/api/grievanceApiSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import type { Grievance } from './mockGrievances';
 
 const CATEGORIES = ['All', 'Work Environment', 'Management', 'Harassment', 'Software/Tools', 'Other'];
@@ -12,7 +12,7 @@ export const useGrievancePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const filteredGrievances = grievances.filter((g: Grievance) => 
+  const filteredGrievances = grievances.filter((g: Grievance) =>
     activeCategory === 'All' || g.category === activeCategory
   );
 

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Calendar as CalendarIcon, Filter, Search } from 'lucide-react';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
@@ -17,7 +17,7 @@ const Events = () => {
   const { data: events = [], isLoading } = useGetEventsQuery();
   const [createEvent] = useCreateEventMutation();
   const [deleteEvent] = useDeleteEventMutation();
-  
+
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -29,7 +29,7 @@ const Events = () => {
     const matchesCategory = activeCategory === 'All' || event.category === activeCategory;
     const title = event.title || '';
     const description = event.description || '';
-    const matchesSearch = 
+    const matchesSearch =
       title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;

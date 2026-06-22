@@ -1,6 +1,6 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';

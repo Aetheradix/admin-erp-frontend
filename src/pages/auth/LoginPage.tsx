@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Input } from '@/components/ui/primitives/Input';
@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
-  
+
   const [, { isLoading: isPasswordLoading }] = useLoginMutation();
   const [requestOTP, { isLoading: isOtpRequestLoading }] = useRequestOTPMutation();
   const [loginWithOTP, { isLoading: isOtpLoginLoading }] = useLoginWithOTPMutation();
@@ -51,7 +51,7 @@ const LoginPage = () => {
     try {
       const response = await loginWithOTP({ email, otp }).unwrap();
       // Manual update since context login only takes credentials for password login currently
-       if (response && response.token) {
+      if (response && response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.admin));
         window.location.href = '/dashboard';
@@ -63,18 +63,18 @@ const LoginPage = () => {
   };
 
   return (
-    <AuthLayout 
+    <AuthLayout
       title={loginMode === 'password' ? "Welcome back" : "Login with OTP"}
       subtitle={loginMode === 'password' ? "PLEASE ENTER YOUR CREDENTIALS TO ACCESS YOUR WORKSPACE." : "WE'LL SEND A SECURE CODE TO YOUR REGISTERED EMAIL."}
     >
       <div className="flex bg-surface-subtle p-1 rounded-2xl mb-8">
-        <button 
+        <button
           onClick={() => setLoginMode('password')}
           className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'password' ? 'bg-white shadow-soft text-primary' : 'text-muted hover:text-foreground'}`}
         >
           PASSWORD
         </button>
-        <button 
+        <button
           onClick={() => setLoginMode('otp')}
           className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'otp' ? 'bg-white shadow-soft text-primary' : 'text-muted hover:text-foreground'}`}
         >
@@ -85,19 +85,19 @@ const LoginPage = () => {
       {loginMode === 'password' ? (
         <form onSubmit={handlePasswordLogin} className="space-y-6">
           <FormField label="Work Email" required>
-            <Input 
-              type="email" 
-              placeholder="e.g. agimonopoly@gmail.com" 
+            <Input
+              type="email"
+              placeholder="e.g. agimonopoly@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-14 rounded-2xl!"
             />
           </FormField>
-          
+
           <FormField label="Password" required>
-            <Input 
-              type="password" 
-              placeholder="••••••••" 
+            <Input
+              type="password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-14 rounded-2xl!"
@@ -110,9 +110,9 @@ const LoginPage = () => {
             </Link>
           </div>
 
-          <Button 
-            type="submit" 
-            variant="primary" 
+          <Button
+            type="submit"
+            variant="primary"
             className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
             loading={isPasswordLoading}
           >
@@ -123,16 +123,16 @@ const LoginPage = () => {
         <form onSubmit={handleOtpLogin} className="space-y-6">
           <FormField label="Work Email" required>
             <div className="relative">
-              <Input 
-                type="email" 
-                placeholder="e.g. agimonopoly@gmail.com" 
+              <Input
+                type="email"
+                placeholder="e.g. agimonopoly@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-14 rounded-2xl! pr-32"
                 disabled={otpSent}
               />
               {!otpSent && (
-                <button 
+                <button
                   type="button"
                   onClick={handleRequestOTP}
                   disabled={!email || isOtpRequestLoading}
@@ -150,9 +150,9 @@ const LoginPage = () => {
               animate={{ opacity: 1, y: 0 }}
             >
               <FormField label="Enter 6-digit OTP" required>
-                <Input 
-                  type="text" 
-                  placeholder="000000" 
+                <Input
+                  type="text"
+                  placeholder="000000"
                   maxLength={6}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
@@ -162,9 +162,9 @@ const LoginPage = () => {
             </motion.div>
           )}
 
-          <Button 
-            type="submit" 
-            variant="primary" 
+          <Button
+            type="submit"
+            variant="primary"
             className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
             disabled={!otpSent || !otp}
             loading={isOtpLoginLoading}
@@ -174,7 +174,7 @@ const LoginPage = () => {
           </Button>
 
           {otpSent && (
-            <button 
+            <button
               type="button"
               onClick={() => { setOtpSent(false); setOtp(''); }}
               className="w-full text-center text-xs font-black text-muted hover:text-primary transition-colors"

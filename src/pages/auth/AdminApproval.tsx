@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
@@ -28,10 +28,13 @@ const AdminApproval = () => {
         setStatus('success');
         setMessage(result.message || 'Admin account has been activated successfully!');
         showToast({ severity: 'success', summary: 'Activated', detail: result.message || 'Admin account activated!', life: 3000 });
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus('error');
-        setMessage(err.data?.message || 'Failed to approve admin account. The token may be expired.');
-        showToast({ severity: 'error', summary: 'Failed', detail: err.data?.message || 'Failed to approve admin account.', life: 3000 });
+        const errorMessage = err && typeof err === 'object' && 'data' in err
+          ? (err as any).data?.message || 'Failed to approve admin account.'
+          : 'Failed to approve admin account. The token may be expired.';
+        setMessage(errorMessage);
+        showToast({ severity: 'error', summary: 'Failed', detail: errorMessage, life: 3000 });
       }
     };
 
@@ -39,7 +42,7 @@ const AdminApproval = () => {
   }, [token, approveAdmin]);
 
   return (
-    <AuthLayout 
+    <AuthLayout
       title="Admin Activation"
       subtitle="SYSTEM PRIVILEGE VERIFICATION PROTOCOL"
     >
@@ -62,9 +65,9 @@ const AdminApproval = () => {
                 {message}
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => navigate('/auth/login')}
-              variant="primary" 
+              variant="primary"
               className="w-full h-14 rounded-2xl! shadow-lg shadow-emerald-500/20 font-black tracking-widest text-sm"
             >
               GO TO LOGIN
@@ -83,9 +86,9 @@ const AdminApproval = () => {
                 {message}
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => navigate('/auth/login')}
-              variant="ghost" 
+              variant="ghost"
               className="text-primary font-black uppercase tracking-widest text-xs hover:bg-primary/5 px-8 h-12 rounded-xl"
             >
               Back to Sign In

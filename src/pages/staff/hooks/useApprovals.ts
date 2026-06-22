@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useGetLeavesQuery, useGetLeaveStatsQuery, useUpdateLeaveStatusMutation } from '@/store/api/leaveSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useApprovals = () => {
   const { data: leaves = [], isLoading } = useGetLeavesQuery();
   const { data: stats } = useGetLeaveStatsQuery();
   const [updateStatus, { isLoading: isUpdating }] = useUpdateLeaveStatusMutation();
-  
+
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [actionType, setActionType] = useState<'Approved' | 'Rejected'>('Approved');

@@ -8,8 +8,8 @@ import { motion } from 'framer-motion';
 
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Dialog } from '@/components/ui/composed/Dialog';
-import { showConfirm } from '@/components/ui/composed/ConfirmDialog';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { GalleryForm } from './components/GalleryForm';
 import { Search, Image, Cloud, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';

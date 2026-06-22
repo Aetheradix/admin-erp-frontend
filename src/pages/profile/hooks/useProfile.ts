@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
-import { showToast } from '@/components/ui/composed/Toast';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useProfile = () => {
   const { user: authUser, logout: authLogout } = useAuth();
@@ -17,7 +17,7 @@ export const useProfile = () => {
     email: authUser?.email || '',
     contactNo: authUser?.contact_number || '',
     department: authUser?.department,
-    joinDate: authUser?.join_date ,
+    joinDate: authUser?.join_date,
     image: authUser?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`
   });
 
