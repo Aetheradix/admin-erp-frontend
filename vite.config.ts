@@ -42,7 +42,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://test.aetheradix.com/api',
+        target: 'https://test.aetheradix.com',
         changeOrigin: true,
         secure: false,
       },
