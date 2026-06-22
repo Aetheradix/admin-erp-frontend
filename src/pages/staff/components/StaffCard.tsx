@@ -61,7 +61,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
               className="w-full h-full object-cover" 
             />
           </div>
-          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status)} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
+          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status ?? 'Active')} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
         </div>
 
         {/* Identity */}

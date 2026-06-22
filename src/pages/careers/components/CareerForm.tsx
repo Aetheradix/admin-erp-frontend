@@ -54,8 +54,18 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
-      setReqsString(initialData.requirements.join(', '));
-      setBenefitsString(initialData.benefits.join(', '));
+      const requirements = Array.isArray(initialData.requirements)
+        ? initialData.requirements
+        : initialData.requirements
+          ? [initialData.requirements]
+          : [];
+      const benefits = Array.isArray(initialData.benefits)
+        ? initialData.benefits
+        : initialData.benefits
+          ? [initialData.benefits]
+          : [];
+      setReqsString(requirements.join(', '));
+      setBenefitsString(benefits.join(', '));
     }
   }, [initialData]);
 

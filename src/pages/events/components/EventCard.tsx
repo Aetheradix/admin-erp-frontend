@@ -10,12 +10,12 @@ interface EventCardProps {
 }
 
 export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
-  const categoryVariants = {
+  const categoryVariants: Record<string, 'primary' | 'success' | 'warning' | 'secondary'> = {
     Conference: 'primary',
     Workshop: 'success',
     Social: 'warning',
     Meeting: 'secondary',
-  } as const;
+  };
 
   const eventDate = new Date(event.event_date);
   const month = eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
@@ -54,7 +54,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
              <Button 
                 variant="ghost" 
                 className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-primary hover:bg-white border-none shadow-soft"
-                onClick={() => onEdit(event.id)}
+                onClick={() => onEdit(String(event.id))}
                 aria-label={`Edit ${event.title}`}
              >
                <Edit2 size={16} />
@@ -62,7 +62,7 @@ export const EventCard = ({ event, onEdit, onDelete }: EventCardProps) => {
              <Button 
                 variant="ghost" 
                 className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md text-red-500 hover:bg-white border-none shadow-soft"
-                onClick={() => onDelete(event.id)}
+                onClick={() => onDelete(String(event.id))}
                 aria-label={`Cancel ${event.title}`}
              >
                <Trash2 size={16} />

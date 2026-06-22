@@ -1,20 +1,20 @@
+import type { Project, ProjectStatsData } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapProject } from './mappers';
+
+export type { Project, ProjectStatsData };
 
 export const projectApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getProjects: builder.query<any[], void>({
+    getProjects: builder.query<Project[], void>({
       query: () => '/projects',
       providesTags: ['Projects'],
-      transformResponse: (response: any) => {
-        const data = response.data || response;
-        return data.map((p: any) => ({
-          ...p,
-          startDate: p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : '2024-01-01',
-          category: p.category || 'Enterprise',
-        }));
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapProject(item as Record<string, unknown>)) : [];
       },
     }),
-    createProject: builder.mutation<any, any>({
+    createProject: builder.mutation<Project, Partial<Project>>({
       query: (projectData) => ({
         url: '/projects',
         method: 'POST',
@@ -22,9 +22,13 @@ export const projectApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Projects'],
     }),
-    getProjectStats: builder.query<any, void>({
+    getProjectStats: builder.query<ProjectStatsData, void>({
       query: () => '/projects/summary',
       providesTags: ['Projects'],
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: ProjectStatsData })?.data ?? response;
+        return (data ?? {}) as ProjectStatsData;
+      },
     }),
   }),
 });

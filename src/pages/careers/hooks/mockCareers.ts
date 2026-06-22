@@ -1,18 +1,6 @@
-export interface Career {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  type: 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
-  salary: string;
-  description: string;
-  requirements: string[];
-  benefits: string[];
-  postedDate: string;
-  status: 'Open' | 'Closed';
-}
+export type { Career } from '@/types/models';
 
-export const mockCareers: Career[] = [
+export const mockCareers: import('@/types/models').Career[] = [
   {
     id: '1',
     title: 'Senior Frontend Engineer',

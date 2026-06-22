@@ -1,4 +1,8 @@
+import type { AttendanceRecord, AttendanceStatsData } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapAttendanceRecord } from './mappers';
+
+export type { AttendanceRecord, AttendanceStatsData };
 
 export const attendanceSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -31,16 +35,22 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Attendance'],
     }),
-    getAttendanceStats: builder.query<any, void>({
+    getAttendanceStats: builder.query<AttendanceStatsData, void>({
       query: () => '/attendance/stats',
-      transformResponse: (response: any) => response.data,
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: AttendanceStatsData })?.data ?? response;
+        return (data ?? {}) as AttendanceStatsData;
+      },
       providesTags: ['Attendance'],
     }),
 
-    getAttendanceHistory: builder.query<any[], void>({
+    getAttendanceHistory: builder.query<AttendanceRecord[], void>({
       query: () => '/attendance/history',
       providesTags: ['Attendance'],
-      transformResponse: (response: any) => response.data || response,
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapAttendanceRecord(item as Record<string, unknown>)) : [];
+      },
     }),
   }),
 });

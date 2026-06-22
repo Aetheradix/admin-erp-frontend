@@ -1,15 +1,6 @@
-export interface Grievance {
-  id: string;
-  title: string;
-  category: 'Work Environment' | 'Management' | 'Harassment' | 'Software/Tools' | 'Other';
-  description: string;
-  date: string;
-  isAnonymous: boolean;
-  status: 'Received' | 'In Review' | 'Resolved' | 'Closed';
-  response?: string;
-}
+export type { Grievance } from '@/types/models';
 
-export const mockGrievances: Grievance[] = [
+export const mockGrievances: import('@/types/models').Grievance[] = [
   {
     id: 'G1',
     title: 'Keyboard noise in open office',

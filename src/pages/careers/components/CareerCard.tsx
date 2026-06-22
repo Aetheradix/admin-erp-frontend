@@ -15,14 +15,14 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
         <button 
-          onClick={() => onEdit?.(career.id)}
+          onClick={() => onEdit?.(String(career.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Edit Position"
         >
           <Edit2 size={16} />
         </button>
         <button 
-          onClick={() => onDelete?.(career.id)}
+          onClick={() => onDelete?.(String(career.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Remove Position"
         >
@@ -79,7 +79,7 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
         {/* Footer Action */}
         <div className="mt-auto pt-6 border-t border-border-subtle/50">
           <Button
-            onClick={() => onViewDetails?.(career.id)}
+            onClick={() => onViewDetails?.(String(career.id))}
             variant="ghost"
             className="w-full justify-between h-14 px-6 rounded-3xl! group/btn hover:bg-primary! hover:text-white! transition-all duration-300 border border-transparent hover:border-primary!"
           >

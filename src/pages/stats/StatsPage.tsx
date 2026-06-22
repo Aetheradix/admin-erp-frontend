@@ -39,8 +39,8 @@ export function StatsPage() {
       {/* High Level Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Active Projects', value: statsData?.projects?.active || 0, icon: Layers, color: 'text-primary' },
-          { label: 'Total Employees', value: statsData?.employees?.total || mockHierarchy.length, icon: PieChart, color: 'text-info' },
+          { label: 'Active Projects', value: statsData?.projects?.active ?? 0, icon: Layers, color: 'text-primary' },
+          { label: 'Total Employees', value: statsData?.employees?.total ?? mockHierarchy.length, icon: PieChart, color: 'text-info' },
           { label: 'Completion Rate', value: '92%', icon: TrendingUp, color: 'text-success' },
           { label: 'Historical Data', value: archivedProjects.length, icon: ArchiveIcon, color: 'text-warning' },
         ].map((stat) => (

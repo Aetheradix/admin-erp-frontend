@@ -1,0 +1,141 @@
+export interface Blog {
+  id: string | number;
+  title: string;
+  excerpt?: string;
+  content: string;
+  author?: string | { name: string; image?: string };
+  category: string | null;
+  image_url?: string;
+  featuredImage?: string;
+  status: 'Published' | 'Draft' | 'Scheduled' | string;
+  created_at?: string;
+  updated_at?: string;
+  tags?: string[];
+  publishDate?: string;
+  views?: number;
+  readTime?: string;
+}
+
+export interface AttendanceRecord {
+  id: string | number;
+  date: string;
+  type: string;
+  checkIn?: string;
+  checkOut?: string;
+  status?: string;
+}
+
+export interface AttendanceStatsData {
+  daysPresent?: number | string;
+  wfhCount?: number | string;
+  leaveCount?: number | string;
+  avgCheckIn?: string;
+}
+
+export interface Career {
+  id: string | number;
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  experience?: string;
+  salary: string;
+  description: string;
+  requirements: string[] | string;
+  benefits: string[] | string;
+  postedDate?: string;
+  posted_date?: string;
+  status: string;
+}
+
+export interface ERPEvent {
+  id: string | number;
+  title: string;
+  description: string;
+  event_date: string;
+  time: string;
+  location: string;
+  category: string;
+  image: string;
+  organizer: string;
+  attendees: number;
+  date?: string;
+}
+
+export interface Reimbursement {
+  id: string | number;
+  item: string;
+  category: string;
+  amount: number;
+  date: string;
+  status: string;
+  receiptUrl?: string;
+  description: string;
+}
+
+export interface GalleryItem {
+  id: string | number;
+  title: string;
+  image_url: string;
+  category: string;
+  date: string;
+  dimensions?: { width: number; height: number };
+}
+
+export interface Grievance {
+  id: string | number;
+  title: string;
+  category: string;
+  description: string;
+  date: string;
+  isAnonymous: boolean;
+  status: string;
+  response?: string;
+}
+
+export interface GuestPass {
+  id: string | number;
+  guestName: string;
+  hostName: string;
+  purpose: string;
+  visitDate: string;
+  expiryDate?: string;
+  status: string;
+  accessCode: string;
+}
+
+export interface StaffMember {
+  id: string | number;
+  name?: string;
+  username?: string;
+  role?: string;
+  designation?: string;
+  department: string;
+  email: string;
+  phone?: string;
+  contact_no?: string;
+  status?: 'Active' | 'On Leave' | 'Inactive' | string;
+  joinDate?: string;
+  join_date?: string;
+  image?: string;
+  image_url?: string;
+  skills: string[];
+  employee_id?: string;
+}
+
+export interface Project {
+  id: string | number;
+  name: string;
+  client: string;
+  progress: number;
+  status: string;
+  category: string;
+  leadId: string;
+  startDate: string;
+  endDate?: string;
+}
+
+export interface ProjectStatsData {
+  projects?: { active?: number };
+  employees?: { total?: number };
+}

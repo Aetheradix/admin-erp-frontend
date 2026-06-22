@@ -1,20 +1,20 @@
+import type { Career } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapCareer } from './mappers';
+
+export type { Career };
 
 export const careerApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getCareers: builder.query<any[], void>({
+    getCareers: builder.query<Career[], void>({
       query: () => '/careers',
       providesTags: ['Career'],
-      transformResponse: (response: any) => {
-        const data = response.data || response;
-        return data.map((career: any) => ({
-          ...career,
-          requirements: typeof career.requirements === 'string' ? JSON.parse(career.requirements) : (career.requirements || []),
-          benefits: typeof career.benefits === 'string' ? JSON.parse(career.benefits) : (career.benefits || []),
-        }));
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapCareer(item as Record<string, unknown>)) : [];
       },
     }),
-    createCareer: builder.mutation<any, any>({
+    createCareer: builder.mutation<Career, Partial<Career>>({
       query: (careerData) => ({
         url: '/careers',
         method: 'POST',
@@ -27,7 +27,7 @@ export const careerApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Career'],
     }),
-    updateCareer: builder.mutation<any, any>({
+    updateCareer: builder.mutation<Career, Partial<Career> & { id: string | number }>({
       query: (careerData) => ({
         url: `/careers/${careerData.id}`,
         method: 'PUT',
@@ -39,7 +39,7 @@ export const careerApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Career'],
     }),
-    deleteCareer: builder.mutation<any, string>({
+    deleteCareer: builder.mutation<{ success?: boolean }, string>({
       query: (id) => ({
         url: `/careers/${id}`,
         method: 'DELETE',

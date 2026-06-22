@@ -1,14 +1,4 @@
-export interface Project {
-  id: string;
-  name: string;
-  client: string;
-  progress: number;
-  status: 'Ongoing' | 'Completed' | 'Delayed' | 'Archived';
-  category: 'Enterprise' | 'Web3' | 'AI' | 'Infrastructure';
-  leadId: string;
-  startDate: string;
-  endDate?: string;
-}
+export type { Project } from '@/types/models';
 
 export interface Node {
   id: string;
@@ -18,7 +8,7 @@ export interface Node {
   image: string;
 }
 
-export const mockProjects: Project[] = [
+export const mockProjects: import('@/types/models').Project[] = [
   {
     id: 'P1',
     name: 'AetherCore 2.0',

@@ -1,21 +1,20 @@
+import type { Reimbursement } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapReimbursement } from './mappers';
+
+export type { Reimbursement };
 
 export const financeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getReimbursements: builder.query<any[], void>({
+    getReimbursements: builder.query<Reimbursement[], void>({
       query: () => '/reimbursements',
       providesTags: ['Reimbursements'],
-      transformResponse: (response: any) => {
-        const data = response.data || response;
-        return data.map((r: any) => ({
-          ...r,
-          item: r.title,
-          date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : r.date,
-          receiptUrl: r.receipt_url,
-        }));
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapReimbursement(item as Record<string, unknown>)) : [];
       },
     }),
-    createReimbursement: builder.mutation<any, any>({
+    createReimbursement: builder.mutation<Reimbursement, Partial<Reimbursement>>({
       query: (reimbursementData) => ({
         url: '/reimbursements',
         method: 'POST',
@@ -29,7 +28,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Reimbursements'],
     }),
-    updateReimbursementStatus: builder.mutation<any, { id: string; status: string }>({
+    updateReimbursementStatus: builder.mutation<Reimbursement, { id: string; status: string }>({
       query: ({ id, status }) => ({
         url: `/reimbursements/${id}/status`,
         method: 'PUT',

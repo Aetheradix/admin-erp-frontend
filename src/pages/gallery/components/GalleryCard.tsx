@@ -37,7 +37,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
         <div className="flex justify-end gap-3 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
           <button
             className="w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-white hover:text-primary border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center group/view active:scale-95"
-            onClick={() => onView(item.id)}
+            onClick={() => onView(String(item.id))}
             aria-label={`View ${item.title} in full screen`}
           >
             <Maximize2 size={18} className="group-hover/view:scale-110 transition-transform" />
@@ -66,7 +66,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
           <div className="flex gap-3 pt-6 border-t border-white/10">
             <button
               className="flex-1 h-12 rounded-2xl bg-white text-primary hover:bg-primary-hover hover:text-white font-black text-[10px] uppercase tracking-widest gap-2 flex items-center justify-center transition-all active:scale-95 shadow-lg"
-              onClick={() => onEdit(item.id)}
+              onClick={() => onEdit(String(item.id))}
               aria-label={`Edit details for ${item.title}`}
             >
               <Edit2 size={14} />
@@ -74,7 +74,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
             </button>
             <button
               className="w-12 h-12 rounded-2xl bg-white/10 text-white hover:bg-red-500 hover:text-white border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center active:scale-95"
-              onClick={() => onDelete(item.id)}
+              onClick={() => onDelete(String(item.id))}
               aria-label={`Delete ${item.title} from gallery`}
             >
               <Trash2 size={18} />

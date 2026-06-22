@@ -15,7 +15,7 @@ export const BlogFeatured = ({ blogs }: BlogFeaturedProps) => {
     const getAuthorName = (author: Blog['author']) => typeof author === 'string' ? author : author?.name || 'Unknown';
     const getAuthorImage = (author: Blog['author']) => typeof author === 'string'
         ? `https://api.dicebear.com/7.x/notionists/svg?seed=${author}`
-        : author?.image;
+        : author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=Unknown`;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">

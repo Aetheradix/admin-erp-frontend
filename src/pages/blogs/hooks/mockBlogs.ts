@@ -1,25 +1,6 @@
-export interface Blog {
-  id: string | number;
-  title: string;
-  excerpt?: string;
-  content: string;
-  author: string | {
-    name: string;
-    image?: string;
-  };
-  category: string | null;
-  image_url?: string;
-  featuredImage?: string;
-  status: 'Published' | 'Draft' | 'Scheduled';
-  created_at?: string;
-  updated_at?: string;
-  tags?: string[];
-  publishDate?: string;
-  views?: number;
-  readTime?: string;
-}
+export type { Blog } from '@/types/models';
 
-export const mockBlogs: Blog[] = [
+export const mockBlogs: import('@/types/models').Blog[] = [
   {
     id: '1',
     title: 'The Future of ERP Systems in 2026',

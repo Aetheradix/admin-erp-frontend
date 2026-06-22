@@ -1,5 +1,6 @@
 import { Clock, MapPin, Users, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
 import { useGetEventsQuery } from '@/store/api/eventApiSlice';
+import type { ERPEvent } from '@/types/models';
 
 interface AttendancePlannerProps {
   selectedDate: Date;
@@ -9,7 +10,7 @@ export function AttendancePlanner({ selectedDate }: AttendancePlannerProps) {
   const { data: events = [], isLoading } = useGetEventsQuery();
   const dateStr = selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   
-  const dailyTotalEvents = events.filter((event: any) => {
+  const dailyTotalEvents = events.filter((event: ERPEvent) => {
     const eventDate = new Date(event.event_date);
     return eventDate.toDateString() === selectedDate.toDateString();
   });

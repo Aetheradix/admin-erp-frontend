@@ -1,23 +1,6 @@
-export interface StaffMember {
-  id: string | number;
-  name?: string; // Original field, kept for compatibility
-  username?: string; // Backend field
-  role?: string; // Original field
-  designation?: string; // Backend field
-  department: string;
-  email: string;
-  phone?: string; // Original field
-  contact_no?: string; // Backend field
-  status: 'Active' | 'On Leave' | 'Inactive';
-  joinDate?: string; // Original field
-  join_date?: string; // Backend field
-  image?: string; // Original field
-  image_url?: string; // Backend field
-  skills: string[];
-  employee_id?: string;
-}
+export type { StaffMember } from '@/types/models';
 
-export const mockStaff: StaffMember[] = [
+export const mockStaff: import('@/types/models').StaffMember[] = [
   {
     id: '1',
     name: 'Sarah Chen',

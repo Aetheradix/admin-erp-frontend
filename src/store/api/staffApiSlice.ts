@@ -1,19 +1,20 @@
+import type { StaffMember } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapStaffMember } from './mappers';
+
+export type { StaffMember };
 
 export const staffApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getStaff: builder.query<any[], void>({
+    getStaff: builder.query<StaffMember[], void>({
       query: () => '/users',
       providesTags: ['User'],
-      transformResponse: (response: any) => {
-        const data = response.data || response;
-        return data.map((member: any) => ({
-          ...member,
-          skills: typeof member.skills === 'string' ? JSON.parse(member.skills) : (member.skills || [])
-        }));
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapStaffMember(item as Record<string, unknown>)) : [];
       },
     }),
-    createStaff: builder.mutation<any, any>({
+    createStaff: builder.mutation<StaffMember, Partial<StaffMember>>({
       query: (staff) => ({
         url: '/users',
         method: 'POST',
@@ -21,7 +22,7 @@ export const staffApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
-    updateStaff: builder.mutation<any, any>({
+    updateStaff: builder.mutation<StaffMember, Partial<StaffMember> & { id: string | number }>({
       query: (staff) => ({
         url: `/users/${staff.id}`,
         method: 'PUT',
@@ -29,7 +30,7 @@ export const staffApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
-    deleteStaff: builder.mutation<any, string>({
+    deleteStaff: builder.mutation<{ success?: boolean }, string>({
       query: (id) => ({
         url: `/users/${id}`,
         method: 'DELETE',

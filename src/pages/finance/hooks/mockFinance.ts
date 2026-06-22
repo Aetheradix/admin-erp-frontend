@@ -1,15 +1,6 @@
-export interface Reimbursement {
-  id: string;
-  item: string;
-  category: 'Travel' | 'Equipment' | 'Software' | 'Meals' | 'Medical' | 'Office Supplies';
-  amount: number;
-  date: string;
-  status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
-  receiptUrl?: string;
-  description: string;
-}
+export type { Reimbursement } from '@/types/models';
 
-export const mockReimbursements: Reimbursement[] = [
+export const mockReimbursements: import('@/types/models').Reimbursement[] = [
   {
     id: 'R1',
     item: 'Ergonomic Desk Chair',

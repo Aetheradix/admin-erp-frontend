@@ -16,7 +16,7 @@ export const useCareerList = () => {
 
   const { searchQuery, setSearchQuery, activeDepartment, setActiveDepartment } = useCareerFilters();
 
-  const filteredCareers = careers.filter((career: Career) => {
+  const filteredCareers = careers.filter((career) => {
     const matchesDepartment = activeDepartment === 'All' || career.department === activeDepartment;
     const title = career.title || '';
     const description = career.description || '';
@@ -32,11 +32,11 @@ export const useCareerList = () => {
   };
 
   const handleEdit = (id: string) => {
-    const career = careers.find((c: Career) => String(c.id) === String(id));
+    const career = careers.find((c) => String(c.id) === String(id));
     if (career) {
       setEditingCareer({
         ...career,
-        postedDate: career.postedDate || (career as any).posted_date
+        postedDate: career.postedDate || career.posted_date || '',
       });
       setShowForm(true);
     }

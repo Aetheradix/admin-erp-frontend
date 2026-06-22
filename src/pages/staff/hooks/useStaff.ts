@@ -34,7 +34,7 @@ export const useStaff = () => {
   };
 
   const handleEdit = (id: string) => {
-    const member = staff.find((m: any) => String(m.id) === String(id));
+    const member = staff.find((m) => String(m.id) === String(id));
     if (member) {
       setEditingMember({
         ...member,
@@ -42,7 +42,7 @@ export const useStaff = () => {
         role: member.designation || member.role,
         phone: member.contact_no || member.phone,
         image: member.image_url || member.image,
-        joinDate: member.join_date || member.joinDate
+        joinDate: member.join_date || member.joinDate,
       });
       setShowForm(true);
     }
@@ -92,7 +92,7 @@ export const useStaff = () => {
     }
   };
 
-  const filteredStaff = staff.filter((member: StaffMember) => {
+  const filteredStaff = staff.filter((member) => {
     const matchesDepartment = activeDepartment === 'All' || member.department === activeDepartment;
     const name = member.username || member.name || '';
     const role = member.designation || member.role || '';

@@ -1,24 +1,20 @@
+import type { GuestPass } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapGuestPass } from './mappers';
+
+export type { GuestPass };
 
 export const guestPassApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getGuestPasses: builder.query<any[], void>({
+    getGuestPasses: builder.query<GuestPass[], void>({
       query: () => '/guest-passes',
       providesTags: ['GuestPasses'],
-      transformResponse: (response: any) => {
-        const data = response.data || response;
-        return data.map((pass: any) => ({
-          ...pass,
-          guestName: pass.guest_name,
-          hostName: pass.username || 'Employee',
-          purpose: pass.visit_purpose,
-          visitDate: pass.visit_date,
-          accessCode: pass.pass_code,
-          status: pass.status,
-        }));
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapGuestPass(item as Record<string, unknown>)) : [];
       },
     }),
-    issueGuestPass: builder.mutation<any, any>({
+    issueGuestPass: builder.mutation<GuestPass, Partial<GuestPass> & { email?: string }>({
       query: (passData) => ({
         url: '/guest-passes',
         method: 'POST',
@@ -31,7 +27,7 @@ export const guestPassApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['GuestPasses'],
     }),
-    revokeGuestPass: builder.mutation<any, string>({
+    revokeGuestPass: builder.mutation<{ success?: boolean }, string>({
       query: (id) => ({
         url: `/guest-passes/${id}/revoke`,
         method: 'PUT',

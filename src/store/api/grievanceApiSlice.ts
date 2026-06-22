@@ -1,21 +1,20 @@
+import type { Grievance } from '@/types/models';
 import { apiSlice } from './apiSlice';
+import { mapGrievance } from './mappers';
+
+export type { Grievance };
 
 export const grievanceApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getGrievances: builder.query<any[], void>({
+    getGrievances: builder.query<Grievance[], void>({
       query: () => '/grievances',
       providesTags: ['Grievances'],
-      transformResponse: (response: any) => {
-        const data = response.data || response;
-        return data.map((g: any) => ({
-          ...g,
-          title: g.subject || g.title,
-          isAnonymous: !!g.is_anonymous,
-          date: g.created_at ? new Date(g.created_at).toISOString().split('T')[0] : g.date,
-        }));
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: unknown[] })?.data ?? response;
+        return Array.isArray(data) ? data.map((item) => mapGrievance(item as Record<string, unknown>)) : [];
       },
     }),
-    submitGrievance: builder.mutation<any, any>({
+    submitGrievance: builder.mutation<Grievance, Partial<Grievance>>({
       query: (grievanceData) => ({
         url: '/grievances',
         method: 'POST',
@@ -28,7 +27,7 @@ export const grievanceApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Grievances'],
     }),
-    updateGrievanceStatus: builder.mutation<any, { id: string; status: string }>({
+    updateGrievanceStatus: builder.mutation<Grievance, { id: string; status: string }>({
       query: ({ id, status }) => ({
         url: `/grievances/${id}/status`,
         method: 'PUT',

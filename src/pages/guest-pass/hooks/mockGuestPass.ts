@@ -1,15 +1,6 @@
-export interface GuestPass {
-  id: string;
-  guestName: string;
-  hostName: string;
-  purpose: string;
-  visitDate: string;
-  expiryDate: string;
-  status: 'Active' | 'Expired' | 'Pending';
-  accessCode: string;
-}
+export type { GuestPass } from '@/types/models';
 
-export const mockGuestPasses: GuestPass[] = [
+export const mockGuestPasses: import('@/types/models').GuestPass[] = [
   {
     id: 'GP1',
     guestName: 'Robert Vance',
