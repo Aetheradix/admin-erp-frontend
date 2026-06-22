@@ -2,9 +2,9 @@ name: ARX ERP CI
 
 on:
   push:
-    branches: [ qa-release ]
+    branches: [ dev ]
   pull_request:
-    branches: [ qa-release ]
+    branches: [ dev ]
 
 jobs:
   build:
