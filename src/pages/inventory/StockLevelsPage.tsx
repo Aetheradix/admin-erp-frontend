@@ -1,7 +1,19 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
-const stockData = [
+interface StockItem {
+    id: number;
+    name: string;
+    sku: string;
+    current: number;
+    minimum: number;
+    maximum: number;
+    status: string;
+}
+
+const stockData: StockItem[] = [
     { id: 1, name: 'MacBook Pro 16"', sku: 'HW-MBP-001', current: 24, minimum: 10, maximum: 50, status: 'OK' },
     { id: 2, name: 'Dell Monitor 27"', sku: 'HW-DM27-002', current: 15, minimum: 5, maximum: 30, status: 'OK' },
     { id: 3, name: 'Ergonomic Keyboard', sku: 'ACC-EK-003', current: 42, minimum: 20, maximum: 60, status: 'OK' },
@@ -20,6 +32,59 @@ const statusConfig: Record<string, { color: string; bg: string }> = {
 };
 
 export function StockLevelsPage() {
+    const columns: ColumnsType<StockItem> = [
+        {
+            title: 'Item',
+            key: 'item',
+            render: (_, record) => (
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-foreground">{record.name}</span>
+                    <span className="text-[10px] text-muted tracking-wider">{record.sku}</span>
+                </div>
+            ),
+        },
+        {
+            title: 'Current',
+            dataIndex: 'current',
+            key: 'current',
+            render: (text) => <span className="text-sm font-black text-foreground">{text}</span>,
+        },
+        {
+            title: 'Min',
+            dataIndex: 'minimum',
+            key: 'minimum',
+            render: (text) => <span className="text-sm font-medium text-muted">{text}</span>,
+        },
+        {
+            title: 'Max',
+            dataIndex: 'maximum',
+            key: 'maximum',
+            render: (text) => <span className="text-sm font-medium text-muted">{text}</span>,
+        },
+        {
+            title: 'Level',
+            key: 'level',
+            render: (_, record) => {
+                const pct = Math.min((record.current / record.maximum) * 100, 100);
+                const cfg = statusConfig[record.status] || statusConfig.OK;
+                return (
+                    <div className="w-24 h-2 rounded-full bg-surface-subtle overflow-hidden">
+                        <div className={`h-full rounded-full ${cfg.bg}`} style={{ width: `${pct}%` }} />
+                    </div>
+                );
+            },
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => {
+                const cfg = statusConfig[status] || statusConfig.OK;
+                return <span className={`text-xs font-bold ${cfg.color}`}>● {status}</span>;
+            },
+        },
+    ];
+
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <PageHeader
@@ -57,45 +122,13 @@ export function StockLevelsPage() {
                 transition={{ duration: 0.5 }}
                 className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden"
             >
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-border-subtle">
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Item</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Current</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Min</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Max</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Level</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {stockData.map((item) => {
-                            const pct = Math.min((item.current / item.maximum) * 100, 100);
-                            const cfg = statusConfig[item.status] || statusConfig.OK;
-                            return (
-                                <tr key={item.id} className="border-b border-border-subtle/50 hover:bg-surface-subtle/50 transition-colors">
-                                    <td className="px-8 py-5">
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-foreground">{item.name}</span>
-                                            <span className="text-[10px] text-muted tracking-wider">{item.sku}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-5 text-sm font-black text-foreground">{item.current}</td>
-                                    <td className="px-8 py-5 text-sm font-medium text-muted">{item.minimum}</td>
-                                    <td className="px-8 py-5 text-sm font-medium text-muted">{item.maximum}</td>
-                                    <td className="px-8 py-5">
-                                        <div className="w-24 h-2 rounded-full bg-surface-subtle overflow-hidden">
-                                            <div className={`h-full rounded-full ${cfg.bg}`} style={{ width: `${pct}%` }} />
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-5">
-                                        <span className={`text-xs font-bold ${cfg.color}`}>● {item.status}</span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                <Table
+                    columns={columns}
+                    dataSource={stockData}
+                    rowKey="id"
+                    pagination={false}
+                    className="premium-table"
+                />
             </motion.div>
         </div>
     );

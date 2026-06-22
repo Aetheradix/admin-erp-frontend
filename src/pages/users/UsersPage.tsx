@@ -7,6 +7,8 @@ import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Button } from '@/components/ui/primitives/Button';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 interface UserRecord {
     id: number;
@@ -91,6 +93,52 @@ export function UsersPage() {
         setShowForm(false);
     };
 
+    const columns: ColumnsType<UserRecord> = [
+        {
+            title: 'User',
+            key: 'user',
+            render: (_, record) => (
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-black">{record.avatar}</div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground">{record.name}</span>
+                        <span className="text-xs text-muted">{record.email}</span>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            title: 'Role',
+            dataIndex: 'role',
+            key: 'role',
+            render: (role) => (
+                <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${roleColors[role] || 'bg-surface-subtle text-muted'}`}>{role}</span>
+            ),
+        },
+        {
+            title: 'Department',
+            dataIndex: 'department',
+            key: 'department',
+            render: (text) => <span className="text-sm font-medium text-muted">{text}</span>,
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => <span className={`text-xs font-bold ${statusColors[status] || 'text-muted'}`}>● {status}</span>,
+        },
+        {
+            title: '',
+            key: 'action',
+            width: 80,
+            render: () => (
+                <button className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors">
+                    <MoreHorizontal size={16} />
+                </button>
+            ),
+        },
+    ];
+
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <PageHeader title="Users" description="Manage user accounts, roles, and access across the organization."
@@ -109,40 +157,13 @@ export function UsersPage() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
                 className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-border-subtle">
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">User</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Role</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Department</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Status</th>
-                            <th className="w-16 px-8 py-5"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map((user) => (
-                            <tr key={user.id} className="border-b border-border-subtle/50 hover:bg-surface-subtle/50 transition-colors">
-                                <td className="px-8 py-5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-black">{user.avatar}</div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-foreground">{user.name}</span>
-                                            <span className="text-xs text-muted">{user.email}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-5">
-                                    <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${roleColors[user.role] || 'bg-surface-subtle text-muted'}`}>{user.role}</span>
-                                </td>
-                                <td className="px-8 py-5 text-sm font-medium text-muted">{user.department}</td>
-                                <td className="px-8 py-5"><span className={`text-xs font-bold ${statusColors[user.status] || 'text-muted'}`}>● {user.status}</span></td>
-                                <td className="px-8 py-5">
-                                    <button className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors"><MoreHorizontal size={16} /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Table
+                    columns={columns}
+                    dataSource={filtered}
+                    rowKey="id"
+                    pagination={false}
+                    className="premium-table"
+                />
             </motion.div>
 
             {/* Invite User Dialog */}

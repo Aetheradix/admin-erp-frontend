@@ -2,8 +2,20 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
 import { Clock, User, Terminal, Search } from 'lucide-react';
 import { useState } from 'react';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
-const logs = [
+interface AuditLog {
+    id: number;
+    action: string;
+    user: string;
+    target: string;
+    timestamp: string;
+    ip: string;
+    status: string;
+}
+
+const logs: AuditLog[] = [
     { id: 1, action: 'User Login', user: 'Sarah Chen', target: 'System', timestamp: '2026-06-10 12:45:12', ip: '192.168.1.45', status: 'Success' },
     { id: 2, action: 'Settings Updated', user: 'James Wilson', target: 'Security Config', timestamp: '2026-06-10 11:32:05', ip: '192.168.1.12', status: 'Success' },
     { id: 3, action: 'Role Deleted', user: 'Sarah Chen', target: 'Guest Role', timestamp: '2026-06-10 10:15:44', ip: '192.168.1.45', status: 'Warning' },
@@ -26,6 +38,56 @@ export function AuditLogPage() {
         l.user.toLowerCase().includes(search.toLowerCase()) ||
         l.target.toLowerCase().includes(search.toLowerCase())
     );
+
+    const columns: ColumnsType<AuditLog> = [
+        {
+            title: 'Activity',
+            dataIndex: 'action',
+            key: 'action',
+            render: (text) => <span className="text-sm font-bold text-foreground">{text}</span>,
+        },
+        {
+            title: 'Actor',
+            key: 'actor',
+            render: (_, record) => (
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-surface-subtle flex items-center justify-center text-muted">
+                        <User size={12} />
+                    </div>
+                    <span className="text-xs font-medium text-muted-foreground">{record.user}</span>
+                </div>
+            ),
+        },
+        {
+            title: 'Target',
+            dataIndex: 'target',
+            key: 'target',
+            render: (text) => <span className="px-3 py-1 bg-primary/5 rounded-lg text-[10px] font-bold text-primary tracking-wide">{text}</span>,
+        },
+        {
+            title: 'Timestamp',
+            dataIndex: 'timestamp',
+            key: 'timestamp',
+            render: (text) => (
+                <div className="flex items-center gap-2 text-[11px] font-medium text-muted">
+                    <Clock size={12} />
+                    {text}
+                </div>
+            ),
+        },
+        {
+            title: 'Origin IP',
+            dataIndex: 'ip',
+            key: 'ip',
+            render: (text) => <span className="text-[11px] font-mono text-muted/60">{text}</span>,
+        },
+        {
+            title: 'Outcome',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => <span className={`text-xs font-black uppercase tracking-tight ${statusColors[status]}`}>{status}</span>,
+        },
+    ];
 
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -67,48 +129,13 @@ export function AuditLogPage() {
                     <Terminal size={18} className="text-primary" />
                     <span className="text-sm font-black text-foreground uppercase tracking-wider">System Activity Stream</span>
                 </div>
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-border-subtle bg-surface-subtle/20">
-                            <th className="text-left px-10 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Activity</th>
-                            <th className="text-left px-10 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Actor</th>
-                            <th className="text-left px-10 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Target</th>
-                            <th className="text-left px-10 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Timestamp</th>
-                            <th className="text-left px-10 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Origin IP</th>
-                            <th className="text-left px-10 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Outcome</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map((log) => (
-                            <tr key={log.id} className="border-b border-border-subtle/50 hover:bg-surface-subtle/30 transition-colors">
-                                <td className="px-10 py-6">
-                                    <span className="text-sm font-bold text-foreground">{log.action}</span>
-                                </td>
-                                <td className="px-10 py-6">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-lg bg-surface-subtle flex items-center justify-center text-muted">
-                                            <User size={12} />
-                                        </div>
-                                        <span className="text-xs font-medium text-muted-foreground">{log.user}</span>
-                                    </div>
-                                </td>
-                                <td className="px-10 py-6">
-                                    <span className="px-3 py-1 bg-primary/5 rounded-lg text-[10px] font-bold text-primary tracking-wide">{log.target}</span>
-                                </td>
-                                <td className="px-10 py-6">
-                                    <div className="flex items-center gap-2 text-[11px] font-medium text-muted">
-                                        <Clock size={12} />
-                                        {log.timestamp}
-                                    </div>
-                                </td>
-                                <td className="px-10 py-6 text-[11px] font-mono text-muted/60">{log.ip}</td>
-                                <td className="px-10 py-6">
-                                    <span className={`text-xs font-black uppercase tracking-tight ${statusColors[log.status]}`}>{log.status}</span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Table
+                    columns={columns}
+                    dataSource={filtered}
+                    rowKey="id"
+                    pagination={false}
+                    className="premium-table"
+                />
             </motion.div>
         </div>
     );

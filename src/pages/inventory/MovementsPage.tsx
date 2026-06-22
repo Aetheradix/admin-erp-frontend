@@ -1,8 +1,21 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
-const movements = [
+interface Movement {
+    id: number;
+    item: string;
+    sku: string;
+    type: 'In' | 'Out';
+    quantity: number;
+    date: string;
+    reference: string;
+    by: string;
+}
+
+const movements: Movement[] = [
     { id: 1, item: 'MacBook Pro 16"', sku: 'HW-MBP-001', type: 'In', quantity: 10, date: '2026-06-09', reference: 'PO-2026-0145', by: 'Sarah Chen' },
     { id: 2, item: 'Office Chair Pro', sku: 'FRN-OCP-006', type: 'Out', quantity: 3, date: '2026-06-09', reference: 'REQ-2026-0089', by: 'James Wilson' },
     { id: 3, item: 'USB-C Hub', sku: 'ACC-UCH-004', type: 'Out', quantity: 5, date: '2026-06-08', reference: 'REQ-2026-0088', by: 'David Kim' },
@@ -16,6 +29,61 @@ const movements = [
 export function MovementsPage() {
     const totalIn = movements.filter(m => m.type === 'In').reduce((a, m) => a + m.quantity, 0);
     const totalOut = movements.filter(m => m.type === 'Out').reduce((a, m) => a + m.quantity, 0);
+
+    const columns: ColumnsType<Movement> = [
+        {
+            title: 'Type',
+            key: 'type',
+            width: 80,
+            render: (_, record) => (
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${record.type === 'In' ? 'bg-success/10' : 'bg-error/10'}`}>
+                    {record.type === 'In' ? <ArrowDownLeft size={16} className="text-success" /> : <ArrowUpRight size={16} className="text-error" />}
+                </div>
+            ),
+        },
+        {
+            title: 'Item',
+            key: 'item',
+            render: (_, record) => (
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-foreground">{record.item}</span>
+                    <span className="text-[10px] text-muted tracking-wider">{record.sku}</span>
+                </div>
+            ),
+        },
+        {
+            title: 'Quantity',
+            dataIndex: 'quantity',
+            key: 'quantity',
+            render: (quantity, record) => (
+                <span className={`text-sm font-bold ${record.type === 'In' ? 'text-success' : 'text-error'}`}>
+                    {record.type === 'In' ? '+' : '-'}{quantity}
+                </span>
+            ),
+        },
+        {
+            title: 'Reference',
+            dataIndex: 'reference',
+            key: 'reference',
+            render: (text) => <span className="text-xs font-medium text-muted">{text}</span>,
+        },
+        {
+            title: 'By',
+            dataIndex: 'by',
+            key: 'by',
+            render: (text) => <span className="text-xs font-medium text-muted">{text}</span>,
+        },
+        {
+            title: 'Date',
+            dataIndex: 'date',
+            key: 'date',
+            render: (date) => (
+                <span className="text-xs font-medium text-muted">
+                    {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+            ),
+        },
+    ];
 
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -58,43 +126,13 @@ export function MovementsPage() {
                 transition={{ duration: 0.5 }}
                 className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden"
             >
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-border-subtle">
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Type</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Item</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Quantity</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Reference</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">By</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {movements.map((mov) => (
-                            <tr key={mov.id} className="border-b border-border-subtle/50 hover:bg-surface-subtle/50 transition-colors">
-                                <td className="px-8 py-5">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${mov.type === 'In' ? 'bg-success/10' : 'bg-error/10'}`}>
-                                        {mov.type === 'In' ? <ArrowDownLeft size={16} className="text-success" /> : <ArrowUpRight size={16} className="text-error" />}
-                                    </div>
-                                </td>
-                                <td className="px-8 py-5">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-foreground">{mov.item}</span>
-                                        <span className="text-[10px] text-muted tracking-wider">{mov.sku}</span>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-5">
-                                    <span className={`text-sm font-bold ${mov.type === 'In' ? 'text-success' : 'text-error'}`}>
-                                        {mov.type === 'In' ? '+' : '-'}{mov.quantity}
-                                    </span>
-                                </td>
-                                <td className="px-8 py-5 text-xs font-medium text-muted">{mov.reference}</td>
-                                <td className="px-8 py-5 text-xs font-medium text-muted">{mov.by}</td>
-                                <td className="px-8 py-5 text-xs font-medium text-muted">{new Date(mov.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Table
+                    columns={columns}
+                    dataSource={movements}
+                    rowKey="id"
+                    pagination={false}
+                    className="premium-table"
+                />
             </motion.div>
         </div>
     );

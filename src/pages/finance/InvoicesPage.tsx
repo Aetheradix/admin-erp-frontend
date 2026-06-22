@@ -6,6 +6,8 @@ import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Button } from '@/components/ui/primitives/Button';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 interface Invoice {
     id: string;
@@ -56,6 +58,56 @@ export function InvoicesPage() {
         setShowForm(false);
     };
 
+    const columns: ColumnsType<Invoice> = [
+        {
+            title: 'Invoice ID',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text) => <span className="text-sm font-bold text-foreground">{text}</span>,
+        },
+        {
+            title: 'Client',
+            dataIndex: 'client',
+            key: 'client',
+            render: (text) => <span className="text-sm font-medium text-muted">{text}</span>,
+        },
+        {
+            title: 'Amount',
+            dataIndex: 'amount',
+            key: 'amount',
+            render: (amount) => <span className="text-sm font-black text-foreground">₹{amount.toLocaleString()}</span>,
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => {
+                const State = statusIcons[status] || statusIcons.Pending;
+                return (
+                    <div className={`flex items-center gap-2 text-xs font-bold ${State.color}`}>
+                        <State.icon size={14} />{status}
+                    </div>
+                );
+            },
+        },
+        {
+            title: 'Date',
+            dataIndex: 'date',
+            key: 'date',
+            render: (text) => <span className="text-sm font-medium text-muted">{text}</span>,
+        },
+        {
+            title: '',
+            key: 'action',
+            width: 80,
+            render: () => (
+                <button className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors">
+                    <MoreHorizontal size={16} />
+                </button>
+            ),
+        },
+    ];
+
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <PageHeader title="Invoices" description="Manage and track client billing."
@@ -65,39 +117,13 @@ export function InvoicesPage() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
                 className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-border-subtle">
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Invoice ID</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Client</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Amount</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Status</th>
-                            <th className="text-left px-8 py-5 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Date</th>
-                            <th className="w-16 px-8 py-5"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {invoices.map((inv) => {
-                            const State = statusIcons[inv.status] || statusIcons.Pending;
-                            return (
-                                <tr key={inv.id} className="border-b border-border-subtle/50 hover:bg-surface-subtle/50 transition-colors">
-                                    <td className="px-8 py-5 text-sm font-bold text-foreground">{inv.id}</td>
-                                    <td className="px-8 py-5 text-sm font-medium text-muted">{inv.client}</td>
-                                    <td className="px-8 py-5 text-sm font-black text-foreground">${inv.amount.toLocaleString()}</td>
-                                    <td className="px-8 py-5">
-                                        <div className={`flex items-center gap-2 text-xs font-bold ${State.color}`}>
-                                            <State.icon size={14} />{inv.status}
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-5 text-sm font-medium text-muted">{inv.date}</td>
-                                    <td className="px-8 py-5">
-                                        <button className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors"><MoreHorizontal size={16} /></button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                <Table
+                    columns={columns}
+                    dataSource={invoices}
+                    rowKey="id"
+                    pagination={false}
+                    className="premium-table"
+                />
             </motion.div>
 
             {/* Create Invoice Dialog */}
@@ -112,7 +138,7 @@ export function InvoicesPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Amount ($)</label>
+                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Amount (₹)</label>
                             <Input type="number" placeholder="0" value={String(form.amount || '')} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })} />
                         </div>
                         <div className="flex flex-col gap-2">

@@ -44,7 +44,7 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
             </div>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-xl font-black text-foreground">${request.amount.toFixed(2)}</span>
+            <span className="text-xl font-black text-foreground">₹{request.amount.toFixed(2)}</span>
             <span className="text-[10px] font-bold text-muted uppercase">{request.date}</span>
           </div>
         </div>
@@ -61,8 +61,8 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
             {getStatusIcon(request.status)}
             <span>{request.status}</span>
           </div>
-          
-          <button 
+
+          <button
             className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
             aria-label={`View details for ${request.item} reimbursement`}
           >

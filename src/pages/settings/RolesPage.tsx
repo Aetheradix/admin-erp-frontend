@@ -6,6 +6,8 @@ import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
 import { InputSwitch } from '@/components/ui/primitives/Switch';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 interface Role {
     name: string;
@@ -48,6 +50,53 @@ export function RolesPage() {
         setForm({ ...form, permissions: { ...form.permissions, [key]: !form.permissions[key] } });
     };
 
+    const columns: ColumnsType<Role> = [
+        {
+            title: 'Role',
+            key: 'role',
+            render: (_, record) => (
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-error/5 flex items-center justify-center text-error border border-error/10"><Shield size={18} /></div>
+                    <div className="flex flex-col">
+                        <span className="text-base font-black text-foreground tracking-tight">{record.name}</span>
+                        <span className="text-[10px] font-medium text-muted-foreground leading-tight italic">{record.description}</span>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            title: 'Users',
+            dataIndex: 'users',
+            key: 'users',
+            render: (users) => (
+                <div className="px-3 py-1 bg-surface-subtle rounded-lg text-[10px] font-black inline-block uppercase text-muted tracking-widest">{users} users</div>
+            ),
+        },
+        ...PERMISSION_KEYS.map(key => ({
+            title: key,
+            dataIndex: ['permissions', key],
+            key,
+            align: 'center' as const,
+            render: (allowed: boolean) => (
+                <div className="flex justify-center">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-colors ${allowed ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface-subtle/40 border-border-subtle text-muted/30'}`}>
+                        {allowed ? <Check size={14} /> : <div className="w-1.5 h-1.5 rounded-full bg-muted/20" />}
+                    </div>
+                </div>
+            ),
+        })),
+        {
+            title: '',
+            key: 'action',
+            width: 80,
+            render: () => (
+                <button className="p-2 rounded-md border border-border-subtle text-muted hover:text-primary hover:bg-primary/5 transition-all">
+                    <Edit2 size={16} />
+                </button>
+            ),
+        },
+    ];
+
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <PageHeader title="Roles & Permissions" description="Manage access control for your organization."
@@ -57,48 +106,13 @@ export function RolesPage() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
                 className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-border-subtle bg-surface-subtle/30">
-                            <th className="text-left px-10 py-6 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Role</th>
-                            <th className="text-left px-10 py-6 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Users</th>
-                            {PERMISSION_KEYS.map(k => (
-                                <th key={k} className="text-center px-4 py-6 text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">{k}</th>
-                            ))}
-                            <th className="w-16 px-10 py-6"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {roles.map((role) => (
-                            <tr key={role.name} className="border-b border-border-subtle/50 hover:bg-surface-subtle/50 transition-colors">
-                                <td className="px-10 py-8">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-error/5 flex items-center justify-center text-error border border-error/10"><Shield size={18} /></div>
-                                        <div className="flex flex-col">
-                                            <span className="text-base font-black text-foreground tracking-tight">{role.name}</span>
-                                            <span className="text-[10px] font-medium text-muted-foreground leading-tight italic">{role.description}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-10 py-8">
-                                    <div className="px-3 py-1 bg-surface-subtle rounded-lg text-[10px] font-black inline-block uppercase text-muted tracking-widest">{role.users} users</div>
-                                </td>
-                                {PERMISSION_KEYS.map((key) => (
-                                    <td key={key} className="px-4 py-8 text-center">
-                                        <div className="flex justify-center">
-                                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-colors ${role.permissions[key] ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface-subtle/40 border-border-subtle text-muted/30'}`}>
-                                                {role.permissions[key] ? <Check size={14} /> : <div className="w-1.5 h-1.5 rounded-full bg-muted/20" />}
-                                            </div>
-                                        </div>
-                                    </td>
-                                ))}
-                                <td className="px-10 py-8">
-                                    <button className="p-2 rounded-md border border-border-subtle text-muted hover:text-primary hover:bg-primary/5 transition-all"><Edit2 size={16} /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Table
+                    columns={columns}
+                    dataSource={roles}
+                    rowKey="name"
+                    pagination={false}
+                    className="premium-table"
+                />
             </motion.div>
 
             {/* Create Role Dialog */}

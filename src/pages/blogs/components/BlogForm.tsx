@@ -186,7 +186,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               maxFileSize={1000000}
               className="absolute inset-0 opacity-0 cursor-pointer"
               auto
-              onUpload={() => { }} // Handle upload logic
+              onUpload={(e) => setFormData({ ...formData, featuredImage: e.base64 })}
             />
           </div>
         </div>

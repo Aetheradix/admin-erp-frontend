@@ -74,7 +74,7 @@ export function ExpensesPage() {
                             <span className="text-[10px] font-bold text-muted uppercase tracking-[0.1em]">{exp.category}</span>
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-border-subtle/50">
-                            <span className="text-xl font-black text-foreground">${exp.amount.toLocaleString()}</span>
+                            <span className="text-xl font-black text-foreground">₹{exp.amount.toLocaleString()}</span>
                             <button className="text-xs font-bold text-primary hover:underline">Details →</button>
                         </div>
                     </motion.div>
@@ -97,7 +97,7 @@ export function ExpensesPage() {
                             <Select options={EXPENSE_CATEGORIES} value={form.category} onChange={(e) => setForm({ ...form, category: e.value })} placeholder="Select" />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Amount ($)</label>
+                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Amount (₹)</label>
                             <Input type="number" placeholder="0" value={String(form.amount || '')} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })} />
                         </div>
                     </div>

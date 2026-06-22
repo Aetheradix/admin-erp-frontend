@@ -69,7 +69,7 @@ export function ItemsPage() {
                     { label: 'Total Items', value: items.length, icon: Package },
                     { label: 'Categories', value: new Set(items.map(i => i.category)).size, icon: Tag },
                     { label: 'Total Units', value: items.reduce((a, i) => a + i.quantity, 0), icon: Layers },
-                    { label: 'Total Value', value: `$${totalValue.toLocaleString()}`, icon: DollarSign },
+                    { label: 'Total Value', value: `₹${totalValue.toLocaleString()}`, icon: DollarSign },
                 ].map((stat) => (
                     <div key={stat.label} className="bg-white p-6 rounded-[28px] border border-border-subtle shadow-soft flex items-center gap-5 group">
                         <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
@@ -96,7 +96,7 @@ export function ItemsPage() {
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-border-subtle/50">
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-lg font-black text-foreground">${item.price.toLocaleString()}</span>
+                                <span className="text-lg font-black text-foreground">₹{item.price.toLocaleString()}</span>
                                 <span className="text-[10px] text-muted font-bold">Qty: {item.quantity}</span>
                             </div>
                             <span className={`text-xs font-bold ${statusColors[item.status]}`}>● {item.status}</span>
@@ -131,7 +131,7 @@ export function ItemsPage() {
                             <Input type="number" placeholder="0" value={String(form.quantity)} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) || 0 })} />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Unit Price ($)</label>
+                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Unit Price (₹)</label>
                             <Input type="number" placeholder="0" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) || 0 })} />
                         </div>
                     </div>

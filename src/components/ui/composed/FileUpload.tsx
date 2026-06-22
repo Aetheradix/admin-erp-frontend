@@ -13,7 +13,7 @@ interface FileUploadProps extends Omit<UploadProps, 'onChange'> {
   cancelLabel?: string;
   contentClassName?: string;
   auto?: boolean;
-  onUpload?: (e: { files: File[] }) => void;
+  onUpload?: (e: { files: File[]; base64?: string }) => void;
 }
 
 export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(({
@@ -29,10 +29,17 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(({
     if (maxFileSize && file.size > maxFileSize) {
       return Upload.LIST_IGNORE;
     }
-    if (auto && onUpload) {
-      onUpload({ files: [file] });
-    }
-    return false;
+
+    // For mock implementation, convert to base64
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (onUpload && e.target?.result) {
+        onUpload({ files: [file], base64: e.target.result as string });
+      }
+    };
+    reader.readAsDataURL(file);
+
+    return false; // Prevent actual upload
   };
 
   return (
