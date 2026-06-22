@@ -31,7 +31,7 @@ const AdminApproval = () => {
       } catch (err: unknown) {
         setStatus('error');
         const errorMessage = err && typeof err === 'object' && 'data' in err
-          ? (err as any).data?.message || 'Failed to approve admin account.'
+          ? (err as { data?: { message?: string } }).data?.message || 'Failed to approve admin account.'
           : 'Failed to approve admin account. The token may be expired.';
         setMessage(errorMessage);
         showToast({ severity: 'error', summary: 'Failed', detail: errorMessage, life: 3000 });

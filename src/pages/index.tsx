@@ -24,7 +24,7 @@ const UsersModule = lazy(() => import('@/pages/users'));
 const TasksModule = lazy(() => import('@/pages/tasks'));
 const InventoryModule = lazy(() => import('@/pages/inventory'));
 
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
 import { Navigate } from 'react-router-dom';
 

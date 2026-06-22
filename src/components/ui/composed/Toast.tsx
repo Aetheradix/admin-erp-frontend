@@ -1,7 +1,6 @@
 import { App } from 'antd';
 import { useEffect } from 'react';
-import { TOAST_EVENT, severityMap, type ToastSeverity } from './Toast.utils';
-import type { ToastOptions } from './Toast.utils';
+import { TOAST_EVENT, type ToastOptions, severityMap, type ToastSeverity } from './Toast.utils';
 
 export const Toast = () => {
   const { notification } = App.useApp();

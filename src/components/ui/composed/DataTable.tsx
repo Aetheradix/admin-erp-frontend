@@ -6,7 +6,10 @@ import { extractColumns, applyFilters, type ColumnProps, type DataTableFilterMet
 export { FilterMatchMode } from './DataTable.utils';
 export type { DataTableFilterMeta } from './DataTable.utils';
 
-export const Column = <T,>(_props: ColumnProps<T>) => null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const Column = <T extends object>(_props: ColumnProps<T>) => {
+  return null;
+};
 
 interface DataTableProps<T extends object> {
   value?: T[];

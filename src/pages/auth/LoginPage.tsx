@@ -6,7 +6,7 @@ import { FormField } from '@/components/ui/composed/FormField';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
 import { useLoginMutation, useRequestOTPMutation, useLoginWithOTPMutation } from '@/store/api/authApiSlice';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
 
 const LoginPage = () => {
@@ -42,7 +42,7 @@ const LoginPage = () => {
       showToast({ severity: 'success', summary: 'Success', detail: 'OTP sent to your email!', life: 3000 });
     } catch (err: unknown) {
       console.error('OTP Request failed', err);
-      showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }) .data?.message || 'Failed to send OTP', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }).data?.message || 'Failed to send OTP', life: 3000 });
     }
   };
 

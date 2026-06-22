@@ -21,11 +21,16 @@ const SignupPage = () => {
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const { data: departmentsData, isLoading: isLoadingDepts } = useGetDepartmentsQuery({});
 
-  const deptOptions = departmentsData?.data?.map((dep: any) => dep.department_name);
+  const deptOptions = (departmentsData as { data?: { department_name: string }[] })?.data?.map((dep) => ({ label: dep.department_name, value: dep.department_name }));
 
   useEffect(() => {
     if (Array.isArray(deptOptions) && deptOptions.length > 0 && !department) {
-      setDepartment(deptOptions[0]);
+      const firstDept = deptOptions[0];
+      if (firstDept) {
+        queueMicrotask(() => {
+          setDepartment(firstDept.value);
+        });
+      }
     }
   }, [deptOptions, department]);
 
@@ -44,8 +49,9 @@ const SignupPage = () => {
         department: department || 'Engineering'
       }).unwrap();
       setIsSuccess(true);
-    } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Signup failed', life: 3000 });
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Signup failed', life: 3000 });
       console.error('Signup failed', err);
     }
   };
@@ -90,7 +96,7 @@ const SignupPage = () => {
             type="text"
             placeholder="e.g. Ameer Ismail"
             value={username}
-            onChange={(e: any) => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             className="h-14 rounded-2xl!"
           />
         </FormField>
@@ -100,7 +106,7 @@ const SignupPage = () => {
             type="email"
             placeholder="e.g. agimonopoly@gmail.com"
             value={email}
-            onChange={(e: any) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             className="h-14 rounded-2xl!"
           />
         </FormField>
@@ -111,7 +117,7 @@ const SignupPage = () => {
               type="text"
               placeholder="e.g. +91 9876543210"
               value={contactNumber}
-              onChange={(e: any) => setContactNumber(e.target.value)}
+              onChange={(e) => setContactNumber(e.target.value)}
               className="h-14 rounded-2xl!"
             />
           </FormField>
@@ -133,7 +139,7 @@ const SignupPage = () => {
             type="password"
             placeholder="••••••••"
             value={password}
-            onChange={(e: any) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             className="h-14 rounded-2xl!"
           />
         </FormField>
@@ -143,7 +149,7 @@ const SignupPage = () => {
             type="password"
             placeholder="••••••••"
             value={confirmPassword}
-            onChange={(e: any) => setConfirmPassword(e.target.value)}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             className="h-14 rounded-2xl!"
           />
         </FormField>

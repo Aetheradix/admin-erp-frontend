@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../../hooks/useAuth';
 import { navItems } from '@/config/navItems';
 import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
 import { Button } from '@/components/ui/primitives/Button';

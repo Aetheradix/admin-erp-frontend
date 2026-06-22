@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGetAttendanceHistoryQuery } from '@/store/api/attendanceSlice';
 import { useGetLeavesQuery, useCreateLeaveRequestMutation } from '@/store/api/leaveSlice';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../../hooks/useAuth';
 
 export const useAttendancePage = () => {
   const { user } = useAuth();

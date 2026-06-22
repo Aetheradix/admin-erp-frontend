@@ -1,5 +1,5 @@
 import { Bell, Menu, Settings } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { SearchBar } from '@/components/ui/composed/SearchBar';
 import { Avatar } from '@/components/ui/primitives/Avatar';
@@ -17,7 +17,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     <header className="h-24 w-full flex items-center justify-between px-6 sm:px-8 lg:px-10 z-20 bg-background/80 backdrop-blur-md border-b border-border-subtle">
       <div className="flex items-center gap-4 w-full max-w-2xl">
         {/* Mobile & Desktop Menu Toggle */}
-        <Button 
+        <Button
           onClick={onMenuClick}
           aria-label="Toggle navigation menu"
           variant="secondary"
@@ -28,7 +28,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {/* Search Bar - Composed Component */}
         <div className="hidden md:block flex-1">
-          <SearchBar 
+          <SearchBar
             placeholder="Search features, documents, staff..."
             className="group-hover:border-primary! transition-all duration-300"
           />
@@ -37,16 +37,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       {/* Right Actions */}
       <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-        <Button 
+        <Button
           variant="ghost"
           aria-label="Settings"
           className="hidden sm:flex w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150"
         >
           <Settings size={18} className="text-muted transition-transform hover:rotate-45" />
         </Button>
-        
+
         {/* Notifications */}
-        <Button 
+        <Button
           variant="ghost"
           aria-label="Notifications"
           className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 group"
@@ -58,7 +58,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <div className="h-10 w-px bg-border-subtle mx-1 hidden sm:block"></div>
 
         {/* User Profile */}
-        <div 
+        <div
           onClick={() => navigate('/profile')}
           role="button"
           tabIndex={0}
@@ -69,7 +69,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <span className="hidden sm:block text-xs font-bold text-foreground ml-2">
             {user?.username || 'Admin User'}
           </span>
-          <Avatar 
+          <Avatar
             image={user?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'Felix'}`}
             width={32}
             height={32}
