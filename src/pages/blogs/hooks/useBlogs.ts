@@ -8,6 +8,7 @@ import {
   useUpdateBlogMutation,
   useDeleteBlogMutation
 } from '@/store/api/blogSlice';
+import type { Blog } from '@/types/models';
 
 export const useBlogs = (id?: string) => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export const useBlogs = (id?: string) => {
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
   const [deleteBlog] = useDeleteBlogMutation();
 
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: Partial<Blog>) => {
     try {
       if (id) {
         await updateBlog({ ...data, id }).unwrap();
@@ -30,9 +31,10 @@ export const useBlogs = (id?: string) => {
       }
       showToast({ severity: 'success', summary: 'Success', detail: `Post ${id ? 'updated' : 'created'} successfully!`, life: 3000 });
       navigate('/blogs');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as { data?: { message?: string } };
       console.error('Failed to save blog:', error);
-      showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Failed to save post', life: 3000 });
+      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to save post', life: 3000 });
     }
   };
 
@@ -44,9 +46,10 @@ export const useBlogs = (id?: string) => {
         try {
           await deleteBlog(blogId).unwrap();
           showToast({ severity: 'success', summary: 'Success', detail: 'Post deleted successfully!', life: 3000 });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const apiError = error as { data?: { message?: string } };
           console.error('Failed to delete blog:', error);
-          showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Failed to delete post', life: 3000 });
+          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to delete post', life: 3000 });
         }
       }
     });

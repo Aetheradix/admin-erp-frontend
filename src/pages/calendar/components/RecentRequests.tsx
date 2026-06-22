@@ -1,8 +1,10 @@
 import { Calendar as CalendarIcon, MessageSquare } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 
+import type { AttendanceRequest } from '@/types/models';
+
 interface RecentRequestsProps {
-  requests: any[];
+  requests: AttendanceRequest[];
 }
 
 export const RecentRequests = ({ requests }: RecentRequestsProps) => {
@@ -19,13 +21,12 @@ export const RecentRequests = ({ requests }: RecentRequestsProps) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {requests.map((request: any) => (
+        {requests.map((request) => (
           <div key={request.id} className="group relative bg-surface-subtle/50 rounded-3xl p-6 border border-border-subtle hover:bg-white hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
-              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                request.status === 'Approved' ? 'bg-success/10 text-success' : 
+              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${request.status === 'Approved' ? 'bg-success/10 text-success' :
                 request.status === 'Pending' ? 'bg-warning/10 text-warning' : 'bg-error/10 text-error'
-              }`}>
+                }`}>
                 {request.status}
               </span>
               <span className="text-[10px] font-black text-primary uppercase bg-primary/5 px-3 py-1.5 rounded-xl">{request.type}</span>

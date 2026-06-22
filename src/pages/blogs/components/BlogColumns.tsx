@@ -7,7 +7,7 @@ import type { Blog } from '../hooks/mockBlogs';
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 
-const STATUS_VARIANT: Record<Blog['status'], any> = {
+const STATUS_VARIANT: Record<string, 'success' | 'secondary' | 'warning'> = {
   Published: 'success',
   Draft: 'secondary',
   Scheduled: 'warning',

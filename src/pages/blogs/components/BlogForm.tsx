@@ -11,15 +11,17 @@ import { Badge } from '@/components/ui/primitives/Badge';
 import { motion } from 'framer-motion';
 import { Save, X, Globe, Settings, Image as ImageIcon } from 'lucide-react';
 
+import type { Blog } from '@/types/models';
+
 interface BlogFormProps {
-  initialData?: any;
-  onSubmit: (data: any) => void;
+  initialData?: Blog;
+  onSubmit: (data: Partial<Blog>) => void;
   isLoading?: boolean;
 }
 
 export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<any>(
+  const [formData, setFormData] = useState<Partial<Blog>>(
     initialData || {
       title: '',
       content: '',

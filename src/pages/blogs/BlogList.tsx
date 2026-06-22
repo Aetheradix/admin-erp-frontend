@@ -1,6 +1,7 @@
 import { Column, DataTable } from '@/components/ui/composed/DataTable';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
+import type { Blog } from '@/types/models';
 
 import { useBlogFilters } from './hooks/useBlogFilters';
 import { useBlogs } from './hooks/useBlogs';
@@ -80,7 +81,7 @@ const BlogList = () => {
               style={col.width ? { width: col.width } : undefined}
               className={col.className}
               headerClassName={col.headerClassName}
-              body={(row: any) => col.body(row, { onDelete: handleDelete })}
+              body={(row: Blog) => col.body(row, { onDelete: handleDelete })}
             />
           ))}
         </DataTable>

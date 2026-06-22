@@ -3,6 +3,8 @@ import { useGetAttendanceHistoryQuery } from '@/store/api/attendanceSlice';
 import { useGetLeavesQuery, useCreateLeaveRequestMutation } from '@/store/api/leaveSlice';
 import { useAuth } from '../../../hooks/useAuth';
 
+import type { AttendanceRequest } from '@/types/models';
+
 export const useAttendancePage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -17,7 +19,7 @@ export const useAttendancePage = () => {
   // Hide from admin: they handle global approvals elsewhere
   const calendarRequests = isAdmin ? [] : requests;
 
-  const handleRequestSubmit = async (data: any) => {
+  const handleRequestSubmit = async (data: Partial<AttendanceRequest> & { startDate: string; endDate: string }) => {
     try {
       await createLeaveRequest({
         type: data.type,

@@ -25,6 +25,17 @@ export interface AttendanceRecord {
   status?: string;
 }
 
+export interface AttendanceRequest {
+  id: string | number;
+  type: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | string;
+  reason: string;
+  start_date: string;
+  end_date: string;
+  applied_date?: string;
+  admin_comment?: string;
+}
+
 export interface AttendanceStatsData {
   daysPresent?: number | string;
   wfhCount?: number | string;

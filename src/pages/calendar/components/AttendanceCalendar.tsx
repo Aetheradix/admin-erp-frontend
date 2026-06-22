@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Home, Building2, Calendar as CalendarIcon, Sun } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import type { AttendanceRecord } from '../hooks/mockAttendance';
+import type { AttendanceRecord, AttendanceRequest } from '@/types/models';
 
 interface AttendanceCalendarProps {
   records: AttendanceRecord[];
-  requests?: any[];
+  requests?: AttendanceRequest[];
   onDateSelect: (date: Date) => void;
 }
 
 export function AttendanceCalendar({ records, requests = [], onDateSelect }: AttendanceCalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date()); 
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
@@ -31,13 +31,13 @@ export function AttendanceCalendar({ records, requests = [], onDateSelect }: Att
 
   const getDayRequest = (day: number) => {
     const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    d.setHours(0,0,0,0);
-    
+    d.setHours(0, 0, 0, 0);
+
     return requests.find(req => {
       const start = new Date(req.start_date);
-      start.setHours(0,0,0,0);
+      start.setHours(0, 0, 0, 0);
       const end = req.end_date ? new Date(req.end_date) : start;
-      end.setHours(0,0,0,0);
+      end.setHours(0, 0, 0, 0);
       return d >= start && d <= end;
     });
   };
@@ -57,7 +57,7 @@ export function AttendanceCalendar({ records, requests = [], onDateSelect }: Att
 
   const getDayTypeStyles = (type: string, status?: string) => {
     const isPending = status === 'Pending';
-    
+
     switch (type) {
       case 'Work from Office': return 'bg-primary/10 text-primary border-primary/20';
       case 'Work from Home':
@@ -110,8 +110,8 @@ export function AttendanceCalendar({ records, requests = [], onDateSelect }: Att
           const displayItem = request || record;
 
           return (
-            <div 
-              key={day} 
+            <div
+              key={day}
               onClick={() => onDateSelect(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day))}
               className="h-32 border-r border-b border-border-subtle/20 p-4 transition-all duration-300 hover:bg-primary/5 cursor-pointer relative group"
             >
@@ -129,7 +129,7 @@ export function AttendanceCalendar({ records, requests = [], onDateSelect }: Att
                     {displayItem.status === 'Pending' && (
                       <span className="opacity-60 italic">Approval Pending</span>
                     )}
-                    {displayItem.checkIn && (
+                    {'checkIn' in displayItem && displayItem.checkIn && (
                       <span className="opacity-60">{displayItem.checkIn} - {displayItem.checkOut}</span>
                     )}
                   </div>

@@ -22,7 +22,7 @@ export function useBlogFilters() {
     setActiveCategory(category);
     setFilters((prev) => ({
       ...prev,
-      category: { ...prev.category as any, value: category === 'All' ? null : category },
+      category: { ...prev.category, value: category === 'All' ? null : category },
     }));
   };
 

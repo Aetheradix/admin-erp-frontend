@@ -5,8 +5,16 @@ import { Textarea } from '@/components/ui/primitives/Textarea';
 import { Calendar } from '@/components/ui/primitives/Calendar';
 import { useState } from 'react';
 
+
 interface AttendanceRequestFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: {
+    type: string;
+    reason: string;
+    startDate: string;
+    endDate: string;
+    appliedDate: string;
+    status: string;
+  }) => void;
   onCancel: () => void;
 }
 
@@ -42,7 +50,7 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-6">
           <FormField label="Request Type" required>
-            <Select 
+            <Select
               options={REQUEST_TYPES}
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.value })}
@@ -50,10 +58,10 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
           </FormField>
 
           <FormField label="Reason for Request" required>
-            <Textarea 
-              value={formData.reason} 
+            <Textarea
+              value={formData.reason}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              placeholder="Briefly explain the reason for this request..." 
+              placeholder="Briefly explain the reason for this request..."
               rows={4}
             />
           </FormField>
@@ -61,20 +69,20 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
 
         <div className="flex flex-col gap-6">
           <FormField label="Start Date" required>
-            <Calendar 
+            <Calendar
               value={formData.startDate}
               onChange={(e) => setFormData({ ...formData, startDate: e.value as Date })}
-              placeholder="Select start date" 
+              placeholder="Select start date"
               dateFormat="yy-mm-dd"
               minDate={new Date()}
             />
           </FormField>
 
           <FormField label="End Date (Optional)">
-            <Calendar 
+            <Calendar
               value={formData.endDate}
               onChange={(e) => setFormData({ ...formData, endDate: e.value as Date })}
-              placeholder="Select end date (if multiple days)" 
+              placeholder="Select end date (if multiple days)"
               dateFormat="yy-mm-dd"
               minDate={formData.startDate || new Date()}
             />
@@ -86,8 +94,8 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
         <Button variant="ghost" onClick={onCancel} className="px-8! rounded-2xl! font-bold text-muted!">
           Discard
         </Button>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={handleApply}
           className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20"
         >
