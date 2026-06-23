@@ -77,6 +77,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -92,6 +98,7 @@ export const {
   useRequestAdminElevationMutation,
   useGetAdminElevationRequestsQuery,
   useProcessAdminElevationMutation,
+  useLogoutMutation,
 } = authApiSlice;
 
 

@@ -28,6 +28,7 @@ const LoginPage = () => {
     try {
       //authLogin handles the actual mutation and state update
       await authLogin({ email, password });
+      
       navigate('/');
     } catch (err: unknown) {
       console.error('Login failed', err);

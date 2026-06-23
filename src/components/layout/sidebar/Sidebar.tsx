@@ -34,9 +34,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const TOGGLEABLE_FEATURES = ['Finance', 'Attendance', 'Blogs', 'Gallery', 'Events', 'Careers', 'Grievances', 'Guest Pass', 'Approvals'];

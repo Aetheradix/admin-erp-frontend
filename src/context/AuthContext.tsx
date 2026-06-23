@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { useLoginMutation } from '../store/api/authApiSlice';
+import { useLoginMutation, useLogoutMutation } from '../store/api/authApiSlice';
 import type { User, LoginCredentials } from '../types/auth';
 
 import { AuthContext } from './AuthContext.base';
@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [loginApi] = useLoginMutation();
+  const [logoutApi] = useLogoutMutation();
 
   const login = async (credentials: LoginCredentials) => {
     try {
@@ -40,11 +41,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await logoutApi().unwrap();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setIsAuthenticated(false);
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      throw error;
+    }
   };
 
   useEffect(() => {

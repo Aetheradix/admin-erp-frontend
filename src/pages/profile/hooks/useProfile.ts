@@ -61,9 +61,13 @@ export const useProfile = () => {
     }
   };
 
-  const handleLogout = () => {
-    authLogout();
-    window.location.href = '/auth/login';
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return {
