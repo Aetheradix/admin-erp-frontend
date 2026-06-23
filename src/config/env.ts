@@ -11,6 +11,7 @@ const HOST_MAPPING: Record<string, string> = {
 
 const getApiBaseUrl = (): string => {
     // Priority 1: Environment variable from build/deployment (Vercel, Docker, etc.)
+    console.log(`[Env Config] Checking VITE_API_BASE_URL: ${import.meta.env.VITE_API_BASE_URL}`);
     if (import.meta.env.VITE_API_BASE_URL) {
         return import.meta.env.VITE_API_BASE_URL;
     }
