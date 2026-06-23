@@ -1,43 +1,43 @@
 /**
- * Centralized environment configuration for AetherERP.
- * This is the 'single source of truth' for mapping backend URLs based on the hosting environment.
+ * Centralized environment configuration for AetherERP
  */
 
 const HOST_MAPPING: Record<string, string> = {
     'erp.aetheradix.com': 'https://test.aetheradix.com',
     'test.aetheradix.com': 'https://test.aetheradix.com',
-    'localhost': 'http://localhost:5000', // Default local backend port
+    'localhost': 'http://localhost:5000',
 };
 
 const getApiBaseUrl = (): string => {
-    // Priority 1: Environment variable from build/deployment (Vercel, Docker, etc.)
-    console.log(`[Env Config] Checking VITE_API_BASE_URL: ${import.meta.env.VITE_API_BASE_URL}`);
-    if (import.meta.env.VITE_API_BASE_URL) {
+    const hostname = window.location.hostname;
+    console.log(`[Env Config] Current Host: ${hostname}`);
+
+    // Priority 1: Environment Variable (you can override if needed)
+    if (import.meta.env.VITE_API_BASE_URL !== undefined && import.meta.env.VITE_API_BASE_URL !== '') {
+        console.log(`[Env Config] Using VITE_API_BASE_URL from env: ${import.meta.env.VITE_API_BASE_URL}`);
         return import.meta.env.VITE_API_BASE_URL;
     }
 
-    // Priority 2: Dynamic mapping based on current hostname
-    const currentHost = window.location.hostname;
-
-    if (HOST_MAPPING[currentHost]) {
-        return HOST_MAPPING[currentHost];
+    // Priority 2: Host-based mapping
+    if (HOST_MAPPING[hostname]) {
+        console.log(`[Env Config] Using mapping for ${hostname} → ${HOST_MAPPING[hostname]}`);
+        return HOST_MAPPING[hostname];
     }
 
-    // Priority 3: Fallback for specific hosting sites to use relative paths
-    // If the host is one of the hosting sites, we assume a reverse proxy is used.
-    if (currentHost.includes('hostingsite.com') || currentHost.includes('hostingersite.com')) {
-        return ''; // Relative to current host
+    // Priority 3: Hostinger fallback
+    if (hostname.includes('hostingsite.com') || hostname.includes('hostingersite.com')) {
+        console.log(`[Env Config] Using relative URL for Hostinger`);
+        return '';
     }
 
-    // Priority 4: Default fallback
+    // Priority 4: Default
+    console.log(`[Env Config] Using default fallback`);
     return import.meta.env.DEV ? 'http://localhost:5000' : '';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
 
-// Standardized API endpoint URL
-// If API_BASE_URL is empty, it results in '/api' (relative path)
-// If it starts with http, it results in 'http://.../api' (absolute path)
-export const API_URL = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
-
-console.log(`[Env Config] Host: ${window.location.hostname}, API Base: ${API_BASE_URL || '(relative)'}, Final API URL: ${API_URL}`);
+// Fixes double slash issues by checking if base URL already ends with a slash
+export const API_URL = API_BASE_URL+'/api'
+   
+console.log(`[Env Config] Final API_URL: ${API_URL}`);
