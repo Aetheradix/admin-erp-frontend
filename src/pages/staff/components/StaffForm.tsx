@@ -145,6 +145,18 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
               dateFormat="yy-mm-dd"
             />
           </FormField>
+
+          {!initialData && (
+            <FormField label="Assign Password" required id="staff-password">
+              <Input
+                id="staff-password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Set initial password"
+              />
+            </FormField>
+          )}
         </div>
       </div>
 

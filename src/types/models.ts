@@ -133,6 +133,7 @@ export interface StaffMember {
   image_url?: string;
   skills: string[];
   employee_id?: string;
+  password?: string;
 }
 
 export interface Project {
