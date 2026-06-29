@@ -8,25 +8,29 @@ import { StaffStatsSection } from './components/StaffStatsSection';
 import { useStaff } from './hooks/useStaff';
 import { Sparkles } from 'lucide-react';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
+import { useAuth } from '@/hooks/useAuth';
 
 export function StaffList() {
   const {
-    staff,
+    handleSubmit,
+    onAddMember,
     isLoading,
     isError,
-    showForm,
-    editingMember,
-    setShowForm,
     searchQuery,
     setSearchQuery,
     activeDepartment,
     setActiveDepartment,
-    handlePromote,
+    staff,
     handleEdit,
     handleDelete,
-    handleSubmit,
-    onAddMember
+    handlePromote,
+    showForm,
+    setShowForm,
+    editingMember,
   } = useStaff();
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   if (isLoading) {
     return (
@@ -49,12 +53,12 @@ export function StaffList() {
       <PageHeader
         title="Team Directory"
         description="Empower your workforce by managing profiles, roles, and expertise in a premium unified workspace."
-        primaryAction={{
+        primaryAction={isAdmin ? {
           label: 'Onboard Member',
           onClick: onAddMember,
           icon: 'pi pi-user-plus',
           className: 'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
-        }}
+        } : undefined}
       />
 
       <div className="flex flex-col gap-8">
@@ -63,7 +67,6 @@ export function StaffList() {
           onSearchChange={setSearchQuery}
           activeDepartment={activeDepartment}
           onDepartmentChange={setActiveDepartment}
-          onAddNewStaff={onAddMember}
         />
 
         <div className="flex items-center justify-between px-2">
@@ -85,9 +88,9 @@ export function StaffList() {
             <StaffCard
               key={member.id}
               member={member}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onPromote={handlePromote}
+              onEdit={isAdmin ? handleEdit : undefined}
+              onDelete={isAdmin ? handleDelete : undefined}
+              onPromote={isAdmin ? handlePromote : undefined}
             />
           ))}
 

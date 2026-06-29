@@ -21,33 +21,40 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
   return (
     <div className="group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
-      <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
-        <button
-          onClick={() => onEdit?.(String(member.id))}
-          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
-          title="Edit Profile"
-          aria-label={`Edit ${member.username || member.name}'s profile`}
-        >
-          <Edit2 size={16} />
-        </button>
-        <button
-          onClick={() => onPromote?.(String(member.id))}
-          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
-          title="Promote to Admin"
-          aria-label={`Promote ${member.username || member.name} to Administrator`}
-        >
-          <Shield size={16} />
-        </button>
-        <button
-          onClick={() => onDelete?.(String(member.id))}
-
-          className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
-          title="Remove Member"
-          aria-label={`Remove ${member.username || member.name} from staff`}
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
+      {(onEdit || onPromote || onDelete) && (
+        <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
+          {onEdit && (
+            <button
+              onClick={() => onEdit?.(String(member.id))}
+              className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+              title="Edit Profile"
+              aria-label={`Edit ${member.username || member.name}'s profile`}
+            >
+              <Edit2 size={16} />
+            </button>
+          )}
+          {onPromote && (
+            <button
+              onClick={() => onPromote?.(String(member.id))}
+              className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+              title="Promote to Admin"
+              aria-label={`Promote ${member.username || member.name} to Administrator`}
+            >
+              <Shield size={16} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete?.(String(member.id))}
+              className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
+              title="Remove Member"
+              aria-label={`Remove ${member.username || member.name} from staff`}
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="relative flex flex-col items-center text-center gap-6">
         {/* Avatar with Status Indicator */}

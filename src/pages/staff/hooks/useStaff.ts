@@ -70,13 +70,13 @@ export const useStaff = () => {
       const payload = {
         username: data.name,
         email: data.email,
-        designation: data.role,
+        role: data.role || data.designation,
         department: data.department,
-        contact_no: data.phone,
+        contact_number: data.phone || data.contact_no,
         status: data.status,
         join_date: data.joinDate,
         skills: data.skills,
-        image_url: data.image
+        image_url: data.image || data.image_url
       };
 
       if (editingMember) {

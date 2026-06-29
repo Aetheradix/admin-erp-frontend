@@ -28,7 +28,7 @@ const LoginPage = () => {
     try {
       //authLogin handles the actual mutation and state update
       await authLogin({ email, password });
-      
+
       navigate('/');
     } catch (err: unknown) {
       console.error('Login failed', err);
@@ -54,8 +54,8 @@ const LoginPage = () => {
       // Manual update since context login only takes credentials for password login currently
       if (response && response.token) {
         localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.admin));
-        window.location.href = '/dashboard';
+        localStorage.setItem('user', JSON.stringify(response.user));
+        window.location.href = '/';
       }
     } catch (err: unknown) {
       console.error('OTP Login failed', err);

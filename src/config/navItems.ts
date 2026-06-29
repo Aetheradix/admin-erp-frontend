@@ -1,13 +1,11 @@
 import {
   BarChart3,
-  Briefcase,
   Building2,
   CheckSquare,
   CreditCard,
   LayoutDashboard,
   Package,
   Settings,
-  Users,
   Users2,
   Clock,
   FileText,
@@ -65,19 +63,11 @@ export const navItems: NavItem[] = [
     description: 'Team management'
   },
   {
-    label: 'Users',
-    path: '/users',
-    icon: Users,
-    category: 'MANAGEMENT',
-    description: 'User directory'
-  },
-  {
-    label: 'Projects',
+    label: 'Team',
     path: '/staff',
-    icon: Briefcase,
-    role: 'admin',
+    icon: Users2,
     category: 'MANAGEMENT',
-    description: 'Manage projects'
+    description: 'Internal team directory'
   },
   {
     label: 'Tasks',
