@@ -7,7 +7,7 @@ export type { Reimbursement };
 export const financeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getReimbursements: builder.query<Reimbursement[], void>({
-      query: () => '/reimbursements',
+      query: () => '/reimbursements/',
       providesTags: ['Reimbursements'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
@@ -16,7 +16,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
     createReimbursement: builder.mutation<Reimbursement, Partial<Reimbursement>>({
       query: (reimbursementData) => ({
-        url: '/reimbursements',
+        url: '/reimbursements/create-claim',
         method: 'POST',
         body: {
           title: reimbursementData.item,
