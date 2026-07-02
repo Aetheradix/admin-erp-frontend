@@ -1,3 +1,4 @@
+import { useProfile } from '../profile/hooks/useProfile';
 import CalendarCard from './components/CalendarCard';
 import ProfitChartCard from './components/ProfitChartCard';
 import { ProjectList } from './components/ProjectList';
@@ -7,7 +8,7 @@ import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const { projects, stats } = useDashboardData();
-
+  const {user} = useProfile();
   return (
     <div className="min-h-screen pb-12">
       <h1 className="sr-only">AetherERP Dashboard</h1>
@@ -20,7 +21,7 @@ const Dashboard = () => {
         className="mb-8"
       >
         <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Operational Overview</span>
-        <h2 className="text-4xl font-extrabold text-foreground tracking-tight mt-1">Hello, Gullu Don</h2>
+         <h2 className="text-4xl font-extrabold text-foreground tracking-tight mt-1">Hello, {user.name} </h2>
       </motion.div>
 
       <div className="grid grid-cols-12 gap-8">
