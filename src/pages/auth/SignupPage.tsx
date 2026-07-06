@@ -34,6 +34,25 @@ const SignupPage = () => {
     }
   }, [deptOptions, department]);
 
+  const getPasswordScore = (password:string) => {
+      let score =  0;
+      if (password.length >= 8) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[a-z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+
+      return score;
+  } 
+   const passwordScore = getPasswordScore(password);
+
+    const passwordStrength = (() => {
+      if (!password) return null;
+      if (passwordScore <= 2) return { label: "Weak", color: "text-red-500" };
+      if (passwordScore === 3 || passwordScore === 4) return { label: "Medium", color: "text-yellow-500" };
+      return { label: "Strong", color: "text-green-600" };
+    })();
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -142,6 +161,11 @@ const SignupPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="h-14 rounded-2xl!"
           />
+          {password && passwordStrength && (
+           <p className={`text-xs mt-2 font-semibold ${passwordStrength.color}`}>
+            Password strength: {passwordStrength.label}
+           </p>
+          )}
         </FormField>
 
         <FormField label="Confirm Password" required>
