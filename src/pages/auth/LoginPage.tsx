@@ -24,20 +24,74 @@ const LoginPage = () => {
   const [, { isLoading: isPasswordLoading }] = useLoginMutation();
   const [requestOTP, { isLoading: isOtpRequestLoading }] = useRequestOTPMutation();
   const [loginWithOTP, { isLoading: isOtpLoginLoading }] = useLoginWithOTPMutation();
+  
+  // const handlePasswordLogin = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   try {
+  //     //authLogin handles the actual mutation and state update
+  //     await authLogin({ email, password });
 
-  const handlePasswordLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      //authLogin handles the actual mutation and state update
-      await authLogin({ email, password });
+  //     navigate('/');
+  //   } catch (err: unknown) {
+  //     console.error('Login failed', err);
+  //     showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }).data?.message || 'Login failed', life: 3000 });
+  //   }
+  // };
 
-      navigate('/');
-    } catch (err: unknown) {
-      console.error('Login failed', err);
-      showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }).data?.message || 'Login failed', life: 3000 });
-    }
-  };
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+ const handlePasswordLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!email.trim()) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Email is required",
+      life: 3000,
+    });
+    return;
+  }
+
+   if (!emailRegex.test(email)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Please enter a valid email address",
+      life: 3000,
+    });
+    return;
+   }
+
+
+   if (!password.trim()) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Password is required",
+      life: 3000,
+    });
+    return;
+   }
+
+   try {
+    // authLogin handles the actual mutation and state update
+    await authLogin({ email, password });
+
+    navigate("/");
+   } 
+    catch (err: unknown) {
+    console.error("Login failed", err);
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail:
+        (err as { data?: { message?: string } }).data?.message ||
+        "Login failed",
+      life: 3000,
+    });
+  }
+};
   const handleRequestOTP = async () => {
     try {
       await requestOTP({ email }).unwrap();
