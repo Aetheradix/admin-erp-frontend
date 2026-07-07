@@ -53,27 +53,170 @@ const SignupPage = () => {
       return { label: "Strong", color: "text-green-600" };
     })();
 
+  // const handleSignup = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (password !== confirmPassword) {
+  //     showToast({ severity: 'error', summary: 'Error', detail: "Passwords don't match", life: 3000 });
+  //     return;
+  //   }
+  //   try {
+  //     await register({
+  //       username,
+  //       email,
+  //       password,
+  //       contact_number: contactNumber,
+  //       department: department || 'Engineering'
+  //     }).unwrap();
+  //     setIsSuccess(true);
+  //   } catch (err: unknown) {
+  //     const error = err as { data?: { message?: string } };
+  //     showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Signup failed', life: 3000 });
+  //     console.error('Signup failed', err);
+  //   }
+  // };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[4-9]\d{9}$/; 
+
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      showToast({ severity: 'error', summary: 'Error', detail: "Passwords don't match", life: 3000 });
-      return;
-    }
-    try {
-      await register({
-        username,
-        email,
-        password,
-        contact_number: contactNumber,
-        department: department || 'Engineering'
-      }).unwrap();
-      setIsSuccess(true);
-    } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Signup failed', life: 3000 });
-      console.error('Signup failed', err);
-    }
-  };
+  e.preventDefault();
+
+  // Username validation
+  if (!username.trim()) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Full name is required",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Email validation
+  if (!email.trim()) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Email is required",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (!emailRegex.test(email)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Please enter a valid email address",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Contact number validation
+  if (!contactNumber.trim()) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Contact number is required",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (!phoneRegex.test(contactNumber)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Enter a valid 10-digit mobile number",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Password validation
+  if (password.length < 8) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Password must be at least 8 characters long",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Password must contain at least one uppercase letter",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (!/[a-z]/.test(password)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Password must contain at least one lowercase letter",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (!/[0-9]/.test(password)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Password must contain at least one number",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Password must contain at least one special character",
+      life: 3000,
+    });
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: "Passwords don't match",
+      life: 3000,
+    });
+    return;
+  }
+
+  try {
+    await register({
+      username,
+      email,
+      password,
+      contact_number: contactNumber,
+      department: department || "Engineering",
+    }).unwrap();
+
+    setIsSuccess(true);
+  } catch (err: unknown) {
+    const error = err as { data?: { message?: string } };
+
+    showToast({
+      severity: "error",
+      summary: "Error",
+      detail: error.data?.message || "Signup failed",
+      life: 3000,
+    });
+
+    console.error("Signup failed", err);
+  }
+};
 
   if (isSuccess) {
     return (
@@ -136,7 +279,9 @@ const SignupPage = () => {
               type="text"
               placeholder="e.g. +91 9876543210"
               value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
+              onChange={(e) =>
+              setContactNumber(e.target.value.replace(/\D/g, "").slice(0, 10))
+              }
               className="h-14 rounded-2xl!"
             />
           </FormField>
