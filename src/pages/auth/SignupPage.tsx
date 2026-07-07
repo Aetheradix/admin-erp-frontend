@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/primitives/Select';
 import { useGetDepartmentsQuery, useRegisterMutation } from '@/store/api/authApiSlice';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
+import { Eye,EyeOff } from 'lucide-react';
 const SignupPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ const SignupPage = () => {
   const [contactNumber, setContactNumber] = useState('');
   const [department, setDepartment] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-
+  const [showPassword,setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const { data: departmentsData, isLoading: isLoadingDepts } = useGetDepartmentsQuery({});
@@ -154,13 +154,27 @@ const SignupPage = () => {
         </div>
 
         <FormField label="Create Password" required>
+          <div className='relative'>
           <Input
-            type="password"
+            type={showPassword?"text":"password"}
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="h-14 rounded-2xl!"
           />
+          <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+         {showPassword ? (
+          <Eye className="h-5 w-5" />
+         ) : 
+         (
+          <EyeOff className="h-5 w-5" />
+         )}
+         </button>
+         </div>
           {password && passwordStrength && (
            <p className={`text-xs mt-2 font-semibold ${passwordStrength.color}`}>
             Password strength: {passwordStrength.label}

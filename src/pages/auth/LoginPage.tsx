@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/primitives/Button';
 import { useLoginMutation, useRequestOTPMutation, useLoginWithOTPMutation } from '@/store/api/authApiSlice';
 import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage = () => {
+  const [showPassword,setShowPassword] = useState(false); 
   const [loginMode, setLoginMode] = useState<'password' | 'otp'>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -96,15 +98,29 @@ const LoginPage = () => {
             />
           </FormField>
 
-          <FormField label="Password" required>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-14 rounded-2xl!"
-            />
-          </FormField>
+        <FormField label="Password" required>
+         <div className="relative">
+          <Input
+          type={showPassword ? "text" : "password"}
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="h-14 !rounded-2xl pr-12"
+          />
+         <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+         {showPassword ? (
+          <Eye className="h-5 w-5" />
+         ) : 
+         (
+          <EyeOff className="h-5 w-5" />
+         )}
+         </button>
+         </div>
+       </FormField>
 
           <div className="flex items-center justify-between">
             <Link to="/auth/forgot-password" title="Forgot Password" className="text-xs font-black text-primary hover:underline">
