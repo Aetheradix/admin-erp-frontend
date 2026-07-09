@@ -1,4 +1,4 @@
-import { useState } from 'react';
+ import { useEffect, useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Calendar, User } from 'lucide-react';
@@ -7,28 +7,131 @@ import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Button } from '@/components/ui/primitives/Button';
+import { useGetProjectsQuery } from '@/store/api/projectApiSlice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
+import TextArea from 'antd/es/input/TextArea';
 
 interface Task {
     id: number;
     title: string;
+    description:string;
     assignee: string;
     priority: 'High' | 'Medium' | 'Low';
     dueDate: string;
     status: 'To Do' | 'In Progress' | 'Done';
+    remark?:string;
     project: string;
+    duration:string;
+    assigneeTo:string;
 }
+const USERS = [
+    { label: 'Maya Johnson', value: 1 },
+    { label: 'David Kim', value: 2 },
+    { label: 'Alex Rivera', value: 3 },
+    { label: 'James Wu', value: 4 },
+];
 
 const initialTasks: Task[] = [
-    { id: 1, title: 'Design new dashboard layout', assignee: 'Maya Johnson', priority: 'High', dueDate: '2026-06-15', status: 'In Progress', project: 'Decom App' },
-    { id: 2, title: 'Implement authentication flow', assignee: 'David Kim', priority: 'High', dueDate: '2026-06-12', status: 'In Progress', project: 'SkyLux' },
-    { id: 3, title: 'Write API documentation', assignee: 'Alex Rivera', priority: 'Medium', dueDate: '2026-06-20', status: 'To Do', project: 'Decom App' },
-    { id: 4, title: 'Database schema optimization', assignee: 'James Wu', priority: 'High', dueDate: '2026-06-11', status: 'Done', project: 'Biofarm' },
-    { id: 5, title: 'User onboarding emails', assignee: 'Emily Davis', priority: 'Low', dueDate: '2026-06-25', status: 'To Do', project: 'DushMash' },
-    { id: 6, title: 'Payment gateway integration', assignee: 'Sarah Chen', priority: 'High', dueDate: '2026-06-14', status: 'In Progress', project: 'PAD move' },
-    { id: 7, title: 'Mobile responsive fixes', assignee: 'Maya Johnson', priority: 'Medium', dueDate: '2026-06-18', status: 'To Do', project: 'SkyLux' },
-    { id: 8, title: 'Performance audit report', assignee: 'Rahul Patel', priority: 'Low', dueDate: '2026-06-22', status: 'Done', project: 'Decom App' },
-    { id: 9, title: 'CI/CD pipeline setup', assignee: 'James Wu', priority: 'Medium', dueDate: '2026-06-16', status: 'In Progress', project: 'Biofarm' },
-    { id: 10, title: 'Client feedback integration', assignee: 'Lisa Park', priority: 'Medium', dueDate: '2026-06-19', status: 'To Do', project: 'PAD move' },
+  {
+    id: 1,
+    title: 'Design new dashboard layout',
+    description: 'Create a modern and user-friendly dashboard with updated navigation, widgets, and responsive layouts.',
+    assignee: 'Maya Johnson',
+    priority: 'High',
+    dueDate: '2026-06-15',
+    status: 'In Progress',
+    project: 'Decom App',
+  },
+  {
+    id: 2,
+    title: 'Implement authentication flow',
+    description: 'Develop secure login, registration, password reset, and session management using JWT authentication.',
+    assignee: 'David Kim',
+    priority: 'High',
+    dueDate: '2026-06-12',
+    status: 'In Progress',
+    project: 'SkyLux',
+  },
+  {
+    id: 3,
+    title: 'Write API documentation',
+    description: 'Document all REST API endpoints, request/response formats, authentication, and usage examples.',
+    assignee: 'Alex Rivera',
+    priority: 'Medium',
+    dueDate: '2026-06-20',
+    status: 'To Do',
+    project: 'Decom App',
+  },
+  {
+    id: 4,
+    title: 'Database schema optimization',
+    description: 'Review database tables, add indexes where necessary, and optimize queries for better performance.',
+    assignee: 'James Wu',
+    priority: 'High',
+    dueDate: '2026-06-11',
+    status: 'Done',
+    project: 'Biofarm',
+  },
+  {
+    id: 5,
+    title: 'User onboarding emails',
+    description: 'Design and implement a welcome email sequence to guide new users through key product features.',
+    assignee: 'Emily Davis',
+    priority: 'Low',
+    dueDate: '2026-06-25',
+    status: 'To Do',
+    project: 'DushMash',
+  },
+  {
+    id: 6,
+    title: 'Payment gateway integration',
+    description: 'Integrate payment processing with support for secure transactions, refunds, and webhook handling.',
+    assignee: 'Sarah Chen',
+    priority: 'High',
+    dueDate: '2026-06-14',
+    status: 'In Progress',
+    project: 'PAD move',
+  },
+  {
+    id: 7,
+    title: 'Mobile responsive fixes',
+    description: 'Resolve UI issues across mobile devices and ensure layouts adapt correctly to different screen sizes.',
+    assignee: 'Maya Johnson',
+    priority: 'Medium',
+    dueDate: '2026-06-18',
+    status: 'To Do',
+    project: 'SkyLux',
+  },
+  {
+    id: 8,
+    title: 'Performance audit report',
+    description: 'Analyze application performance metrics and prepare a report with optimization recommendations.',
+    assignee: 'Rahul Patel',
+    priority: 'Low',
+    dueDate: '2026-06-22',
+    status: 'Done',
+    project: 'Decom App',
+  },
+  {
+    id: 9,
+    title: 'CI/CD pipeline setup',
+    description: 'Configure automated build, testing, and deployment pipelines for continuous integration and delivery.',
+    assignee: 'James Wu',
+    priority: 'Medium',
+    dueDate: '2026-06-16',
+    status: 'In Progress',
+    project: 'Biofarm',
+  },
+  {
+    id: 10,
+    title: 'Client feedback integration',
+    description: 'Review client feedback, prioritize requested improvements, and implement approved changes.',
+    assignee: 'Lisa Park',
+    priority: 'Medium',
+    dueDate: '2026-06-19',
+    status: 'To Do',
+    project: 'PAD move',
+  },
 ];
 
 const PRIORITIES = [
@@ -38,9 +141,10 @@ const PRIORITIES = [
 ];
 
 const STATUSES = [
-    { label: 'To Do', value: 'To Do' },
     { label: 'In Progress', value: 'In Progress' },
-    { label: 'Done', value: 'Done' },
+    {label:"Completed",value:"Completed"},
+    {label:"Pending",value:"Pending"},
+    {label:"On-Going",value:"On-Going"}
 ];
 
 const PROJECTS = [
@@ -63,16 +167,49 @@ const statusColors: Record<string, string> = {
     Done: 'bg-success/5 border-success/20',
 };
 
-const emptyForm = { title: '', assignee: '', priority: '' as string, dueDate: '', status: 'To Do' as string, project: '' };
+const emptyForm = {
+    title: '',
+    description: '',
+    assignee: null as number | null,
+    priority: '',
+    dueDate: '',
+    status: 'Pending',
+    project: null as number | null,
+    duration: '',
+    assigneeTo: null as number | null,
+};
 
 export function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [activeTab, setActiveTab] = useState('All');
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState(emptyForm);
+    const [users, setUsers] = useState<{ label: string; value: number }[]>([]);
+    const [projects, setProjects] = useState<{ label: string; value: number }[]>([]);
     const TABS = ['All', 'To Do', 'In Progress', 'Done'];
-
+   const { data: usersData=[] } = useGetUsersQuery();
+    const { data: projectsData=[] } = useGetProjectsQuery();
     const filtered = activeTab === 'All' ? tasks : tasks.filter(t => t.status === activeTab);
+
+    useEffect(() => {
+    if (usersData?.length) {
+        setUsers(
+            usersData.map((u: any) => ({
+                label: u.user_name,
+                value: u.user_id,
+            }))
+        );
+    }
+
+    if (projectsData?.length) {
+        setProjects(
+            projectsData.map((p: any) => ({
+                label: p.project_name,
+                value: p.project_id,
+            }))
+        );
+    }
+}, [usersData, projectsData]);
 
     const counts = {
         'To Do': tasks.filter(t => t.status === 'To Do').length,
@@ -80,16 +217,20 @@ export function TasksPage() {
         Done: tasks.filter(t => t.status === 'Done').length,
     };
 
+
     const handleSubmit = () => {
         if (!form.title || !form.assignee || !form.priority || !form.project) return;
         const newTask: Task = {
             id: Date.now(),
             title: form.title,
+            description:form.description,
             assignee: form.assignee,
             priority: form.priority as Task['priority'],
             dueDate: form.dueDate || new Date().toISOString().slice(0, 10),
             status: form.status as Task['status'],
             project: form.project,
+            duration:form.duration,
+            assigneeTo:form.assigneeTo,
         };
         setTasks([newTask, ...tasks]);
         setForm(emptyForm);
@@ -146,14 +287,38 @@ export function TasksPage() {
                         <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Task Title</label>
                         <Input placeholder="e.g. Design new feature" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                     </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Task Description</label>
+                        <TextArea placeholder="e.g. Add a Sidebar" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Assignee</label>
-                            <Input placeholder="e.g. John Doe" value={form.assignee} onChange={(e) => setForm({ ...form, assignee: e.target.value })} />
+                            {/* <Input placeholder="e.g. John Doe" value={form.assignee} onChange={(e) => setForm({ ...form, assignee: e.target.value })} /> */}
+                            <Select
+                            options={users}
+                            value={form.assignee}
+                            onChange={(e) =>setForm({...form,assignee: e.value,})}
+                            placeholder="Assigned By"
+                             />
                         </div>
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Due Date</label>
                             <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Task Duration</label>
+                            <Input placeholder="e.g. 7 Hours" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Assiged To</label>
+                            {/* <Input placeholder="e.g. John Doe" value={form.assigneeTo} onChange={(e) => setForm({ ...form, assigneeTo: e.target.value })} /> */}
+                        <Select
+                        options={users}
+                        value={form.assigneeTo}
+                        onChange={(e) =>setForm({...form,assigneeTo: e.value,})} placeholder="Assigned To"
+                        />
                         </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
@@ -167,7 +332,7 @@ export function TasksPage() {
                         </div>
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">Project</label>
-                            <Select options={PROJECTS} value={form.project} onChange={(e) => setForm({ ...form, project: e.value })} placeholder="Project" />
+                            <Select options={projects} value={form.project} onChange={(e) => setForm({ ...form, project: e.value })} placeholder="Project" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
