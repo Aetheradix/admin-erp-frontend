@@ -14,123 +14,138 @@ import TextArea from 'antd/es/input/TextArea';
 interface Task {
     id: number;
     title: string;
-    description:string;
-    assignee: string;
+    description: string;
+    assignee: number;
     priority: 'High' | 'Medium' | 'Low';
     dueDate: string;
-    status: 'To Do' | 'In Progress' | 'Done';
-    remark?:string;
-    project: string;
-    duration:string;
-    assigneeTo:string;
+    status: 'To Do' | 'In Progress' | 'Done' | 'Pending' | 'On-Going';
+    remark?: string;
+    project: number;
+    duration: string;
+    assigneeTo: number | null;
 }
-const USERS = [
-    { label: 'Maya Johnson', value: 1 },
-    { label: 'David Kim', value: 2 },
-    { label: 'Alex Rivera', value: 3 },
-    { label: 'James Wu', value: 4 },
-];
+//
 
 const initialTasks: Task[] = [
   {
     id: 1,
     title: 'Design new dashboard layout',
     description: 'Create a modern and user-friendly dashboard with updated navigation, widgets, and responsive layouts.',
-    assignee: 'Maya Johnson',
+    assignee: 1,
     priority: 'High',
     dueDate: '2026-06-15',
     status: 'In Progress',
-    project: 'Decom App',
+    project: 1,
+    duration: '5 Days',
+    assigneeTo: 2,
   },
   {
     id: 2,
     title: 'Implement authentication flow',
     description: 'Develop secure login, registration, password reset, and session management using JWT authentication.',
-    assignee: 'David Kim',
+    assignee: 2,
     priority: 'High',
     dueDate: '2026-06-12',
     status: 'In Progress',
-    project: 'SkyLux',
+    project: 2,
+    duration: '7 Days',
+    assigneeTo: 3,
   },
   {
     id: 3,
     title: 'Write API documentation',
     description: 'Document all REST API endpoints, request/response formats, authentication, and usage examples.',
-    assignee: 'Alex Rivera',
+    assignee: 3,
     priority: 'Medium',
     dueDate: '2026-06-20',
     status: 'To Do',
-    project: 'Decom App',
+    project: 1,
+    duration: '3 Days',
+    assigneeTo: 1,
   },
   {
     id: 4,
     title: 'Database schema optimization',
     description: 'Review database tables, add indexes where necessary, and optimize queries for better performance.',
-    assignee: 'James Wu',
+    assignee: 4,
     priority: 'High',
     dueDate: '2026-06-11',
     status: 'Done',
-    project: 'Biofarm',
+    project: 3,
+    duration: '4 Days',
+    assigneeTo: 2,
   },
   {
     id: 5,
     title: 'User onboarding emails',
     description: 'Design and implement a welcome email sequence to guide new users through key product features.',
-    assignee: 'Emily Davis',
+    assignee: 5,
     priority: 'Low',
     dueDate: '2026-06-25',
     status: 'To Do',
-    project: 'DushMash',
+    project: 4,
+    duration: '6 Days',
+    assigneeTo: 3,
   },
   {
     id: 6,
     title: 'Payment gateway integration',
     description: 'Integrate payment processing with support for secure transactions, refunds, and webhook handling.',
-    assignee: 'Sarah Chen',
+    assignee: 6,
     priority: 'High',
     dueDate: '2026-06-14',
     status: 'In Progress',
-    project: 'PAD move',
+    project: 5,
+    duration: '10 Days',
+    assigneeTo: 4,
   },
   {
     id: 7,
     title: 'Mobile responsive fixes',
     description: 'Resolve UI issues across mobile devices and ensure layouts adapt correctly to different screen sizes.',
-    assignee: 'Maya Johnson',
+    assignee: 1,
     priority: 'Medium',
     dueDate: '2026-06-18',
     status: 'To Do',
-    project: 'SkyLux',
+    project: 2,
+    duration: '2 Days',
+    assigneeTo: 5,
   },
   {
     id: 8,
     title: 'Performance audit report',
     description: 'Analyze application performance metrics and prepare a report with optimization recommendations.',
-    assignee: 'Rahul Patel',
+    assignee: 7,
     priority: 'Low',
     dueDate: '2026-06-22',
     status: 'Done',
-    project: 'Decom App',
+    project: 1,
+    duration: '5 Days',
+    assigneeTo: 6,
   },
   {
     id: 9,
     title: 'CI/CD pipeline setup',
     description: 'Configure automated build, testing, and deployment pipelines for continuous integration and delivery.',
-    assignee: 'James Wu',
+    assignee: 4,
     priority: 'Medium',
     dueDate: '2026-06-16',
     status: 'In Progress',
-    project: 'Biofarm',
+    project: 3,
+    duration: '8 Days',
+    assigneeTo: 7,
   },
   {
     id: 10,
     title: 'Client feedback integration',
     description: 'Review client feedback, prioritize requested improvements, and implement approved changes.',
-    assignee: 'Lisa Park',
+    assignee: 8,
     priority: 'Medium',
     dueDate: '2026-06-19',
     status: 'To Do',
-    project: 'PAD move',
+    project: 5,
+    duration: '4 Days',
+    assigneeTo: 1,
   },
 ];
 
@@ -147,13 +162,13 @@ const STATUSES = [
     {label:"On-Going",value:"On-Going"}
 ];
 
-const PROJECTS = [
-    { label: 'Decom App', value: 'Decom App' },
-    { label: 'SkyLux', value: 'SkyLux' },
-    { label: 'DushMash', value: 'DushMash' },
-    { label: 'Biofarm', value: 'Biofarm' },
-    { label: 'PAD move', value: 'PAD move' },
-];
+// const PROJECTS = [
+//     { label: 'Decom App', value: 'Decom App' },
+//     { label: 'SkyLux', value: 'SkyLux' },
+//     { label: 'DushMash', value: 'DushMash' },
+//     { label: 'Biofarm', value: 'Biofarm' },
+//     { label: 'PAD move', value: 'PAD move' },
+// ];
 
 const priorityColors: Record<string, string> = {
     High: 'bg-error/10 text-error',
