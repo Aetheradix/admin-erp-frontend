@@ -165,3 +165,22 @@ export interface ProjectStatsData {
   projects?: { active?: number };
   employees?: { total?: number };
 }
+
+export interface Task {
+  task_title: string;
+  task_description: string;
+  allocated_to: number;
+  allocated_by: number;
+  task_status: 'Completed' | 'Pending' | 'On-Going';
+  remark?: string | null;
+  allotment_date?: Date | null;
+  duration?: string | null;
+  project_id?: number | null;
+}
+
+export interface TaskStatsData {
+  total?: number;
+  completed?: number;
+  pending?: number;
+  inProgress?: number;
+}
