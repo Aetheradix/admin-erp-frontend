@@ -44,13 +44,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await logoutApi().unwrap();
+    } catch (error) {
+      // API call failed (e.g. token already expired), but we still clear
+      // the local session so the user is not stuck in a broken auth state.
+      console.warn('Logout API call failed, clearing session locally:', error);
+    } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setIsAuthenticated(false);
       setUser(null);
-    } catch (error) {
-      console.error('Logout failed:', error);
-      throw error;
     }
   };
 

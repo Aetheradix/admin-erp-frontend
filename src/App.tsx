@@ -47,7 +47,6 @@ function App() {
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/approve-admin" element={<AdminApproval />} />
 
-
         {/* Redirects for convenience */}
         <Route path="/login" element={<Navigate to="/auth/login" replace />} />
         <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
@@ -56,6 +55,9 @@ function App() {
         <Route element={<ProtectedApp />}>
           <Route path="/*" element={<AppFeature />} />
         </Route>
+
+        {/* Catch-all: redirect any unresolved route back to root */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );
