@@ -41,13 +41,64 @@ const LoadingScreen = () => (
 
 const AppFeature = () => {
   const { user } = useAuth();
-  const { data: permissions = {}, isLoading } = useGetMyPermissionsQuery(undefined, { skip: !user });
+  const { isLoading } = useGetMyPermissionsQuery(undefined, { skip: !user });
 
   if (isLoading) return <LoadingScreen />;
 
   const isAllowed = (feature: string) => {
-    if (user?.role === 'admin') return true;
-    return permissions[feature] !== false;
+    // 1. Load section config
+    const savedConfig = localStorage.getItem('erp_sections_config');
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        if (config.visibleSections && config.visibleSections[feature] === false) {
+          return false;
+        }
+      } catch {
+        // fall through
+      }
+    }
+
+    // 2. Load role config
+    const labelToPermissionKey = (label: string): string | null => {
+      const lower = label.toLowerCase();
+      if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
+      if (lower === 'tasks') return 'projects';
+      if (lower === 'finance') return 'finance';
+      if (lower === 'inventory') return 'inventory';
+      if (lower === 'settings') return 'settings';
+      if (lower === 'analytics') return 'reports';
+      return null;
+    };
+
+    const permKey = labelToPermissionKey(feature);
+    if (permKey) {
+      const savedRoles = localStorage.getItem('erp_roles');
+      if (savedRoles) {
+        try {
+          const erpRoles = JSON.parse(savedRoles) as any[];
+          const currentUserRoleName = (() => {
+            if (!user) return 'Viewer';
+            const desc = user.designation?.toLowerCase() || '';
+            if (desc.includes('super admin')) return 'Super Admin';
+            if (desc.includes('admin')) return 'Admin';
+            if (desc.includes('manager')) return 'Manager';
+            if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
+
+            if (user.role === 'admin') return 'Admin';
+            return 'Viewer';
+          })();
+          const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
+          if (roleObj && roleObj.permissions[permKey] === false) {
+            return false;
+          }
+        } catch {
+          // fall through
+        }
+      }
+    }
+
+    return true;
   };
 
   return (

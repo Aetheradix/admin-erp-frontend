@@ -110,20 +110,22 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
 
         {/* Contact Quick Actions */}
         <div className="grid grid-cols-2 gap-3 w-full pt-2">
-          <button
+          <a
+            href={`mailto:${member.email}`}
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
-            aria-label={`Send email to ${member.name}`}
+            aria-label={`Send email to ${member.name || member.username}`}
           >
             <Mail size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Email</span>
-          </button>
-          <button
+          </a>
+          <a
+            href={`tel:${member.phone || member.contact_no || ''}`}
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
-            aria-label={`Call ${member.name}`}
+            aria-label={`Call ${member.name || member.username}`}
           >
             <Phone size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Call</span>
-          </button>
+          </a>
         </div>
       </div>
     </div>

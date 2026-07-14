@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-interface UserRecord {
+export interface UserRecord {
     id: number;
     name: string;
     email: string;
@@ -20,7 +20,7 @@ interface UserRecord {
     avatar: string;
 }
 
-const initialUsers: UserRecord[] = [
+export const initialUsers: UserRecord[] = [
     { id: 1, name: 'Sarah Chen', email: 'sarah.chen@aetheradix.com', role: 'Super Admin', department: 'Engineering', status: 'Active', avatar: 'SC' },
     { id: 2, name: 'James Wilson', email: 'james.wilson@aetheradix.com', role: 'Admin', department: 'Operations', status: 'Active', avatar: 'JW' },
     { id: 3, name: 'Maya Johnson', email: 'maya.johnson@aetheradix.com', role: 'Manager', department: 'Design', status: 'Active', avatar: 'MJ' },

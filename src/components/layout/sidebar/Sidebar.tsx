@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { navItems } from '@/config/navItems';
-import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
 import { Button } from '@/components/ui/primitives/Button';
 
 import { SidebarLogo } from './SidebarLogo';
@@ -22,9 +21,6 @@ const NAV_CATEGORIES = ['OVERVIEW', 'MANAGEMENT', 'SYSTEM'] as const;
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { data: permissions = {} } = useGetMyPermissionsQuery(undefined, {
-    skip: !user
-  });
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -43,22 +39,88 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
-  const TOGGLEABLE_FEATURES = ['Finance', 'Attendance', 'Blogs', 'Gallery', 'Events', 'Careers', 'Grievances', 'Guest Pass', 'Approvals'];
+  const [configVersion, setConfigVersion] = useState(0);
 
+  useEffect(() => {
+    const handleConfigChange = () => {
+      setConfigVersion((v) => v + 1);
+    };
+    window.addEventListener('erp_config_changed', handleConfigChange);
+    return () => {
+      window.removeEventListener('erp_config_changed', handleConfigChange);
+    };
+  }, []);
+
+  const sectionConfig = (() => {
+    const saved = localStorage.getItem('erp_sections_config');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // fall through
+      }
+    }
+    return {
+      maxSections: 12,
+      visibleSections: {} as Record<string, boolean>
+    };
+  })();
+
+  const erpRoles = (() => {
+    const saved = localStorage.getItem('erp_roles');
+    if (saved) {
+      try {
+        return JSON.parse(saved) as any[];
+      } catch {
+        // fall through
+      }
+    }
+    return [];
+  })();
+
+  const currentUserRoleName = (() => {
+    if (!user) return 'Viewer';
+    const desc = user.designation?.toLowerCase() || '';
+    if (desc.includes('super admin')) return 'Super Admin';
+    if (desc.includes('admin')) return 'Admin';
+    if (desc.includes('manager')) return 'Manager';
+    if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
+
+    if (user.role === 'admin') return 'Admin';
+    return 'Viewer';
+  })();
+
+  const labelToPermissionKey = (label: string): string | null => {
+    const lower = label.toLowerCase();
+    if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
+    if (lower === 'tasks') return 'projects';
+    if (lower === 'finance') return 'finance';
+    if (lower === 'inventory') return 'inventory';
+    if (lower === 'settings') return 'settings';
+    if (lower === 'analytics') return 'reports';
+    return null;
+  };
 
   const filteredNavItems = navItems.filter((item) => {
     // 1. Basic Role Check
     if (item.role && item.role !== user?.role) return false;
 
-    // 2. Feature Toggle Check for non-admins
-    if (user?.role !== 'admin' && TOGGLEABLE_FEATURES.includes(item.label)) {
-      // If the feature is explicitly disabled, hide it
-      if (permissions[item.label] === false) return false;
+    // 2. Global Section Toggle check
+    if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) return false;
+
+    // 3. Role-based check
+    const permKey = labelToPermissionKey(item.label);
+    if (permKey) {
+      const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
+      if (roleObj && roleObj.permissions[permKey] === false) {
+        return false;
+      }
     }
 
     return true;
   });
 
+  const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
 
   return (
     <motion.aside
@@ -92,12 +154,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <SidebarLogo isOpen={isOpen} />
 
-      <nav className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth">
+      <nav key={`nav-config-${configVersion}`} className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth">
         {NAV_CATEGORIES.map((category) => (
           <NavSection
             key={category}
             category={category}
-            items={filteredNavItems.filter((item) => item.category === category)}
+            items={slicedNavItems.filter((item) => item.category === category)}
             isOpen={isOpen}
           />
         ))}
