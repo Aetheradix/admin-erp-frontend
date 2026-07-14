@@ -208,8 +208,8 @@ export function RolesPage() {
                                             });
                                         }}
                                         className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 border ${active
-                                                ? 'bg-primary/5 border-primary/20 text-primary'
-                                                : 'bg-surface-subtle/40 border-border-subtle text-muted hover:border-muted/30'
+                                            ? 'bg-primary/5 border-primary/20 text-primary'
+                                            : 'bg-surface-subtle/40 border-border-subtle text-muted hover:border-muted/30'
                                             }`}
                                     >
                                         <div className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-primary' : 'bg-muted/40'}`} />
