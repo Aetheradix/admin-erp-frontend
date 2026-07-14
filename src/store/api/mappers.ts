@@ -197,19 +197,45 @@ export const mapStaffMember = (member: Record<string, unknown>): StaffMember => 
   employee_id: member.employee_id ? String(member.employee_id) : undefined,
 });
 
+// export const mapProject = (project: Record<string, unknown>): Project => ({
+//   id: project.id as string | number,
+//   title: String(project.title ?? project.name ?? ''),
+//   name: String(project.name ?? ''),
+//   client: String(project.client ?? 'Internal'),
+//   progress: Number(project.progress ?? 0),
+//   status: String(project.status ?? 'Ongoing'),
+//   category: String(project.category ?? 'Enterprise'),
+//   leadId: String(project.leadId ?? project.lead_id ?? 'N/A'),
+//   startDate: project.startDate
+//     ? String(project.startDate)
+//     : project.created_at
+//       ? new Date(String(project.created_at)).toISOString().split('T')[0]
+//       : '2024-01-01',
+//   endDate: project.endDate ? String(project.endDate) : project.end_date ? String(project.end_date) : undefined,
+// });
+
 export const mapProject = (project: Record<string, unknown>): Project => ({
-  id: project.id as string | number,
-  title: String(project.title ?? project.name ?? ''),
-  name: String(project.name ?? ''),
-  client: String(project.client ?? 'Internal'),
-  progress: Number(project.progress ?? 0),
-  status: String(project.status ?? 'Ongoing'),
-  category: String(project.category ?? 'Enterprise'),
-  leadId: String(project.leadId ?? project.lead_id ?? 'N/A'),
-  startDate: project.startDate
-    ? String(project.startDate)
-    : project.created_at
-      ? new Date(String(project.created_at)).toISOString().split('T')[0]
-      : '2024-01-01',
-  endDate: project.endDate ? String(project.endDate) : project.end_date ? String(project.end_date) : undefined,
+  id: project.project_id as string | number,
+
+  title: String(project.project_name ?? ''),
+
+  name: String(project.project_name ?? ''),
+
+  client: 'Internal',
+
+  progress: 0,
+
+  status: String(project.project_status ?? 'Planning'),
+
+  category: 'Enterprise',
+
+  leadId: String(project.project_manager ?? 'N/A'),
+
+  startDate: project.start_date
+    ? String(project.start_date)
+    : '',
+
+  endDate: project.end_date
+    ? String(project.end_date)
+    : undefined,
 });
