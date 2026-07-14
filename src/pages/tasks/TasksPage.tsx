@@ -11,6 +11,7 @@ import { useGetProjectsQuery } from '@/store/api/projectApiSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import TextArea from 'antd/es/input/TextArea';
 
+
 interface Task {
     id: number;
     title: string;
@@ -162,13 +163,7 @@ const STATUSES = [
     {label:"On-Going",value:"On-Going"}
 ];
 
-// const PROJECTS = [
-//     { label: 'Decom App', value: 'Decom App' },
-//     { label: 'SkyLux', value: 'SkyLux' },
-//     { label: 'DushMash', value: 'DushMash' },
-//     { label: 'Biofarm', value: 'Biofarm' },
-//     { label: 'PAD move', value: 'PAD move' },
-// ];
+
 
 const priorityColors: Record<string, string> = {
     High: 'bg-error/10 text-error',
@@ -206,24 +201,26 @@ export function TasksPage() {
     const { data: projectsData=[] } = useGetProjectsQuery();
     const filtered = activeTab === 'All' ? tasks : tasks.filter(t => t.status === activeTab);
 
-    useEffect(() => {
+ useEffect(() => {
+    
     if (usersData?.length) {
         setUsers(
             usersData.map((u: any) => ({
-                label: u.user_name,
-                value: u.user_id,
+                label: u.username,
+                value: u.id,
             }))
         );
     }
 
-    if (projectsData?.length) {
-        setProjects(
-            projectsData.map((p: any) => ({
-                label: p.project_name,
-                value: p.project_id,
-            }))
-        );
-    }
+   if (projectsData?.length) {
+    setProjects(
+        projectsData.map((p: any) => ({
+            label: p.name || p.title,
+            value: p.id,
+        }))
+    );
+}
+    
 }, [usersData, projectsData]);
 
     const counts = {
@@ -251,6 +248,34 @@ export function TasksPage() {
         setForm(emptyForm);
         setShowForm(false);
     };
+
+//     const handleSubmit = async () => {
+//     if (!form.title || !form.assignee || !form.priority || !form.project) return;
+
+//     const payload = {
+//         title: form.title,
+//         description: form.description,
+//         assignee: form.assignee,
+//         priority: form.priority,
+//         due_date: form.dueDate,
+//         status: form.status,
+//         project_id: form.project,
+//         duration: form.duration,
+//         assignee_to: form.assigneeTo,
+//     };
+
+//     try {
+//         const response = await createTask(payload).unwrap();
+
+//         setTasks([response, ...tasks]);
+
+//         setForm(emptyForm);
+//         setShowForm(false);
+
+//     } catch (error) {
+//         console.error("Task creation failed:", error);
+//     }
+// };
 
     return (
         <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

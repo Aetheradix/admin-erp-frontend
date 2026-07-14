@@ -5,7 +5,7 @@ import { mapProject } from './mappers';
 export const projectSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProjects: builder.query<Project[], void>({
-      query: () => '/projects',
+      query: () => '/project',
       providesTags: ['Projects'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
@@ -14,14 +14,14 @@ export const projectSlice = apiSlice.injectEndpoints({
     }),
     createProject: builder.mutation<Project, Partial<Project>>({
       query: (data) => ({
-        url: '/projects',
+        url: '/project',
         method: 'POST',
         body: data,
       }),
       invalidatesTags: ['Projects'],
     }),
     getProjectStats: builder.query<ProjectStatsData, void>({
-      query: () => '/projects/summary',
+      query: () => '/project/summary',
       providesTags: ['Projects'],
     }),
   }),
