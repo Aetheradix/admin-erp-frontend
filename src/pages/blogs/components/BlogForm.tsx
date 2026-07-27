@@ -19,6 +19,8 @@ interface BlogFormProps {
   isLoading?: boolean;
 }
 
+
+
 export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<Blog>>(
@@ -31,9 +33,16 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
       tags: [],
     }
   );
+  const onValueChange = <K extends keyof Blog>(key: K,value: Blog[K]) => {
+    setFormData(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+     console.log("FINAL PAYLOAD:", formData);
     onSubmit(formData);
   };
 
@@ -64,7 +73,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <FormField label="Strategic Title" required className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
               <Input
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) => onValueChange("title", e.target.value)}
                 placeholder="Enter a high-impact headline..."
                 className="h-14! text-base! font-bold! rounded-2xl! border-none! bg-white! shadow-sm!"
               />
@@ -73,18 +82,25 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <FormField label="The Hook" description="A compelling summary for maximum engagement." className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
               <Textarea
                 value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                onChange={(e) => onValueChange("excerpt", e.target.value)}
                 placeholder="What makes this story worth reading?"
                 rows={3}
                 className="rounded-[1.5rem]! border-none! bg-white! shadow-sm! text-sm! font-medium! p-5!"
               />
             </FormField>
 
-            <FormField label="Full Context" required className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
+            <FormField label="Full Context" required className="!text-[10px] !font-black  !tracking-[0.15em] !text-muted">
               <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm bg-white">
                 <RichEditor
                   value={formData.content}
-                  onTextChange={(e) => setFormData({ ...formData, content: e.htmlValue || '' })}
+                  onTextChange={(e) => {
+                   console.log("Editor event:", e);
+               
+                   setFormData(prev => ({
+                     ...prev,
+                     content: e.htmlValue || '',
+                   }))
+                  }}
                   style={{ height: '450px', border: 'none' }}
                 />
               </div>
@@ -135,14 +151,14 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <div className="bg-surface-subtle/50 p-1.5 rounded-2xl flex items-center border border-border-subtle/50">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, status: 'Draft' })}
+                onClick={() => onValueChange("status", "Draft")}
                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Draft' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}
               >
                 Draft
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, status: 'Published' })}
+                onClick={() => onValueChange("status", "Published")}
                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Published' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}
               >
                 Public
@@ -200,7 +216,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               <Select
                 options={categories}
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.value })}
+                onChange={(e) => onValueChange("category", e.value)}
                 placeholder="Select category"
                 className="h-12! rounded-2xl! border-none! bg-white! shadow-sm!"
               />
