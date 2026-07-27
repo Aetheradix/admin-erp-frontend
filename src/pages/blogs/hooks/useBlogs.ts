@@ -30,7 +30,9 @@ export const useBlogs = (id?: string) => {
         await createBlog(data).unwrap();
       }
       showToast({ severity: 'success', summary: 'Success', detail: `Post ${id ? 'updated' : 'created'} successfully!`, life: 3000 });
-      navigate('/blogs');
+      setTimeout(() => {
+         navigate("/blogs");
+      }, 300);
     } catch (error: unknown) {
       const apiError = error as { data?: { message?: string } };
       console.error('Failed to save blog:', error);
