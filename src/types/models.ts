@@ -25,6 +25,14 @@ export interface AttendanceRecord {
   status?: string;
 }
 
+export interface AttendanceStatus {
+  status: 'checked-in' | 'checked-out' | null;
+  onBreak: boolean;
+  activeBreak?: BreakRecord | null;
+  lastAction?: string | null;
+  dbStatus?: string | null;
+}
+
 export interface AttendanceRequest {
   id: string | number;
   type: string;
@@ -42,6 +50,16 @@ export interface AttendanceStatsData {
   wfhCount?: number | string;
   leaveCount?: number | string;
   avgCheckIn?: string;
+}
+
+export interface BreakRecord {
+  id: number;
+  attendance_id: number;
+  user_id: number;
+  break_start: string | null;
+  break_end: string | null;
+  duration: number | null; // minutes
+  remark: string | null;
 }
 
 export interface Career {

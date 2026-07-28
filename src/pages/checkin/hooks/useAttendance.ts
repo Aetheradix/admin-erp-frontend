@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useCheckInMutation, useCheckOutMutation, useGetAttendanceStatusQuery } from '@/store/api/attendanceSlice';
+import { useCheckInMutation, useCheckOutMutation, useGetAttendanceStatusQuery,useTakeBreakMutation,useEndBreakMutation } from '@/store/api/attendanceSlice';
 import { useSubmitMoodMutation } from '@/store/api/moodSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
@@ -11,6 +11,9 @@ export const useAttendance = () => {
   const [checkIn, { isLoading: isCheckingIn }] = useCheckInMutation();
   const [checkOut, { isLoading: isCheckingOut }] = useCheckOutMutation();
   const [submitMood, { isLoading: isSubmittingMood }] = useSubmitMoodMutation();
+
+  const [takeBreak, { isLoading: isStartingBreak }] = useTakeBreakMutation();
+  const [endBreak, { isLoading: isEndingBreak }] = useEndBreakMutation();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -33,6 +36,41 @@ export const useAttendance = () => {
     }
   };
 
+const handleBreak = async () => {
+  try {
+    if (status?.onBreak) {
+      await endBreak().unwrap();
+
+      showToast({
+        severity: 'success',
+        summary: 'Break Ended',
+        detail: 'Your break has ended.',
+        life: 3000
+      });
+    } else {
+      await takeBreak({
+        remark: 'Break from dashboard'
+      }).unwrap();
+
+      showToast({
+        severity: 'success',
+        summary: 'Break Started',
+        detail: 'Your break has started.',
+        life: 3000
+      });
+    }
+  } catch (error: unknown) {
+    const apiError = error as { data?: { message?: string } };
+    console.error('Break action failed:', error);
+    showToast({
+      severity: 'error',
+      summary: 'Break Error',
+      detail: apiError.data?.message || 'Action failed',
+      life: 3000
+    });
+  }
+};
+
   const logMood = async (score: number, label: string) => {
     setSelectedMood(score);
     try {
@@ -49,13 +87,26 @@ export const useAttendance = () => {
     }
   };
 
+  // return {
+  //   time,
+  //   status,
+  //   selectedMood,
+  //   isLoading: isFetching || isCheckingIn || isCheckingOut,
+  //   isSubmittingMood,
+  //   handleAttendance,
+  //   handleBreak,
+  //   logMood
+  // };
+
   return {
     time,
     status,
     selectedMood,
     isLoading: isFetching || isCheckingIn || isCheckingOut,
+    isBreakLoading: isStartingBreak || isEndingBreak,
     isSubmittingMood,
     handleAttendance,
+    handleBreak,
     logMood
   };
 };

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/primitives/Button';
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut,Coffee } from 'lucide-react';
 import { useAttendance } from './hooks/useAttendance';
 import { MoodSelector } from './components/MoodSelector';
 import { formatTime, formatFullDate } from '@/utils/date';
@@ -12,9 +12,15 @@ export function CheckInPage() {
     selectedMood,
     isLoading,
     isSubmittingMood,
+    handleBreak,
     handleAttendance,
-    logMood
+    logMood,
+    isBreakLoading
   } = useAttendance();
+
+  // function handleBreak(event: MouseEvent<HTMLElement, MouseEvent>): void {
+  //   throw new Error('Function not implemented.');
+  // }
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700 min-h-[85vh]">
@@ -57,6 +63,25 @@ export function CheckInPage() {
             {status?.status === 'checked-in' ? <LogOut size={24} /> : <LogIn size={24} />}
             <span className="font-black tracking-widest uppercase">{status?.status === 'checked-in' ? 'Check Out' : 'Check In'}</span>
           </Button>
+
+          <Button
+             variant={status?.onBreak ? "ghost" : "primary"}
+             aria-label={status?.onBreak ? "End Break" : "Start Break"}
+             className={`w-full h-16 rounded-[24px]! text-lg shadow-xl ${
+               status?.onBreak
+                 ? "border-2 border-border-strong!"
+                 : "shadow-primary/30"
+             } flex items-center justify-center gap-4 active:scale-95 transition-all`}
+             onClick={handleBreak}
+             loading={isBreakLoading}
+             disabled={isBreakLoading || status?.status !== "checked-in"}
+           >
+             {status?.onBreak ? <LogIn size={24} /> : <Coffee size={24} />}
+             <span className="font-black tracking-widest uppercase">
+               {status?.onBreak ? "End Break" : "Take Break"}
+             </span>
+           </Button>
+
 
           <div className="w-full mt-10">
             <MoodSelector 
