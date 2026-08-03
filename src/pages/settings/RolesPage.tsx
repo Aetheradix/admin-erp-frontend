@@ -9,8 +9,8 @@ import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { initialUsers } from '@/pages/users/UsersPage';
-import type { User } from '@/types/auth';
 import { usePendingUsers } from './hooks/usePendingUsers';
+import type { User } from '@/types/auth';
 interface Role {
     name: string;
     description: string;
@@ -33,7 +33,6 @@ const emptyForm = { name: '', description: '', permissions: Object.fromEntries(P
 export function RolesPage() {
     const {
     pendingUsers,
-    isLoading,
     handleApproveUser,
     handleRejectUser,
 } = usePendingUsers();
@@ -302,7 +301,7 @@ export function RolesPage() {
             </div>
         ) : (
 
-            pendingUsers.map((user) => (
+            pendingUsers.map((user:User) => (
 
                 <div
                     key={user.id}

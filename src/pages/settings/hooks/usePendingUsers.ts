@@ -3,6 +3,7 @@ import {
     useApproveAccountMutation,
     useRejectAccountMutation,
 } from '@/store/api/authApiSlice';
+import type { User } from '@/types/auth';
 
 
 export function usePendingUsers() {
@@ -23,7 +24,7 @@ export function usePendingUsers() {
         useRejectAccountMutation();
 
 
-    const pendingUsers = pendingUsersResponse?.data || [];
+     const pendingUsers: User[] = pendingUsersResponse?.data ?? [];
 
 
     const handleApproveUser = async (id: number) => {

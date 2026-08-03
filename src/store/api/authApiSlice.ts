@@ -84,9 +84,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    getPendingUsers: builder.query({
-  query: () => '/auth/pending-users',
-  providesTags: ['User'],
+getPendingUsers: builder.query<any, void>({
+    query: () => '/auth/pending-users',
+    providesTags: ['User'],
 }),
 
 approveAccount: builder.mutation({

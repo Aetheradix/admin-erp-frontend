@@ -1,7 +1,7 @@
 import type { UserRole } from "@/config/navItems";
 
 export interface User {
-    id: string;
+    id: number;
     username: string;
     email: string;
     role: UserRole;
