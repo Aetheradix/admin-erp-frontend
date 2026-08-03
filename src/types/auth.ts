@@ -1,8 +1,10 @@
+import type { UserRole } from "@/config/navItems";
+
 export interface User {
     id: string;
     username: string;
     email: string;
-    role: 'admin' | 'employee';
+    role: UserRole;
     image_url?: string;
     designation?: string;
     employee_id?: string;

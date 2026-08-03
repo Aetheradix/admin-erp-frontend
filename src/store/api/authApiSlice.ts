@@ -83,6 +83,27 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
       }),
     }),
+
+    getPendingUsers: builder.query({
+  query: () => '/auth/pending-users',
+  providesTags: ['User'],
+}),
+
+approveAccount: builder.mutation({
+  query: (id) => ({
+    url: `/auth/approve-account/${id}`,
+    method: 'PATCH',
+  }),
+  invalidatesTags: ['User'],
+}),
+
+rejectAccount: builder.mutation({
+  query: (id) => ({
+    url: `/auth/reject-account/${id}`,
+    method: 'PATCH',
+  }),
+  invalidatesTags: ['User'],
+}),
   }),
 });
 
@@ -91,6 +112,9 @@ export const {
   useRegisterMutation,
   usePromoteToAdminMutation,
   useUpdateProfileMutation,
+  useApproveAccountMutation,
+  useGetPendingUsersQuery,
+  useRejectAccountMutation,
   useRequestOTPMutation,
   useLoginWithOTPMutation,
   useResetPasswordMutation,

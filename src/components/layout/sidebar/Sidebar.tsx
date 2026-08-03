@@ -78,18 +78,41 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return [];
   })();
 
+  // const currentUserRoleName = (() => {
+  //   if (!user) return 'Viewer';
+  //   const desc = user.designation?.toLowerCase() || '';
+  //   if (desc.includes('super admin')) return 'Super Admin';
+  //   if (desc.includes('admin')) return 'Admin';
+  //   if (desc.includes('manager')) return 'Manager';
+  //   if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
+
+  //   if (user.role === 'admin') return 'Admin';
+  //   return 'Viewer';
+  // })();
+
   const currentUserRoleName = (() => {
     if (!user) return 'Viewer';
-    const desc = user.designation?.toLowerCase() || '';
-    if (desc.includes('super admin')) return 'Super Admin';
-    if (desc.includes('admin')) return 'Admin';
-    if (desc.includes('manager')) return 'Manager';
-    if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
 
-    if (user.role === 'admin') return 'Admin';
-    return 'Viewer';
-  })();
+    switch(user.role) {
+        case 'SuperAdmin':
+            return 'Super Admin';
 
+        case 'Admin':
+            return 'Admin';
+
+        case 'HrAdmin':
+            return 'HR Admin';
+
+        case 'FinanceAdmin':
+            return 'Finance Admin';
+
+        case 'Employee':
+            return 'Employee';
+
+        default:
+            return 'Viewer';
+    }
+})();
   const labelToPermissionKey = (label: string): string | null => {
     const lower = label.toLowerCase();
     if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
@@ -101,27 +124,55 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return null;
   };
 
+  // const filteredNavItems = navItems.filter((item) => {
+  //   // 1. Basic Role Check
+  //   if (item.roles && item.roles !== user?.role) return false;
+
+  //   // 2. Global Section Toggle check
+  //   if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) return false;
+
+  //   // 3. Role-based check
+  //   const permKey = labelToPermissionKey(item.label);
+  //   if (permKey) {
+  //     const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
+  //     if (roleObj && roleObj.permissions[permKey] === false) {
+  //       return false;
+  //     }
+  //   }
+
+  //   return true;
+  // });
+
+
   const filteredNavItems = navItems.filter((item) => {
-    // 1. Basic Role Check
-    if (item.role && item.role !== user?.role) return false;
-
-    // 2. Global Section Toggle check
-    if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) return false;
-
-    // 3. Role-based check
-    const permKey = labelToPermissionKey(item.label);
-    if (permKey) {
-      const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
-      if (roleObj && roleObj.permissions[permKey] === false) {
+    // 1. Check user role access
+    if ( item.roles && user?.role && !item.roles.includes(user.role)) {
         return false;
-      }
     }
 
+    // 2. Global Section Toggle
+    if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) {
+        return false;
+    }
+
+    // 3. Dynamic role permissions
+    const permKey = labelToPermissionKey(item.label);
+
+    if (permKey) {
+        const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
+        if (roleObj && roleObj.permissions[permKey] === false) {
+            return false;
+        }
+    }
     return true;
-  });
+});
+
+console.log("Logged user:", user);
+console.log("Current role:", user?.role);
+console.log("Role name:", currentUserRoleName);
+console.log("Sidebar items:", filteredNavItems);
 
   const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
-
   return (
     <motion.aside
       custom={isMobile}
