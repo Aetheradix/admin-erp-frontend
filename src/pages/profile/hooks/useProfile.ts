@@ -5,7 +5,7 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useProfile = () => {
   const { user: authUser, logout: authLogout } = useAuth();
-  const isAdmin = authUser?.role === 'admin';
+  const isAdmin = authUser?.role === 'Admin';
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [isEditing, setIsEditing] = useState(false);
   const [showElevationDialog, setShowElevationDialog] = useState(false);

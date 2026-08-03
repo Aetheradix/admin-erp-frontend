@@ -30,7 +30,7 @@ export function StaffList() {
   } = useStaff();
 
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'Admin';
 
   if (isLoading) {
     return (

@@ -7,7 +7,7 @@ import type { AttendanceRequest } from '@/types/models';
 
 export const useAttendancePage = () => {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'Admin';
 
   const { data: records = [], isLoading: recordsLoading } = useGetAttendanceHistoryQuery();
   const { data: requests = [], isLoading: requestsLoading } = useGetLeavesQuery();

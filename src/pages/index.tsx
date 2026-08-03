@@ -85,7 +85,7 @@ const AppFeature = () => {
             if (desc.includes('manager')) return 'Manager';
             if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
 
-            if (user.role === 'admin') return 'Admin';
+            if (user.role === 'Admin') return 'Admin';
             return 'Viewer';
           })();
           const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
@@ -123,7 +123,7 @@ const AppFeature = () => {
         <Route path="/calendar/*" element={isAllowed('Attendance') ? <AttendanceModule /> : <Navigate to="/" replace />} />
         <Route path="/finance/*" element={isAllowed('Finance') ? <FinanceModule /> : <Navigate to="/" replace />} />
         <Route path="/grievances/*" element={isAllowed('Grievances') ? <GrievanceModule /> : <Navigate to="/" replace />} />
-        <Route path="/analytics/*" element={user?.role === 'admin' ? <AnalyticsModule /> : <Navigate to="/" replace />} />
+        <Route path="/analytics/*" element={user?.role === 'Admin' ? <AnalyticsModule /> : <Navigate to="/" replace />} />
         <Route path="/guest-pass/*" element={isAllowed('Guest Pass') ? <GuestPassModule /> : <Navigate to="/" replace />} />
         <Route path="/rulebook/*" element={<RulebookModule />} />
         <Route path="/settings/*" element={<SettingsModule />} />

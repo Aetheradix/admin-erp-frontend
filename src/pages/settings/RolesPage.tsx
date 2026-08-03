@@ -9,7 +9,8 @@ import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { initialUsers } from '@/pages/users/UsersPage';
-
+import { usePendingUsers } from './hooks/usePendingUsers';
+import type { User } from '@/types/auth';
 interface Role {
     name: string;
     description: string;
@@ -30,8 +31,15 @@ const initialRoles: Role[] = [
 const emptyForm = { name: '', description: '', permissions: Object.fromEntries(PERMISSION_KEYS.map(k => [k, false])) };
 
 export function RolesPage() {
+    const {
+    pendingUsers,
+    handleApproveUser,
+    handleRejectUser,
+} = usePendingUsers();
+  
+  //  const [autoApprove,setAutoApprove] = useState(false);
     const [roles, setRoles] = useState<Role[]>(() => {
-        const saved = localStorage.getItem('erp_roles');
+    const saved = localStorage.getItem('erp_roles');
         if (saved) {
             try {
                 return JSON.parse(saved);
@@ -264,6 +272,127 @@ export function RolesPage() {
                     </div>
                 </div>
             </Dialog>
+
+
+            {/* Pending Users */}
+<motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden"
+>
+
+    <div className="p-6 border-b border-border-subtle">
+        <h2 className="text-lg font-black text-foreground">
+            Pending Users
+        </h2>
+
+        <p className="text-xs text-muted-foreground">
+            Approve or reject new user registrations.
+        </p>
+    </div>
+
+
+    <div className="p-6 flex flex-col gap-4">
+
+        {pendingUsers.length === 0 ? (
+            <div className="text-center text-sm text-muted py-6">
+                No pending users found
+            </div>
+        ) : (
+
+            pendingUsers.map((user:User) => (
+
+                <div
+                    key={user.id}
+                    className="
+                    flex items-center justify-between
+                    p-4 rounded-xl
+                    border border-border-subtle
+                    hover:bg-surface-subtle/50
+                    transition-all
+                    "
+                >
+
+                    <div className="flex items-center gap-4">
+
+                        <img
+                            src={user.image_url || "/avatar.png"}
+                            className="
+                            w-12 h-12 
+                            rounded-full 
+                            object-cover
+                            border
+                            "
+                        />
+
+                        <div>
+                            <h3 className="font-bold text-foreground">
+                                {user.username}
+                            </h3>
+
+                            <p className="text-xs text-muted">
+                                {user.email}
+                            </p>
+
+                            <p className="text-xs text-muted">
+                                {user.department} • {user.role}
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div className="flex gap-3">
+
+                        <button
+                            onClick={() => handleApproveUser(user.id)}
+                            className="
+                            px-4 py-2
+                            rounded-lg
+                            text-xs
+                            font-bold
+                            bg-green-500/10
+                            text-green-600
+                            border border-green-500/20
+                            hover:bg-green-500
+                            hover:text-white
+                            transition-all
+                            "
+                        >
+                            Approve
+                        </button>
+
+
+                        <button
+                           onClick={() => handleRejectUser(user.id)}
+                            className="
+                            px-4 py-2
+                            rounded-lg
+                            text-xs
+                            font-bold
+                            bg-red-500/10
+                            text-red-600
+                            border border-red-500/20
+                            hover:bg-red-500
+                            hover:text-white
+                            transition-all
+                            "
+                        >
+                            Reject
+                        </button>
+
+                    </div>
+
+                </div>
+
+            ))
+
+        )}
+
+        </div>
+
+       </motion.div>
         </div>
     );
 }
