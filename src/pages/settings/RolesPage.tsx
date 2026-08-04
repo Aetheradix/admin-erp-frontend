@@ -11,6 +11,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { initialUsers } from '@/pages/users/UsersPage';
 import { usePendingUsers } from './hooks/usePendingUsers';
 import type { User } from '@/types/auth';
+import type { UserRole } from '@/config/navItems';
 interface Role {
     name: string;
     description: string;
@@ -28,6 +29,15 @@ const initialRoles: Role[] = [
     { name: 'Viewer', description: 'Read-only access to assigned resources', users: initialUsers.filter(u => u.role === 'Viewer').length, permissions: { users: false, projects: false, finance: false, inventory: false, settings: false, reports: false } },
 ];
 
+const userroles: UserRole[] = [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee",
+];
+
+
 const emptyForm = { name: '', description: '', permissions: Object.fromEntries(PERMISSION_KEYS.map(k => [k, false])) };
 
 export function RolesPage() {
@@ -36,7 +46,8 @@ export function RolesPage() {
     handleApproveUser,
     handleRejectUser,
 } = usePendingUsers();
-  
+  const [selectedRoles, setSelectedRoles] =
+    useState<Record<number, UserRole>>({});
   //  const [autoApprove,setAutoApprove] = useState(false);
     const [roles, setRoles] = useState<Role[]>(() => {
     const saved = localStorage.getItem('erp_roles');
@@ -49,6 +60,16 @@ export function RolesPage() {
         }
         return initialRoles;
     });
+
+    const handleRoleChange = (
+    userId: number,
+    role: UserRole
+) => {
+    setSelectedRoles((prev) => ({
+        ...prev,
+        [userId]: role,
+    }));
+};
 
     const [sectionConfig, setSectionConfig] = useState(() => {
         const saved = localStorage.getItem('erp_sections_config');
@@ -275,7 +296,7 @@ export function RolesPage() {
 
 
             {/* Pending Users */}
-<motion.div
+       <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
@@ -341,12 +362,42 @@ export function RolesPage() {
                         </div>
 
                     </div>
+       <select
+    value={selectedRoles[user.id] ?? ""}
+    onChange={(e) =>
+        handleRoleChange(
+            user.id,
+            e.target.value as UserRole
+        )
+    }
+    className="text-xs border rounded-lg px-3 py-2"
+>
+    <option value="">
+        Select Role
+    </option>
 
+    {userroles.map((role) => (
+        <option key={role} value={role}>
+            {role}
+        </option>
+    ))}
+</select>           
 
-                    <div className="flex gap-3">
+          
+                    
+        <div className="flex gap-3">
 
-                        <button
-                            onClick={() => handleApproveUser(user.id)}
+            <button
+            onClick={() => {
+           const role = selectedRoles[user.id];
+
+           if (!role) {
+             alert("Please select a role before approving");
+             return;
+           }
+           handleApproveUser(user.id, role);
+        }}
+
                             className="
                             px-4 py-2
                             rounded-lg

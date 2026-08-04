@@ -19,6 +19,7 @@ export interface LoginCredentials {
     password?: string;
 }
 
+
 export interface AuthContextType {
     isAuthenticated: boolean;
     user: User | null;

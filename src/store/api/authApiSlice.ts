@@ -90,9 +90,12 @@ getPendingUsers: builder.query<any, void>({
 }),
 
 approveAccount: builder.mutation({
-  query: (id) => ({
+  query: ({ id, role }) => ({
     url: `/auth/approve-account/${id}`,
     method: 'PATCH',
+    body: {
+      role,
+    },
   }),
   invalidatesTags: ['User'],
 }),

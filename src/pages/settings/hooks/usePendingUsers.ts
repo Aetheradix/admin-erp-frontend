@@ -4,6 +4,7 @@ import {
     useRejectAccountMutation,
 } from '@/store/api/authApiSlice';
 import type { User } from '@/types/auth';
+import type { UserRole } from '@/config/navItems';
 
 
 export function usePendingUsers() {
@@ -27,15 +28,15 @@ export function usePendingUsers() {
      const pendingUsers: User[] = pendingUsersResponse?.data ?? [];
 
 
-    const handleApproveUser = async (id: number) => {
-        try {
-            await approveAccount(id).unwrap();
-            return true;
-        } catch (error) {
-            console.error("Approve user failed:", error);
-            return false;
-        }
-    };
+const handleApproveUser = async (id: number, role: UserRole) => {
+    try {
+        await approveAccount({id, role}).unwrap();
+        return true;
+    } catch (error) {
+        console.error("Approve user failed:", error);
+        return false;
+    }
+};
 
 
     const handleRejectUser = async (id: number) => {
