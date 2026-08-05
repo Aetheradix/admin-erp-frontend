@@ -168,6 +168,7 @@ export interface NavChild {
   label: string;
   path: string;
   roles?: UserRole[];
+  badge?:number;
 }
 
 export interface NavItem {
@@ -177,6 +178,7 @@ export interface NavItem {
   roles?: UserRole[];
   category?: 'OVERVIEW' | 'MANAGEMENT' | 'SYSTEM';
   description?: string;
+  badge?:number;
   children?: NavChild[];
 }
 
@@ -210,7 +212,14 @@ export const navItems: NavItem[] = [
     icon: Building2,
     category: 'MANAGEMENT',
     description: 'Company profile',
-    roles: ['SuperAdmin', 'Admin'],
+    roles: ['SuperAdmin', 'Admin','HrAdmin'],
+    children: [
+      {
+        label: 'New Accounts',
+        path: '/org/approvals',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+    ]
   },
   {
     label: 'Teams',
