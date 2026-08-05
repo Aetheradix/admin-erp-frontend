@@ -9,9 +9,7 @@ import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { initialUsers } from '@/pages/users/UsersPage';
-import { usePendingUsers } from './hooks/usePendingUsers';
-import type { User } from '@/types/auth';
-import type { UserRole } from '@/config/navItems';
+
 interface Role {
     name: string;
     description: string;
@@ -29,25 +27,12 @@ const initialRoles: Role[] = [
     { name: 'Viewer', description: 'Read-only access to assigned resources', users: initialUsers.filter(u => u.role === 'Viewer').length, permissions: { users: false, projects: false, finance: false, inventory: false, settings: false, reports: false } },
 ];
 
-const userroles: UserRole[] = [
-    "SuperAdmin",
-    "Admin",
-    "HrAdmin",
-    "FinanceAdmin",
-    "Employee",
-];
+
 
 
 const emptyForm = { name: '', description: '', permissions: Object.fromEntries(PERMISSION_KEYS.map(k => [k, false])) };
 
 export function RolesPage() {
-    const {
-    pendingUsers,
-    handleApproveUser,
-    handleRejectUser,
-} = usePendingUsers();
-  const [selectedRoles, setSelectedRoles] =
-    useState<Record<number, UserRole>>({});
   //  const [autoApprove,setAutoApprove] = useState(false);
     const [roles, setRoles] = useState<Role[]>(() => {
     const saved = localStorage.getItem('erp_roles');
@@ -61,15 +46,7 @@ export function RolesPage() {
         return initialRoles;
     });
 
-    const handleRoleChange = (
-    userId: number,
-    role: UserRole
-) => {
-    setSelectedRoles((prev) => ({
-        ...prev,
-        [userId]: role,
-    }));
-};
+ 
 
     const [sectionConfig, setSectionConfig] = useState(() => {
         const saved = localStorage.getItem('erp_sections_config');
