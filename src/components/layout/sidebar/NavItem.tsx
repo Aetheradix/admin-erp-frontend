@@ -113,7 +113,13 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                       }`
                     }
                   >
-                    {child.label}
+                <span>{child.label}</span>
+
+            {child.badge !== undefined && child.badge > 0 && (
+             <span className="ml-5 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+               {child.badge}
+             </span>
+            )}
                   </NavLink>
                 ))}
               </div>

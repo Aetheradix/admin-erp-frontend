@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { navItems } from '@/config/navItems';
 import { Button } from '@/components/ui/primitives/Button';
-
+import { usePendingUsers } from '@/pages/settings/hooks/usePendingUsers';
 import { SidebarLogo } from './SidebarLogo';
 import { NavSection } from './NavSection';
 import { SidebarFooter } from './SidebarFooter';
@@ -21,6 +21,8 @@ const NAV_CATEGORIES = ['OVERVIEW', 'MANAGEMENT', 'SYSTEM'] as const;
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pendingUsers } = usePendingUsers();
+   const pendingUsersCount = pendingUsers.length;
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -173,6 +175,13 @@ console.log("Role name:", currentUserRoleName);
 console.log("Sidebar items:", filteredNavItems);
 
   const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
+  const navItemsWithBadge = slicedNavItems.map(item => ({
+  ...item,
+  children: item.children?.map(child => ({
+    ...child,
+    badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
+  })),
+}));
   return (
     <motion.aside
       custom={isMobile}
@@ -210,7 +219,7 @@ console.log("Sidebar items:", filteredNavItems);
           <NavSection
             key={category}
             category={category}
-            items={slicedNavItems.filter((item) => item.category === category)}
+            items={navItemsWithBadge.filter((item) => item.category === category)}
             isOpen={isOpen}
           />
         ))}
