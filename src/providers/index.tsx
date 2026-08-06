@@ -8,9 +8,7 @@ export const AppProviders = ({ children }: { children: ReactNode }) => {
   return (
     <Provider store={store}>
       <AntdProvider>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </AntdProvider>
     </Provider>
   );

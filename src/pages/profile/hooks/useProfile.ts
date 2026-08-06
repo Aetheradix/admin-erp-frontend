@@ -18,14 +18,16 @@ export const useProfile = () => {
     contactNo: authUser?.contact_number || '',
     department: authUser?.department,
     joinDate: authUser?.join_date,
-    image: authUser?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`
+    image:
+      authUser?.image_url ||
+      `https://api.dicebear.com/7.x/notionists/svg?seed=${authUser?.username || 'User'}`,
   });
 
-  console.log(user)
+  console.log(user);
 
   useEffect(() => {
     if (authUser) {
-      setUser(prev => ({
+      setUser((prev) => ({
         ...prev,
         name: authUser.username,
         designation: authUser.designation || 'Staff Member',
@@ -39,7 +41,13 @@ export const useProfile = () => {
     }
   }, [authUser]);
 
-  const handleEditSave = async (updatedData: { name: string; email: string; contactNo: string; designation: string; department: string }) => {
+  const handleEditSave = async (updatedData: {
+    name: string;
+    email: string;
+    contactNo: string;
+    designation: string;
+    department: string;
+  }) => {
     try {
       const payload = {
         username: updatedData.name,
@@ -57,7 +65,12 @@ export const useProfile = () => {
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to update profile:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to update profile', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: apiError.data?.message || 'Failed to update profile',
+        life: 3000,
+      });
     }
   };
 
@@ -79,6 +92,6 @@ export const useProfile = () => {
     showElevationDialog,
     setShowElevationDialog,
     handleEditSave,
-    handleLogout
+    handleLogout,
   };
 };

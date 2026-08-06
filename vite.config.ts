@@ -1,16 +1,13 @@
-import { defineConfig } from 'vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'node:path'
+import { defineConfig } from 'vite';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
 
 // https://vite.dev/config/
 export default defineConfig({
   publicDir: 'public',
-  plugins: [
-    react(), tailwindcss(),
-    babel({ presets: [reactCompilerPreset()] })
-  ],
+  plugins: [react(), tailwindcss(), babel({ presets: [reactCompilerPreset()] })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -24,14 +21,23 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'vendor-react'
+            if (
+              id.includes('react') ||
+              id.includes('react-dom') ||
+              id.includes('react-router-dom')
+            ) {
+              return 'vendor-react';
             }
-            if (id.includes('primereact') || id.includes('primeicons') || id.includes('lucide-react') || id.includes('framer-motion')) {
-              return 'vendor-ui'
+            if (
+              id.includes('primereact') ||
+              id.includes('primeicons') ||
+              id.includes('lucide-react') ||
+              id.includes('framer-motion')
+            ) {
+              return 'vendor-ui';
             }
             if (id.includes('chart.js')) {
-              return 'vendor-charts'
+              return 'vendor-charts';
             }
           }
         },
@@ -48,4 +54,4 @@ export default defineConfig({
   //     },
   //   },
   // },
-})
+});

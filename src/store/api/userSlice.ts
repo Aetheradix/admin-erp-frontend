@@ -9,7 +9,9 @@ export const userSlice = apiSlice.injectEndpoints({
       providesTags: ['User'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapStaffMember(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapStaffMember(item as Record<string, unknown>))
+          : [];
       },
     }),
     createStaff: builder.mutation<StaffMember, Partial<StaffMember>>({
@@ -28,7 +30,10 @@ export const userSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
-    updateUserRole: builder.mutation<{ success: boolean }, { id: string | number; role: 'admin' | 'user' }>({
+    updateUserRole: builder.mutation<
+      { success: boolean },
+      { id: string | number; role: 'admin' | 'user' }
+    >({
       query: ({ id, role }) => ({
         url: `/users/${id}/role`,
         method: 'PUT',

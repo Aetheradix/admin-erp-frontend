@@ -12,13 +12,8 @@ import { BlogFeatured } from './components/BlogFeatured';
 const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name'];
 
 const BlogList = () => {
-  const {
-    searchValue,
-    activeCategory,
-    filters,
-    handleSearchChange,
-    handleCategoryChange
-  } = useBlogFilters();
+  const { searchValue, activeCategory, filters, handleSearchChange, handleCategoryChange } =
+    useBlogFilters();
 
   const { blogs, isLoading, isError, handleDelete, navigate } = useBlogs();
 
@@ -47,7 +42,8 @@ const BlogList = () => {
           label: 'Craft New Story',
           onClick: () => navigate('/blogs/create'),
           icon: 'pi pi-plus',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
+          className:
+            'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
         }}
       />
 

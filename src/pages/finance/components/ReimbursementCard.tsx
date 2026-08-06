@@ -9,21 +9,31 @@ interface ReimbursementCardProps {
 export function ReimbursementCard({ request }: ReimbursementCardProps) {
   const getStatusStyles = (status: string) => {
     switch (status) {
-      case 'Approved': return 'bg-success/10 text-success border-success/20';
-      case 'Pending': return 'bg-warning/10 text-warning border-warning/20';
-      case 'Paid': return 'bg-primary/10 text-primary border-primary/20';
-      case 'Rejected': return 'bg-error/10 text-error border-error/20';
-      default: return 'bg-muted/10 text-muted';
+      case 'Approved':
+        return 'bg-success/10 text-success border-success/20';
+      case 'Pending':
+        return 'bg-warning/10 text-warning border-warning/20';
+      case 'Paid':
+        return 'bg-primary/10 text-primary border-primary/20';
+      case 'Rejected':
+        return 'bg-error/10 text-error border-error/20';
+      default:
+        return 'bg-muted/10 text-muted';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Approved': return <CheckCircle2 size={14} />;
-      case 'Pending': return <Clock size={14} />;
-      case 'Paid': return <Receipt size={14} />;
-      case 'Rejected': return <XCircle size={14} />;
-      default: return null;
+      case 'Approved':
+        return <CheckCircle2 size={14} />;
+      case 'Pending':
+        return <Clock size={14} />;
+      case 'Paid':
+        return <Receipt size={14} />;
+      case 'Rejected':
+        return <XCircle size={14} />;
+      default:
+        return null;
     }
   };
 
@@ -39,8 +49,12 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
               <FileText size={24} />
             </div>
             <div className="flex flex-col">
-              <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors">{request.item}</h3>
-              <span className="text-[10px] font-black text-muted uppercase tracking-widest">{request.category}</span>
+              <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors">
+                {request.item}
+              </h3>
+              <span className="text-[10px] font-black text-muted uppercase tracking-widest">
+                {request.category}
+              </span>
             </div>
           </div>
           <div className="flex flex-col items-end">
@@ -54,10 +68,12 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
         </p>
 
         <div className="flex items-center justify-between pt-6 border-t border-border-subtle/50">
-          <div className={cn(
-            "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-            getStatusStyles(request.status)
-          )}>
+          <div
+            className={cn(
+              'flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border',
+              getStatusStyles(request.status)
+            )}
+          >
             {getStatusIcon(request.status)}
             <span>{request.status}</span>
           </div>
@@ -67,7 +83,10 @@ export function ReimbursementCard({ request }: ReimbursementCardProps) {
             aria-label={`View details for ${request.item} reimbursement`}
           >
             View Details
-            <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+            <ChevronRight
+              size={14}
+              className="group-hover/btn:translate-x-1 transition-transform"
+            />
           </button>
         </div>
       </div>

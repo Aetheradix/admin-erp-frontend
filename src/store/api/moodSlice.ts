@@ -19,13 +19,10 @@ export const moodSlice = apiSlice.injectEndpoints({
     getMoodStats: builder.query<{ average: number; count: number }[], void>({
       query: () => '/moods/stats',
       providesTags: ['Mood'],
-      transformResponse: (response: { data: { average: number; count: number }[] }) => response.data,
+      transformResponse: (response: { data: { average: number; count: number }[] }) =>
+        response.data,
     }),
   }),
 });
 
-export const {
-  useGetMoodsQuery,
-  useSubmitMoodMutation,
-  useGetMoodStatsQuery,
-} = moodSlice;
+export const { useGetMoodsQuery, useSubmitMoodMutation, useGetMoodStatsQuery } = moodSlice;

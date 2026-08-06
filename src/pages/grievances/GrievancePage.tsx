@@ -19,7 +19,7 @@ export function GrievancePage() {
     activeCategory,
     setActiveCategory,
     CATEGORIES,
-    handleGrievanceSubmit
+    handleGrievanceSubmit,
   } = useGrievancePage();
 
   if (isLoading) {
@@ -39,7 +39,8 @@ export function GrievancePage() {
           label: 'File a Concern',
           onClick: () => setShowForm(true),
           icon: 'pi pi-megaphone',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className:
+            'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -51,14 +52,16 @@ export function GrievancePage() {
           <div className="flex flex-col gap-1">
             <h3 className="text-xl font-black text-foreground">Zero Retaliation Policy</h3>
             <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-              Our grievance process is built on trust and accessibility. We guarantee that no employee
-              will face adverse consequences for raising valid concerns or issues.
+              Our grievance process is built on trust and accessibility. We guarantee that no
+              employee will face adverse consequences for raising valid concerns or issues.
             </p>
           </div>
         </div>
         <div className="p-8 rounded-[40px] bg-foreground text-white flex flex-col justify-center gap-2">
           <span className="text-3xl font-black text-primary">{grievances.length}</span>
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Active Concerns</span>
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            Active Concerns
+          </span>
         </div>
       </div>
 
@@ -88,7 +91,11 @@ export function GrievancePage() {
 
       <CalloutBanner
         color="primary"
-        title={<>A Healthier Future <span className="text-foreground">Together</span></>}
+        title={
+          <>
+            A Healthier Future <span className="text-foreground">Together</span>
+          </>
+        }
         description="Your feedback is essential for our growth as an organization. By sharing your concerns, you directly contribute to a better, more inclusive workspace for everyone."
         action={{ label: 'Our Rulebook' }}
       />
@@ -103,13 +110,10 @@ export function GrievancePage() {
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' }
+          mask: { className: 'backdrop-blur-md bg-black/40' },
         }}
       >
-        <GrievanceForm
-          onSubmit={handleGrievanceSubmit}
-          onCancel={() => setShowForm(false)}
-        />
+        <GrievanceForm onSubmit={handleGrievanceSubmit} onCancel={() => setShowForm(false)} />
       </Dialog>
     </div>
   );

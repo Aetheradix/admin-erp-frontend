@@ -9,21 +9,31 @@ interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   const getStatusStyles = (status: string) => {
     switch (status) {
-      case 'Completed': return 'bg-success/10 text-success border-success/20';
-      case 'Ongoing': return 'bg-primary/10 text-primary border-primary/20';
-      case 'Delayed': return 'bg-error/10 text-error border-error/20';
-      case 'Archived': return 'bg-muted/10 text-muted border-muted/20';
-      default: return 'bg-muted/10 text-muted';
+      case 'Completed':
+        return 'bg-success/10 text-success border-success/20';
+      case 'Ongoing':
+        return 'bg-primary/10 text-primary border-primary/20';
+      case 'Delayed':
+        return 'bg-error/10 text-error border-error/20';
+      case 'Archived':
+        return 'bg-muted/10 text-muted border-muted/20';
+      default:
+        return 'bg-muted/10 text-muted';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Completed': return <CheckCircle2 size={14} />;
-      case 'Ongoing': return <Clock size={14} />;
-      case 'Delayed': return <AlertTriangle size={14} />;
-      case 'Archived': return <Archive size={14} />;
-      default: return null;
+      case 'Completed':
+        return <CheckCircle2 size={14} />;
+      case 'Ongoing':
+        return <Clock size={14} />;
+      case 'Delayed':
+        return <AlertTriangle size={14} />;
+      case 'Archived':
+        return <Archive size={14} />;
+      default:
+        return null;
     }
   };
 
@@ -35,14 +45,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <Box size={24} />
           </div>
           <div className="flex flex-col">
-            <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors">{project.name}</h3>
-            <span className="text-[10px] font-black text-muted uppercase tracking-widest">{project.client}</span>
+            <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors">
+              {project.name}
+            </h3>
+            <span className="text-[10px] font-black text-muted uppercase tracking-widest">
+              {project.client}
+            </span>
           </div>
         </div>
-        <div className={cn(
-          "flex items-center gap-2 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest border",
-          getStatusStyles(project.status || 'Ongoing')
-        )}>
+        <div
+          className={cn(
+            'flex items-center gap-2 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest border',
+            getStatusStyles(project.status || 'Ongoing')
+          )}
+        >
           {getStatusIcon(project.status || 'Ongoing')}
           <span>{project.status}</span>
         </div>

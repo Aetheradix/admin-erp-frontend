@@ -14,11 +14,11 @@ export const taskSlice = apiSlice.injectEndpoints({
     }),
     createTask: builder.mutation<{ data: Task }, Task>({
       query: (data) => ({
-      url: '/task',
-      method: 'POST',
-      body: data,
-     }),
-     invalidatesTags: ['Tasks'],
+        url: '/task',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Tasks'],
     }),
 
     updateTask: builder.mutation<Task, { id: string; data: Partial<Task> }>({

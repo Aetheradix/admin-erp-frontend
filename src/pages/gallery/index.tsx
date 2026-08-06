@@ -1,5 +1,9 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { useUploadGalleryItemMutation, useDeleteGalleryItemMutation, useGetGalleryQuery } from '@/store/api/gallerySlice';
+import {
+  useUploadGalleryItemMutation,
+  useDeleteGalleryItemMutation,
+  useGetGalleryQuery,
+} from '@/store/api/gallerySlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useState } from 'react';
 import { GalleryGrid } from './components/GalleryGrid';
@@ -19,7 +23,7 @@ const GalleryStats = ({ total }: { total: number }) => (
     {[
       { label: 'Total Assets', value: total, icon: Image, color: 'primary' },
       { label: 'Storage Used', value: '4.2 GB', icon: Cloud, color: 'info' },
-      { label: 'Processing', value: '0 Active', icon: Zap, color: 'success' }
+      { label: 'Processing', value: '0 Active', icon: Zap, color: 'success' },
     ].map((stat, idx) => (
       <motion.div
         key={stat.label}
@@ -28,11 +32,18 @@ const GalleryStats = ({ total }: { total: number }) => (
         transition={{ duration: 0.5, delay: idx * 0.1 }}
         className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-6 border border-white shadow-soft flex items-center gap-6 group hover:shadow-lg transition-all"
       >
-        <div className={`w-12 h-12 rounded-2xl bg-${stat.color}/10 flex items-center justify-center border border-${stat.color}/20 group-hover:bg-${stat.color} transition-colors duration-500`}>
-          <stat.icon size={20} className={`text-${stat.color} group-hover:text-white transition-colors`} />
+        <div
+          className={`w-12 h-12 rounded-2xl bg-${stat.color}/10 flex items-center justify-center border border-${stat.color}/20 group-hover:bg-${stat.color} transition-colors duration-500`}
+        >
+          <stat.icon
+            size={20}
+            className={`text-${stat.color} group-hover:text-white transition-colors`}
+          />
         </div>
         <div>
-          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-1 block">{stat.label}</span>
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-1 block">
+            {stat.label}
+          </span>
           <h4 className="text-2xl font-black text-foreground tracking-tighter">{stat.value}</h4>
         </div>
       </motion.div>
@@ -79,13 +90,23 @@ const Gallery = () => {
       accept: async () => {
         try {
           await deleteGalleryItem(id).unwrap();
-          showToast({ severity: 'success', summary: 'Deleted', detail: 'Asset removed successfully.', life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Deleted',
+            detail: 'Asset removed successfully.',
+            life: 3000,
+          });
         } catch (err: unknown) {
           const apiError = err as { data?: { message?: string } };
           console.error('Failed to delete asset:', err);
-          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to delete asset', life: 3000 });
+          showToast({
+            severity: 'error',
+            summary: 'Error',
+            detail: apiError.data?.message || 'Failed to delete asset',
+            life: 3000,
+          });
         }
-      }
+      },
     });
   };
 
@@ -95,13 +116,23 @@ const Gallery = () => {
         console.warn('Update gallery item not supported yet on backend');
       } else {
         await uploadGalleryItem(data).unwrap();
-        showToast({ severity: 'success', summary: 'Uploaded', detail: 'Asset uploaded successfully!', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Uploaded',
+          detail: 'Asset uploaded successfully!',
+          life: 3000,
+        });
       }
       setShowForm(false);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to save asset:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to upload asset', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: apiError.data?.message || 'Failed to upload asset',
+        life: 3000,
+      });
     }
   };
 
@@ -122,7 +153,8 @@ const Gallery = () => {
           label: 'Upload New Media',
           onClick: handleCreate,
           icon: 'pi pi-cloud-upload',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
+          className:
+            'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
         }}
       />
 
@@ -138,7 +170,10 @@ const Gallery = () => {
         />
 
         <div className="relative w-full md:w-72 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
+            size={18}
+          />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,24 +183,23 @@ const Gallery = () => {
         </div>
       </div>
 
-      <GalleryGrid
-        items={filteredItems}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <GalleryGrid items={filteredItems} onEdit={handleEdit} onDelete={handleDelete} />
 
       {/* Upload/Edit Modal */}
       <Dialog
         visible={showForm}
         onHide={() => setShowForm(false)}
-        header={editingItem ? "Refine Asset Data" : "Initialize New Assets"}
+        header={editingItem ? 'Refine Asset Data' : 'Initialize New Assets'}
         modal
         className="w-full max-w-4xl mx-4"
         contentClassName="p-8"
         headerClassName="px-8 pt-8 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
-          root: { className: 'rounded-[3rem] overflow-hidden border-none shadow-2xl bg-white/90 backdrop-blur-2xl' },
-          mask: { className: 'backdrop-blur-md bg-black/30' }
+          root: {
+            className:
+              'rounded-[3rem] overflow-hidden border-none shadow-2xl bg-white/90 backdrop-blur-2xl',
+          },
+          mask: { className: 'backdrop-blur-md bg-black/30' },
         }}
       >
         <GalleryForm

@@ -26,13 +26,10 @@ const BlogEdit = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader 
-        title="Edit Post" 
+      <PageHeader
+        title="Edit Post"
         description={`Refining: ${blog.title}`}
-        breadcrumbs={[
-          { label: 'Blogs', url: '/blogs' },
-          { label: 'Edit' },
-        ]}
+        breadcrumbs={[{ label: 'Blogs', url: '/blogs' }, { label: 'Edit' }]}
       />
 
       <BlogForm initialData={blog} onSubmit={handleSave} isLoading={isLoading} />

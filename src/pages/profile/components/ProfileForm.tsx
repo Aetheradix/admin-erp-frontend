@@ -19,17 +19,16 @@ interface ProfileFormProps {
   onCancel: () => void;
 }
 
-
 export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps) => {
   const [formData, setFormData] = useState(initialData);
   const { data: departmentsData } = useGetDepartmentsQuery({});
   const departments = departmentsData?.data ?? [];
-  const departmentOptions = departments.map(({ department_name }: { id: string, department_name: string }) => ({
-    label: department_name,
-    value: department_name
-  }));
-
-
+  const departmentOptions = departments.map(
+    ({ department_name }: { id: string; department_name: string }) => ({
+      label: department_name,
+      value: department_name,
+    })
+  );
 
   return (
     <div className="flex flex-col gap-10">

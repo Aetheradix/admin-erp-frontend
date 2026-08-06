@@ -70,7 +70,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
             {user?.username || 'Admin User'}
           </span>
           <Avatar
-            image={user?.image_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'Felix'}`}
+            image={
+              user?.image_url ||
+              `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.username || 'Felix'}`
+            }
             width={32}
             height={32}
             className="w-8 h-8 rounded-pill border-2 border-white shadow-soft"

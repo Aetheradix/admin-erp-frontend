@@ -6,7 +6,6 @@ import { useGetLeavesQuery } from '@/store/api/leaveSlice';
 import { Clock, CheckCircle2, XCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 
-
 export function ApprovalHistory() {
   const { data: allLeaves = [], isLoading } = useGetLeavesQuery();
 
@@ -27,8 +26,13 @@ export function ApprovalHistory() {
     }
 
     return (
-      <Badge variant={variant} className="rounded-lg! px-3! py-1! font-bold! text-[11px]! uppercase!">
-        <span className="flex items-center gap-1.5">{icon} {status}</span>
+      <Badge
+        variant={variant}
+        className="rounded-lg! px-3! py-1! font-bold! text-[11px]! uppercase!"
+      >
+        <span className="flex items-center gap-1.5">
+          {icon} {status}
+        </span>
       </Badge>
     );
   };
@@ -39,8 +43,12 @@ export function ApprovalHistory() {
         {rowData.username.substring(0, 2).toUpperCase()}
       </div>
       <div className="flex flex-col">
-        <span className="font-black text-foreground text-sm uppercase tracking-tight">{rowData.username}</span>
-        <span className="text-[10px] text-muted font-black uppercase tracking-widest">{rowData.type}</span>
+        <span className="font-black text-foreground text-sm uppercase tracking-tight">
+          {rowData.username}
+        </span>
+        <span className="text-[10px] text-muted font-black uppercase tracking-widest">
+          {rowData.type}
+        </span>
       </div>
     </div>
   );
@@ -60,7 +68,11 @@ export function ApprovalHistory() {
   const commentTemplate = (rowData: any) => (
     <div className="max-w-xs group cursor-help">
       <p className="text-xs font-medium text-foreground/80 line-clamp-2 italic">
-        {rowData.admin_comment ? `"${rowData.admin_comment}"` : <span className="opacity-30">No feedback provided</span>}
+        {rowData.admin_comment ? (
+          `"${rowData.admin_comment}"`
+        ) : (
+          <span className="opacity-30">No feedback provided</span>
+        )}
       </p>
     </div>
   );
@@ -73,7 +85,6 @@ export function ApprovalHistory() {
         back
       />
 
-
       <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
         <DataTable
           value={historyLeaves}
@@ -85,15 +96,29 @@ export function ApprovalHistory() {
           rowHover
           stripedRows
         >
-          <Column header="Employee" body={userTemplate} className="py-6" sortable field="username" />
+          <Column
+            header="Employee"
+            body={userTemplate}
+            className="py-6"
+            sortable
+            field="username"
+          />
           <Column header="Duration" body={dateTemplate} sortable field="start_date" />
-          <Column field="reason" header="Reason" className="text-xs font-bold text-muted max-w-xs" />
+          <Column
+            field="reason"
+            header="Reason"
+            className="text-xs font-bold text-muted max-w-xs"
+          />
           <Column field="status" header="Decision" body={statusTemplate} sortable />
           <Column header="Admin Feedback" body={commentTemplate} />
           <Column
             field="updated_at"
             header="Processed On"
-            body={(rowData: { updated_at?: string }) => <span className="text-[10px] font-black text-muted/60 uppercase">{formatDate(rowData.updated_at)}</span>}
+            body={(rowData: { updated_at?: string }) => (
+              <span className="text-[10px] font-black text-muted/60 uppercase">
+                {formatDate(rowData.updated_at)}
+              </span>
+            )}
             sortable
           />
         </DataTable>

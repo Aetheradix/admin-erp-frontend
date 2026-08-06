@@ -8,7 +8,11 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventForm } from './components/EventForm';
-import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/store/api/eventSlice';
+import {
+  useGetEventsQuery,
+  useCreateEventMutation,
+  useDeleteEventMutation,
+} from '@/store/api/eventSlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import type { ERPEvent } from '@/types/models';
 import { Tabs } from '@/components/ui/primitives/Tabs';
@@ -55,13 +59,23 @@ const Events = () => {
       accept: async () => {
         try {
           await deleteEvent(id).unwrap();
-          showToast({ severity: 'success', summary: 'Cancelled', detail: 'Event cancelled successfully.', life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Cancelled',
+            detail: 'Event cancelled successfully.',
+            life: 3000,
+          });
         } catch (err: unknown) {
           const apiError = err as { data?: { message?: string } };
           console.error('Failed to delete event:', err);
-          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to cancel event', life: 3000 });
+          showToast({
+            severity: 'error',
+            summary: 'Error',
+            detail: apiError.data?.message || 'Failed to cancel event',
+            life: 3000,
+          });
         }
-      }
+      },
     });
   };
 
@@ -71,13 +85,23 @@ const Events = () => {
         console.warn('Update event not supported yet on backend');
       } else {
         await createEvent(data).unwrap();
-        showToast({ severity: 'success', summary: 'Scheduled', detail: 'Event scheduled successfully!', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Scheduled',
+          detail: 'Event scheduled successfully!',
+          life: 3000,
+        });
       }
       setShowForm(false);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to save event:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to save event', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: apiError.data?.message || 'Failed to save event',
+        life: 3000,
+      });
     }
   };
 
@@ -112,7 +136,10 @@ const Events = () => {
 
         <div className="flex items-center gap-3 w-full lg:w-auto">
           <div className="relative flex-1 lg:w-72 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={18} />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
+              size={18}
+            />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -120,7 +147,10 @@ const Events = () => {
               className="pl-12! h-12! text-sm!"
             />
           </div>
-          <Button variant="secondary" className="h-12 w-12! rounded-2xl! border-border-subtle! p-0!">
+          <Button
+            variant="secondary"
+            className="h-12 w-12! rounded-2xl! border-border-subtle! p-0!"
+          >
             <Filter size={18} className="text-muted" />
           </Button>
         </div>
@@ -129,12 +159,7 @@ const Events = () => {
       {/* Events Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
         {filteredEvents.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <EventCard key={event.id} event={event} onEdit={handleEdit} onDelete={handleDelete} />
         ))}
         {filteredEvents.length === 0 && (
           <div className="col-span-full py-20 bg-surface-subtle rounded-4xl border-2 border-dashed border-border-strong flex flex-col items-center justify-center text-center gap-4">
@@ -143,7 +168,9 @@ const Events = () => {
             </div>
             <div>
               <h4 className="text-xl font-black text-foreground">No events found</h4>
-              <p className="text-sm text-muted font-medium">Try adjusting your filters or search keywords.</p>
+              <p className="text-sm text-muted font-medium">
+                Try adjusting your filters or search keywords.
+              </p>
             </div>
           </div>
         )}
@@ -153,14 +180,14 @@ const Events = () => {
       <Dialog
         visible={showForm}
         onHide={() => setShowForm(false)}
-        header={editingEvent ? "Revise Event Schedule" : "Plan New Company Event"}
+        header={editingEvent ? 'Revise Event Schedule' : 'Plan New Company Event'}
         modal
         className="w-full max-w-4xl mx-4"
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' }
+          mask: { className: 'backdrop-blur-md bg-black/40' },
         }}
       >
         <EventForm

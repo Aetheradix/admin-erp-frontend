@@ -21,7 +21,10 @@ export const leaveSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Leaves'],
     }),
-    updateLeaveStatus: builder.mutation<AttendanceRequest, { id: number | string; status: string; comment?: string }>({
+    updateLeaveStatus: builder.mutation<
+      AttendanceRequest,
+      { id: number | string; status: string; comment?: string }
+    >({
       query: ({ id, status, comment }) => ({
         url: `/leaves/${id}/status`,
         method: 'PUT',

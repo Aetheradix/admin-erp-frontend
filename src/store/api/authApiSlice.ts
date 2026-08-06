@@ -17,7 +17,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     promoteToAdmin: builder.mutation({
-
       query: (userId) => ({
         url: '/auth/promote-to-admin',
         method: 'POST',
@@ -25,8 +24,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     updateProfile: builder.mutation({
-
-
       query: (data) => ({
         url: '/auth/profile',
         method: 'PUT',
@@ -84,29 +81,29 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-getPendingUsers: builder.query<any, void>({
-    query: () => '/auth/pending-users',
-    providesTags: ['User'],
-}),
+    getPendingUsers: builder.query<any, void>({
+      query: () => '/auth/pending-users',
+      providesTags: ['User'],
+    }),
 
-approveAccount: builder.mutation({
-  query: ({ id, role }) => ({
-    url: `/auth/approve-account/${id}`,
-    method: 'PATCH',
-    body: {
-      role,
-    },
-  }),
-  invalidatesTags: ['User'],
-}),
+    approveAccount: builder.mutation({
+      query: ({ id, role }) => ({
+        url: `/auth/approve-account/${id}`,
+        method: 'PATCH',
+        body: {
+          role,
+        },
+      }),
+      invalidatesTags: ['User'],
+    }),
 
-rejectAccount: builder.mutation({
-  query: (id) => ({
-    url: `/auth/reject-account/${id}`,
-    method: 'PATCH',
-  }),
-  invalidatesTags: ['User'],
-}),
+    rejectAccount: builder.mutation({
+      query: (id) => ({
+        url: `/auth/reject-account/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -127,8 +124,3 @@ export const {
   useProcessAdminElevationMutation,
   useLogoutMutation,
 } = authApiSlice;
-
-
-
-
-

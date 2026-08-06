@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const { projects, stats } = useDashboardData();
-  const {user} = useProfile();
+  const { user } = useProfile();
   return (
     <div className="min-h-screen pb-12">
       <h1 className="sr-only">AetherERP Dashboard</h1>
@@ -20,8 +20,12 @@ const Dashboard = () => {
         transition={{ duration: 0.6 }}
         className="mb-8"
       >
-        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Operational Overview</span>
-         <h2 className="text-4xl font-extrabold text-foreground tracking-tight mt-1">Hello, {user.name} </h2>
+        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+          Operational Overview
+        </span>
+        <h2 className="text-4xl font-extrabold text-foreground tracking-tight mt-1">
+          Hello, {user.name}{' '}
+        </h2>
       </motion.div>
 
       <div className="grid grid-cols-12 gap-8">

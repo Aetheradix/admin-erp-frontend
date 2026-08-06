@@ -25,7 +25,8 @@ const variantClasses = {
   primary: '',
   secondary: '!bg-surface-subtle !border-border-subtle !text-foreground hover:!bg-surface-elevated',
   outline: '!bg-transparent !border-primary !text-primary hover:!bg-primary-soft',
-  ghost: '!bg-transparent !border-transparent !text-muted hover:!bg-surface-subtle hover:!text-foreground !shadow-none',
+  ghost:
+    '!bg-transparent !border-transparent !text-muted hover:!bg-surface-subtle hover:!text-foreground !shadow-none',
   danger: '!bg-error !border-error hover:!opacity-90',
 };
 
@@ -35,40 +36,45 @@ const sizeClasses = {
   large: '!h-12 !px-6 !text-lg',
 };
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
-  variant = 'primary',
-  size = 'medium',
-  className,
-  label,
-  icon,
-  children,
-  danger: dangerProp,
-  htmlType,
-  type,
-  ...props
-}, ref) => {
-  const content = children ?? label;
-  const resolvedIcon = typeof icon === 'string' ? resolvePrimeIcon(icon) : icon;
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      variant = 'primary',
+      size = 'medium',
+      className,
+      label,
+      icon,
+      children,
+      danger: dangerProp,
+      htmlType,
+      type,
+      ...props
+    },
+    ref
+  ) => {
+    const content = children ?? label;
+    const resolvedIcon = typeof icon === 'string' ? resolvePrimeIcon(icon) : icon;
 
-  return (
-    <AntButton
-      ref={ref}
-      htmlType={htmlType ?? type}
-      type={variantMap[variant]}
-      danger={variant === 'danger' || dangerProp}
-      icon={resolvedIcon}
-      className={cn(
-        'transition-all duration-200 font-medium shadow-sm flex items-center justify-center gap-2',
-        !className?.includes('rounded-') && '!rounded-md',
-        variantClasses[variant],
-        sizeClasses[size],
-        className
-      )}
-      {...props}
-    >
-      {content}
-    </AntButton>
-  );
-});
+    return (
+      <AntButton
+        ref={ref}
+        htmlType={htmlType ?? type}
+        type={variantMap[variant]}
+        danger={variant === 'danger' || dangerProp}
+        icon={resolvedIcon}
+        className={cn(
+          'transition-all duration-200 font-medium shadow-sm flex items-center justify-center gap-2',
+          !className?.includes('rounded-') && '!rounded-md',
+          variantClasses[variant],
+          sizeClasses[size],
+          className
+        )}
+        {...props}
+      >
+        {content}
+      </AntButton>
+    );
+  }
+);
 
 Button.displayName = 'Button';

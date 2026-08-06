@@ -40,17 +40,17 @@ export const GrievanceForm = ({ onSubmit, onCancel }: GrievanceFormProps) => {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-6">
         <FormField label="Grievance Title" required id="grievance-title">
-          <Input 
+          <Input
             id="grievance-title"
-            value={formData.title} 
+            value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="A brief summary of your concern..." 
+            placeholder="A brief summary of your concern..."
           />
         </FormField>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="Category" required id="grievance-category">
-            <Select 
+            <Select
               id="grievance-category"
               options={CATEGORIES}
               value={formData.category}
@@ -60,28 +60,36 @@ export const GrievanceForm = ({ onSubmit, onCancel }: GrievanceFormProps) => {
           </FormField>
 
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-black text-muted uppercase tracking-widest">Anonymity Toggle</span>
-            <button 
+            <span className="text-[10px] font-black text-muted uppercase tracking-widest">
+              Anonymity Toggle
+            </span>
+            <button
               onClick={() => setFormData({ ...formData, isAnonymous: !formData.isAnonymous })}
               className={`flex items-center gap-3 h-14 px-6 rounded-3xl border transition-all duration-300 ${
-                formData.isAnonymous 
-                ? 'bg-success/5 border-success/30 text-success' 
-                : 'bg-surface-subtle border-border-subtle text-muted'
+                formData.isAnonymous
+                  ? 'bg-success/5 border-success/30 text-success'
+                  : 'bg-surface-subtle border-border-subtle text-muted'
               }`}
-              aria-label={formData.isAnonymous ? "Submission is currently anonymous. Click to share identity." : "Identity will be shared. Click to submit anonymously."}
+              aria-label={
+                formData.isAnonymous
+                  ? 'Submission is currently anonymous. Click to share identity.'
+                  : 'Identity will be shared. Click to submit anonymously.'
+              }
             >
               {formData.isAnonymous ? <Shield size={18} /> : <ShieldOff size={18} />}
-              <span className="font-bold text-sm">{formData.isAnonymous ? 'Submission is Anonymous' : 'Identity will be Shared'}</span>
+              <span className="font-bold text-sm">
+                {formData.isAnonymous ? 'Submission is Anonymous' : 'Identity will be Shared'}
+              </span>
             </button>
           </div>
         </div>
 
         <FormField label="Detailed Description" required id="grievance-description">
-          <Textarea 
+          <Textarea
             id="grievance-description"
-            value={formData.description} 
+            value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Please provide as much detail as possible to help us address the issue..." 
+            placeholder="Please provide as much detail as possible to help us address the issue..."
             rows={6}
           />
         </FormField>
@@ -92,25 +100,27 @@ export const GrievanceForm = ({ onSubmit, onCancel }: GrievanceFormProps) => {
           <Shield size={20} />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-black text-error uppercase tracking-widest">Safety Assurance</span>
+          <span className="text-xs font-black text-error uppercase tracking-widest">
+            Safety Assurance
+          </span>
           <p className="text-[11px] font-medium text-error/80 leading-relaxed">
-            All grievances are handled with extreme confidentiality and strictly follow our non-retaliation policy. 
-            Your well-being and psychological safety are our top priorities.
+            All grievances are handled with extreme confidentiality and strictly follow our
+            non-retaliation policy. Your well-being and psychological safety are our top priorities.
           </p>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button 
-          variant="ghost" 
-          onClick={onCancel} 
+        <Button
+          variant="ghost"
+          onClick={onCancel}
           className="px-8! rounded-3xl! font-bold text-muted!"
           aria-label="Discard grievance"
         >
           Discard
         </Button>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={handleApply}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
           aria-label="Submit grievance report"

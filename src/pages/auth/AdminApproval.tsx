@@ -27,12 +27,19 @@ const AdminApproval = () => {
         const result = await approveAdmin(token).unwrap();
         setStatus('success');
         setMessage(result.message || 'Admin account has been activated successfully!');
-        showToast({ severity: 'success', summary: 'Activated', detail: result.message || 'Admin account activated!', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Activated',
+          detail: result.message || 'Admin account activated!',
+          life: 3000,
+        });
       } catch (err: unknown) {
         setStatus('error');
-        const errorMessage = err && typeof err === 'object' && 'data' in err
-          ? (err as { data?: { message?: string } }).data?.message || 'Failed to approve admin account.'
-          : 'Failed to approve admin account. The token may be expired.';
+        const errorMessage =
+          err && typeof err === 'object' && 'data' in err
+            ? (err as { data?: { message?: string } }).data?.message ||
+              'Failed to approve admin account.'
+            : 'Failed to approve admin account. The token may be expired.';
         setMessage(errorMessage);
         showToast({ severity: 'error', summary: 'Failed', detail: errorMessage, life: 3000 });
       }
@@ -42,15 +49,14 @@ const AdminApproval = () => {
   }, [token, approveAdmin]);
 
   return (
-    <AuthLayout
-      title="Admin Activation"
-      subtitle="SYSTEM PRIVILEGE VERIFICATION PROTOCOL"
-    >
+    <AuthLayout title="Admin Activation" subtitle="SYSTEM PRIVILEGE VERIFICATION PROTOCOL">
       <div className="text-center py-10 animate-in fade-in zoom-in duration-700">
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-6">
             <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" />
-            <p className="text-sm font-black text-primary uppercase tracking-[0.2em]">Verifying Token...</p>
+            <p className="text-sm font-black text-primary uppercase tracking-[0.2em]">
+              Verifying Token...
+            </p>
           </div>
         )}
 
@@ -60,7 +66,9 @@ const AdminApproval = () => {
               <i className="pi pi-shield text-4xl" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">Access Granted</h2>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                Access Granted
+              </h2>
               <p className="text-muted text-sm leading-relaxed max-w-xs mx-auto italic font-bold">
                 {message}
               </p>
@@ -81,7 +89,9 @@ const AdminApproval = () => {
               <i className="pi pi-times-circle text-4xl" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">Verification Failed</h2>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                Verification Failed
+              </h2>
               <p className="text-rose-400 text-sm leading-relaxed max-w-xs mx-auto italic font-bold">
                 {message}
               </p>

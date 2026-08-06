@@ -11,7 +11,7 @@ export const mockStaff: import('@/types/models').StaffMember[] = [
     status: 'Active',
     joinDate: '2024-05-15',
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-    skills: ['React', 'TypeScript', 'Tailwind', 'Next.js']
+    skills: ['React', 'TypeScript', 'Tailwind', 'Next.js'],
   },
   {
     id: '2',
@@ -23,7 +23,7 @@ export const mockStaff: import('@/types/models').StaffMember[] = [
     status: 'Active',
     joinDate: '2024-08-20',
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus',
-    skills: ['Figma', 'UI/UX', 'Prototyping', 'Design Systems']
+    skills: ['Figma', 'UI/UX', 'Prototyping', 'Design Systems'],
   },
   {
     id: '3',
@@ -35,7 +35,7 @@ export const mockStaff: import('@/types/models').StaffMember[] = [
     status: 'On Leave',
     joinDate: '2023-11-10',
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
-    skills: ['Agile', 'Roadmapping', 'User Research', 'Data Analysis']
+    skills: ['Agile', 'Roadmapping', 'User Research', 'Data Analysis'],
   },
   {
     id: '4',
@@ -47,6 +47,6 @@ export const mockStaff: import('@/types/models').StaffMember[] = [
     status: 'Active',
     joinDate: '2025-01-05',
     image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
-    skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD']
-  }
+    skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
+  },
 ];

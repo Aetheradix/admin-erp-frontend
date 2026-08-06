@@ -34,7 +34,7 @@ export const GuestPassForm = ({ onSubmit, onCancel }: GuestPassFormProps) => {
     onSubmit({
       ...formData,
       status: 'Pending',
-      accessCode: `AX-${Math.floor(1000 + Math.random() * 9000)}-${formData.guestName.charAt(0).toUpperCase()}`
+      accessCode: `AX-${Math.floor(1000 + Math.random() * 9000)}-${formData.guestName.charAt(0).toUpperCase()}`,
     });
   };
 
@@ -43,23 +43,23 @@ export const GuestPassForm = ({ onSubmit, onCancel }: GuestPassFormProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-6">
           <FormField label="Guest Full Name" required>
-            <Input 
-              value={formData.guestName} 
+            <Input
+              value={formData.guestName}
               onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-              placeholder="e.g. Robert Vance" 
+              placeholder="e.g. Robert Vance"
             />
           </FormField>
 
           <FormField label="Host Name (Employee)" required>
-            <Input 
-              value={formData.hostName} 
+            <Input
+              value={formData.hostName}
               onChange={(e) => setFormData({ ...formData, hostName: e.target.value })}
-              placeholder="e.g. Sarah Chen" 
+              placeholder="e.g. Sarah Chen"
             />
           </FormField>
 
           <FormField label="Purpose of Visit" required>
-            <Select 
+            <Select
               options={PURPOSES}
               value={formData.purpose}
               onChange={(e) => setFormData({ ...formData, purpose: e.value })}
@@ -69,18 +69,20 @@ export const GuestPassForm = ({ onSubmit, onCancel }: GuestPassFormProps) => {
 
         <div className="flex flex-col gap-6">
           <FormField label="Visit Date" required>
-            <Calendar 
+            <Calendar
               value={formData.visitDate ? new Date(formData.visitDate) : null}
-              onChange={(e) => setFormData({ ...formData, visitDate: e.value?.toISOString().split('T')[0] || '' })}
-              placeholder="Select date" 
+              onChange={(e) =>
+                setFormData({ ...formData, visitDate: e.value?.toISOString().split('T')[0] || '' })
+              }
+              placeholder="Select date"
               dateFormat="yy-mm-dd"
               minDate={new Date()}
             />
           </FormField>
 
           <FormField label="Additional Notes">
-            <Textarea 
-              placeholder="Any specific access requirements or instructions for the visitor..." 
+            <Textarea
+              placeholder="Any specific access requirements or instructions for the visitor..."
               rows={5}
             />
           </FormField>
@@ -92,20 +94,26 @@ export const GuestPassForm = ({ onSubmit, onCancel }: GuestPassFormProps) => {
           <Key size={20} />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-black text-primary uppercase tracking-widest">Entry Authorization</span>
+          <span className="text-xs font-black text-primary uppercase tracking-widest">
+            Entry Authorization
+          </span>
           <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
-            By issuing this pass, you authorize the guest's entry for the specified duration. 
-            An access code will be generated upon approval.
+            By issuing this pass, you authorize the guest's entry for the specified duration. An
+            access code will be generated upon approval.
           </p>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button variant="ghost" onClick={onCancel} className="px-8! rounded-2xl! font-bold text-muted!">
+        <Button
+          variant="ghost"
+          onClick={onCancel}
+          className="px-8! rounded-2xl! font-bold text-muted!"
+        >
           Discard
         </Button>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={handleApply}
           className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20"
         >

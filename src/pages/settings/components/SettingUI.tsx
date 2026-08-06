@@ -1,4 +1,3 @@
-
 interface SettingItemProps {
   icon: any;
   label: string;
@@ -14,7 +13,9 @@ export function SettingItem({ icon: Icon, label, description, control }: Setting
           <Icon size={24} />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-base font-black text-foreground uppercase tracking-tight">{label}</span>
+          <span className="text-base font-black text-foreground uppercase tracking-tight">
+            {label}
+          </span>
           <p className="text-xs font-medium text-muted-foreground max-w-md italic">{description}</p>
         </div>
       </div>
@@ -34,9 +35,7 @@ export function SettingSection({ title, children }: SettingSectionProps) {
       <h3 className="text-sm font-black text-foreground uppercase tracking-[0.15em] border-l-4 border-primary pl-4 py-1">
         {title}
       </h3>
-      <div className="grid grid-cols-1 gap-4">
-        {children}
-      </div>
+      <div className="grid grid-cols-1 gap-4">{children}</div>
     </div>
   );
 }

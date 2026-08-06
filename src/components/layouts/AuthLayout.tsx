@@ -46,7 +46,9 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
                   />
                 ))}
               </div>
-              <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">Trusted by 1000+ founders</span>
+              <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">
+                Trusted by 1000+ founders
+              </span>
             </div>
 
             <h1 className="text-6xl font-black text-white leading-[1.1] mb-8 tracking-tighter">
@@ -54,17 +56,23 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
               <span className="text-primary italic">always</span> accessible.
             </h1>
             <p className="text-lg text-white/40 font-medium leading-relaxed">
-              AetherERP keeps your collective intelligence flowing across every tool,
-              every conversation, every decision. Never loose context again.
+              AetherERP keeps your collective intelligence flowing across every tool, every
+              conversation, every decision. Never loose context again.
             </p>
           </motion.div>
         </div>
 
         {/* Bottom Navigation (Mocked) */}
         <div className="relative z-10 flex gap-8 text-[11px] font-black text-white/40 uppercase tracking-[0.2em]">
-          <a href="#" className="hover:text-white transition-colors">Features</a>
-          <a href="#" className="hover:text-white transition-colors">How it works</a>
-          <a href="#" className="hover:text-white transition-colors">Mission</a>
+          <a href="#" className="hover:text-white transition-colors">
+            Features
+          </a>
+          <a href="#" className="hover:text-white transition-colors">
+            How it works
+          </a>
+          <a href="#" className="hover:text-white transition-colors">
+            Mission
+          </a>
         </div>
       </div>
 
@@ -85,17 +93,21 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-4xl font-black text-black mb-2 tracking-tight">{title}</h2>
-            {subtitle && <p className="text-muted font-medium mb-8 uppercase text-[10px] tracking-widest">{subtitle}</p>}
+            {subtitle && (
+              <p className="text-muted font-medium mb-8 uppercase text-[10px] tracking-widest">
+                {subtitle}
+              </p>
+            )}
 
-            <div className="mt-8">
-              {children}
-            </div>
+            <div className="mt-8">{children}</div>
           </motion.div>
         </div>
 
         {/* Bottom Logo Cloud (Inspired by reference) */}
         <div className="absolute bottom-12 left-0 w-full hidden lg:flex flex-col items-center px-8">
-          <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em] mb-6">Backed By the Best</p>
+          <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em] mb-6">
+            Backed By the Best
+          </p>
           <div className="flex items-center justify-center gap-12 opacity-30 grayscale saturate-0">
             <span className="font-black text-xl italic tracking-tighter">LOGOIPSUM</span>
             <span className="font-black text-xl italic tracking-tighter uppercase">Generic</span>

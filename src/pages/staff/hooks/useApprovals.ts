@@ -15,7 +15,7 @@ export const useApprovals = () => {
   const counts = {
     Pending: pendingLeaves.length,
     Approved: leaves.filter((l: any) => l.status === 'Approved').length,
-    Rejected: leaves.filter((l: any) => l.status === 'Rejected').length
+    Rejected: leaves.filter((l: any) => l.status === 'Rejected').length,
   };
 
   const handleAction = (request: any, type: 'Approved' | 'Rejected') => {
@@ -30,14 +30,24 @@ export const useApprovals = () => {
       await updateStatus({
         id: selectedRequest.id,
         status: actionType,
-        comment
+        comment,
       }).unwrap();
-      showToast({ severity: 'success', summary: 'Success', detail: `Leave ${actionType.toLowerCase()} successfully.`, life: 3000 });
+      showToast({
+        severity: 'success',
+        summary: 'Success',
+        detail: `Leave ${actionType.toLowerCase()} successfully.`,
+        life: 3000,
+      });
       setShowApprovalDialog(false);
       setSelectedRequest(null);
     } catch (err: any) {
       console.error('Failed to update status', err);
-      showToast({ severity: 'error', summary: 'Error', detail: err.data?.message || 'Failed to update leave status.', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.data?.message || 'Failed to update leave status.',
+        life: 3000,
+      });
     }
   };
 
@@ -51,6 +61,6 @@ export const useApprovals = () => {
     actionType,
     setShowApprovalDialog,
     handleAction,
-    onConfirmAction
+    onConfirmAction,
   };
 };

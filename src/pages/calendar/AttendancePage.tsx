@@ -19,7 +19,7 @@ export function AttendancePage() {
     setShowRequestForm,
     selectedDate,
     setSelectedDate,
-    handleRequestSubmit
+    handleRequestSubmit,
   } = useAttendancePage();
 
   if (isLoading) {
@@ -39,7 +39,8 @@ export function AttendancePage() {
           label: 'Request Day Off / WFH',
           onClick: () => setShowRequestForm(true),
           icon: 'pi pi-calendar-plus',
-          className: 'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className:
+            'px-8! py-4! rounded-2xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -47,8 +48,8 @@ export function AttendancePage() {
 
       <div className="flex flex-col xl:flex-row gap-8">
         <div className="flex-1">
-          <AttendanceCalendar 
-            records={records} 
+          <AttendanceCalendar
+            records={records}
             requests={calendarRequests}
             onDateSelect={setSelectedDate}
           />
@@ -70,7 +71,7 @@ export function AttendancePage() {
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' }
+          mask: { className: 'backdrop-blur-md bg-black/40' },
         }}
       >
         <AttendanceRequestForm

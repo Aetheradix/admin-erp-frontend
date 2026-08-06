@@ -14,11 +14,7 @@ const StaffModule = () => {
       <Route path="/feature-control" element={<FeatureControl />} />
       <Route path="/elevation-requests" element={<AdminRequestsPage />} />
     </Routes>
-
   );
 };
-
-
-
 
 export default StaffModule;

@@ -90,20 +90,30 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
             <Calendar
               id="finance-date"
               value={formData.date ? new Date(formData.date) : null}
-              onChange={(e) => setFormData({ ...formData, date: e.value?.toISOString().split('T')[0] || '' })}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.value?.toISOString().split('T')[0] || '' })
+              }
               placeholder="Select date"
               dateFormat="yy-mm-dd"
             />
           </FormField>
 
           <div className="mt-4 p-6 rounded-3xl bg-surface-subtle border border-dashed border-border-strong flex flex-col gap-4 relative overflow-hidden group">
-            <span className="text-xs font-black text-muted uppercase tracking-widest">Evidence Upload</span>
+            <span className="text-xs font-black text-muted uppercase tracking-widest">
+              Evidence Upload
+            </span>
             <div className="flex flex-col items-center justify-center py-6 gap-3">
               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform duration-500">
-                {formData.receiptUrl ? <CheckCircle2 size={24} className="text-success" /> : <FileText size={20} />}
+                {formData.receiptUrl ? (
+                  <CheckCircle2 size={24} className="text-success" />
+                ) : (
+                  <FileText size={20} />
+                )}
               </div>
               <span className="text-[10px] font-bold text-muted uppercase tracking-wider text-center">
-                {formData.receiptUrl ? 'Receipt attached successfully' : 'Click to upload receipt or proof of purchase'}
+                {formData.receiptUrl
+                  ? 'Receipt attached successfully'
+                  : 'Click to upload receipt or proof of purchase'}
               </span>
             </div>
             <FileUpload

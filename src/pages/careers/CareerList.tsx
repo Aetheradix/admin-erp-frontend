@@ -23,7 +23,7 @@ export function CareerList() {
     handleCreate,
     handleEdit,
     handleDelete,
-    handleSubmit
+    handleSubmit,
   } = useCareerList();
 
   if (isLoading) {
@@ -43,7 +43,8 @@ export function CareerList() {
           label: 'Post New Role',
           onClick: handleCreate,
           icon: 'pi pi-plus',
-          className: 'px-8! py-4! rounded-3xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className:
+            'px-8! py-4! rounded-3xl! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -85,7 +86,14 @@ export function CareerList() {
               icon={Briefcase}
               title="No Matching Roles"
               message={
-                <>We couldn't find any positions matching your criteria. Try adjusting your filters or <span className="text-primary cursor-pointer hover:underline mx-1">join our talent network</span> to stay updated on future openings.</>
+                <>
+                  We couldn't find any positions matching your criteria. Try adjusting your filters
+                  or{' '}
+                  <span className="text-primary cursor-pointer hover:underline mx-1">
+                    join our talent network
+                  </span>{' '}
+                  to stay updated on future openings.
+                </>
               }
             />
           )}
@@ -94,7 +102,12 @@ export function CareerList() {
 
       <CalloutBanner
         padding="lg"
-        title={<>Beyond Just a Job. <br /><span className="text-primary">A Culture of Excellence.</span></>}
+        title={
+          <>
+            Beyond Just a Job. <br />
+            <span className="text-primary">A Culture of Excellence.</span>
+          </>
+        }
         description="We offer more than just competitive compensation. From visionary projects to a supportive ecosystem, we provide the environment for you to do the best work of your life."
         action={{ label: 'Meet the Team' }}
         className="mt-8"
@@ -103,14 +116,14 @@ export function CareerList() {
       <Dialog
         visible={showForm}
         onHide={() => setShowForm(false)}
-        header={editingCareer ? "Modify Opportunity" : "Launch New Position"}
+        header={editingCareer ? 'Modify Opportunity' : 'Launch New Position'}
         modal
         className="w-full max-w-4xl mx-4"
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
           root: { className: 'rounded-4xl overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' }
+          mask: { className: 'backdrop-blur-md bg-black/40' },
         }}
       >
         <CareerForm

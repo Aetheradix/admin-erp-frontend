@@ -9,14 +9,15 @@ const AdminApproval = lazy(() => import('@/pages/auth/AdminApproval'));
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const AppFeature = lazy(() => import('@/pages/index'));
 
-
 const LoadingScreen = () => (
   <div className="w-full h-screen flex items-center justify-center bg-white">
     <div className="flex flex-col items-center gap-4 animate-pulse">
       <div className="w-16 h-16 rounded-3xl bg-primary/20 flex items-center justify-center text-primary">
         <i className="pi pi-spin pi-spinner text-3xl" />
       </div>
-      <span className="text-[10px] font-black uppercase tracking-widest text-primary">Initializing AetherERP...</span>
+      <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+        Initializing AetherERP...
+      </span>
     </div>
   </div>
 );
@@ -32,9 +33,7 @@ const ProtectedApp = () => {
     return <Navigate to="/auth/login" replace />;
   }
 
-  return (
-    <AppLayout />
-  );
+  return <AppLayout />;
 };
 
 function App() {

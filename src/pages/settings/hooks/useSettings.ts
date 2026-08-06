@@ -19,14 +19,14 @@ export const useSettings = () => {
     autoArchive: true,
   });
 
-  const updateSetting = <K extends keyof typeof settings>(key: K, value: typeof settings[K]) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+  const updateSetting = <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   return {
     settings,
     updateSetting,
     LANGUAGES,
-    THEME_COLORS
+    THEME_COLORS,
   };
 };

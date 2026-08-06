@@ -39,18 +39,40 @@ export function StatsPage() {
       {/* High Level Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Active Projects', value: statsData?.projects?.active ?? 0, icon: Layers, color: 'text-primary' },
-          { label: 'Total Employees', value: statsData?.employees?.total ?? mockHierarchy.length, icon: PieChart, color: 'text-info' },
+          {
+            label: 'Active Projects',
+            value: statsData?.projects?.active ?? 0,
+            icon: Layers,
+            color: 'text-primary',
+          },
+          {
+            label: 'Total Employees',
+            value: statsData?.employees?.total ?? mockHierarchy.length,
+            icon: PieChart,
+            color: 'text-info',
+          },
           { label: 'Completion Rate', value: '92%', icon: TrendingUp, color: 'text-success' },
-          { label: 'Historical Data', value: archivedProjects.length, icon: ArchiveIcon, color: 'text-warning' },
+          {
+            label: 'Historical Data',
+            value: archivedProjects.length,
+            icon: ArchiveIcon,
+            color: 'text-warning',
+          },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white p-6 rounded-2xl border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group">
-            <div className={`w-14 h-14 rounded-lg bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
+          <div
+            key={stat.label}
+            className="bg-white p-6 rounded-2xl border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group"
+          >
+            <div
+              className={`w-14 h-14 rounded-lg bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}
+            >
               <stat.icon size={28} />
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-black text-foreground">{stat.value}</span>
-              <span className="text-xs font-bold text-muted uppercase tracking-wider">{stat.label}</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-wider">
+                {stat.label}
+              </span>
             </div>
           </div>
         ))}
@@ -63,24 +85,20 @@ export function StatsPage() {
             <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
               <Sparkles size={18} />
             </div>
-            <span className="text-sm font-black text-foreground uppercase tracking-widest">Strategy Portal</span>
+            <span className="text-sm font-black text-foreground uppercase tracking-widest">
+              Strategy Portal
+            </span>
           </div>
-          <Tabs
-            items={TABS}
-            activeItem={activeTab}
-            onItemChange={setActiveTab}
-          />
+          <Tabs items={TABS} activeItem={activeTab} onItemChange={setActiveTab} />
         </div>
 
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-          {activeTab === 'Hierarchy' && (
-            <OrgChart nodes={mockHierarchy} />
-          )}
+          {activeTab === 'Hierarchy' && <OrgChart nodes={mockHierarchy} />}
 
           {activeTab === 'Ongoing Projects' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {ongoingProjects.map(project => (
+              {ongoingProjects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
             </div>
@@ -88,7 +106,7 @@ export function StatsPage() {
 
           {activeTab === 'Archive' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {archivedProjects.map(project => (
+              {archivedProjects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
               {archivedProjects.length === 0 && (
@@ -106,7 +124,11 @@ export function StatsPage() {
 
       <CalloutBanner
         padding="lg"
-        title={<>Charting the <span className="text-primary">Unknown</span></>}
+        title={
+          <>
+            Charting the <span className="text-primary">Unknown</span>
+          </>
+        }
         description="Our organizational growth is driven by transparency and iterative excellence. By visualizing our structure and project lifecycles, we empower every team member to understand their impact and align with our global vision."
       />
     </div>

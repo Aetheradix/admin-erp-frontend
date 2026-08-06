@@ -4,11 +4,11 @@ export const labelVariants = {
 };
 
 export const sidebarVariants = {
-  open: () => ({ 
+  open: () => ({
     width: 256,
     x: 0,
   }),
-  closed: (isMobile: boolean) => ({ 
+  closed: (isMobile: boolean) => ({
     width: isMobile ? 256 : 80,
     x: isMobile ? '-100%' : 0,
   }),

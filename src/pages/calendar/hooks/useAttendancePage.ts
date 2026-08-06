@@ -19,13 +19,15 @@ export const useAttendancePage = () => {
   // Hide from admin: they handle global approvals elsewhere
   const calendarRequests = isAdmin ? [] : requests;
 
-  const handleRequestSubmit = async (data: Partial<AttendanceRequest> & { startDate: string; endDate: string }) => {
+  const handleRequestSubmit = async (
+    data: Partial<AttendanceRequest> & { startDate: string; endDate: string }
+  ) => {
     try {
       await createLeaveRequest({
         type: data.type,
         start_date: data.startDate,
         end_date: data.endDate,
-        reason: data.reason
+        reason: data.reason,
       }).unwrap();
       setShowRequestForm(false);
     } catch (error) {
@@ -43,6 +45,6 @@ export const useAttendancePage = () => {
     setShowRequestForm,
     selectedDate,
     setSelectedDate,
-    handleRequestSubmit
+    handleRequestSubmit,
   };
 };

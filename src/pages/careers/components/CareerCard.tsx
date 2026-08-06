@@ -14,14 +14,14 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
     <div className="group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
-        <button 
+        <button
           onClick={() => onEdit?.(String(career.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Edit Position"
         >
           <Edit2 size={16} />
         </button>
-        <button 
+        <button
           onClick={() => onDelete?.(String(career.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
           title="Remove Position"
@@ -32,7 +32,7 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
 
       {/* Background Accent Decor */}
       <div className="absolute -right-12 -top-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
-      
+
       <div className="relative flex flex-col h-full gap-6">
         {/* Header: Icon + Department */}
         <div className="flex items-center justify-between">

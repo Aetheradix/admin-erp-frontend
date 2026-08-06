@@ -9,7 +9,9 @@ export const guestpassSlice = apiSlice.injectEndpoints({
       providesTags: ['GuestPasses'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapGuestPass(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapGuestPass(item as Record<string, unknown>))
+          : [];
       },
     }),
     issuePass: builder.mutation<GuestPass, Partial<GuestPass> & { email?: string }>({
@@ -35,8 +37,4 @@ export const guestpassSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {
-  useGetPassesQuery,
-  useIssuePassMutation,
-  useRevokePassMutation,
-} = guestpassSlice;
+export const { useGetPassesQuery, useIssuePassMutation, useRevokePassMutation } = guestpassSlice;

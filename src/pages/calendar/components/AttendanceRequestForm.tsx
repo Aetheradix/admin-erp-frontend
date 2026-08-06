@@ -5,7 +5,6 @@ import { Textarea } from '@/components/ui/primitives/Textarea';
 import { Calendar } from '@/components/ui/primitives/Calendar';
 import { useState } from 'react';
 
-
 interface AttendanceRequestFormProps {
   onSubmit: (data: {
     type: string;
@@ -33,13 +32,14 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
     endDate: null as Date | null,
   });
 
-
   const handleApply = () => {
     if (!formData.startDate || !formData.reason) return;
     onSubmit({
       ...formData,
       startDate: formData.startDate.toISOString().split('T')[0],
-      endDate: formData.endDate ? formData.endDate.toISOString().split('T')[0] : formData.startDate.toISOString().split('T')[0],
+      endDate: formData.endDate
+        ? formData.endDate.toISOString().split('T')[0]
+        : formData.startDate.toISOString().split('T')[0],
       appliedDate: new Date().toISOString().split('T')[0],
       status: 'Pending',
     });
@@ -91,7 +91,11 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button variant="ghost" onClick={onCancel} className="px-8! rounded-2xl! font-bold text-muted!">
+        <Button
+          variant="ghost"
+          onClick={onCancel}
+          className="px-8! rounded-2xl! font-bold text-muted!"
+        >
           Discard
         </Button>
         <Button

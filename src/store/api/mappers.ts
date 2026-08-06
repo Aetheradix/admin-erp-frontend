@@ -135,7 +135,11 @@ export const mapReimbursement = (item: Record<string, unknown>): Reimbursement =
     ? new Date(String(item.created_at)).toISOString().split('T')[0]
     : String(item.date ?? ''),
   status: String(item.status ?? 'Pending'),
-  receiptUrl: item.receipt_url ? String(item.receipt_url) : item.receiptUrl ? String(item.receiptUrl) : undefined,
+  receiptUrl: item.receipt_url
+    ? String(item.receipt_url)
+    : item.receiptUrl
+      ? String(item.receiptUrl)
+      : undefined,
   description: String(item.description ?? ''),
 });
 
@@ -231,11 +235,7 @@ export const mapProject = (project: Record<string, unknown>): Project => ({
 
   leadId: String(project.project_manager ?? 'N/A'),
 
-  startDate: project.start_date
-    ? String(project.start_date)
-    : '',
+  startDate: project.start_date ? String(project.start_date) : '',
 
-  endDate: project.end_date
-    ? String(project.end_date)
-    : undefined,
+  endDate: project.end_date ? String(project.end_date) : undefined,
 });

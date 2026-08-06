@@ -1,4 +1,11 @@
-import { Clock, CheckCircle2, AlertCircle, MessageSquare, Shield, ChevronRight } from 'lucide-react';
+import {
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  MessageSquare,
+  Shield,
+  ChevronRight,
+} from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { Grievance } from '../hooks/mockGrievances';
 
@@ -9,21 +16,31 @@ interface GrievanceCardProps {
 export function GrievanceCard({ grievance }: GrievanceCardProps) {
   const getStatusStyles = (status: string) => {
     switch (status) {
-      case 'Resolved': return 'bg-success/10 text-success border-success/20';
-      case 'In Review': return 'bg-warning/10 text-warning border-warning/20';
-      case 'Received': return 'bg-info/10 text-info border-info/20';
-      case 'Closed': return 'bg-muted/10 text-muted border-muted/20';
-      default: return 'bg-muted/10 text-muted';
+      case 'Resolved':
+        return 'bg-success/10 text-success border-success/20';
+      case 'In Review':
+        return 'bg-warning/10 text-warning border-warning/20';
+      case 'Received':
+        return 'bg-info/10 text-info border-info/20';
+      case 'Closed':
+        return 'bg-muted/10 text-muted border-muted/20';
+      default:
+        return 'bg-muted/10 text-muted';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Resolved': return <CheckCircle2 size={14} />;
-      case 'In Review': return <Clock size={14} />;
-      case 'Received': return <AlertCircle size={14} />;
-      case 'Closed': return <MessageSquare size={14} />;
-      default: return null;
+      case 'Resolved':
+        return <CheckCircle2 size={14} />;
+      case 'In Review':
+        return <Clock size={14} />;
+      case 'Received':
+        return <AlertCircle size={14} />;
+      case 'Closed':
+        return <MessageSquare size={14} />;
+      default:
+        return null;
     }
   };
 
@@ -38,7 +55,9 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{grievance.category}</span>
+          <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+            {grievance.category}
+          </span>
           <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors pr-8">
             {grievance.title}
           </h3>
@@ -61,14 +80,14 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
       )}
 
       <div className="flex items-center gap-6 pt-2 border-t border-border-subtle/50">
-        <button 
+        <button
           className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
           aria-label={`View full details of grievance #${grievance.id}`}
         >
           View Details
           <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
-        <button 
+        <button
           className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
           aria-label={`Submit a response to grievance #${grievance.id}`}
         >
@@ -78,14 +97,16 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
       </div>
 
       <div className="mt-auto flex items-center justify-between pt-6 border-t border-border-subtle/50">
-        <div className={cn(
-          "flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-          getStatusStyles(grievance.status)
-        )}>
+        <div
+          className={cn(
+            'flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border',
+            getStatusStyles(grievance.status)
+          )}
+        >
           {getStatusIcon(grievance.status)}
           <span>{grievance.status}</span>
         </div>
-        
+
         <div className="flex flex-col items-end">
           <span className="text-[10px] font-black text-muted uppercase">Filed On</span>
           <span className="text-[10px] font-bold text-foreground">{grievance.date}</span>

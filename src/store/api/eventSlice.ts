@@ -9,7 +9,9 @@ export const eventSlice = apiSlice.injectEndpoints({
       providesTags: ['Event'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapEvent(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapEvent(item as Record<string, unknown>))
+          : [];
       },
     }),
     createEvent: builder.mutation<ERPEvent, Partial<ERPEvent>>({

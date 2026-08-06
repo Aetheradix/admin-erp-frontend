@@ -6,7 +6,7 @@ import {
   useGetBlogQuery,
   useCreateBlogMutation,
   useUpdateBlogMutation,
-  useDeleteBlogMutation
+  useDeleteBlogMutation,
 } from '@/store/api/blogSlice';
 import type { Blog } from '@/types/models';
 
@@ -15,7 +15,11 @@ export const useBlogs = (id?: string) => {
 
   // Queries
   const { data: blogs = [], isLoading: isFetchingList, isError: isListError } = useGetBlogsQuery();
-  const { data: blog, isLoading: isFetchingSingle, isError: isSingleError } = useGetBlogQuery(id as string, { skip: !id });
+  const {
+    data: blog,
+    isLoading: isFetchingSingle,
+    isError: isSingleError,
+  } = useGetBlogQuery(id as string, { skip: !id });
 
   // Mutations
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
@@ -29,14 +33,24 @@ export const useBlogs = (id?: string) => {
       } else {
         await createBlog(data).unwrap();
       }
-      showToast({ severity: 'success', summary: 'Success', detail: `Post ${id ? 'updated' : 'created'} successfully!`, life: 3000 });
+      showToast({
+        severity: 'success',
+        summary: 'Success',
+        detail: `Post ${id ? 'updated' : 'created'} successfully!`,
+        life: 3000,
+      });
       setTimeout(() => {
-         navigate("/blogs");
+        navigate('/blogs');
       }, 300);
     } catch (error: unknown) {
       const apiError = error as { data?: { message?: string } };
       console.error('Failed to save blog:', error);
-      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to save post', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: apiError.data?.message || 'Failed to save post',
+        life: 3000,
+      });
     }
   };
 
@@ -47,13 +61,23 @@ export const useBlogs = (id?: string) => {
       accept: async () => {
         try {
           await deleteBlog(blogId).unwrap();
-          showToast({ severity: 'success', summary: 'Success', detail: 'Post deleted successfully!', life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Post deleted successfully!',
+            life: 3000,
+          });
         } catch (error: unknown) {
           const apiError = error as { data?: { message?: string } };
           console.error('Failed to delete blog:', error);
-          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to delete post', life: 3000 });
+          showToast({
+            severity: 'error',
+            summary: 'Error',
+            detail: apiError.data?.message || 'Failed to delete post',
+            life: 3000,
+          });
         }
-      }
+      },
     });
   };
 
@@ -64,6 +88,6 @@ export const useBlogs = (id?: string) => {
     isError: isListError || isSingleError,
     handleSave,
     handleDelete,
-    navigate
+    navigate,
   };
 };

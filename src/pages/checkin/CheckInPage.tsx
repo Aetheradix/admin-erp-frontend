@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/primitives/Button';
-import { LogIn, LogOut,Coffee } from 'lucide-react';
+import { LogIn, LogOut, Coffee } from 'lucide-react';
 import { useAttendance } from './hooks/useAttendance';
 import { MoodSelector } from './components/MoodSelector';
 import { formatTime, formatFullDate } from '@/utils/date';
@@ -15,7 +15,7 @@ export function CheckInPage() {
     handleBreak,
     handleAttendance,
     logMood,
-    isBreakLoading
+    isBreakLoading,
   } = useAttendance();
 
   // function handleBreak(event: MouseEvent<HTMLElement, MouseEvent>): void {
@@ -38,9 +38,11 @@ export function CheckInPage() {
               <p className="text-xs font-bold text-muted mt-0.5">{formatFullDate(time)}</p>
             </div>
           </div>
-          
+
           <div className="absolute top-8 right-10 bg-surface-subtle px-4 py-2 rounded-2xl border border-border-subtle">
-            <span className={`text-[11px] font-black tracking-widest uppercase ${status?.status === 'checked-in' ? 'text-success' : 'text-muted'}`}>
+            <span
+              className={`text-[11px] font-black tracking-widest uppercase ${status?.status === 'checked-in' ? 'text-success' : 'text-muted'}`}
+            >
               {status?.status === 'checked-in' ? 'IN OFFICE' : 'NOT IN'}
             </span>
           </div>
@@ -49,11 +51,13 @@ export function CheckInPage() {
             <div className="text-7xl font-black tracking-tighter text-foreground mb-2">
               {formatTime(time)}
             </div>
-            <p className="text-sm font-black text-primary/80 tracking-widest uppercase">Real-time Clock</p>
+            <p className="text-sm font-black text-primary/80 tracking-widest uppercase">
+              Real-time Clock
+            </p>
           </div>
 
-          <Button 
-            variant={status?.status === 'checked-in' ? 'ghost' : 'primary'} 
+          <Button
+            variant={status?.status === 'checked-in' ? 'ghost' : 'primary'}
             aria-label={status?.status === 'checked-in' ? 'Check out' : 'Check in'}
             className={`w-full h-16 rounded-[24px]! text-lg shadow-xl ${status?.status === 'checked-in' ? 'border-2 border-border-strong!' : 'shadow-primary/30'} flex items-center justify-center gap-4 active:scale-95 transition-all`}
             onClick={handleAttendance}
@@ -61,33 +65,32 @@ export function CheckInPage() {
             disabled={isLoading}
           >
             {status?.status === 'checked-in' ? <LogOut size={24} /> : <LogIn size={24} />}
-            <span className="font-black tracking-widest uppercase">{status?.status === 'checked-in' ? 'Check Out' : 'Check In'}</span>
+            <span className="font-black tracking-widest uppercase">
+              {status?.status === 'checked-in' ? 'Check Out' : 'Check In'}
+            </span>
           </Button>
 
           <Button
-             variant={status?.onBreak ? "ghost" : "primary"}
-             aria-label={status?.onBreak ? "End Break" : "Start Break"}
-             className={`w-full h-16 rounded-[24px]! text-lg shadow-xl ${
-               status?.onBreak
-                 ? "border-2 border-border-strong!"
-                 : "shadow-primary/30"
-             } flex items-center justify-center gap-4 active:scale-95 transition-all`}
-             onClick={handleBreak}
-             loading={isBreakLoading}
-             disabled={isBreakLoading || status?.status !== "checked-in"}
-           >
-             {status?.onBreak ? <LogIn size={24} /> : <Coffee size={24} />}
-             <span className="font-black tracking-widest uppercase">
-               {status?.onBreak ? "End Break" : "Take Break"}
-             </span>
-           </Button>
-
+            variant={status?.onBreak ? 'ghost' : 'primary'}
+            aria-label={status?.onBreak ? 'End Break' : 'Start Break'}
+            className={`w-full h-16 rounded-[24px]! text-lg shadow-xl ${
+              status?.onBreak ? 'border-2 border-border-strong!' : 'shadow-primary/30'
+            } flex items-center justify-center gap-4 active:scale-95 transition-all`}
+            onClick={handleBreak}
+            loading={isBreakLoading}
+            disabled={isBreakLoading || status?.status !== 'checked-in'}
+          >
+            {status?.onBreak ? <LogIn size={24} /> : <Coffee size={24} />}
+            <span className="font-black tracking-widest uppercase">
+              {status?.onBreak ? 'End Break' : 'Take Break'}
+            </span>
+          </Button>
 
           <div className="w-full mt-10">
-            <MoodSelector 
-              selectedMood={selectedMood} 
-              isSubmittingMood={isSubmittingMood} 
-              onMoodSelect={logMood} 
+            <MoodSelector
+              selectedMood={selectedMood}
+              isSubmittingMood={isSubmittingMood}
+              onMoodSelect={logMood}
             />
           </div>
 

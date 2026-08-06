@@ -27,7 +27,7 @@ export const PageHeader = ({
   primaryAction,
   breadcrumbs,
   back,
-  className
+  className,
 }: PageHeaderProps) => {
   const navigate = useNavigate();
 
@@ -65,7 +65,9 @@ export const PageHeader = ({
             />
           )}
           <div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight leading-none">{title}</h1>
+            <h1 className="text-3xl font-black text-foreground tracking-tight leading-none">
+              {title}
+            </h1>
             {(subtitle || description) && (
               <p className="text-muted text-sm mt-2 max-w-2xl font-medium">
                 {description || subtitle}
@@ -81,7 +83,10 @@ export const PageHeader = ({
               label={primaryAction.label}
               icon={primaryAction.icon}
               onClick={primaryAction.onClick}
-              className={cn('px-6 py-3 rounded-xl shadow-lg shadow-primary/10', primaryAction.className)}
+              className={cn(
+                'px-6 py-3 rounded-xl shadow-lg shadow-primary/10',
+                primaryAction.className
+              )}
             />
           )}
         </div>

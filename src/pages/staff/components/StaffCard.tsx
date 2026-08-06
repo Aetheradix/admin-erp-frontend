@@ -9,12 +9,14 @@ interface StaffCardProps {
 }
 
 export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProps) {
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-success';
-      case 'On Leave': return 'bg-warning';
-      default: return 'bg-muted';
+      case 'Active':
+        return 'bg-success';
+      case 'On Leave':
+        return 'bg-warning';
+      default:
+        return 'bg-muted';
     }
   };
 
@@ -61,14 +63,20 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         <div className="relative">
           <div className="w-24 h-24 rounded-4xl overflow-hidden border-4 border-surface-subtle shadow-inner">
             <img
-              src={member.image_url || member.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${member.username || member.name}`}
+              src={
+                member.image_url ||
+                member.image ||
+                `https://api.dicebear.com/7.x/notionists/svg?seed=${member.username || member.name}`
+              }
               alt={member.username || member.name}
               width={96}
               height={96}
               className="w-full h-full object-cover"
             />
           </div>
-          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status ?? 'Active')} ${member.status === 'Active' ? 'animate-pulse' : ''}`} />
+          <div
+            className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-white ${getStatusColor(member.status ?? 'Active')} ${member.status === 'Active' ? 'animate-pulse' : ''}`}
+          />
         </div>
 
         {/* Identity */}
@@ -84,20 +92,29 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         {/* Department & Join Date */}
         <div className="flex items-center gap-6 py-2 border-y border-border-subtle/50 w-full justify-center">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-black text-muted uppercase tracking-tighter">Department</span>
+            <span className="text-[10px] font-black text-muted uppercase tracking-tighter">
+              Department
+            </span>
             <span className="text-xs font-bold text-foreground">{member.department}</span>
           </div>
           <div className="h-4 w-px bg-border-subtle/50" />
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-black text-muted uppercase tracking-tighter">Joined</span>
-            <span className="text-xs font-bold text-foreground">{member.join_date || member.joinDate}</span>
+            <span className="text-[10px] font-black text-muted uppercase tracking-tighter">
+              Joined
+            </span>
+            <span className="text-xs font-bold text-foreground">
+              {member.join_date || member.joinDate}
+            </span>
           </div>
         </div>
 
         {/* Skills Tags */}
         <div className="flex flex-wrap justify-center gap-2">
           {member.skills.slice(0, 3).map((skill) => (
-            <span key={skill} className="px-3 py-1 rounded-lg bg-surface-subtle text-[10px] font-bold text-muted-foreground border border-border-subtle/50">
+            <span
+              key={skill}
+              className="px-3 py-1 rounded-lg bg-surface-subtle text-[10px] font-bold text-muted-foreground border border-border-subtle/50"
+            >
               {skill}
             </span>
           ))}

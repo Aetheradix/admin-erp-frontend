@@ -35,7 +35,13 @@ export const Dialog = ({
     <Modal
       open={visible}
       onCancel={onHide}
-      title={header ? <span className={cn('text-2xl font-black tracking-tight', headerClassName)}>{header}</span> : null}
+      title={
+        header ? (
+          <span className={cn('text-2xl font-black tracking-tight', headerClassName)}>
+            {header}
+          </span>
+        ) : null
+      }
       footer={footer}
       centered
       className={cn('premium-dialog', className)}

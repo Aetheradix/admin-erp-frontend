@@ -32,7 +32,12 @@ const ForgotPasswordPage = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      showToast({ severity: 'error', summary: 'Error', detail: "Passwords don't match", life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: "Passwords don't match",
+        life: 3000,
+      });
       return;
     }
     try {
@@ -45,8 +50,12 @@ const ForgotPasswordPage = () => {
 
   return (
     <AuthLayout
-      title={step === 1 ? "Forgot Password" : "Reset Password"}
-      subtitle={step === 1 ? "ENTER YOUR EMAIL TO RECEIVE A SECURITY RESET CODE." : "ENTER THE CODE SENT TO YOUR EMAIL AND YOUR NEW PASSWORD."}
+      title={step === 1 ? 'Forgot Password' : 'Reset Password'}
+      subtitle={
+        step === 1
+          ? 'ENTER YOUR EMAIL TO RECEIVE A SECURITY RESET CODE.'
+          : 'ENTER THE CODE SENT TO YOUR EMAIL AND YOUR NEW PASSWORD.'
+      }
     >
       <AnimatePresence mode="wait">
         {step === 1 ? (
@@ -130,7 +139,10 @@ const ForgotPasswordPage = () => {
       </AnimatePresence>
 
       <div className="mt-10 pt-10 border-t border-border-subtle text-center">
-        <Link to="/auth/login" className="text-muted font-black text-xs uppercase tracking-widest hover:text-primary transition-colors">
+        <Link
+          to="/auth/login"
+          className="text-muted font-black text-xs uppercase tracking-widest hover:text-primary transition-colors"
+        >
           Back to Login
         </Link>
       </div>

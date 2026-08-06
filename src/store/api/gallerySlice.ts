@@ -9,7 +9,9 @@ export const gallerySlice = apiSlice.injectEndpoints({
       providesTags: ['Gallery'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapGalleryItem(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapGalleryItem(item as Record<string, unknown>))
+          : [];
       },
     }),
     uploadGalleryItem: builder.mutation<GalleryItem, Partial<GalleryItem>>({
@@ -30,8 +32,5 @@ export const gallerySlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {
-  useGetGalleryQuery,
-  useUploadGalleryItemMutation,
-  useDeleteGalleryItemMutation,
-} = gallerySlice;
+export const { useGetGalleryQuery, useUploadGalleryItemMutation, useDeleteGalleryItemMutation } =
+  gallerySlice;

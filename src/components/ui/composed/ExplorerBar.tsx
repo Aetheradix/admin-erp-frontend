@@ -36,11 +36,7 @@ export const ExplorerBar = ({
       </div>
 
       <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2 lg:pb-0">
-        <Tabs
-          items={tabs}
-          activeItem={activeTab}
-          onItemChange={onTabChange}
-        />
+        <Tabs items={tabs} activeItem={activeTab} onItemChange={onTabChange} />
       </div>
 
       {action ?? (

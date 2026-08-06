@@ -17,14 +17,14 @@ export default function ProjectCard({
   value = '$ 0',
   color = '#4F46E5',
   category = 'GENERAL',
-  participants = 0
+  participants = 0,
 }: ProjectCardProps) {
   return (
     <motion.div
       whileHover={{ y: -8, scale: 1.02 }}
       style={{
         backgroundColor: color,
-        boxShadow: `0 20px 40px -15px ${color}33`
+        boxShadow: `0 20px 40px -15px ${color}33`,
       }}
       className="group relative p-8 rounded-[2rem] flex flex-col justify-between min-h-[200px] cursor-pointer transition-all duration-500 overflow-hidden"
     >
@@ -35,7 +35,9 @@ export default function ProjectCard({
       <div className="relative">
         <div className="flex items-center justify-between mb-6">
           <div className="bg-white/15 backdrop-blur-xl px-4 py-1.5 rounded-full border border-white/20">
-            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">#{category}</span>
+            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">
+              #{category}
+            </span>
           </div>
           <motion.div
             whileHover={{ rotate: 90 }}
@@ -45,16 +47,22 @@ export default function ProjectCard({
           </motion.div>
         </div>
 
-        <h3 className="text-2xl font-black text-white leading-[1.1] mb-2 tracking-tight">{title}</h3>
+        <h3 className="text-2xl font-black text-white leading-[1.1] mb-2 tracking-tight">
+          {title}
+        </h3>
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-white/40 group-hover:bg-white animate-pulse" />
-          <p className="text-[11px] font-bold text-white/70 group-hover:text-white transition-colors">{tasks} tasks in progress</p>
+          <p className="text-[11px] font-bold text-white/70 group-hover:text-white transition-colors">
+            {tasks} tasks in progress
+          </p>
         </div>
       </div>
 
       <div className="relative flex items-end justify-between mt-10">
         <div>
-          <span className="text-[9px] font-black text-white/50 uppercase tracking-widest block mb-1">Contract Value</span>
+          <span className="text-[9px] font-black text-white/50 uppercase tracking-widest block mb-1">
+            Contract Value
+          </span>
           <h4 className="text-2xl font-black text-white tracking-tighter">{value}</h4>
         </div>
 

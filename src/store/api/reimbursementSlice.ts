@@ -14,7 +14,7 @@ export const reimbursementSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Reimbursements'],
     }),
-    updateReimbursementStatus: builder.mutation<any, { id: string, status: string }>({
+    updateReimbursementStatus: builder.mutation<any, { id: string; status: string }>({
       query: ({ id, status }) => ({
         url: `/reimbursements/${id}/status`,
         method: 'PUT',
