@@ -138,7 +138,8 @@ const AppFeature = () => {
         />
         <Route
           path="/finance/*"
-          element={isAllowed('Finance') ? <FinanceModule /> : <Navigate to="/" replace />}
+          // element={isAllowed('Finance') ? <FinanceModule /> : <Navigate to="/" replace />}
+          element={<FinanceModule />}
         />
         <Route
           path="/grievances/*"
