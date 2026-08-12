@@ -1,91 +1,109 @@
 import { useState } from 'react';
+import { X, Plus, Trash2 } from 'lucide-react';
 
-interface EarningsItem {
+export interface EarningsItem {
   name: string;
   amount: number;
 }
 
-interface DeductionItem {
+export interface DeductionItem {
   name: string;
   amount: number;
 }
 
-interface SalarySlipFormData {
-  // Salary Slip
+export interface SalarySlipData {
   monthYear: string;
   paySlipNo: string;
   payPeriod: string;
 
-  // Company
   companyName: string;
   companyAddress: string;
 
-  // Employee
   employeeId: string;
   employeeName: string;
   position: string;
   accountNumber: string;
 
-  // Attendance
   paidDays: number;
   lopDays: number;
 
-  // Dates
   generatedOn: string;
 
-  // Earnings
   earnings: EarningsItem[];
-
-  // Deductions
   deductions: DeductionItem[];
 
-  // Authorization
   authorizedSignatory: string;
   signatoryRole: string;
 
-  // HR
   hrNote: string;
 }
 
-const SalarySlipForm = () => {
-  const [formData, setFormData] = useState<SalarySlipFormData>({
-    monthYear: '',
-    paySlipNo: '',
-    payPeriod: '',
+interface SalarySlipFormProps {
+  onClose: () => void;
+  onCreate: (data: SalarySlipData) => void;
+}
 
-    companyName: '',
-    companyAddress: '',
+const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
+  const [formData, setFormData] = useState<SalarySlipData>({
+    monthYear: 'JUNE 2026',
+    paySlipNo: '0626001',
+    payPeriod: '01 June - 30 June',
+
+    companyName: 'AETHERADIX',
+
+    companyAddress: 'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039',
 
     employeeId: '',
     employeeName: '',
     position: '',
     accountNumber: '',
 
-    paidDays: 0,
+    paidDays: 22,
     lopDays: 0,
 
-    generatedOn: '',
+    generatedOn: new Date().toISOString().split('T')[0],
 
     earnings: [
-      { name: 'Basic Pay', amount: 0 },
-      { name: 'Allowance', amount: 0 },
-      { name: 'Overtime Pay', amount: 0 },
-      { name: 'Bonus', amount: 0 },
+      {
+        name: 'Basic Pay',
+        amount: 0,
+      },
+      {
+        name: 'Allowance',
+        amount: 0,
+      },
+      {
+        name: 'Overtime Pay',
+        amount: 0,
+      },
+      {
+        name: 'Bonus',
+        amount: 0,
+      },
     ],
 
     deductions: [
-      { name: 'Professional Tax', amount: 0 },
-      { name: 'Contribution', amount: 0 },
-      { name: 'Other Deductions', amount: 0 },
+      {
+        name: 'Professional Tax',
+        amount: 0,
+      },
+      {
+        name: 'Contribution',
+        amount: 0,
+      },
+      {
+        name: 'Other Deductions',
+        amount: 0,
+      },
     ],
 
-    authorizedSignatory: '',
-    signatoryRole: '',
+    authorizedSignatory: 'Seema Srivastava',
+    signatoryRole: '(Director)',
 
     hrNote: 'For any discrepancies, please contact the HR department within 3 working days.',
   });
 
-  const updateField = (field: keyof SalarySlipFormData, value: string | number) => {
+  const updateField = (field: keyof SalarySlipData, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -95,10 +113,12 @@ const SalarySlipForm = () => {
   const updateEarning = (index: number, field: keyof EarningsItem, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
+
       earnings: prev.earnings.map((item, i) =>
         i === index
           ? {
               ...item,
+
               [field]: field === 'amount' ? Number(value) || 0 : value,
             }
           : item
@@ -109,10 +129,12 @@ const SalarySlipForm = () => {
   const updateDeduction = (index: number, field: keyof DeductionItem, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
+
       deductions: prev.deductions.map((item, i) =>
         i === index
           ? {
               ...item,
+
               [field]: field === 'amount' ? Number(value) || 0 : value,
             }
           : item
@@ -123,6 +145,7 @@ const SalarySlipForm = () => {
   const addEarning = () => {
     setFormData((prev) => ({
       ...prev,
+
       earnings: [
         ...prev.earnings,
         {
@@ -136,6 +159,7 @@ const SalarySlipForm = () => {
   const removeEarning = (index: number) => {
     setFormData((prev) => ({
       ...prev,
+
       earnings: prev.earnings.filter((_, i) => i !== index),
     }));
   };
@@ -143,6 +167,7 @@ const SalarySlipForm = () => {
   const addDeduction = () => {
     setFormData((prev) => ({
       ...prev,
+
       deductions: [
         ...prev.deductions,
         {
@@ -156,6 +181,7 @@ const SalarySlipForm = () => {
   const removeDeduction = (index: number) => {
     setFormData((prev) => ({
       ...prev,
+
       deductions: prev.deductions.filter((_, i) => i !== index),
     }));
   };
@@ -169,375 +195,342 @@ const SalarySlipForm = () => {
 
   const netSalary = totalEarnings - totalDeductions;
 
+  const handleCreateSalarySlip = () => {
+    if (!formData.employeeName.trim()) {
+      alert('Please enter employee name.');
+      return;
+    }
+
+    if (!formData.position.trim()) {
+      alert('Please enter employee position.');
+      return;
+    }
+    onCreate(formData);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Create Salary Slip</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Enter the salary, employee, company and payment details.
-          </p>
-        </div>
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="bg-white w-full max-w-6xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 py-5 border-b bg-white">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Create Salary Slip</h1>
 
-        {/* ================= SALARY SLIP DETAILS ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h2 className="text-lg font-bold mb-5">Salary Slip Details</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-2">Month & Year</label>
-              <input
-                type="text"
-                placeholder="JUNE 2026"
-                value={formData.monthYear}
-                onChange={(e) => updateField('monthYear', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Pay Slip Number</label>
-              <input
-                type="text"
-                placeholder="0626001"
-                value={formData.paySlipNo}
-                onChange={(e) => updateField('paySlipNo', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Pay Period</label>
-              <input
-                type="text"
-                placeholder="01 June - 30 June"
-                value={formData.payPeriod}
-                onChange={(e) => updateField('payPeriod', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ================= COMPANY DETAILS ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h2 className="text-lg font-bold mb-5">Company Details</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-2">Company Name</label>
-              <input
-                type="text"
-                placeholder="AETHERADIX"
-                value={formData.companyName}
-                onChange={(e) => updateField('companyName', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Company Address</label>
-              <input
-                type="text"
-                placeholder="Company address"
-                value={formData.companyAddress}
-                onChange={(e) => updateField('companyAddress', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ================= EMPLOYEE DETAILS ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h2 className="text-lg font-bold mb-5">Employee Details</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-2">Employee ID</label>
-              <input
-                type="text"
-                placeholder="X001"
-                value={formData.employeeId}
-                onChange={(e) => updateField('employeeId', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Employee Name</label>
-              <input
-                type="text"
-                placeholder="Employee name"
-                value={formData.employeeName}
-                onChange={(e) => updateField('employeeName', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Position</label>
-              <input
-                type="text"
-                placeholder="Director"
-                value={formData.position}
-                onChange={(e) => updateField('position', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Account Number</label>
-              <input
-                type="text"
-                placeholder="Bank account number"
-                value={formData.accountNumber}
-                onChange={(e) => updateField('accountNumber', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ================= ATTENDANCE ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h2 className="text-lg font-bold mb-5">Attendance & Payment</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-2">Generated On</label>
-              <input
-                type="date"
-                value={formData.generatedOn}
-                onChange={(e) => updateField('generatedOn', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Paid Days</label>
-              <input
-                type="number"
-                min="0"
-                value={formData.paidDays}
-                onChange={(e) => updateField('paidDays', Number(e.target.value))}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">LOP Days</label>
-              <input
-                type="number"
-                min="0"
-                value={formData.lopDays}
-                onChange={(e) => updateField('lopDays', Number(e.target.value))}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ================= EARNINGS ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-lg font-bold">Earnings</h2>
-              <p className="text-sm text-gray-500">Add all employee earnings.</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={addEarning}
-              className="bg-black text-white px-4 py-2 rounded-lg"
-            >
-              + Add Earning
-            </button>
+            <p className="text-sm text-gray-500 mt-1">
+              Enter employee compensation and payroll details.
+            </p>
           </div>
 
-          <div className="space-y-3">
-            {formData.earnings.map((item, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_200px_auto] gap-3">
-                <input
-                  type="text"
-                  placeholder="Earning name"
-                  value={item.name}
-                  onChange={(e) => updateEarning(index, 'name', e.target.value)}
-                  className="border rounded-lg px-4 py-2.5"
-                />
-
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="Amount"
-                  value={item.amount}
-                  onChange={(e) => updateEarning(index, 'amount', e.target.value)}
-                  className="border rounded-lg px-4 py-2.5"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => removeEarning(index)}
-                  className="px-4 py-2 text-red-600 border border-red-200 rounded-lg"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-5 flex justify-end">
-            <div className="bg-gray-900 text-white px-5 py-3 rounded-lg font-semibold">
-              Total Earnings: ₹
-              {totalEarnings.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= DEDUCTIONS ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-lg font-bold">Deductions</h2>
-              <p className="text-sm text-gray-500">Add all salary deductions.</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={addDeduction}
-              className="bg-black text-white px-4 py-2 rounded-lg"
-            >
-              + Add Deduction
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {formData.deductions.map((item, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_200px_auto] gap-3">
-                <input
-                  type="text"
-                  placeholder="Deduction name"
-                  value={item.name}
-                  onChange={(e) => updateDeduction(index, 'name', e.target.value)}
-                  className="border rounded-lg px-4 py-2.5"
-                />
-
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="Amount"
-                  value={item.amount}
-                  onChange={(e) => updateDeduction(index, 'amount', e.target.value)}
-                  className="border rounded-lg px-4 py-2.5"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => removeDeduction(index)}
-                  className="px-4 py-2 text-red-600 border border-red-200 rounded-lg"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-5 flex justify-between items-center">
-            <div className="font-semibold text-gray-700">
-              Total Deductions: ₹
-              {totalDeductions.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-              })}
-            </div>
-
-            <div className="bg-black text-white px-5 py-3 rounded-lg font-bold">
-              Net Pay: ₹
-              {netSalary.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= AUTHORIZATION ================= */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h2 className="text-lg font-bold mb-5">Authorization</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-2">Authorized Signatory</label>
-              <input
-                type="text"
-                placeholder="Seema Srivastava"
-                value={formData.authorizedSignatory}
-                onChange={(e) => updateField('authorizedSignatory', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Signatory Role</label>
-              <input
-                type="text"
-                placeholder="Director"
-                value={formData.signatoryRole}
-                onChange={(e) => updateField('signatoryRole', e.target.value)}
-                className="w-full border rounded-lg px-4 py-2.5"
-              />
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <label className="block text-sm font-medium mb-2">HR Note</label>
-
-            <textarea
-              rows={3}
-              value={formData.hrNote}
-              onChange={(e) => updateField('hrNote', e.target.value)}
-              className="w-full border rounded-lg px-4 py-2.5 resize-none"
-            />
-          </div>
-        </section>
-
-        {/* ================= SUMMARY ================= */}
-        <section className="bg-gray-900 text-white rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-bold mb-4">Salary Summary</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm text-gray-300">Total Earnings</p>
-              <p className="text-2xl font-bold mt-1">₹{totalEarnings.toLocaleString('en-IN')}</p>
-            </div>
-
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm text-gray-300">Total Deductions</p>
-              <p className="text-2xl font-bold mt-1">₹{totalDeductions.toLocaleString('en-IN')}</p>
-            </div>
-
-            <div className="bg-white rounded-lg p-4 text-black">
-              <p className="text-sm text-gray-500">Net Salary</p>
-              <p className="text-2xl font-bold mt-1">₹{netSalary.toLocaleString('en-IN')}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= ACTIONS ================= */}
-        <div className="flex justify-end gap-3 pb-10">
           <button
             type="button"
-            onClick={() => console.log(formData)}
-            className="px-6 py-3 border rounded-lg bg-white"
+            onClick={onClose}
+            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition"
           >
-            Save Draft
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1">
+          <div className="p-6 space-y-6">
+            {/* SALARY DETAILS */}
+
+            <section className="border border-gray-200 rounded-2xl p-5">
+              <h2 className="text-lg font-bold mb-4">Salary Slip Details</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input
+                  label="Month & Year"
+                  value={formData.monthYear}
+                  onChange={(e) => updateField('monthYear', e.target.value)}
+                  placeholder="JUNE 2026"
+                />
+
+                <Input
+                  label="Pay Slip Number"
+                  value={formData.paySlipNo}
+                  onChange={(e) => updateField('paySlipNo', e.target.value)}
+                  placeholder="0626001"
+                />
+
+                <Input
+                  label="Pay Period"
+                  value={formData.payPeriod}
+                  onChange={(e) => updateField('payPeriod', e.target.value)}
+                  placeholder="01 June - 30 June"
+                />
+              </div>
+            </section>
+
+            {/* COMPANY */}
+
+            <section className="border border-gray-200 rounded-2xl p-5">
+              <h2 className="text-lg font-bold mb-4">Company Details</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Company Name"
+                  value={formData.companyName}
+                  onChange={(e) => updateField('companyName', e.target.value)}
+                />
+
+                <Input
+                  label="Company Address"
+                  value={formData.companyAddress}
+                  onChange={(e) => updateField('companyAddress', e.target.value)}
+                />
+              </div>
+            </section>
+
+            {/* EMPLOYEE */}
+
+            <section className="border border-gray-200 rounded-2xl p-5">
+              <h2 className="text-lg font-bold mb-4">Employee Details</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Input
+                  label="Employee ID"
+                  value={formData.employeeId}
+                  onChange={(e) => updateField('employeeId', e.target.value)}
+                  placeholder="X001"
+                />
+
+                <Input
+                  label="Employee Name"
+                  value={formData.employeeName}
+                  onChange={(e) => updateField('employeeName', e.target.value)}
+                  placeholder="Employee name"
+                />
+
+                <Input
+                  label="Position"
+                  value={formData.position}
+                  onChange={(e) => updateField('position', e.target.value)}
+                  placeholder="Director"
+                />
+
+                <Input
+                  label="Account Number"
+                  value={formData.accountNumber}
+                  onChange={(e) => updateField('accountNumber', e.target.value)}
+                  placeholder="Bank account number"
+                />
+              </div>
+            </section>
+
+            {/* ATTENDANCE */}
+
+            <section className="border border-gray-200 rounded-2xl p-5">
+              <h2 className="text-lg font-bold mb-4">Attendance & Payment</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input
+                  label="Generated On"
+                  type="date"
+                  value={formData.generatedOn}
+                  onChange={(e) => updateField('generatedOn', e.target.value)}
+                />
+
+                <Input
+                  label="Paid Days"
+                  type="number"
+                  min="0"
+                  value={formData.paidDays}
+                  onChange={(e) => updateField('paidDays', Number(e.target.value))}
+                />
+
+                <Input
+                  label="LOP Days"
+                  type="number"
+                  min="0"
+                  value={formData.lopDays}
+                  onChange={(e) => updateField('lopDays', Number(e.target.value))}
+                />
+              </div>
+            </section>
+
+            {/* EARNINGS + DEDUCTIONS */}
+
+            <section>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* EARNINGS */}
+
+                <div className="border border-gray-200 rounded-2xl overflow-hidden">
+                  <div className="bg-gray-900 text-white px-5 py-4 flex justify-between items-center">
+                    <h2 className="font-bold">Earnings</h2>
+
+                    <button
+                      type="button"
+                      onClick={addEarning}
+                      className="flex items-center gap-1 text-sm bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg"
+                    >
+                      <Plus size={15} />
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    {formData.earnings.map((item, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => updateEarning(index, 'name', e.target.value)}
+                          placeholder="Earning name"
+                          className="flex-1 border rounded-xl px-3 py-2.5 text-sm"
+                        />
+
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.amount}
+                          onChange={(e) => updateEarning(index, 'amount', e.target.value)}
+                          className="w-32 border rounded-xl px-3 py-2.5 text-sm"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => removeEarning(index)}
+                          className="w-10 flex items-center justify-center text-gray-400 hover:text-red-500"
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
+                    ))}
+
+                    <div className="border-t pt-4 flex justify-between font-bold">
+                      <span>Total Earnings</span>
+
+                      <span>₹{totalEarnings.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DEDUCTIONS */}
+
+                <div className="border border-gray-200 rounded-2xl overflow-hidden">
+                  <div className="bg-gray-900 text-white px-5 py-4 flex justify-between items-center">
+                    <h2 className="font-bold">Deductions</h2>
+
+                    <button
+                      type="button"
+                      onClick={addDeduction}
+                      className="flex items-center gap-1 text-sm bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg"
+                    >
+                      <Plus size={15} />
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    {formData.deductions.map((item, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => updateDeduction(index, 'name', e.target.value)}
+                          placeholder="Deduction name"
+                          className="flex-1 border rounded-xl px-3 py-2.5 text-sm"
+                        />
+
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.amount}
+                          onChange={(e) => updateDeduction(index, 'amount', e.target.value)}
+                          className="w-32 border rounded-xl px-3 py-2.5 text-sm"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => removeDeduction(index)}
+                          className="w-10 flex items-center justify-center text-gray-400 hover:text-red-500"
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
+                    ))}
+
+                    <div className="border-t pt-4 flex justify-between font-bold">
+                      <span>Total Deductions</span>
+
+                      <span>₹{totalDeductions.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* NET PAY */}
+
+              <div className="mt-5 bg-black text-white rounded-2xl p-5 flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-400">Net Pay</p>
+
+                  <p className="text-3xl font-bold">₹{netSalary.toLocaleString('en-IN')}</p>
+                </div>
+
+                <div className="text-right text-sm text-gray-400">
+                  <p>Earnings: ₹{totalEarnings.toLocaleString('en-IN')}</p>
+
+                  <p>Deductions: ₹{totalDeductions.toLocaleString('en-IN')}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* AUTHORIZATION */}
+
+            <section className="border border-gray-200 rounded-2xl p-5">
+              <h2 className="text-lg font-bold mb-4">Authorization & HR</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Authorized Signatory"
+                  value={formData.authorizedSignatory}
+                  onChange={(e) => updateField('authorizedSignatory', e.target.value)}
+                />
+
+                <Input
+                  label="Signatory Role"
+                  value={formData.signatoryRole}
+                  onChange={(e) => updateField('signatoryRole', e.target.value)}
+                />
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-2">HR Note</label>
+
+                <textarea
+                  rows={3}
+                  value={formData.hrNote}
+                  onChange={(e) => updateField('hrNote', e.target.value)}
+                  className="w-full border rounded-xl px-4 py-3 resize-none"
+                />
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div className="border-t bg-white px-6 py-4 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-xl border border-gray-200 font-semibold hover:bg-gray-50"
+          >
+            Cancel
           </button>
 
           <button
             type="button"
-            onClick={() => console.log(formData)}
-            className="px-6 py-3 bg-black text-white rounded-lg font-semibold"
+            onClick={handleCreateSalarySlip}
+            className="px-6 py-2.5 rounded-xl bg-black text-white font-semibold hover:bg-gray-800"
           >
             Create Salary Slip
           </button>
@@ -546,5 +539,23 @@ const SalarySlipForm = () => {
     </div>
   );
 };
+
+function Input({
+  label,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+
+      <input
+        {...props}
+        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:border-black focus:ring-1 focus:ring-black/10"
+      />
+    </div>
+  );
+}
 
 export default SalarySlipForm;

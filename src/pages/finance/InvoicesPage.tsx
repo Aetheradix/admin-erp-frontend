@@ -234,7 +234,7 @@
 //   );
 // }
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import {
   CheckCircle,
@@ -254,6 +254,14 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import InvoiceTemplate from './components/InvoiceTemplate';
+import { Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
+import { MoreVertical, Download } from 'lucide-react';
+
+
 
 interface Invoice {
   id: string;
@@ -261,6 +269,7 @@ interface Invoice {
   amount: number;
   status: string;
   date: string;
+  data?: InvoiceForm;
 }
 
 interface InvoiceItem {
@@ -384,14 +393,12 @@ const emptyInvoiceForm: InvoiceForm = {
 
 export function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const invoicePdfRef = useRef<HTMLDivElement>(null);
 
   const [showForm, setShowForm] = useState(false);
+  const [pdfInvoice, setPdfInvoice] = useState<InvoiceForm | null>(null);
 
   const [form, setForm] = useState<InvoiceForm>(emptyInvoiceForm);
-
-  /* =====================================================
-     UPDATE FIELD
-  ===================================================== */
 
   const updateField = <K extends keyof InvoiceForm>(field: K, value: InvoiceForm[K]) => {
     setForm((prev) => ({
@@ -400,9 +407,66 @@ export function InvoicesPage() {
     }));
   };
 
-  /* =====================================================
-     UPDATE ITEM
-  ===================================================== */
+  const generateInvoicePDF = async (invoiceData: InvoiceForm) => {
+    try {
+      // Set the invoice that should appear in the template
+      setPdfInvoice(invoiceData);
+
+      // Give React time to render the template
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      if (!invoicePdfRef.current) {
+        console.error('Invoice template element not found.');
+        return;
+      }
+
+      const element = invoicePdfRef.current;
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const imageData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imageWidth = pageWidth;
+      const imageHeight = (canvas.height * imageWidth) / canvas.width;
+
+      let heightLeft = imageHeight;
+      let position = 0;
+
+      pdf.addImage(imageData, 'PNG', 0, position, imageWidth, imageHeight);
+
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imageHeight;
+
+        pdf.addPage();
+
+        pdf.addImage(imageData, 'PNG', 0, position, imageWidth, imageHeight);
+
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`${invoiceData.invoiceNumber}.pdf`);
+
+      console.log('PDF downloaded successfully');
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+    }
+  };
 
   const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
     setForm((prev) => ({
@@ -418,10 +482,6 @@ export function InvoicesPage() {
     }));
   };
 
-  /* =====================================================
-     ADD ITEM
-  ===================================================== */
-
   const addItem = () => {
     setForm((prev) => ({
       ...prev,
@@ -436,20 +496,12 @@ export function InvoicesPage() {
     }));
   };
 
-  /* =====================================================
-     REMOVE ITEM
-  ===================================================== */
-
   const removeItem = (index: number) => {
     setForm((prev) => ({
       ...prev,
       items: prev.items.filter((_, i) => i !== index),
     }));
   };
-
-  /* =====================================================
-     CALCULATIONS
-  ===================================================== */
 
   const subTotal = form.items.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
@@ -466,10 +518,6 @@ export function InvoicesPage() {
       maximumFractionDigits: 2,
     })}`;
 
-  /* =====================================================
-     CREATE INVOICE
-  ===================================================== */
-
   const handleSubmit = () => {
     if (!form.billToName) {
       return;
@@ -481,19 +529,20 @@ export function InvoicesPage() {
       amount: total,
       status: 'Pending',
       date: form.invoiceDate || new Date().toISOString().slice(0, 10),
+
+      data: {
+        ...form,
+        items: form.items.map((item) => ({
+          ...item,
+        })),
+      },
     };
 
     setInvoices((prev) => [newInvoice, ...prev]);
 
-    console.log('Complete Invoice:', form);
-
     setForm(emptyInvoiceForm);
     setShowForm(false);
   };
-
-  /* =====================================================
-     TABLE
-  ===================================================== */
 
   const columns: ColumnsType<Invoice> = [
     {
@@ -539,14 +588,59 @@ export function InvoicesPage() {
       key: 'date',
       render: (text) => text,
     },
+
+    // 👇 ADD THE THREE-DOT COLUMN HERE
+    {
+      title: '',
+      key: 'actions',
+      width: 60,
+
+      render: (_, record) => {
+        const menuItems: MenuProps['items'] = [
+          {
+            key: 'download',
+            label: (
+              <div className="flex items-center gap-2">
+                <Download size={15} />
+                <span>Download Invoice</span>
+              </div>
+            ),
+          },
+        ];
+
+        return (
+          <Dropdown
+            menu={{
+              items: menuItems,
+
+              onClick: ({ key }) => {
+                if (key === 'download') {
+                  if (!record.data) {
+                    console.error('Invoice data not available');
+                    return;
+                  }
+
+                  generateInvoicePDF(record.data);
+                }
+              },
+            }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-gray-100"
+            >
+              <MoreVertical size={18} />
+            </button>
+          </Dropdown>
+        );
+      },
+    },
   ];
 
   return (
     <div className="space-y-6">
-      {/* =================================================
-          PAGE HEADER
-      ================================================= */}
-
       <PageHeader
         title="Invoices"
         description="Manage and track client billing."
@@ -577,10 +671,6 @@ export function InvoicesPage() {
         }}
       />
 
-      {/* =================================================
-          INVOICE TABLE
-      ================================================= */}
-
       <motion.div
         initial={{
           opacity: 0,
@@ -603,10 +693,6 @@ export function InvoicesPage() {
           className="premium-table"
         />
       </motion.div>
-
-      {/* =================================================
-          CREATE INVOICE DIALOG
-      ================================================= */}
 
       <Dialog
         visible={showForm}
@@ -631,10 +717,6 @@ export function InvoicesPage() {
       >
         <div className="max-h-[78vh] overflow-y-auto">
           <div className="px-8 pb-8 space-y-8">
-            {/* =================================================
-                INVOICE DETAILS
-            ================================================= */}
-
             <section>
               <SectionTitle
                 icon={<FileText size={18} />}
@@ -677,10 +759,6 @@ export function InvoicesPage() {
                 />
               </div>
             </section>
-
-            {/* =================================================
-                BUSINESS DETAILS
-            ================================================= */}
 
             <section>
               <SectionTitle
@@ -741,10 +819,6 @@ export function InvoicesPage() {
               </div>
             </section>
 
-            {/* =================================================
-                BILL TO
-            ================================================= */}
-
             <section>
               <SectionTitle
                 icon={<User size={18} />}
@@ -797,10 +871,6 @@ export function InvoicesPage() {
                 />
               </div>
             </section>
-
-            {/* =================================================
-                ITEMS
-            ================================================= */}
 
             <section>
               <SectionTitle
@@ -877,10 +947,6 @@ export function InvoicesPage() {
               </div>
             </section>
 
-            {/* =================================================
-                TOTAL
-            ================================================= */}
-
             <div className="flex justify-end">
               <div className="w-full md:w-[380px] bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-3">
                 <div className="flex justify-between text-sm">
@@ -903,10 +969,6 @@ export function InvoicesPage() {
               </div>
             </div>
 
-            {/* =================================================
-                NOTES
-            ================================================= */}
-
             <section>
               <SectionTitle
                 icon={<FileText size={18} />}
@@ -923,10 +985,6 @@ export function InvoicesPage() {
               />
             </section>
           </div>
-
-          {/* =================================================
-              FOOTER
-          ================================================= */}
 
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-4 flex justify-between items-center">
             <div>
@@ -956,6 +1014,27 @@ export function InvoicesPage() {
           </div>
         </div>
       </Dialog>
+      <div
+        style={{
+          position: 'fixed',
+          left: '-10000px',
+          top: 0,
+          width: '794px',
+        }}
+      ></div>
+      {pdfInvoice && (
+        <div
+          style={{
+            position: 'fixed',
+            left: '-10000px',
+            top: 0,
+            width: '794px',
+            background: '#ffffff',
+          }}
+        >
+          <InvoiceTemplate ref={invoicePdfRef} invoice={pdfInvoice} />
+        </div>
+      )}
     </div>
   );
 }
@@ -977,10 +1056,14 @@ function Field({
         {label}
       </label>
 
-      <Input {...props} />
+      <input
+        {...props}
+        className="w-full border border-border-subtle rounded-xl px-4 py-2.5 bg-white text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+      />
     </div>
   );
 }
+
 
 /* =========================================================
    SECTION TITLE
