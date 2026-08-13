@@ -261,8 +261,6 @@ import { Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { MoreVertical, Download } from 'lucide-react';
 
-
-
 interface Invoice {
   id: string;
   client: string;
@@ -589,7 +587,6 @@ export function InvoicesPage() {
       render: (text) => text,
     },
 
-    // 👇 ADD THE THREE-DOT COLUMN HERE
     {
       title: '',
       key: 'actions',
@@ -702,7 +699,8 @@ export function InvoicesPage() {
         }}
         header="Create Invoice"
         modal
-        className="w-full max-w-6xl mx-4"
+        className="w-[95vw] max-w-[1600px] mx-auto"
+
         contentClassName="p-0"
         headerClassName="px-8 pt-7 pb-5 text-2xl font-black tracking-tight border-none"
         pt={{
@@ -1063,7 +1061,6 @@ function Field({
     </div>
   );
 }
-
 
 /* =========================================================
    SECTION TITLE
