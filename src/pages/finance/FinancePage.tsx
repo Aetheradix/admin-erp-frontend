@@ -20,6 +20,8 @@ export function FinancePage() {
     setActiveCategory,
     CATEGORIES,
     handleRequestSubmit,
+    handleApprove,
+    handleReject,
   } = useFinancePage();
 
   if (isLoading) {
@@ -57,7 +59,12 @@ export function FinancePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredRequests.map((request) => (
-            <ReimbursementCard key={request.id} request={request} />
+            <ReimbursementCard
+              key={request.id}
+              request={request}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
           ))}
 
           {filteredRequests.length === 0 && (
