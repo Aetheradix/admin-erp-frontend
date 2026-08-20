@@ -28,16 +28,22 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
   const [formData, setFormData] = useState<ProfileFormData>(initialData);
   const { data: departmentsData } = useGetDepartmentsQuery({});
   const departments = departmentsData?.data ?? [];
-  const departmentOptions = departments.map(({ department_name }: { id: string; department_name: string }) => ({
-    label: department_name,
-    value: department_name
-  }));
+  const departmentOptions = departments.map(
+    ({ department_name }: { id: string; department_name: string }) => ({
+      label: department_name,
+      value: department_name,
+    })
+  );
 
   return (
     <div className="flex flex-col gap-8 bg-surface-subtle/50 p-8 rounded-3xl border border-border-subtle">
       <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
-        <h4 className="text-base font-black uppercase tracking-wider text-foreground">Edit Profile Information</h4>
-        <span className="text-xs text-muted font-semibold">Changes will update your system record</span>
+        <h4 className="text-base font-black uppercase tracking-wider text-foreground">
+          Edit Profile Information
+        </h4>
+        <span className="text-xs text-muted font-semibold">
+          Changes will update your system record
+        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -20,6 +20,9 @@ const Profile = () => {
     handleEditSave,
     addRole,
     removeRole,
+    handleAutoApproveToggle,
+    isUpdatingAutoApprove,
+    isLoadingAutoApprove,
   } = useProfile();
 
   const [activeTab, setActiveTab] = useState<TabType>('profile');
@@ -29,12 +32,17 @@ const Profile = () => {
       <PageHeader
         title="User Profile"
         description="View and edit your personal details, contact matrix, and organizational hierarchy."
-        primaryAction={!isEditing ? {
-          label: 'Edit Profile',
-          onClick: () => setIsEditing(true),
-          icon: 'pi pi-user-edit',
-          className: 'px-6! py-3! rounded-2xl! font-bold! tracking-wide! shadow-md! shadow-primary/20!',
-        } : undefined}
+        primaryAction={
+          !isEditing
+            ? {
+                label: 'Edit Profile',
+                onClick: () => setIsEditing(true),
+                icon: 'pi pi-user-edit',
+                className:
+                  'px-6! py-3! rounded-2xl! font-bold! tracking-wide! shadow-md! shadow-primary/20!',
+              }
+            : undefined
+        }
       />
 
       {/* Header Container & Navigation Tabs */}
@@ -68,13 +76,9 @@ const Profile = () => {
             />
           )}
 
-          {activeTab === 'organization' && (
-            <OrganizationTab user={user} />
-          )}
+          {activeTab === 'organization' && <OrganizationTab user={user} />}
 
-          {activeTab === 'overview' && (
-            <OverviewTab user={user} />
-          )}
+          {activeTab === 'overview' && <OverviewTab user={user} />}
         </>
       )}
 
@@ -85,10 +89,33 @@ const Profile = () => {
         header="Request Admin Rights Elevation"
         style={{ width: '450px' }}
       >
-        <AdminElevationRequest
-          onSuccess={() => setShowElevationDialog(false)}
-        />
+        <AdminElevationRequest onSuccess={() => setShowElevationDialog(false)} />
       </Dialog>
+
+      <div className="flex items-center gap-3">
+        <span className="font-medium">Auto Approve</span>
+
+        <button
+          type="button"
+          onClick={handleAutoApproveToggle}
+          disabled={isUpdatingAutoApprove || isLoadingAutoApprove}
+          className={`relative h-6 w-11 rounded-full transition-colors ${
+            user.autoApprove ? 'bg-primary' : 'bg-gray-300'
+          } ${
+            isUpdatingAutoApprove || isLoadingAutoApprove ? 'cursor-not-allowed opacity-50' : ''
+          }`}
+          aria-pressed={user.autoApprove}
+          aria-label="Toggle auto approve"
+        >
+          <span
+            className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              user.autoApprove ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
+
+        <span className="text-sm text-muted-foreground">{user.autoApprove ? 'True' : 'False'}</span>
+      </div>
     </div>
   );
 };

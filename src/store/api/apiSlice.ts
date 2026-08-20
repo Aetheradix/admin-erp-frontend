@@ -28,6 +28,7 @@ export const apiSlice = createApi({
     'Projects',
     'Permissions',
     'Tasks',
+    'Settings',
   ],
 
   endpoints: () => ({}),
