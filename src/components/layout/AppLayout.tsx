@@ -6,7 +6,6 @@ import { Outlet } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
 import { Toast } from '@/components/ui/composed/Toast';
 
-
 const AppLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
 
@@ -29,13 +28,10 @@ const AppLayout = () => {
         )}
       </AnimatePresence>
 
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col relative overflow-hidden h-full bg-background  shadow-sm border border-gray-100/50">
-        <Header onMenuClick={toggleSidebar}/>
+        <Header onMenuClick={toggleSidebar} />
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
           <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">

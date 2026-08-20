@@ -23,7 +23,8 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
     location: '',
     organizer: '',
     attendees: 0,
-    image: 'https://images.unsplash.com/photo-1540575861501-7ce058a877c3?q=80&w=2070&auto=format&fit=crop',
+    image:
+      'https://images.unsplash.com/photo-1540575861501-7ce058a877c3?q=80&w=2070&auto=format&fit=crop',
   });
 
   useEffect(() => {
@@ -77,7 +78,9 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                 id="event-attendees"
                 type="number"
                 value={formData.attendees?.toString() || ''}
-                onChange={(e) => setFormData({ ...formData, attendees: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, attendees: parseInt(e.target.value) || 0 })
+                }
               />
             </FormField>
           </div>
@@ -88,7 +91,17 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
             <Calendar
               id="event-date"
               value={formData.date ? new Date(formData.date) : null}
-              onChange={(e) => setFormData({ ...formData, date: e.value?.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) || '' })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  date:
+                    e.value?.toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }) || '',
+                })
+              }
               placeholder="Select date"
               dateFormat="MM d, yy"
             />

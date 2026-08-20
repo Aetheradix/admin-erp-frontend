@@ -7,7 +7,12 @@ export const Toast = () => {
 
   useEffect(() => {
     const handleShowToast = (e: Event) => {
-      const { severity = 'info', summary = 'Notification', detail, life = 3000 } = (e as CustomEvent<ToastOptions>).detail;
+      const {
+        severity = 'info',
+        summary = 'Notification',
+        detail,
+        life = 3000,
+      } = (e as CustomEvent<ToastOptions>).detail;
       notification[severityMap[severity as ToastSeverity]]({
         message: summary,
         description: detail,

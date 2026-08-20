@@ -19,7 +19,9 @@ export function FinancePage() {
     activeCategory,
     setActiveCategory,
     CATEGORIES,
-    handleRequestSubmit
+    handleRequestSubmit,
+    handleApprove,
+    handleReject,
   } = useFinancePage();
 
   if (isLoading) {
@@ -39,7 +41,8 @@ export function FinancePage() {
           label: 'File New Request',
           onClick: () => setShowForm(true),
           icon: 'pi pi-credit-card',
-          className: 'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+          className:
+            'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
         }}
       />
 
@@ -56,7 +59,12 @@ export function FinancePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredRequests.map((request) => (
-            <ReimbursementCard key={request.id} request={request} />
+            <ReimbursementCard
+              key={request.id}
+              request={request}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
           ))}
 
           {filteredRequests.length === 0 && (
@@ -70,7 +78,11 @@ export function FinancePage() {
       </div>
 
       <CalloutBanner
-        title={<>Review our <span className="text-primary">Finance Policy</span></>}
+        title={
+          <>
+            Review our <span className="text-primary">Finance Policy</span>
+          </>
+        }
         description="Ensure all your acquisition requests and expense filings adhere to the latest company guidelines to expedite the approval process and maintain compliance."
         action={{ label: 'View Rulebook' }}
       />
@@ -85,15 +97,11 @@ export function FinancePage() {
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' }
+          mask: { className: 'backdrop-blur-md bg-black/40' },
         }}
       >
-        <FinanceForm
-          onSubmit={handleRequestSubmit}
-          onCancel={() => setShowForm(false)}
-        />
+        <FinanceForm onSubmit={handleRequestSubmit} onCancel={() => setShowForm(false)} />
       </Dialog>
     </div>
   );
 }
-

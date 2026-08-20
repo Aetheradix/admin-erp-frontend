@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
-import { useGetUsersQuery, useCreateStaffMutation, useUpdateStaffMutation, useDeleteUserMutation } from '@/store/api/userSlice';
+import {
+  useGetUsersQuery,
+  useCreateStaffMutation,
+  useUpdateStaffMutation,
+  useDeleteUserMutation,
+} from '@/store/api/userSlice';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
 import { useStaffFilters } from './useStaffFilters';
 import type { StaffMember } from '@/types/models';
@@ -25,12 +30,22 @@ export const useStaff = () => {
       accept: async () => {
         try {
           await promoteToAdmin(id).unwrap();
-          showToast({ severity: 'success', summary: 'Success', detail: 'Member promoted to administrator successfully!', life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Member promoted to administrator successfully!',
+            life: 3000,
+          });
         } catch (err: unknown) {
           const apiError = err as { data?: { message?: string } };
-          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to promote member.', life: 3000 });
+          showToast({
+            severity: 'error',
+            summary: 'Error',
+            detail: apiError.data?.message || 'Failed to promote member.',
+            life: 3000,
+          });
         }
-      }
+      },
     });
   };
 
@@ -56,16 +71,28 @@ export const useStaff = () => {
       accept: async () => {
         try {
           await deleteStaff(id).unwrap();
-          showToast({ severity: 'success', summary: 'Success', detail: 'Staff member removed successfully.', life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Staff member removed successfully.',
+            life: 3000,
+          });
         } catch (err) {
           console.error('Failed to remove member', err);
-          showToast({ severity: 'error', summary: 'Error', detail: 'Failed to remove member.', life: 3000 });
+          showToast({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to remove member.',
+            life: 3000,
+          });
         }
-      }
+      },
     });
   };
 
-  const handleSubmit = async (data: Partial<StaffMember> & { name?: string; role?: string; phone?: string; image?: string }) => {
+  const handleSubmit = async (
+    data: Partial<StaffMember> & { name?: string; role?: string; phone?: string; image?: string }
+  ) => {
     try {
       const payload = {
         username: data.name,
@@ -76,15 +103,25 @@ export const useStaff = () => {
         status: data.status,
         join_date: data.joinDate,
         skills: data.skills,
-        image_url: data.image || data.image_url
+        image_url: data.image || data.image_url,
       };
 
       if (editingMember) {
         await updateStaff({ id: editingMember.id, ...payload }).unwrap();
-        showToast({ severity: 'success', summary: 'Success', detail: 'Staff member updated successfully.', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Staff member updated successfully.',
+          life: 3000,
+        });
       } else {
         await createStaff(payload).unwrap();
-        showToast({ severity: 'success', summary: 'Success', detail: 'Staff member added successfully.', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Staff member added successfully.',
+          life: 3000,
+        });
       }
       setShowForm(false);
     } catch (err: unknown) {
@@ -102,7 +139,7 @@ export const useStaff = () => {
     const matchesSearch =
       name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+      skills.some((skill) => skill.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesDepartment && matchesSearch;
   });
 
@@ -122,6 +159,9 @@ export const useStaff = () => {
     handleEdit,
     handleDelete,
     handleSubmit,
-    onAddMember: () => { setEditingMember(null); setShowForm(true); }
+    onAddMember: () => {
+      setEditingMember(null);
+      setShowForm(true);
+    },
   };
 };

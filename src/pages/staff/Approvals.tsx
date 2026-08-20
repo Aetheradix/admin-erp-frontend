@@ -22,7 +22,7 @@ export function Approvals() {
     actionType,
     setShowApprovalDialog,
     handleAction,
-    onConfirmAction
+    onConfirmAction,
   } = useApprovals();
 
   const statusTemplate = (rowData: any) => {
@@ -40,8 +40,13 @@ export function Approvals() {
 
     return (
       <div className="flex items-center gap-2">
-        <Badge variant={variant} className="rounded-lg! px-3! py-1! font-bold! text-[10px]! tracking-wider! uppercase!">
-          <span className="flex items-center gap-1.5">{icon} {status}</span>
+        <Badge
+          variant={variant}
+          className="rounded-lg! px-3! py-1! font-bold! text-[10px]! tracking-wider! uppercase!"
+        >
+          <span className="flex items-center gap-1.5">
+            {icon} {status}
+          </span>
         </Badge>
       </div>
     );
@@ -80,15 +85,21 @@ export function Approvals() {
 
   const userTemplate = (rowData: any) => (
     <div className="flex flex-col">
-      <span className="font-black text-foreground text-sm uppercase tracking-tight">{rowData.username}</span>
-      <span className="text-[10px] text-muted font-bold uppercase tracking-widest">{rowData.type}</span>
+      <span className="font-black text-foreground text-sm uppercase tracking-tight">
+        {rowData.username}
+      </span>
+      <span className="text-[10px] text-muted font-bold uppercase tracking-widest">
+        {rowData.type}
+      </span>
     </div>
   );
 
   const dateTemplate = (rowData: any) => (
     <div className="flex flex-col text-xs font-bold text-muted">
       <span>{formatDate(rowData.start_date)}</span>
-      {rowData.end_date && <span className="text-[10px] opacity-60">to {formatDate(rowData.end_date)}</span>}
+      {rowData.end_date && (
+        <span className="text-[10px] opacity-60">to {formatDate(rowData.end_date)}</span>
+      )}
     </div>
   );
 
@@ -99,9 +110,11 @@ export function Approvals() {
         description="Review and process personnel requests for leave, remote work, and time-off with full oversight."
         primaryAction={{
           label: 'View History Logs',
-          onClick: () => { navigate('/staff/history'); },
+          onClick: () => {
+            navigate('/staff/history');
+          },
           icon: 'pi pi-history',
-          className: 'px-6! py-3! rounded-lg! font-black! tracking-widest! text-[10px]!'
+          className: 'px-6! py-3! rounded-lg! font-black! tracking-widest! text-[10px]!',
         }}
       />
 
@@ -118,7 +131,11 @@ export function Approvals() {
         >
           <Column field="user" header="Employee" body={userTemplate} className="py-6" />
           <Column field="dates" header="Duration" body={dateTemplate} />
-          <Column field="reason" header="Reason / Notes" className="text-sm font-medium text-muted max-w-xs truncate" />
+          <Column
+            field="reason"
+            header="Reason / Notes"
+            className="text-sm font-medium text-muted max-w-xs truncate"
+          />
           <Column field="status" header="Current Status" body={statusTemplate} />
           <Column header="Operations" body={actionTemplate} className="text-right" />
         </DataTable>
@@ -134,7 +151,7 @@ export function Approvals() {
         headerClassName="px-8 pt-8 pb-2 text-xl font-black tracking-tight"
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/20' }
+          mask: { className: 'backdrop-blur-md bg-black/20' },
         }}
       >
         <ApprovalDialog

@@ -14,11 +14,22 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export const EmptyState = ({ title, description, icon = 'pi pi-inbox', action, className }: EmptyStateProps) => {
+export const EmptyState = ({
+  title,
+  description,
+  icon = 'pi pi-inbox',
+  action,
+  className,
+}: EmptyStateProps) => {
   const resolvedIcon = resolvePrimeIcon(icon) ?? <InboxOutlined />;
 
   return (
-    <div className={cn('flex flex-col items-center justify-center p-12 text-center rounded-shell bg-surface-subtle border border-dashed border-border-strong', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center p-12 text-center rounded-shell bg-surface-subtle border border-dashed border-border-strong',
+        className
+      )}
+    >
       <div className="w-16 h-16 rounded-full bg-white shadow-soft flex items-center justify-center mb-6 text-3xl text-primary/60">
         {resolvedIcon}
       </div>

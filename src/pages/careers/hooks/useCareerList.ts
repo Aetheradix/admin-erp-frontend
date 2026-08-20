@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import { useGetCareersQuery, useCreateCareerMutation, useUpdateCareerMutation, useDeleteCareerMutation } from '@/store/api/careerSlice';
+import {
+  useGetCareersQuery,
+  useCreateCareerMutation,
+  useUpdateCareerMutation,
+  useDeleteCareerMutation,
+} from '@/store/api/careerSlice';
 import { useCareerFilters } from './useCareerFilters';
 import type { Career } from '@/types/models';
 
@@ -49,13 +54,23 @@ export const useCareerList = () => {
       accept: async () => {
         try {
           await deleteCareer(id).unwrap();
-          showToast({ severity: 'success', summary: 'Success', detail: 'Position removed successfully!', life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Position removed successfully!',
+            life: 3000,
+          });
         } catch (err: unknown) {
           const apiError = err as { data?: { message?: string } };
           console.error('Failed to delete position:', err);
-          showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to delete position', life: 3000 });
+          showToast({
+            severity: 'error',
+            summary: 'Error',
+            detail: apiError.data?.message || 'Failed to delete position',
+            life: 3000,
+          });
         }
-      }
+      },
     });
   };
 
@@ -63,16 +78,31 @@ export const useCareerList = () => {
     try {
       if (editingCareer) {
         await updateCareer({ id: editingCareer.id, ...data }).unwrap();
-        showToast({ severity: 'success', summary: 'Success', detail: 'Position updated successfully!', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Position updated successfully!',
+          life: 3000,
+        });
       } else {
         await createCareer(data).unwrap();
-        showToast({ severity: 'success', summary: 'Success', detail: 'New position posted successfully!', life: 3000 });
+        showToast({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'New position posted successfully!',
+          life: 3000,
+        });
       }
       setShowForm(false);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to save position:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to save position', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: apiError.data?.message || 'Failed to save position',
+        life: 3000,
+      });
     }
   };
 
@@ -91,6 +121,6 @@ export const useCareerList = () => {
     handleCreate,
     handleEdit,
     handleDelete,
-    handleSubmit
+    handleSubmit,
   };
 };

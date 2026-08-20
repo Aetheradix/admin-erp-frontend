@@ -19,8 +19,6 @@ interface BlogFormProps {
   isLoading?: boolean;
 }
 
-
-
 export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<Blog>>(
@@ -33,8 +31,8 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
       tags: [],
     }
   );
-  const onValueChange = <K extends keyof Blog>(key: K,value: Blog[K]) => {
-    setFormData(prev => ({
+  const onValueChange = <K extends keyof Blog>(key: K, value: Blog[K]) => {
+    setFormData((prev) => ({
       ...prev,
       [key]: value,
     }));
@@ -42,7 +40,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-     console.log("FINAL PAYLOAD:", formData);
+    console.log('FINAL PAYLOAD:', formData);
     onSubmit(formData);
   };
 
@@ -70,36 +68,48 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
           </div>
 
           <div className="flex flex-col gap-8">
-            <FormField label="Strategic Title" required className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
+            <FormField
+              label="Strategic Title"
+              required
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
+            >
               <Input
                 value={formData.title}
-                onChange={(e) => onValueChange("title", e.target.value)}
+                onChange={(e) => onValueChange('title', e.target.value)}
                 placeholder="Enter a high-impact headline..."
                 className="h-14! text-base! font-bold! rounded-2xl! border-none! bg-white! shadow-sm!"
               />
             </FormField>
 
-            <FormField label="The Hook" description="A compelling summary for maximum engagement." className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
+            <FormField
+              label="The Hook"
+              description="A compelling summary for maximum engagement."
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
+            >
               <Textarea
                 value={formData.excerpt}
-                onChange={(e) => onValueChange("excerpt", e.target.value)}
+                onChange={(e) => onValueChange('excerpt', e.target.value)}
                 placeholder="What makes this story worth reading?"
                 rows={3}
                 className="rounded-[1.5rem]! border-none! bg-white! shadow-sm! text-sm! font-medium! p-5!"
               />
             </FormField>
 
-            <FormField label="Full Context" required className="!text-[10px] !font-black  !tracking-[0.15em] !text-muted">
+            <FormField
+              label="Full Context"
+              required
+              className="!text-[10px] !font-black  !tracking-[0.15em] !text-muted"
+            >
               <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm bg-white">
                 <RichEditor
                   value={formData.content}
                   onTextChange={(e) => {
-                   console.log("Editor event:", e);
-               
-                   setFormData(prev => ({
-                     ...prev,
-                     content: e.htmlValue || '',
-                   }))
+                    console.log('Editor event:', e);
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      content: e.htmlValue || '',
+                    }));
                   }}
                   style={{ height: '450px', border: 'none' }}
                 />
@@ -142,23 +152,27 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Globe size={14} className="text-muted" />
-                <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">Distribution</span>
+                <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">
+                  Distribution
+                </span>
               </div>
-              <Badge className={`text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest border-none shadow-sm ${formData.status === 'Published' ? 'bg-success/10 text-success' : 'bg-surface-subtle text-muted'}`}>
+              <Badge
+                className={`text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest border-none shadow-sm ${formData.status === 'Published' ? 'bg-success/10 text-success' : 'bg-surface-subtle text-muted'}`}
+              >
                 {formData.status}
               </Badge>
             </div>
             <div className="bg-surface-subtle/50 p-1.5 rounded-2xl flex items-center border border-border-subtle/50">
               <button
                 type="button"
-                onClick={() => onValueChange("status", "Draft")}
+                onClick={() => onValueChange('status', 'Draft')}
                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Draft' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}
               >
                 Draft
               </button>
               <button
                 type="button"
-                onClick={() => onValueChange("status", "Published")}
+                onClick={() => onValueChange('status', 'Published')}
                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Published' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}
               >
                 Public
@@ -170,7 +184,9 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
         {/* Media Card */}
         <div className="bg-white/60 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white shadow-soft">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Featured Asset</h3>
+            <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">
+              Featured Asset
+            </h3>
             <Settings size={14} className="text-muted" />
           </div>
 
@@ -178,9 +194,19 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <div className="aspect-[4/3] w-full rounded-[1.5rem] border-2 border-dashed border-border-subtle bg-white/50 flex flex-col items-center justify-center gap-4 group-hover:border-primary group-hover:bg-primary/5 transition-all overflow-hidden relative">
               {formData.featuredImage ? (
                 <>
-                  <img src={formData.featuredImage} alt="Preview" width={400} height={300} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img
+                    src={formData.featuredImage}
+                    alt="Preview"
+                    width={400}
+                    height={300}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Button variant="primary" className="rounded-full! w-12 h-12 flex items-center justify-center p-0!" aria-label="Edit featured image">
+                    <Button
+                      variant="primary"
+                      className="rounded-full! w-12 h-12 flex items-center justify-center p-0!"
+                      aria-label="Edit featured image"
+                    >
                       <i className="pi pi-pencil text-sm" />
                     </Button>
                   </div>
@@ -191,8 +217,12 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                     <i className="pi pi-cloud-upload text-xl"></i>
                   </div>
                   <div className="text-center px-4">
-                    <p className="text-xs font-black text-foreground uppercase tracking-widest">Connect Asset</p>
-                    <p className="text-[10px] text-muted font-bold mt-2 uppercase tracking-tight opacity-60">RAW, JPEG, PNG • MAX 10MB</p>
+                    <p className="text-xs font-black text-foreground uppercase tracking-widest">
+                      Connect Asset
+                    </p>
+                    <p className="text-[10px] text-muted font-bold mt-2 uppercase tracking-tight opacity-60">
+                      RAW, JPEG, PNG • MAX 10MB
+                    </p>
                   </div>
                 </>
               )}
@@ -212,21 +242,33 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
         {/* Metadata Card */}
         <div className="bg-white/60 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white shadow-soft">
           <div className="flex flex-col gap-10">
-            <FormField label="Classification" className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
+            <FormField
+              label="Classification"
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
+            >
               <Select
                 options={categories}
                 value={formData.category}
-                onChange={(e) => onValueChange("category", e.value)}
+                onChange={(e) => onValueChange('category', e.value)}
                 placeholder="Select category"
                 className="h-12! rounded-2xl! border-none! bg-white! shadow-sm!"
               />
             </FormField>
 
-            <FormField label="Strategic Tags" description="Separate entities with commas" className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
+            <FormField
+              label="Strategic Tags"
+              description="Separate entities with commas"
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
+            >
               <input
                 type="text"
                 value={formData.tags?.join(', ')}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map((t: string) => t.trim()) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    tags: e.target.value.split(',').map((t: string) => t.trim()),
+                  })
+                }
                 placeholder="e.g. CORE, QUANTUM, SYNERGY"
                 className="w-full px-6 py-4 rounded-2xl border-none bg-white shadow-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-[13px] font-bold"
               />

@@ -1,7 +1,12 @@
 import React, { useMemo } from 'react';
 import { Table } from 'antd';
 import { cn } from '@/utils/cn';
-import { extractColumns, applyFilters, type ColumnProps, type DataTableFilterMeta } from './DataTable.utils';
+import {
+  extractColumns,
+  applyFilters,
+  type ColumnProps,
+  type DataTableFilterMeta,
+} from './DataTable.utils';
 
 export { FilterMatchMode } from './DataTable.utils';
 export type { DataTableFilterMeta } from './DataTable.utils';
@@ -57,7 +62,9 @@ export const DataTable = <T extends object>({
       pagination={paginator ? { pageSize: rows, showSizeChanger: false } : false}
       scroll={scrollable ? { x: true } : undefined}
       locale={{ emptyText: emptyMessage }}
-      rowClassName={stripedRows ? (_, index) => (index % 2 === 1 ? 'bg-surface-subtle/30' : '') : undefined}
+      rowClassName={
+        stripedRows ? (_, index) => (index % 2 === 1 ? 'bg-surface-subtle/30' : '') : undefined
+      }
       className={cn(
         'rounded-card border border-border-subtle overflow-hidden bg-white shadow-soft premium-datatable',
         className

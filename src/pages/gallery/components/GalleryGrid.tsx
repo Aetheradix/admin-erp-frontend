@@ -15,7 +15,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onView = (id: string) => {
-    const index = items.findIndex(item => item.id === id);
+    const index = items.findIndex((item) => item.id === id);
     setActiveIndex(index >= 0 ? index : 0);
     setIsOpen(true);
   };
@@ -58,8 +58,12 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
                 <Info size={18} className="text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-white font-black text-lg tracking-tight leading-none">{items[activeIndex]?.title}</span>
-                <span className="text-white/40 text-[10px] font-medium uppercase tracking-[0.2em] mt-1">{items[activeIndex]?.category}</span>
+                <span className="text-white font-black text-lg tracking-tight leading-none">
+                  {items[activeIndex]?.title}
+                </span>
+                <span className="text-white/40 text-[10px] font-medium uppercase tracking-[0.2em] mt-1">
+                  {items[activeIndex]?.category}
+                </span>
               </div>
             </div>
 
@@ -83,11 +87,22 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
             afterChange={setActiveIndex}
             className="w-full"
             arrows={true}
-            prevArrow={<div className="custom-arrow-left"><ChevronLeft size={32} /></div>}
-            nextArrow={<div className="custom-arrow-right"><ChevronRight size={32} /></div>}
+            prevArrow={
+              <div className="custom-arrow-left">
+                <ChevronLeft size={32} />
+              </div>
+            }
+            nextArrow={
+              <div className="custom-arrow-right">
+                <ChevronRight size={32} />
+              </div>
+            }
           >
             {items.map((item) => (
-              <div key={item.id} className="h-screen flex flex-col items-center justify-center relative p-12 transition-all duration-700">
+              <div
+                key={item.id}
+                className="h-screen flex flex-col items-center justify-center relative p-12 transition-all duration-700"
+              >
                 <div className="relative group max-w-[85vw] max-h-[70vh]">
                   <img
                     src={item.image_url}
@@ -99,8 +114,12 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
                   <div className="absolute -bottom-6 -right-6 bg-white/10 backdrop-blur-3xl px-8 py-4 rounded-3xl border border-white/20 shadow-2xl flex items-center gap-4 group-hover:bg-white transition-all duration-500">
                     <div className="w-1.5 h-8 bg-primary rounded-full" />
                     <div className="flex flex-col">
-                      <span className="text-white text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors">Metadata Verified</span>
-                      <span className="text-white/40 text-[9px] font-medium uppercase tracking-tight group-hover:text-muted transition-colors">{item.id.toString().substring(0, 8)} • High Res</span>
+                      <span className="text-white text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors">
+                        Metadata Verified
+                      </span>
+                      <span className="text-white/40 text-[9px] font-medium uppercase tracking-tight group-hover:text-muted transition-colors">
+                        {item.id.toString().substring(0, 8)} • High Res
+                      </span>
                     </div>
                   </div>
                 </div>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { FilterMatchMode, type DataTableFilterMeta } from '@/components/ui/composed/DataTable';
 
-
 export function useBlogFilters() {
   const [searchValue, setSearchValue] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');

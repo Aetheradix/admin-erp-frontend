@@ -31,9 +31,10 @@ export function StatusCell({ status }: { status: Blog['status'] }) {
 
 export function AuthorCell({ author }: { author: Blog['author'] }) {
   const authorName = typeof author === 'string' ? author : author?.name || 'Unknown';
-  const authorImg = typeof author === 'string'
-    ? `https://api.dicebear.com/7.x/notionists/svg?seed=${author}`
-    : author?.image;
+  const authorImg =
+    typeof author === 'string'
+      ? `https://api.dicebear.com/7.x/notionists/svg?seed=${author}`
+      : author?.image;
 
   return (
     <div className="flex items-center gap-4">
@@ -52,7 +53,9 @@ export function AuthorCell({ author }: { author: Blog['author'] }) {
       <div className="flex flex-col">
         <span className="text-[13px] font-black text-foreground tracking-tight">{authorName}</span>
         <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-[9px] text-muted font-bold uppercase tracking-widest leading-none">Senior Editor</span>
+          <span className="text-[9px] text-muted font-bold uppercase tracking-widest leading-none">
+            Senior Editor
+          </span>
         </div>
       </div>
     </div>
@@ -61,8 +64,17 @@ export function AuthorCell({ author }: { author: Blog['author'] }) {
 
 // ─── Title ────────────────────────────────────────────────────────────────────
 
-export function TitleCell({ title, excerpt, content }: { title: string; excerpt?: string; content?: string }) {
-  const displayExcerpt = excerpt || (content ? content.replace(/<[^>]*>/g, '').substring(0, 100) + '...' : '');
+export function TitleCell({
+  title,
+  excerpt,
+  content,
+}: {
+  title: string;
+  excerpt?: string;
+  content?: string;
+}) {
+  const displayExcerpt =
+    excerpt || (content ? content.replace(/<[^>]*>/g, '').substring(0, 100) + '...' : '');
 
   return (
     <div className="flex flex-col max-w-lg py-4 group cursor-pointer">

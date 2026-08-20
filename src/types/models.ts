@@ -44,7 +44,6 @@ export interface AttendanceRequest {
   admin_comment?: string;
 }
 
-
 export interface AttendanceStatsData {
   daysPresent?: number | string;
   wfhCount?: number | string;

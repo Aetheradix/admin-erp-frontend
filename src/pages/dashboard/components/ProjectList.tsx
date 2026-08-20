@@ -16,10 +16,14 @@ export const ProjectList = ({ projects }: ProjectListProps) => {
           <div className="flex items-center gap-3 mb-2">
             <h2 className="text-3xl font-black text-foreground tracking-tight">Active Projects</h2>
             <div className="bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
-              <span className="text-[10px] font-black text-primary tracking-widest uppercase">88 TOTAL</span>
+              <span className="text-[10px] font-black text-primary tracking-widest uppercase">
+                88 TOTAL
+              </span>
             </div>
           </div>
-          <p className="text-xs font-medium text-muted tracking-wide">Manage and track your ongoing infrastructure works</p>
+          <p className="text-xs font-medium text-muted tracking-wide">
+            Manage and track your ongoing infrastructure works
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -52,8 +56,12 @@ export const ProjectList = ({ projects }: ProjectListProps) => {
           <div className="w-14 h-14 rounded-3xl bg-surface-subtle flex items-center justify-center mb-4 group-hover:bg-primary group-hover:rotate-90 transition-all duration-500 border border-border-subtle shadow-sm group-hover:shadow-primary/30">
             <Plus size={24} className="text-muted group-hover:text-white transition-colors" />
           </div>
-          <p className="text-[10px] font-black text-muted group-hover:text-primary uppercase tracking-[0.2em] transition-colors">Initialize Project</p>
-          <p className="text-[9px] font-medium text-muted/50 mt-1 uppercase tracking-widest">Add a new workspace</p>
+          <p className="text-[10px] font-black text-muted group-hover:text-primary uppercase tracking-[0.2em] transition-colors">
+            Initialize Project
+          </p>
+          <p className="text-[9px] font-medium text-muted/50 mt-1 uppercase tracking-widest">
+            Add a new workspace
+          </p>
         </motion.div>
 
         {projects.map((project, idx) => (

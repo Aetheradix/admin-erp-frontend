@@ -11,7 +11,8 @@ export const antdTheme: ThemeConfig = {
     colorLink: '#E8583A',
     colorLinkHover: '#d04a2e',
     borderRadius: 6,
-    fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily:
+      '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     colorBgContainer: '#ffffff',
     colorBgLayout: '#f5f4f2',
     colorText: '#1a1a1a',

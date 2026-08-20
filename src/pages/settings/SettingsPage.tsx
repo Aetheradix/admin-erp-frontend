@@ -1,10 +1,20 @@
-
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { SettingItem, SettingSection } from './components/SettingUI';
 import { useSettings } from './hooks/useSettings';
 import {
-  Bell, Shield, Palette, Globe, Mail, Lock, Moon, Sun,
-  Monitor, Database, Share2, Trash2, Cpu
+  Bell,
+  Shield,
+  Palette,
+  Globe,
+  Mail,
+  Lock,
+  Moon,
+  Sun,
+  Monitor,
+  Database,
+  Share2,
+  Trash2,
+  Cpu,
 } from 'lucide-react';
 import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Select } from '@/components/ui/primitives/Select';
@@ -41,8 +51,15 @@ export function SettingsPage() {
             description="Choose between compact and spacious interface layouts."
             control={
               <div className="flex items-center gap-1 bg-surface-subtle p-1 rounded-lg">
-                <Button variant="ghost" className="h-10 px-4 rounded-lg! bg-white shadow-xs text-primary!">Compact</Button>
-                <Button variant="ghost" className="h-10 px-4 rounded-lg! text-muted!">Spacious</Button>
+                <Button
+                  variant="ghost"
+                  className="h-10 px-4 rounded-lg! bg-white shadow-xs text-primary!"
+                >
+                  Compact
+                </Button>
+                <Button variant="ghost" className="h-10 px-4 rounded-lg! text-muted!">
+                  Spacious
+                </Button>
               </div>
             }
           />
@@ -64,9 +81,7 @@ export function SettingsPage() {
             icon={Lock}
             label="Session Timeout"
             description="Automatically sign out after 30 minutes of inactivity."
-            control={
-              <InputSwitch checked={true} disabled />
-            }
+            control={<InputSwitch checked={true} disabled />}
           />
         </SettingSection>
 
@@ -113,7 +128,7 @@ export function SettingsPage() {
             description="Customize the primary highlights of the system interface."
             control={
               <div className="flex items-center gap-2">
-                {THEME_COLORS.map(color => (
+                {THEME_COLORS.map((color) => (
                   <div
                     key={color}
                     className="w-6 h-6 rounded-full cursor-pointer border-2 border-white shadow-sm ring-1 ring-border-subtle hover:scale-125 transition-transform"
@@ -142,7 +157,12 @@ export function SettingsPage() {
             label="Integration API Access"
             description="Manage tokens for external system connections and bots."
             control={
-              <Button variant="secondary" className="h-10 px-4 rounded-md! font-bold text-xs uppercase underline">Manage Tokens</Button>
+              <Button
+                variant="secondary"
+                className="h-10 px-4 rounded-md! font-bold text-xs uppercase underline"
+              >
+                Manage Tokens
+              </Button>
             }
           />
         </SettingSection>
@@ -154,14 +174,19 @@ export function SettingsPage() {
                 <Trash2 size={24} />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-base font-black text-error uppercase tracking-tight">System Cache Reset</span>
+                <span className="text-base font-black text-error uppercase tracking-tight">
+                  System Cache Reset
+                </span>
                 <p className="text-xs font-medium text-error/70 leading-relaxed italic">
-                  Clearing the cache will perform a deep logout and refresh all local system meta-data.
-                  This action cannot be undone.
+                  Clearing the cache will perform a deep logout and refresh all local system
+                  meta-data. This action cannot be undone.
                 </p>
               </div>
             </div>
-            <Button variant="ghost" className="w-full h-14 rounded-xl! border-error/30! text-error! hover:bg-error/10 font-black uppercase tracking-widest shadow-lg shadow-error/5">
+            <Button
+              variant="ghost"
+              className="w-full h-14 rounded-xl! border-error/30! text-error! hover:bg-error/10 font-black uppercase tracking-widest shadow-lg shadow-error/5"
+            >
               Reset Cache & Logout
             </Button>
           </div>
@@ -174,11 +199,18 @@ export function SettingsPage() {
             <Cpu size={32} />
           </div>
           <div className="flex flex-col gap-1">
-            <h3 className="text-xl font-black text-foreground uppercase tracking-tight">System Status: <span className="text-success">Optimal</span></h3>
-            <p className="text-xs font-medium text-muted-foreground">Version 2.4.0 (Aetheradix Core) • Last optimized 12 hours ago</p>
+            <h3 className="text-xl font-black text-foreground uppercase tracking-tight">
+              System Status: <span className="text-success">Optimal</span>
+            </h3>
+            <p className="text-xs font-medium text-muted-foreground">
+              Version 2.4.0 (Aetheradix Core) • Last optimized 12 hours ago
+            </p>
           </div>
         </div>
-        <Button variant="primary" className="h-14 px-10 rounded-xl! font-black tracking-widest shadow-xl shadow-primary/20 bg-primary! text-white!">
+        <Button
+          variant="primary"
+          className="h-14 px-10 rounded-xl! font-black tracking-widest shadow-xl shadow-primary/20 bg-primary! text-white!"
+        >
           Check for Updates
         </Button>
       </div>

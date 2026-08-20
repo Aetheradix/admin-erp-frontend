@@ -25,7 +25,7 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
   const departments = departmentsData?.data ?? [];
   const departmentOptions = departments.map((d: { department_name: string }) => ({
     label: d.department_name,
-    value: d.department_name
+    value: d.department_name,
   }));
 
   const [formData, setFormData] = useState<Partial<Career>>({
@@ -44,11 +44,10 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
   useEffect(() => {
     if (!initialData && departmentOptions.length > 0 && !formData.department) {
       queueMicrotask(() => {
-        setFormData(prev => ({ ...prev, department: departmentOptions[0].value }));
+        setFormData((prev) => ({ ...prev, department: departmentOptions[0].value }));
       });
     }
   }, [departmentOptions, initialData, formData.department]);
-
 
   const [reqsString, setReqsString] = useState('');
   const [benefitsString, setBenefitsString] = useState('');
@@ -76,8 +75,14 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
   const handleApply = () => {
     const dataToSend = {
       ...formData,
-      requirements: reqsString.split(',').map(s => s.trim()).filter(Boolean),
-      benefits: benefitsString.split(',').map(s => s.trim()).filter(Boolean),
+      requirements: reqsString
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+      benefits: benefitsString
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
     };
     onSubmit(dataToSend);
   };
@@ -160,7 +165,11 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
-        <Button variant="ghost" onClick={onCancel} className="px-8! rounded-2xl! font-bold text-muted!">
+        <Button
+          variant="ghost"
+          onClick={onCancel}
+          className="px-8! rounded-2xl! font-bold text-muted!"
+        >
           Discard
         </Button>
         <Button

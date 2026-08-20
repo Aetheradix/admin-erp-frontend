@@ -10,7 +10,10 @@ export const permissionSlice = apiSlice.injectEndpoints({
       query: () => '/feature-permissions/my',
       providesTags: ['Permissions'],
     }),
-    toggleFeature: builder.mutation<any, { feature_name: string; department: string; is_enabled: boolean }>({
+    toggleFeature: builder.mutation<
+      any,
+      { feature_name: string; department: string; is_enabled: boolean }
+    >({
       query: (data) => ({
         url: '/feature-permissions/toggle',
         method: 'POST',

@@ -53,12 +53,17 @@ export function StaffList() {
       <PageHeader
         title="Team Directory"
         description="Empower your workforce by managing profiles, roles, and expertise in a premium unified workspace."
-        primaryAction={isAdmin ? {
-          label: 'Onboard Member',
-          onClick: onAddMember,
-          icon: 'pi pi-user-plus',
-          className: 'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
-        } : undefined}
+        primaryAction={
+          isAdmin
+            ? {
+                label: 'Onboard Member',
+                onClick: onAddMember,
+                icon: 'pi pi-user-plus',
+                className:
+                  'px-8! py-4! rounded-lg! font-black! tracking-widest! shadow-xl! shadow-primary/20!',
+              }
+            : undefined
+        }
       />
 
       <div className="flex flex-col gap-8">
@@ -103,14 +108,14 @@ export function StaffList() {
       <Dialog
         visible={showForm}
         onHide={() => setShowForm(false)}
-        header={editingMember ? "Revise Member Profile" : "Onboard New Specialist"}
+        header={editingMember ? 'Revise Member Profile' : 'Onboard New Specialist'}
         modal
         className="w-full max-w-4xl mx-4"
         contentClassName="p-10"
         headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' }
+          mask: { className: 'backdrop-blur-md bg-black/40' },
         }}
       >
         <StaffForm

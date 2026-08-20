@@ -60,8 +60,6 @@ export const BLOG_COLUMNS: ColumnConfig[] = [
     header: '',
     align: 'right',
     headerClassName: 'pr-8',
-    body: (row, { onDelete }) => (
-      <ActionsCell id={String(row.id)} onDelete={onDelete} />
-    ),
+    body: (row, { onDelete }) => <ActionsCell id={String(row.id)} onDelete={onDelete} />,
   },
 ];

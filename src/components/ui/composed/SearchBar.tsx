@@ -11,7 +11,13 @@ interface SearchBarProps {
   className?: string;
 }
 
-export const SearchBar = ({ value, onChange, onSearch, placeholder = 'Search...', className }: SearchBarProps) => {
+export const SearchBar = ({
+  value,
+  onChange,
+  onSearch,
+  placeholder = 'Search...',
+  className,
+}: SearchBarProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && onSearch) {
       onSearch(value || '');

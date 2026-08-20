@@ -29,7 +29,12 @@ export const Chart = ({ type, data, options, className }: ChartProps) => {
   }, [type, data, options]);
 
   return (
-    <div className={cn('p-6 bg-white rounded-shell border border-border-subtle shadow-soft', className)}>
+    <div
+      className={cn(
+        'p-6 bg-white rounded-shell border border-border-subtle shadow-soft',
+        className
+      )}
+    >
       <canvas ref={canvasRef} />
     </div>
   );

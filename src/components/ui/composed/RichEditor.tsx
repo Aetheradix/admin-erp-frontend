@@ -38,7 +38,6 @@
 //     onTextChangeRef.current = onTextChange;
 //   }, [onTextChange]);
 
-
 //   useEffect(() => {
 //     if (!containerRef.current || quillRef.current) return;
 
@@ -84,7 +83,6 @@
 //   quillEditor.style.height = '100%';
 // }
 
-
 // // CHANGED: Make sure editor receives focus
 // quillRef.current.focus();
 //     // if (value) {
@@ -112,7 +110,6 @@
 //     //   });
 //     // });
 
-
 //     quillRef.current.on('text-change', () => {
 //   onTextChange?.({
 //     htmlValue: quillRef.current?.root.innerHTML,
@@ -127,7 +124,6 @@
 //       }
 //     };
 //   }, []);
-
 
 //   // useEffect(() => {
 //   //   if (quillRef.current && value !== quillRef.current.root.innerHTML) {
@@ -145,7 +141,6 @@
 //     quillRef.current.clipboard.dangerouslyPasteHTML(value);
 //   }
 // }, []);
-
 
 //   return (
 //     <div
@@ -169,8 +164,6 @@
 
 // RichEditor.displayName = 'RichEditor';
 
-
-
 import React, { useEffect, useRef } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -190,125 +183,108 @@ interface RichEditorProps {
   readOnly?: boolean;
 }
 
-export const RichEditor = React.forwardRef<HTMLDivElement, RichEditorProps>(({
-  value = '',
-  onTextChange,
-  className,
-  style,
-  placeholder,
-  readOnly,
-}, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const quillRef = useRef<Quill | null>(null);
+export const RichEditor = React.forwardRef<HTMLDivElement, RichEditorProps>(
+  ({ value = '', onTextChange, className, style, placeholder, readOnly }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const quillRef = useRef<Quill | null>(null);
 
-  // CHANGED: Keep latest callback reference
-  // Prevents stale callback because Quill initializes only once
-  const onTextChangeRef = useRef(onTextChange);
+    // CHANGED: Keep latest callback reference
+    // Prevents stale callback because Quill initializes only once
+    const onTextChangeRef = useRef(onTextChange);
 
-  // CHANGED: Update callback reference
-  useEffect(() => {
-    onTextChangeRef.current = onTextChange;
-  }, [onTextChange]);
+    // CHANGED: Update callback reference
+    useEffect(() => {
+      onTextChangeRef.current = onTextChange;
+    }, [onTextChange]);
 
+    useEffect(() => {
+      if (!containerRef.current || quillRef.current) return;
 
-  useEffect(() => {
-    if (!containerRef.current || quillRef.current) return;
+      const editorContainer = document.createElement('div');
+      containerRef.current.appendChild(editorContainer);
 
-    const editorContainer = document.createElement('div');
-    containerRef.current.appendChild(editorContainer);
+      quillRef.current = new Quill(editorContainer, {
+        theme: 'snow',
+        placeholder,
+        readOnly,
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            ['clean'],
+          ],
+        },
+      });
 
-
-    quillRef.current = new Quill(editorContainer, {
-      theme: 'snow',
-      placeholder,
-      readOnly,
-      modules: {
-        toolbar: [
-          [{ header: [1, 2, 3, false] }],
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ list: 'ordered' }, { list: 'bullet' }],
-          ['link', 'image'],
-          ['clean'],
-        ],
-      },
-    });
-
-
-    // CHANGED: Load initial HTML using Quill API
-    // Prevents empty content issue
-    if (value) {
-      quillRef.current.clipboard.dangerouslyPasteHTML(value);
-    }
-
-
-    // CHANGED: Use latest callback reference
-    // quillRef.current.on('text-change', () => {
-    //   const htmlValue = quillRef.current?.root.innerHTML || '';
-    //   const textValue = quillRef.current?.getText() || '';
-
-    //   onTextChangeRef.current?.({
-    //     htmlValue,
-    //     textValue,
-    //   });
-    // });
-
-     // CHANGED: Capture Quill user typing changes
-      quillRef.current.on('text-change', () => {
-  const htmlValue = quillRef.current?.root.innerHTML || '';
-  const textValue = quillRef.current?.getText() || '';
-
-  console.log("Quill HTML:", htmlValue);
-  console.log("Quill TEXT:", textValue);
-
-  onTextChangeRef.current?.({
-    htmlValue,
-    textValue,
-  });
-});
-
-
-    return () => {
-      quillRef.current = null;
-
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
+      // CHANGED: Load initial HTML using Quill API
+      // Prevents empty content issue
+      if (value) {
+        quillRef.current.clipboard.dangerouslyPasteHTML(value);
       }
-    };
 
-  },[]);
+      // CHANGED: Use latest callback reference
+      // quillRef.current.on('text-change', () => {
+      //   const htmlValue = quillRef.current?.root.innerHTML || '';
+      //   const textValue = quillRef.current?.getText() || '';
 
+      //   onTextChangeRef.current?.({
+      //     htmlValue,
+      //     textValue,
+      //   });
+      // });
 
-  useEffect(() => {
-    // CHANGED: Update editor only when external value changes
-    // Avoids resetting while typing
-    if (
-      quillRef.current &&
-      value &&
-      value !== quillRef.current.root.innerHTML
-    ) {
-      quillRef.current.clipboard.dangerouslyPasteHTML(value);
-    }
-  }, [value]);
+      // CHANGED: Capture Quill user typing changes
+      quillRef.current.on('text-change', () => {
+        const htmlValue = quillRef.current?.root.innerHTML || '';
+        const textValue = quillRef.current?.getText() || '';
 
+        console.log('Quill HTML:', htmlValue);
+        console.log('Quill TEXT:', textValue);
 
-  return (
-    <div
-      ref={(node) => {
-        (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        onTextChangeRef.current?.({
+          htmlValue,
+          textValue,
+        });
+      });
 
-        if (typeof ref === 'function') {
-          ref(node);
-        } else if (ref) {
-          ref.current = node;
+      return () => {
+        quillRef.current = null;
+
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
         }
-      }}
-      className={cn(
-        'overflow-hidden border border-border-subtle bg-white shadow-soft rounded-2xl',
-        className
-      )}
-      style={style}
-    />
-  );
-});
+      };
+    }, []);
+
+    useEffect(() => {
+      // CHANGED: Update editor only when external value changes
+      // Avoids resetting while typing
+      if (quillRef.current && value && value !== quillRef.current.root.innerHTML) {
+        quillRef.current.clipboard.dangerouslyPasteHTML(value);
+      }
+    }, [value]);
+
+    return (
+      <div
+        ref={(node) => {
+          (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref) {
+            ref.current = node;
+          }
+        }}
+        className={cn(
+          'overflow-hidden border border-border-subtle bg-white shadow-soft rounded-2xl',
+          className
+        )}
+        style={style}
+      />
+    );
+  }
+);
 
 RichEditor.displayName = 'RichEditor';

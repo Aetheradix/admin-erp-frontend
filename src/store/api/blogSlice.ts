@@ -11,7 +11,9 @@ export const blogSlice = apiSlice.injectEndpoints({
       providesTags: ['Blog'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapBlog(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapBlog(item as Record<string, unknown>))
+          : [];
       },
     }),
     getBlog: builder.query<Blog, string>({

@@ -1,4 +1,9 @@
-import type { AttendanceRecord, AttendanceStatus,BreakRecord,AttendanceStatsData } from '@/types/models';
+import type {
+  AttendanceRecord,
+  AttendanceStatus,
+  BreakRecord,
+  AttendanceStatsData,
+} from '@/types/models';
 import { apiSlice } from './apiSlice';
 import { mapAttendanceRecord } from './mappers';
 
@@ -6,7 +11,6 @@ export type { AttendanceRecord, AttendanceStatsData };
 
 export const attendanceSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-
     // getAttendanceStatus: builder.query<{ status: 'checked-in' | 'checked-out' | null; lastAction?: string | null; dbStatus?: string | null }, void>({
     //   query: () => '/attendance/status',
     //   transformResponse: (response: { data?: { status: string; record?: { check_in_time?: string } } }) => {
@@ -22,53 +26,50 @@ export const attendanceSlice = apiSlice.injectEndpoints({
     //   providesTags: ['Attendance'],
     // }),
 
+    getAttendanceStatus: builder.query<AttendanceStatus, void>({
+      query: () => '/attendance/status',
 
-  getAttendanceStatus: builder.query<AttendanceStatus, void>({
-    query: () => '/attendance/status',
+      transformResponse: (response: {
+        data?: {
+          status: string;
+          onBreak?: boolean;
+          activeBreak?: BreakRecord | null;
+          record?: {
+            check_in_time?: string;
+          };
+        };
+      }) => {
+        if (!response.data || !response.data.status) {
+          return {
+            status: null,
+            onBreak: false,
+            activeBreak: null,
+            lastAction: null,
+            dbStatus: null,
+          };
+        }
 
-    transformResponse: (response: {
-       data?: {
-      status: string;
-      onBreak?: boolean;
-      activeBreak?: BreakRecord | null;
-      record?: {
-        check_in_time?: string;
-      };
-    };
-  }) => {
-    if (!response.data || !response.data.status) {
-      return {
-        status: null,
-        onBreak: false,
-        activeBreak: null,
-        lastAction: null,
-        dbStatus: null,
-      };
-    }
+        return {
+          status: response.data.status === 'CHECKED_IN' ? 'checked-in' : 'checked-out',
 
-    return {
-      status:
-        response.data.status === 'CHECKED_IN'
-          ? 'checked-in'
-          : 'checked-out',
+          onBreak: response.data.onBreak ?? false,
 
-      onBreak: response.data.onBreak ?? false,
+          activeBreak: response.data.activeBreak ?? null,
 
-      activeBreak: response.data.activeBreak ?? null,
+          lastAction: response.data.record?.check_in_time
+            ? new Date(response.data.record.check_in_time).toISOString()
+            : null,
 
-      lastAction: response.data.record?.check_in_time
-        ? new Date(
-            response.data.record.check_in_time
-          ).toISOString()
-        : null,
+          dbStatus: response.data.status,
+        };
+      },
 
-      dbStatus: response.data.status,
-    };
-  },
-
-  providesTags: ['Attendance'],
-}),
-    checkIn: builder.mutation<{ success: boolean; message: string; id: number }, { remark?: string }>({
+      providesTags: ['Attendance'],
+    }),
+    checkIn: builder.mutation<
+      { success: boolean; message: string; id: number },
+      { remark?: string }
+    >({
       query: (arg) => ({
         url: '/attendance/checkin',
         method: 'POST',
@@ -97,7 +98,9 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       providesTags: ['Attendance'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapAttendanceRecord(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapAttendanceRecord(item as Record<string, unknown>))
+          : [];
       },
     }),
 
@@ -105,24 +108,21 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       { success: boolean; message: string; data: BreakRecord },
       { remark?: string }
     >({
-        query: (body) => ({
-          url: '/attendance/break/start',
-          method: 'POST',
-          body,
-        }),
-           invalidatesTags: ['Attendance'],
-         }),
+      query: (body) => ({
+        url: '/attendance/break/start',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
 
-        endBreak: builder.mutation<
-          { success: boolean; message: string; data: BreakRecord },
-          void
-        >({
-          query: () => ({
-            url: '/attendance/break/end',
-            method: 'POST',
-          }),
-          invalidatesTags: ['Attendance'],
-        }),
+    endBreak: builder.mutation<{ success: boolean; message: string; data: BreakRecord }, void>({
+      query: () => ({
+        url: '/attendance/break/end',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
   }),
 });
 
@@ -133,5 +133,5 @@ export const {
   useGetAttendanceHistoryQuery,
   useGetAttendanceStatsQuery,
   useEndBreakMutation,
-  useTakeBreakMutation
+  useTakeBreakMutation,
 } = attendanceSlice;

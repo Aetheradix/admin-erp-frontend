@@ -11,19 +11,25 @@ interface BlogTableToolbarProps {
   onCategoryChange: (category: string) => void;
 }
 
-const CATEGORIES = ['All', ...new Set(mockBlogs.map(blog => blog.category).filter(Boolean))] as string[];
+const CATEGORIES = [
+  'All',
+  ...new Set(mockBlogs.map((blog) => blog.category).filter(Boolean)),
+] as string[];
 
-export function BlogTableToolbar({ 
-  searchValue, 
+export function BlogTableToolbar({
+  searchValue,
   onSearchChange,
   activeCategory,
-  onCategoryChange
+  onCategoryChange,
 }: BlogTableToolbarProps) {
   return (
     <div className="flex flex-col p-6 gap-6 border-b border-border-subtle/50 mb-2">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:max-w-md group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
+            size={18}
+          />
           <Input
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -42,11 +48,7 @@ export function BlogTableToolbar({
       </div>
 
       <div className="overflow-x-auto pb-2 scrollbar-none">
-        <Tabs
-          items={CATEGORIES}
-          activeItem={activeCategory}
-          onItemChange={onCategoryChange}
-        />
+        <Tabs items={CATEGORIES} activeItem={activeCategory} onItemChange={onCategoryChange} />
       </div>
     </div>
   );

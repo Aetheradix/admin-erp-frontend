@@ -9,7 +9,9 @@ interface TabsProps {
 
 export const Tabs = ({ items, activeItem, onItemChange, className }: TabsProps) => {
   return (
-    <div className={cn('flex gap-2 p-0 border-none bg-transparent list-none m-0 flex-wrap', className)}>
+    <div
+      className={cn('flex gap-2 p-0 border-none bg-transparent list-none m-0 flex-wrap', className)}
+    >
       {items.map((item) => {
         const isActive = item === activeItem;
         return (

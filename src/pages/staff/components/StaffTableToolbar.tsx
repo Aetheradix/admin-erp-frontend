@@ -15,7 +15,6 @@ export function StaffTableToolbar({
   onSearchChange,
   activeDepartment,
   onDepartmentChange,
-
 }: StaffTableToolbarProps) {
   const { data: departmentsData } = useGetDepartmentsQuery({});
   const departments = departmentsData?.data ?? [];
@@ -27,7 +26,10 @@ export function StaffTableToolbar({
       <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
         {/* Search Input */}
         <div className="relative w-full lg:max-w-md group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={20} />
+          <Search
+            className="absolute left-5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
+            size={20}
+          />
           <Input
             value={searchQuery}
             onChange={(e: any) => onSearchChange(e.target.value)}
@@ -39,11 +41,7 @@ export function StaffTableToolbar({
 
       {/* Department Tabs */}
       <div className="overflow-x-auto pb-2 no-scrollbar">
-        <Tabs
-          items={DEPARTMENTS}
-          activeItem={activeDepartment}
-          onItemChange={onDepartmentChange}
-        />
+        <Tabs items={DEPARTMENTS} activeItem={activeDepartment} onItemChange={onDepartmentChange} />
       </div>
     </div>
   );

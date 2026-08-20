@@ -9,7 +9,8 @@ export const StaffEmptyState = () => {
       <div className="max-w-md px-6">
         <h3 className="text-2xl font-black text-foreground mb-2">No Members Found</h3>
         <p className="text-muted font-medium leading-relaxed">
-          We couldn't find any team members matching your search criteria. Try adjusting your filters.
+          We couldn't find any team members matching your search criteria. Try adjusting your
+          filters.
         </p>
       </div>
     </div>

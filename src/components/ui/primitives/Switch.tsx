@@ -12,16 +12,18 @@ interface SwitchProps extends Omit<AntSwitchProps, 'onChange'> {
   onChange?: (e: PrimeSwitchChangeEvent) => void;
 }
 
-export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({ className, onChange, ...props }, ref) => {
-  return (
-    <AntSwitch
-      ref={ref}
-      className={cn('transition-all duration-200', className)}
-      onChange={(checked, event) => onChange?.({ value: checked, originalEvent: event })}
-      {...props}
-    />
-  );
-});
+export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
+  ({ className, onChange, ...props }, ref) => {
+    return (
+      <AntSwitch
+        ref={ref}
+        className={cn('transition-all duration-200', className)}
+        onChange={(checked, event) => onChange?.({ value: checked, originalEvent: event })}
+        {...props}
+      />
+    );
+  }
+);
 
 Switch.displayName = 'Switch';
 

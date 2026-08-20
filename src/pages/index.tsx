@@ -34,7 +34,9 @@ const LoadingScreen = () => (
       <div className="w-16 h-16 rounded-3xl bg-primary/20 flex items-center justify-center text-primary">
         <i className="pi pi-spin pi-spinner text-3xl" />
       </div>
-      <span className="text-[10px] font-black uppercase tracking-widest text-primary">Loading Aetheradix Core...</span>
+      <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+        Loading Aetheradix Core...
+      </span>
     </div>
   </div>
 );
@@ -106,31 +108,56 @@ const AppFeature = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
-
         {/* Permission-Controlled Routes */}
         <Route path="/org/*" element={<OrganizationModule />} />
         <Route path="/teams/*" element={<TeamsModule />} />
         <Route path="/users/*" element={<UsersModule />} />
         <Route path="/tasks/*" element={<TasksModule />} />
         <Route path="/inventory/*" element={<InventoryModule />} />
-
-        <Route path="/blogs/*" element={isAllowed('Blogs') ? <BlogsModule /> : <Navigate to="/" replace />} />
-        <Route path="/gallery/*" element={isAllowed('Gallery') ? <GalleryModule /> : <Navigate to="/" replace />} />
-        <Route path="/events/*" element={isAllowed('Events') ? <EventsModule /> : <Navigate to="/" replace />} />
-        <Route path="/careers/*" element={isAllowed('Careers') ? <CareersModule /> : <Navigate to="/" replace />} />
+        <Route
+          path="/blogs/*"
+          element={isAllowed('Blogs') ? <BlogsModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/gallery/*"
+          element={isAllowed('Gallery') ? <GalleryModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/events/*"
+          element={isAllowed('Events') ? <EventsModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/careers/*"
+          element={isAllowed('Careers') ? <CareersModule /> : <Navigate to="/" replace />}
+        />
         <Route path="/staff/*" element={<StaffModule />} /> {/* Usually admin only anyway */}
         <Route path="/checkin/*" element={<CheckInModule />} />
-        <Route path="/calendar/*" element={isAllowed('Attendance') ? <AttendanceModule /> : <Navigate to="/" replace />} />
-        <Route path="/finance/*" element={isAllowed('Finance') ? <FinanceModule /> : <Navigate to="/" replace />} />
-        <Route path="/grievances/*" element={isAllowed('Grievances') ? <GrievanceModule /> : <Navigate to="/" replace />} />
-        <Route path="/analytics/*" element={user?.role === 'Admin' ? <AnalyticsModule /> : <Navigate to="/" replace />} />
-        <Route path="/guest-pass/*" element={isAllowed('Guest Pass') ? <GuestPassModule /> : <Navigate to="/" replace />} />
+        <Route
+          path="/calendar/*"
+          element={isAllowed('Attendance') ? <AttendanceModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/finance/*"
+          // element={isAllowed('Finance') ? <FinanceModule /> : <Navigate to="/" replace />}
+          element={<FinanceModule />}
+        />
+        <Route
+          path="/grievances/*"
+          element={isAllowed('Grievances') ? <GrievanceModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/analytics/*"
+          element={user?.role === 'Admin' ? <AnalyticsModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/guest-pass/*"
+          element={isAllowed('Guest Pass') ? <GuestPassModule /> : <Navigate to="/" replace />}
+        />
         <Route path="/rulebook/*" element={<RulebookModule />} />
         <Route path="/settings/*" element={<SettingsModule />} />
       </Routes>
     </Suspense>
   );
 };
-
 
 export default AppFeature;

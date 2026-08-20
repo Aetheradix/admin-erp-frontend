@@ -12,7 +12,9 @@ export default function CalendarCard() {
     if (isHighlighted) {
       return (
         <div className="relative flex items-center justify-center w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 group hover:bg-primary transition-colors duration-300">
-          <span className="text-foreground group-hover:text-white font-black text-xs transition-colors">{date.day}</span>
+          <span className="text-foreground group-hover:text-white font-black text-xs transition-colors">
+            {date.day}
+          </span>
           <div className="absolute -bottom-1 w-1 h-1 bg-primary group-hover:bg-white rounded-full transition-colors"></div>
         </div>
       );
@@ -29,7 +31,9 @@ export default function CalendarCard() {
     <div className="bg-white rounded-3xl p-8 border border-border-subtle shadow-soft h-full flex flex-col group hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h2 className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-1">Timebox</h2>
+          <h2 className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-1">
+            Timebox
+          </h2>
           <h3 className="text-2xl font-black text-foreground tracking-tight">Calendar</h3>
         </div>
         <button
@@ -59,7 +63,9 @@ export default function CalendarCard() {
 
       <div className="mt-8 pt-8 border-t border-border-subtle">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[10px] font-black text-muted uppercase tracking-widest">Active Cycle</span>
+          <span className="text-[10px] font-black text-muted uppercase tracking-widest">
+            Active Cycle
+          </span>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
             <span className="text-[10px] font-black text-success uppercase">Sprint 24</span>

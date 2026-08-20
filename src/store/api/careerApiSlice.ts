@@ -11,7 +11,9 @@ export const careerApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Career'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapCareer(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapCareer(item as Record<string, unknown>))
+          : [];
       },
     }),
     createCareer: builder.mutation<Career, Partial<Career>>({
@@ -22,7 +24,7 @@ export const careerApiSlice = apiSlice.injectEndpoints({
           ...careerData,
           requirements: JSON.stringify(careerData.requirements || []),
           benefits: JSON.stringify(careerData.benefits || []),
-          posted_date: careerData.postedDate || new Date().toISOString().split('T')[0]
+          posted_date: careerData.postedDate || new Date().toISOString().split('T')[0],
         },
       }),
       invalidatesTags: ['Career'],

@@ -20,7 +20,7 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
       isPositive: stats.valueVsLy.includes('+') || !stats.valueVsLy.includes('-'), // simplified logic
       icon: Target,
       color: 'primary',
-      description: 'Per project value'
+      description: 'Per project value',
     },
     {
       title: 'Average Tasks',
@@ -29,8 +29,8 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
       isPositive: stats.tasksVsLy.includes('+'),
       icon: Zap,
       color: 'success',
-      description: 'Efficiency metric'
-    }
+      description: 'Efficiency metric',
+    },
   ];
 
   return (
@@ -47,18 +47,27 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
           <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-surface-subtle rounded-full opacity-30 group-hover:scale-125 transition-transform duration-500" />
 
           <div className="relative flex items-start justify-between mb-4">
-            <div className={`p-3 rounded-2xl bg-surface-subtle border border-border-subtle group-hover:bg-${card.color}-soft group-hover:border-${card.color}/20 transition-colors`}>
-              <card.icon size={20} className={`text-muted group-hover:text-${card.color} transition-colors`} />
+            <div
+              className={`p-3 rounded-2xl bg-surface-subtle border border-border-subtle group-hover:bg-${card.color}-soft group-hover:border-${card.color}/20 transition-colors`}
+            >
+              <card.icon
+                size={20}
+                className={`text-muted group-hover:text-${card.color} transition-colors`}
+              />
             </div>
             <div className="flex flex-col items-end text-right">
-              <span className="text-[10px] font-black text-muted uppercase tracking-[0.15em] mb-0.5">{card.title}</span>
+              <span className="text-[10px] font-black text-muted uppercase tracking-[0.15em] mb-0.5">
+                {card.title}
+              </span>
               <span className="text-[10px] font-medium text-muted/60">{card.description}</span>
             </div>
           </div>
 
           <div className="relative flex items-baseline justify-between mt-2">
             <h3 className="text-3xl font-black text-foreground tracking-tight">{card.value}</h3>
-            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${card.isPositive ? 'bg-success/5 border-success/20 text-success' : 'bg-error/5 border-error/20 text-error'} text-[10px] font-black`}>
+            <div
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${card.isPositive ? 'bg-success/5 border-success/20 text-success' : 'bg-error/5 border-error/20 text-error'} text-[10px] font-black`}
+            >
               {card.isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
               {card.trend}
             </div>
@@ -89,7 +98,9 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
         <div className="relative">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/70">88 active projects</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
+              88 active projects
+            </span>
           </div>
           <h3 className="text-xl font-black mb-1">Portfolio Health</h3>
           <p className="text-xs font-medium text-white/60 mb-6">92% Average Completion</p>

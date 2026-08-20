@@ -8,7 +8,9 @@ export default function ProfitChartCard() {
     datasets: [
       {
         label: 'Profit',
-        backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D; chartArea: { bottom: number; top: number } } }) => {
+        backgroundColor: (context: {
+          chart: { ctx: CanvasRenderingContext2D; chartArea: { bottom: number; top: number } };
+        }) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
           if (!chartArea) return undefined;
@@ -22,16 +24,16 @@ export default function ProfitChartCard() {
         borderRadius: 6,
         data: [45, 60, 40, 75, 50, 65, 55, 90, 60, 70],
         barThickness: 12,
-        maxBarThickness: 16
-      }
-    ]
+        maxBarThickness: 16,
+      },
+    ],
   };
 
   const options = {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         enabled: true,
@@ -42,9 +44,9 @@ export default function ProfitChartCard() {
         cornerRadius: 12,
         displayColors: false,
         callbacks: {
-          label: (context: { raw: number }) => ` $${context.raw}k Profit`
-        }
-      }
+          label: (context: { raw: number }) => ` $${context.raw}k Profit`,
+        },
+      },
     },
     scales: {
       x: {
@@ -52,30 +54,30 @@ export default function ProfitChartCard() {
           display: false,
         },
         border: {
-          display: false
+          display: false,
         },
         ticks: {
           font: {
             size: 9,
             weight: '700',
-            family: 'Plus Jakarta Sans'
+            family: 'Plus Jakarta Sans',
           },
           color: '#8a7f7a',
-          padding: 10
-        }
+          padding: 10,
+        },
       },
       y: {
         display: false,
         min: 0,
-        suggestedMax: 100
-      }
+        suggestedMax: 100,
+      },
     },
     layout: {
       padding: {
         top: 20,
-        bottom: 0
-      }
-    }
+        bottom: 0,
+      },
+    },
   };
 
   return (
@@ -88,7 +90,9 @@ export default function ProfitChartCard() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">Growth Analytics</h2>
+            <h2 className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
+              Growth Analytics
+            </h2>
             <div className="px-1.5 py-0.5 rounded-md bg-success/10 border border-success/20">
               <span className="text-[8px] font-black text-success">+12.5%</span>
             </div>
@@ -108,7 +112,10 @@ export default function ProfitChartCard() {
             aria-label="View report"
             className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer hover:bg-primary-hover transition-all group/btn"
           >
-            <ArrowUpRight size={14} className="text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            <ArrowUpRight
+              size={14}
+              className="text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+            />
           </button>
         </div>
       </div>
@@ -132,12 +139,16 @@ export default function ProfitChartCard() {
       <div className="mt-8 pt-8 border-t border-border-subtle flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <span className="text-[9px] font-black text-muted uppercase tracking-widest mb-0.5">Projected</span>
+            <span className="text-[9px] font-black text-muted uppercase tracking-widest mb-0.5">
+              Projected
+            </span>
             <span className="text-sm font-black text-foreground">$1.2M</span>
           </div>
           <div className="w-px h-8 bg-border-subtle" />
           <div className="flex flex-col">
-            <span className="text-[9px] font-black text-muted uppercase tracking-widest mb-0.5">Realized</span>
+            <span className="text-[9px] font-black text-muted uppercase tracking-widest mb-0.5">
+              Realized
+            </span>
             <span className="text-sm font-black text-foreground">$842k</span>
           </div>
         </div>

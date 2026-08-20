@@ -14,8 +14,6 @@ interface StaffFormProps {
   onCancel: () => void;
 }
 
-
-
 const STATUS_OPTIONS = [
   { label: 'Active', value: 'Active' },
   { label: 'On Leave', value: 'On Leave' },
@@ -27,7 +25,7 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
   const departments = departmentsData?.data ?? [];
   const departmentOptions = departments.map((d: { department_name: string }) => ({
     label: d.department_name,
-    value: d.department_name
+    value: d.department_name,
   }));
 
   const [formData, setFormData] = useState<Partial<StaffMember>>({
@@ -44,7 +42,6 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
 
   const [skillsString, setSkillsString] = useState('');
 
-
   useEffect(() => {
     if (initialData) {
       queueMicrotask(() => {
@@ -57,7 +54,10 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
   const handleApply = () => {
     const dataToSend = {
       ...formData,
-      skills: skillsString.split(',').map(s => s.trim()).filter(Boolean),
+      skills: skillsString
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
     };
     onSubmit(dataToSend);
   };
@@ -90,7 +90,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                 id="staff-dept"
                 options={departmentOptions}
                 value={formData.department}
-                onChange={(e: { value: string }) => setFormData({ ...formData, department: e.value })}
+                onChange={(e: { value: string }) =>
+                  setFormData({ ...formData, department: e.value })
+                }
                 placeholder="Select department"
               />
             </FormField>
@@ -99,7 +101,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                 id="staff-status"
                 options={STATUS_OPTIONS}
                 value={formData.status}
-                onChange={(e: { value: string }) => setFormData({ ...formData, status: e.value as StaffMember['status'] })}
+                onChange={(e: { value: string }) =>
+                  setFormData({ ...formData, status: e.value as StaffMember['status'] })
+                }
                 placeholder="Select status"
               />
             </FormField>
@@ -140,7 +144,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
             <Calendar
               id="staff-join-date"
               value={formData.joinDate ? new Date(formData.joinDate) : null}
-              onChange={(e) => setFormData({ ...formData, joinDate: e.value?.toISOString().split('T')[0] || '' })}
+              onChange={(e) =>
+                setFormData({ ...formData, joinDate: e.value?.toISOString().split('T')[0] || '' })
+              }
               placeholder="Select join date"
               dateFormat="yy-mm-dd"
             />

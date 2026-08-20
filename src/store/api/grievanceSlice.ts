@@ -9,7 +9,9 @@ export const grievanceSlice = apiSlice.injectEndpoints({
       providesTags: ['Grievances'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapGrievance(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapGrievance(item as Record<string, unknown>))
+          : [];
       },
     }),
     submitGrievance: builder.mutation<Grievance, Partial<Grievance>>({

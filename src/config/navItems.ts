@@ -13,8 +13,6 @@
 //   type LucideIcon
 // } from 'lucide-react';
 
- 
-
 // export interface NavChild {
 //   label: string;
 //   path: string;
@@ -144,8 +142,6 @@
 //   },
 // ];
 
-
-
 import {
   BarChart3,
   Building2,
@@ -161,13 +157,13 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-
 export type UserRole = 'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee';
 
 export interface NavChild {
   label: string;
   path: string;
   roles?: UserRole[];
+  badge?: number;
 }
 
 export interface NavItem {
@@ -177,6 +173,7 @@ export interface NavItem {
   roles?: UserRole[];
   category?: 'OVERVIEW' | 'MANAGEMENT' | 'SYSTEM';
   description?: string;
+  badge?: number;
   children?: NavChild[];
 }
 
@@ -198,7 +195,7 @@ export const navItems: NavItem[] = [
     icon: Clock,
     category: 'OVERVIEW',
     description: 'Attendance Center',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee','FinanceAdmin'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee', 'FinanceAdmin'],
   },
 
   // ─────────────────────────────────────────────
@@ -210,7 +207,14 @@ export const navItems: NavItem[] = [
     icon: Building2,
     category: 'MANAGEMENT',
     description: 'Company profile',
-    roles: ['SuperAdmin', 'Admin'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+    children: [
+      {
+        label: 'New Accounts',
+        path: '/org/approvals',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+    ],
   },
   {
     label: 'Teams',
@@ -242,7 +246,7 @@ export const navItems: NavItem[] = [
     icon: CreditCard,
     category: 'MANAGEMENT',
     description: 'Financial management',
-    roles: ['SuperAdmin', 'Admin', 'FinanceAdmin','HrAdmin','Employee'],
+    roles: ['SuperAdmin', 'Admin', 'FinanceAdmin', 'HrAdmin', 'Employee'],
     children: [
       {
         label: 'Overview',
@@ -252,17 +256,17 @@ export const navItems: NavItem[] = [
       {
         label: 'Invoices',
         path: '/finance/invoices',
-        roles: ['SuperAdmin', 'FinanceAdmin','Admin'],
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Admin'],
       },
       {
         label: 'Expenses',
         path: '/finance/expenses',
-        roles: ['SuperAdmin', 'FinanceAdmin','Admin'],
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Admin'],
       },
       {
         label: 'Payroll',
         path: '/finance/payroll',
-        roles: ['SuperAdmin', 'FinanceAdmin','Employee','Admin','HrAdmin'],
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
       },
     ],
   },
@@ -297,7 +301,7 @@ export const navItems: NavItem[] = [
     icon: FileText,
     category: 'MANAGEMENT',
     description: 'Content management',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin','FinanceAdmin'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
   },
   {
     label: 'Gallery',
@@ -357,7 +361,7 @@ export const navItems: NavItem[] = [
       {
         label: 'Audit Log',
         path: '/settings/audit-log',
-        roles: ['SuperAdmin','FinanceAdmin'],
+        roles: ['SuperAdmin', 'FinanceAdmin'],
       },
     ],
   },
@@ -367,10 +371,7 @@ export const navItems: NavItem[] = [
  * Helper function to determine whether the user
  * can access a menu item or child page.
  */
-export const hasAccess = (
-  roles: UserRole[] | undefined,
-  userRole: UserRole
-): boolean => {
+export const hasAccess = (roles: UserRole[] | undefined, userRole: UserRole): boolean => {
   if (!roles || roles.length === 0) return true;
   return roles.includes(userRole);
 };

@@ -9,7 +9,7 @@ export const mockGuestPasses: import('@/types/models').GuestPass[] = [
     visitDate: '2026-03-22',
     expiryDate: '2026-03-22T18:00:00',
     status: 'Active',
-    accessCode: 'AX-9921-V'
+    accessCode: 'AX-9921-V',
   },
   {
     id: 'GP2',
@@ -19,6 +19,6 @@ export const mockGuestPasses: import('@/types/models').GuestPass[] = [
     visitDate: '2026-03-25',
     expiryDate: '2026-03-25T14:00:00',
     status: 'Pending',
-    accessCode: 'AX-1025-E'
-  }
+    accessCode: 'AX-1025-E',
+  },
 ];

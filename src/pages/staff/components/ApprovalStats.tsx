@@ -18,10 +18,14 @@ export const ApprovalStats = ({ counts }: ApprovalStatsProps) => {
           </div>
           <div className="flex flex-col">
             <span className="text-3xl font-black text-foreground">{counts.Pending || 0}</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted">Pending Review</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted">
+              Pending Review
+            </span>
           </div>
         </div>
-        <p className="text-[10px] text-muted font-bold italic leading-relaxed">Requests awaiting administrative decision.</p>
+        <p className="text-[10px] text-muted font-bold italic leading-relaxed">
+          Requests awaiting administrative decision.
+        </p>
       </div>
 
       <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[32px] border border-border-subtle shadow-soft transition-all hover:shadow-lg hover:-translate-y-1 group">
@@ -31,10 +35,14 @@ export const ApprovalStats = ({ counts }: ApprovalStatsProps) => {
           </div>
           <div className="flex flex-col">
             <span className="text-3xl font-black text-foreground">{counts.Approved || 0}</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted">Approved Requests</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted">
+              Approved Requests
+            </span>
           </div>
         </div>
-        <p className="text-[10px] text-muted font-bold italic leading-relaxed">Successfully processed and admitted applications.</p>
+        <p className="text-[10px] text-muted font-bold italic leading-relaxed">
+          Successfully processed and admitted applications.
+        </p>
       </div>
 
       <div className="bg-white/40 backdrop-blur-xl p-8 rounded-[32px] border border-border-subtle shadow-soft transition-all hover:shadow-lg hover:-translate-y-1 group">
@@ -44,10 +52,14 @@ export const ApprovalStats = ({ counts }: ApprovalStatsProps) => {
           </div>
           <div className="flex flex-col">
             <span className="text-3xl font-black text-foreground">{counts.Rejected || 0}</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted">Rejected Requests</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted">
+              Rejected Requests
+            </span>
           </div>
         </div>
-        <p className="text-[10px] text-muted font-bold italic leading-relaxed">Applications that did not meet specific criteria.</p>
+        <p className="text-[10px] text-muted font-bold italic leading-relaxed">
+          Applications that did not meet specific criteria.
+        </p>
       </div>
     </div>
   );

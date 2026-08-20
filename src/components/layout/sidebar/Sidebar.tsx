@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { navItems } from '@/config/navItems';
 import { Button } from '@/components/ui/primitives/Button';
-
+import { usePendingUsers } from '@/pages/settings/hooks/usePendingUsers';
 import { SidebarLogo } from './SidebarLogo';
 import { NavSection } from './NavSection';
 import { SidebarFooter } from './SidebarFooter';
@@ -21,6 +21,8 @@ const NAV_CATEGORIES = ['OVERVIEW', 'MANAGEMENT', 'SYSTEM'] as const;
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pendingUsers } = usePendingUsers();
+  const pendingUsersCount = pendingUsers.length;
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -62,7 +64,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
     return {
       maxSections: 12,
-      visibleSections: {} as Record<string, boolean>
+      visibleSections: {} as Record<string, boolean>,
     };
   })();
 
@@ -93,26 +95,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const currentUserRoleName = (() => {
     if (!user) return 'Viewer';
 
-    switch(user.role) {
-        case 'SuperAdmin':
-            return 'Super Admin';
+    switch (user.role) {
+      case 'SuperAdmin':
+        return 'Super Admin';
 
-        case 'Admin':
-            return 'Admin';
+      case 'Admin':
+        return 'Admin';
 
-        case 'HrAdmin':
-            return 'HR Admin';
+      case 'HrAdmin':
+        return 'HR Admin';
 
-        case 'FinanceAdmin':
-            return 'Finance Admin';
+      case 'FinanceAdmin':
+        return 'Finance Admin';
 
-        case 'Employee':
-            return 'Employee';
+      case 'Employee':
+        return 'Employee';
 
-        default:
-            return 'Viewer';
+      default:
+        return 'Viewer';
     }
-})();
+  })();
   const labelToPermissionKey = (label: string): string | null => {
     const lower = label.toLowerCase();
     if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
@@ -143,36 +145,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   //   return true;
   // });
 
-
   const filteredNavItems = navItems.filter((item) => {
     // 1. Check user role access
-    if ( item.roles && user?.role && !item.roles.includes(user.role)) {
-        return false;
+    if (item.roles && user?.role && !item.roles.includes(user.role)) {
+      return false;
     }
 
     // 2. Global Section Toggle
     if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) {
-        return false;
+      return false;
     }
 
     // 3. Dynamic role permissions
     const permKey = labelToPermissionKey(item.label);
 
     if (permKey) {
-        const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
-        if (roleObj && roleObj.permissions[permKey] === false) {
-            return false;
-        }
+      const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
+      if (roleObj && roleObj.permissions[permKey] === false) {
+        return false;
+      }
     }
     return true;
-});
+  });
 
-console.log("Logged user:", user);
-console.log("Current role:", user?.role);
-console.log("Role name:", currentUserRoleName);
-console.log("Sidebar items:", filteredNavItems);
+  console.log('Logged user:', user);
+  console.log('Current role:', user?.role);
+  console.log('Role name:', currentUserRoleName);
+  console.log('Sidebar items:', filteredNavItems);
 
   const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
+  const navItemsWithBadge = slicedNavItems.map((item) => ({
+    ...item,
+    children: item.children?.map((child) => ({
+      ...child,
+      badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
+    })),
+  }));
   return (
     <motion.aside
       custom={isMobile}
@@ -205,12 +213,15 @@ console.log("Sidebar items:", filteredNavItems);
 
       <SidebarLogo isOpen={isOpen} />
 
-      <nav key={`nav-config-${configVersion}`} className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth">
+      <nav
+        key={`nav-config-${configVersion}`}
+        className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth"
+      >
         {NAV_CATEGORIES.map((category) => (
           <NavSection
             key={category}
             category={category}
-            items={slicedNavItems.filter((item) => item.category === category)}
+            items={navItemsWithBadge.filter((item) => item.category === category)}
             isOpen={isOpen}
           />
         ))}

@@ -38,5 +38,5 @@ export const mockRequests: AttendanceRequest[] = [
     startDate: '2026-03-25',
     endDate: '2026-03-25',
     appliedDate: '2026-03-20',
-  }
+  },
 ];

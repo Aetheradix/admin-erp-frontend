@@ -183,7 +183,12 @@ export const useProfile = () => {
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to update profile:', err);
-      showToast({ severity: 'error', summary: 'Error', detail: apiError.data?.message || 'Failed to update profile', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: apiError.data?.message || 'Failed to update profile',
+        life: 3000,
+      });
     }
   };
 

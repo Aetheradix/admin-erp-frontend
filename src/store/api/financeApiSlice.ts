@@ -11,7 +11,9 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Reimbursements'],
       transformResponse: (response: unknown) => {
         const data = (response as { data?: unknown[] })?.data ?? response;
-        return Array.isArray(data) ? data.map((item) => mapReimbursement(item as Record<string, unknown>)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => mapReimbursement(item as Record<string, unknown>))
+          : [];
       },
     }),
     createReimbursement: builder.mutation<Reimbursement, Partial<Reimbursement>>({
