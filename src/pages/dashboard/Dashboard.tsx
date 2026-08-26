@@ -104,7 +104,7 @@ const Dashboard = () => {
             Operational Overview & Sidebar Sync
           </span>
           <h2 className="text-4xl font-extrabold text-foreground tracking-tight mt-1">
-            Welcome back, {user.name} 👋
+            Welcome back, {user.name}
           </h2>
         </div>
 
