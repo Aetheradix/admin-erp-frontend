@@ -10,7 +10,7 @@ interface ProjectListProps {
 
 export const ProjectList = ({ projects }: ProjectListProps) => {
   return (
-    <div className="bg-white/40 backdrop-blur-3xl rounded-[2.5rem] p-10 border border-white shadow-soft">
+    <div className="bg-surface-elevated/80 backdrop-blur-3xl rounded-[2.5rem] p-10 border border-border-subtle shadow-soft">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
           <div className="flex items-center gap-3 mb-2">
