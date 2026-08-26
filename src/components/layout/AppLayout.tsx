@@ -9,6 +9,8 @@ import { CursorGlow } from '@/components/ui/composed/CursorGlow';
 import { useAppSelector } from '@/store/hooks';
 import { selectAccentColor, selectDarkMode, selectDensity } from '@/store/slices/settingsSlice';
 
+import { GeminiAiDrawer } from '@/components/ui/composed/GeminiAiDrawer';
+import { Sparkles } from 'lucide-react';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 function hexToRgb(hex: string) {
@@ -23,6 +25,7 @@ function hexToRgb(hex: string) {
 
 export default function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const darkMode = useAppSelector(selectDarkMode);
@@ -92,6 +95,19 @@ export default function AppLayout() {
       <CursorGlow />
       <ConfirmDialog />
       <Toast />
+      <GeminiAiDrawer visible={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
+
+      {/* Floating Gemini Copilot Trigger Button */}
+      <button
+        type="button"
+        onClick={() => setIsCopilotOpen(true)}
+        title="Open Aether Copilot (Gemini AI)"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer group"
+      >
+        <Sparkles size={24} className="group-hover:rotate-12 transition-transform duration-300" />
+        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-success border-2 border-background" />
+      </button>
+
       {/* Sidebar Overlay for Mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -108,7 +124,7 @@ export default function AppLayout() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col relative overflow-hidden h-full bg-background shadow-sm border border-border-subtle">
-        <Header onMenuClick={toggleSidebar} />
+        <Header onMenuClick={toggleSidebar} onCopilotClick={() => setIsCopilotOpen(true)} />
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
           <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">

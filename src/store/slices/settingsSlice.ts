@@ -21,6 +21,7 @@ export interface SettingsState {
   accentColor: string;
   autoArchive: boolean;
   apiTokens: ApiToken[];
+  geminiApiKey: string;
 }
 
 const STORAGE_KEY = 'aether_settings';
@@ -36,6 +37,7 @@ const DEFAULT_STATE: SettingsState = {
   accentColor: '#E8583A',
   autoArchive: true,
   apiTokens: [],
+  geminiApiKey: '',
 };
 
 function loadFromStorage(): SettingsState {
@@ -102,6 +104,10 @@ export const settingsSlice = createSlice({
       state.autoArchive = action.payload;
       saveToStorage(state);
     },
+    setGeminiApiKey(state, action: PayloadAction<string>) {
+      state.geminiApiKey = action.payload;
+      saveToStorage(state);
+    },
     addApiToken(state, action: PayloadAction<ApiToken>) {
       state.apiTokens.push(action.payload);
       saveToStorage(state);
@@ -128,6 +134,7 @@ export const {
   setDarkMode,
   setAccentColor,
   setAutoArchive,
+  setGeminiApiKey,
   addApiToken,
   removeApiToken,
   resetAllSettings,
@@ -138,5 +145,6 @@ export const selectSettings = (state: RootState) => state.settings;
 export const selectDarkMode = (state: RootState) => state.settings.darkMode;
 export const selectAccentColor = (state: RootState) => state.settings.accentColor;
 export const selectDensity = (state: RootState) => state.settings.density;
+export const selectGeminiApiKey = (state: RootState) => state.settings.geminiApiKey;
 
 export default settingsSlice.reducer;

@@ -42,4 +42,7 @@ export const API_BASE_URL = getApiBaseUrl();
 // Fixes double slash issues by checking if base URL already ends with a slash
 export const API_URL = API_BASE_URL + '/api';
 
+// Gemini AI API Key from environment variables
+export const GEMINI_API_KEY = (import.meta.env.VITE_GEMINI_API_KEY || '').trim();
+
 console.log(`[Env Config] Final API_URL: ${API_URL}`);
