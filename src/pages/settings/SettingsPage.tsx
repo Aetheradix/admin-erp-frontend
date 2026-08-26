@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { SettingItem, SettingSection } from './components/SettingUI';
 import { useSettings } from './hooks/useSettings';
 import {
   Bell,
-  Shield,
   Palette,
   Globe,
   Mail,
@@ -15,9 +14,7 @@ import {
   Database,
   Share2,
   Trash2,
-  Cpu,
   Check,
-  RotateCw,
 } from 'lucide-react';
 import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Select } from '@/components/ui/primitives/Select';
@@ -37,7 +34,7 @@ export function SettingsPage() {
     settings,
     updateLanguage,
     updateDensity,
-    updateTwoFactor,
+    // updateTwoFactor,
     updateSessionTimeout,
     updatePushNotifications,
     updateMarketingDigest,
@@ -55,52 +52,52 @@ export function SettingsPage() {
   const [tokenModalVisible, setTokenModalVisible] = useState(false);
 
   // System status check for updates state
-  const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
-  const [lastOptimizedTime, setLastOptimizedTime] = useState<Date>(() => {
-    const saved = localStorage.getItem('aether_last_optimized');
-    return saved ? new Date(saved) : new Date(Date.now() - 12 * 60 * 60 * 1000); // default 12 hours ago
-  });
-  const [relativeText, setRelativeText] = useState(() => dayjs(lastOptimizedTime).fromNow());
+  // const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
+  //   const [lastOptimizedTime, setLastOptimizedTime] = useState<Date>(() => {
+  //   const saved = localStorage.getItem('aether_last_optimized');
+  //   return saved ? new Date(saved) : new Date(Date.now() - 12 * 60 * 60 * 1000); // default 12 hours ago
+  // });
+  // const [relativeText, setRelativeText] = useState(() => dayjs(lastOptimizedTime).fromNow());
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRelativeText(dayjs(lastOptimizedTime).fromNow());
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [lastOptimizedTime]);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setRelativeText(dayjs(lastOptimizedTime).fromNow());
+  //   }, 30000);
+  //   return () => clearInterval(interval);
+  // }, [lastOptimizedTime]);
 
   // Handle Check for Updates
-  const handleCheckForUpdates = async () => {
-    setIsCheckingUpdates(true);
-    showToast({ severity: 'info', summary: 'Checking Updates', detail: 'Connecting to update servers...' });
+  // const handleCheckForUpdates = async () => {
+  //   setIsCheckingUpdates(true);
+  //   showToast({ severity: 'info', summary: 'Checking Updates', detail: 'Connecting to update servers...' });
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  //   await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const now = new Date();
-    setLastOptimizedTime(now);
-    localStorage.setItem('aether_last_optimized', now.toISOString());
-    setRelativeText(dayjs(now).fromNow());
-    setIsCheckingUpdates(false);
+  //   const now = new Date();
+  //   setLastOptimizedTime(now);
+  //   localStorage.setItem('aether_last_optimized', now.toISOString());
+  //   setRelativeText(dayjs(now).fromNow());
+  //   // setIsCheckingUpdates(false);
 
-    showToast({
-      severity: 'success',
-      summary: 'System Up To Date',
-      detail: 'Version 2.4.0 (Aetheradix Core) is running the latest build.',
-    });
-  };
+  //   showToast({
+  //     severity: 'success',
+  //     summary: 'System Up To Date',
+  //     detail: 'Version 2.4.0 (Aetheradix Core) is running the latest build.',
+  //   });
+  // };
 
   // Handle 2FA Toggle with confirmation
-  const handleToggle2FA = (checked: boolean) => {
-    if (!checked) {
-      showConfirm({
-        header: 'Disable Two-Factor Authentication',
-        message: 'Disabling 2FA reduces your account security. High-privilege actions will no longer require dynamic verification codes. Are you sure?',
-        accept: () => updateTwoFactor(false),
-      });
-    } else {
-      updateTwoFactor(true);
-    }
-  };
+  // const handleToggle2FA = (checked: boolean) => {
+  //   if (!checked) {
+  //     showConfirm({
+  //       header: 'Disable Two-Factor Authentication',
+  //       message: 'Disabling 2FA reduces your account security. High-privilege actions will no longer require dynamic verification codes. Are you sure?',
+  //       accept: () => updateTwoFactor(false),
+  //     });
+  //   } else {
+  //     updateTwoFactor(true);
+  //   }
+  // };
 
   // Handle Cache Reset & Logout
   const handleCacheReset = () => {
@@ -160,20 +157,22 @@ export function SettingsPage() {
                 <Button
                   variant="ghost"
                   onClick={() => updateDensity('compact')}
-                  className={`h-10 px-4 rounded-lg! text-xs font-bold transition-all ${settings.density === 'compact'
-                    ? 'bg-surface-elevated shadow-xs text-primary! font-black'
-                    : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                  className={`h-10 px-4 rounded-lg! text-xs font-bold transition-all ${
+                    settings.density === 'compact'
+                      ? 'bg-surface-elevated shadow-xs text-primary! font-black'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
                   Compact
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => updateDensity('spacious')}
-                  className={`h-10 px-4 rounded-lg! text-xs font-bold transition-all ${settings.density === 'spacious'
-                    ? 'bg-surface-elevated shadow-xs text-primary! font-black'
-                    : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                  className={`h-10 px-4 rounded-lg! text-xs font-bold transition-all ${
+                    settings.density === 'spacious'
+                      ? 'bg-surface-elevated shadow-xs text-primary! font-black'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
                   Spacious
                 </Button>
@@ -241,10 +240,7 @@ export function SettingsPage() {
             label="Dark Mode"
             description="Optimize use for low-light environments with a refined dark palette."
             control={
-              <InputSwitch
-                checked={settings.darkMode}
-                onChange={(e) => updateDarkMode(e.value)}
-              />
+              <InputSwitch checked={settings.darkMode} onChange={(e) => updateDarkMode(e.value)} />
             }
           />
           <SettingItem
@@ -261,8 +257,11 @@ export function SettingsPage() {
                       type="button"
                       title={name}
                       onClick={() => updateAccentColor(color)}
-                      className={`w-7 h-7 rounded-full cursor-pointer border-2 border-white shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-125 ${isSelected ? 'ring-2 ring-primary ring-offset-2 scale-110' : 'opacity-80 hover:opacity-100'
-                        }`}
+                      className={`w-7 h-7 rounded-full cursor-pointer border-2 border-white shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-125 ${
+                        isSelected
+                          ? 'ring-2 ring-primary ring-offset-2 scale-110'
+                          : 'opacity-80 hover:opacity-100'
+                      }`}
                       style={{ backgroundColor: color }}
                       aria-label={`Select accent color ${name}`}
                     >
@@ -365,10 +364,7 @@ export function SettingsPage() {
       </div> */}
 
       {/* API Token Management Modal */}
-      <ApiTokenModal
-        visible={tokenModalVisible}
-        onHide={() => setTokenModalVisible(false)}
-      />
+      <ApiTokenModal visible={tokenModalVisible} onHide={() => setTokenModalVisible(false)} />
     </div>
   );
 }

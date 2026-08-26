@@ -36,12 +36,20 @@ export const useSettings = () => {
 
   const updateLanguage = (language: string) => {
     dispatch(setLanguage(language));
-    showToast({ severity: 'success', summary: 'Language Updated', detail: `System language set to ${language}.` });
+    showToast({
+      severity: 'success',
+      summary: 'Language Updated',
+      detail: `System language set to ${language}.`,
+    });
   };
 
   const updateDensity = (density: 'compact' | 'spacious') => {
     dispatch(setDensity(density));
-    showToast({ severity: 'info', summary: 'Display Density', detail: `Layout spacing updated to ${density}.` });
+    showToast({
+      severity: 'info',
+      summary: 'Display Density',
+      detail: `Layout spacing updated to ${density}.`,
+    });
   };
 
   const updateTwoFactor = (enabled: boolean) => {
@@ -49,7 +57,9 @@ export const useSettings = () => {
     showToast({
       severity: enabled ? 'success' : 'warn',
       summary: '2FA Security',
-      detail: enabled ? 'Two-Factor Authentication enabled.' : 'Two-Factor Authentication disabled.',
+      detail: enabled
+        ? 'Two-Factor Authentication enabled.'
+        : 'Two-Factor Authentication disabled.',
     });
   };
 
