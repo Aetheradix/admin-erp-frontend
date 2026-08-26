@@ -17,7 +17,7 @@ export const ProjectList = ({ projects }: ProjectListProps) => {
             <h2 className="text-3xl font-black text-foreground tracking-tight">Active Projects</h2>
             <div className="bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
               <span className="text-[10px] font-black text-primary tracking-widest uppercase">
-                88 TOTAL
+                {projects.length} TOTAL
               </span>
             </div>
           </div>
