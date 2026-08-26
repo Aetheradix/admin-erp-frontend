@@ -6,7 +6,7 @@
   --foreground: #1a1a1a;
   --primary-foreground: #0d0d0d;
   --muted: #6b635e;
-  /* Darkened for WCAG AA compliance */
+  --muted-foreground: #6b635e;
 
   /* Surface & Card Colors */
   --surface-elevated: #ffffff;
@@ -14,7 +14,7 @@
   --border-subtle: rgba(0, 0, 0, 0.06);
   --border-strong: rgba(0, 0, 0, 0.1);
 
-  /* Brand Colors – Coral / Terra-cotta */
+  /* Brand Colors – defaults (overridden by accent) */
   --primary: #e8583a;
   --primary-hover: #d04a2e;
   --primary-soft: #fef0ed;
@@ -26,13 +26,9 @@
 
   /* Semantic Colors */
   --success: #059669;
-  /* Darkened for WCAG AA */
   --warning: #d97706;
-  /* Darkened for WCAG AA */
   --error: #e11d48;
-  /* Darkened for WCAG AA */
   --info: #e8583a;
-  /* brand aligned instead of blue */
 
   /* Shape Tokens */
   --radius-shell: 0.75rem;
@@ -48,6 +44,103 @@
   /* Typography */
   --font-body:
     'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Density */
+  --density-padding: 1.5rem;
+  --density-gap: 1rem;
+  --density-card-padding: 1.5rem;
+}
+
+/* ── Dark Mode ── */
+[data-theme='dark'] {
+  --background: #0f0f0f;
+  --foreground: #e5e5e5;
+  --primary-foreground: #f5f5f5;
+  --muted: #a3a3a3;
+  --muted-foreground: #a3a3a3;
+
+  --surface-elevated: #1e1e1e;
+  --surface-subtle: #171717;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --primary-soft: rgba(232, 88, 58, 0.12);
+  --primary-glow: rgba(232, 88, 58, 0.2);
+  --accent-light: rgba(232, 88, 58, 0.15);
+
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 24px -6px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Dark Mode Global Surface & Component Overrides ── */
+[data-theme='dark'] .bg-white {
+  background-color: var(--surface-elevated) !important;
+}
+
+[data-theme='dark'] .bg-white\/90,
+[data-theme='dark'] .bg-white\/80,
+[data-theme='dark'] .bg-white\/95,
+[data-theme='dark'] .bg-white\/70,
+[data-theme='dark'] .bg-white\/50,
+[data-theme='dark'] .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme='dark'] .bg-slate-50,
+[data-theme='dark'] .bg-gray-50,
+[data-theme='dark'] .bg-zinc-50,
+[data-theme='dark'] .bg-neutral-50,
+[data-theme='dark'] .bg-stone-50 {
+  background-color: var(--surface-subtle) !important;
+}
+
+[data-theme='dark'] .bg-slate-100,
+[data-theme='dark'] .bg-gray-100,
+[data-theme='dark'] .bg-zinc-100,
+[data-theme='dark'] .bg-neutral-100 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme='dark'] .text-slate-800,
+[data-theme='dark'] .text-gray-800,
+[data-theme='dark'] .text-neutral-800,
+[data-theme='dark'] .text-slate-900,
+[data-theme='dark'] .text-gray-900,
+[data-theme='dark'] .text-neutral-900,
+[data-theme='dark'] .text-black {
+  color: var(--foreground) !important;
+}
+
+[data-theme='dark'] .text-slate-600,
+[data-theme='dark'] .text-gray-600,
+[data-theme='dark'] .text-neutral-600,
+[data-theme='dark'] .text-slate-500,
+[data-theme='dark'] .text-gray-500,
+[data-theme='dark'] .text-neutral-500,
+[data-theme='dark'] .text-slate-400,
+[data-theme='dark'] .text-gray-400 {
+  color: var(--muted) !important;
+}
+
+[data-theme='dark'] .border-slate-100,
+[data-theme='dark'] .border-slate-200,
+[data-theme='dark'] .border-gray-100,
+[data-theme='dark'] .border-gray-200,
+[data-theme='dark'] .border-neutral-100,
+[data-theme='dark'] .border-neutral-200,
+[data-theme='dark'] .border-gray-300,
+[data-theme='dark'] .border-slate-300 {
+  border-color: var(--border-subtle) !important;
+}
+
+
+/* ── Spacious density ── */
+[data-density='spacious'] {
+  --density-padding: 2rem;
+  --density-gap: 1.5rem;
+  --density-card-padding: 2rem;
 }
 
 @font-face {
@@ -63,6 +156,7 @@
 }
 
 @layer base {
+
   button:not([aria-label]),
   a:not([aria-label]):has(svg) {
     /* Accessibility marker: Ensure icon-buttons have aria-labels */
@@ -74,6 +168,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
   --color-primary-foreground: var(--primary-foreground);
   --color-surface-elevated: var(--surface-elevated);
@@ -84,6 +179,9 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
+
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
 
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -107,7 +205,7 @@
   * {
     border-color: var(--border-subtle);
     scrollbar-width: thin;
-    scrollbar-color: rgba(232, 88, 58, 0.2) transparent;
+    scrollbar-color: color-mix(in srgb, var(--primary) 20%, transparent) transparent;
   }
 
   html,
@@ -137,12 +235,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgba(232, 88, 58, 0.2);
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(232, 88, 58, 0.4);
+    background-color: color-mix(in srgb, var(--primary) 40%, transparent);
   }
 
   ::selection {
@@ -203,8 +301,9 @@
 }
 
 @layer components {
+
   /* Blog DataTable Customizations */
-  .blog-datatable .ant-table-thead > tr > th {
+  .blog-datatable .ant-table-thead>tr>th {
     background: transparent !important;
     color: var(--muted) !important;
     font-size: 10px !important;
@@ -215,16 +314,16 @@
     border-bottom: 1px solid var(--border-subtle) !important;
   }
 
-  .blog-datatable .ant-table-tbody > tr {
+  .blog-datatable .ant-table-tbody>tr {
     transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
   }
 
-  .blog-datatable .ant-table-tbody > tr:hover > td {
+  .blog-datatable .ant-table-tbody>tr:hover>td {
     background-color: var(--surface-subtle) !important;
   }
 
-  .blog-datatable .ant-table-tbody > tr > td {
+  .blog-datatable .ant-table-tbody>tr>td {
     padding: 1.25rem 1rem !important;
     border: none !important;
   }
