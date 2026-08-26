@@ -20,6 +20,7 @@ import { selectGeminiApiKey, setGeminiApiKey } from '@/store/slices/settingsSlic
 import { sendGeminiPrompt, type GeminiMessage } from '@/services/geminiService';
 import { showToast } from './Toast.utils';
 import { Button } from '../primitives/Button';
+import { FormattedChatMessage } from './FormattedChatMessage';
 
 interface GeminiAiDrawerProps {
     visible: boolean;
@@ -199,9 +200,9 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                                         <h2 className="text-base font-black text-foreground tracking-tight">
                                             Aether Copilot
                                         </h2>
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
+                                        {/* <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
                                             Gemini 2.5
-                                        </span>
+                                        </span> */}
                                     </div>
                                     <p className="text-xs text-muted-foreground font-medium">
                                         Agentic AI Assistant for Enterprise ERP
@@ -305,20 +306,20 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
 
                                     {/* Message Card */}
                                     <div
-                                        className={`group relative max-w-[82%] p-3.5 rounded-2xl text-xs leading-relaxed ${msg.sender === 'user'
-                                            ? 'bg-primary text-white font-medium rounded-tr-none shadow-xs'
-                                            : 'bg-surface border border-border-strong text-foreground rounded-tl-none shadow-xs'
+                                        className={`group relative max-w-[86%] p-4 rounded-2xl text-xs leading-relaxed transition-all ${msg.sender === 'user'
+                                            ? 'bg-primary text-white font-medium rounded-tr-none shadow-md shadow-primary/10'
+                                            : 'bg-surface border border-border-subtle text-foreground rounded-tl-none shadow-soft backdrop-blur-md'
                                             }`}
                                     >
-                                        <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
+                                        <FormattedChatMessage content={msg.text} isUser={msg.sender === 'user'} />
 
                                         <div
-                                            className={`flex items-center justify-between gap-4 mt-2 pt-1 border-t text-[10px] ${msg.sender === 'user'
+                                            className={`flex items-center justify-between gap-4 mt-2.5 pt-2 border-t text-[10px] ${msg.sender === 'user'
                                                 ? 'border-white/20 text-white/80'
                                                 : 'border-border-subtle text-muted-foreground'
                                                 }`}
                                         >
-                                            <span>{msg.timestamp}</span>
+                                            <span className="font-mono text-[9px]">{msg.timestamp}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => handleCopy(msg.id, msg.text)}
