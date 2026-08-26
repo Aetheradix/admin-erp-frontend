@@ -21,7 +21,6 @@ export const LANGUAGES = [
   { label: 'Spanish', value: 'Spanish' },
   { label: 'French', value: 'French' },
   { label: 'German', value: 'German' },
-  { label: 'Hindi', value: 'Hindi' },
 ];
 
 export const THEME_COLORS = [

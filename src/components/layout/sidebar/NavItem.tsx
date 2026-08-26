@@ -2,10 +2,40 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { type NavItem as NavItemType } from '@/config/navItems';
 import { labelVariants } from './variants';
 
+const getTranslatedLabel = (label: string, t: (key: string) => string) => {
+  const map: Record<string, string> = {
+    Dashboard: 'nav.dashboard',
+    Projects: 'nav.projects',
+    Tasks: 'nav.tasks',
+    'Finance & Invoices': 'nav.finance',
+    Expenses: 'nav.expenses',
+    Payroll: 'nav.payroll',
+    Inventory: 'nav.inventory',
+    Items: 'nav.items',
+    'Stock Levels': 'nav.stockLevels',
+    Movements: 'nav.movements',
+    Blogs: 'nav.blogs',
+    Gallery: 'nav.gallery',
+    System: 'nav.system',
+    Analytics: 'nav.analytics',
+    Overview: 'nav.overview',
+    Reports: 'nav.reports',
+    Settings: 'nav.settings',
+    General: 'nav.general',
+    'Roles & Permissions': 'nav.rolesPermissions',
+    Integrations: 'nav.integrations',
+    'Audit Log': 'nav.auditLog',
+    'Check-In': 'nav.checkIn',
+  };
+  return map[label] ? t(map[label]) : label;
+};
+
 export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }) {
+  const { t } = useTranslation();
   const location = useLocation();
   const hasChildren = item.children && item.children.length > 0;
 
@@ -23,9 +53,8 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
       <div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
-            isChildActive || isParentActive ? 'text-white' : 'text-white/40 hover:text-white'
-          }`}
+          className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${isChildActive || isParentActive ? 'text-white' : 'text-white/40 hover:text-white'
+            }`}
         >
           {/* Torch glow */}
           <AnimatePresence>
@@ -50,11 +79,10 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
 
           <item.icon
             size={20}
-            className={`shrink-0 relative z-10 transition-colors duration-200 ${
-              isChildActive || isParentActive
+            className={`shrink-0 relative z-10 transition-colors duration-200 ${isChildActive || isParentActive
                 ? 'text-primary'
                 : 'text-white/40 group-hover:text-white'
-            }`}
+              }`}
           />
 
           <AnimatePresence initial={false}>
@@ -65,13 +93,12 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                 initial="closed"
                 animate="open"
                 exit="closed"
-                className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden flex-1 text-left ${
-                  isChildActive || isParentActive
+                className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden flex-1 text-left ${isChildActive || isParentActive
                     ? 'text-white'
                     : 'text-white/60 group-hover:text-white'
-                }`}
+                  }`}
               >
-                {item.label}
+                {getTranslatedLabel(item.label, t)}
               </motion.span>
             )}
           </AnimatePresence>
@@ -111,14 +138,13 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                     to={child.path}
                     end={child.path === item.path}
                     className={({ isActive }) =>
-                      `block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 animated-underline ${
-                        isActive
-                          ? 'text-white bg-primary/20'
-                          : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                      `block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 animated-underline ${isActive
+                        ? 'text-white bg-primary/20'
+                        : 'text-white/40 hover:text-white/80 hover:bg-white/5'
                       }`
                     }
                   >
-                    <span>{child.label}</span>
+                    <span>{getTranslatedLabel(child.label, t)}</span>
 
                     {child.badge !== undefined && child.badge > 0 && (
                       <span className="ml-5 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
@@ -142,8 +168,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
       end={item.path === '/'}
       aria-label={`Navigate to ${item.label}`}
       className={({ isActive }) =>
-        `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
-          isActive ? 'text-white' : 'text-white/40 hover:text-white'
+        `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${isActive ? 'text-white' : 'text-white/40 hover:text-white'
         }`
       }
     >
@@ -173,9 +198,8 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
 
           <item.icon
             size={20}
-            className={`shrink-0 relative z-10 transition-colors duration-200 ${
-              isActive ? 'text-primary' : 'text-white/40 group-hover:text-white'
-            }`}
+            className={`shrink-0 relative z-10 transition-colors duration-200 ${isActive ? 'text-primary' : 'text-white/40 group-hover:text-white'
+              }`}
           />
 
           <AnimatePresence initial={false}>
@@ -186,11 +210,10 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                 initial="closed"
                 animate="open"
                 exit="closed"
-                className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden ${
-                  isActive ? 'text-white' : 'text-white/60 group-hover:text-white'
-                }`}
+                className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'
+                  }`}
               >
-                {item.label}
+                {getTranslatedLabel(item.label, t)}
               </motion.span>
             )}
           </AnimatePresence>
