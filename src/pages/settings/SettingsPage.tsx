@@ -18,6 +18,7 @@ import {
   Cpu,
   Check,
   RotateCw,
+  Sparkles,
 } from 'lucide-react';
 import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { Select } from '@/components/ui/primitives/Select';
@@ -44,6 +45,7 @@ export function SettingsPage() {
     updateDarkMode,
     updateAccentColor,
     updateAutoArchive,
+    updateGeminiApiKey,
     LANGUAGES,
     THEME_COLORS,
   } = useSettings();
@@ -53,6 +55,11 @@ export function SettingsPage() {
 
   // API Token modal visibility
   const [tokenModalVisible, setTokenModalVisible] = useState(false);
+  const [geminiKeyInput, setGeminiKeyInput] = useState(settings.geminiApiKey || '');
+
+  useEffect(() => {
+    setGeminiKeyInput(settings.geminiApiKey || '');
+  }, [settings.geminiApiKey]);
 
   // System status check for updates state
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
@@ -184,7 +191,7 @@ export function SettingsPage() {
 
         {/* Section 2: Account Security */}
         <SettingSection title="Account Security">
-          {/* <SettingItem
+          <SettingItem
             icon={Shield}
             label="Two-Factor Authentication"
             description="Enhanced security layer for login and high-privilege actions."
@@ -194,7 +201,7 @@ export function SettingsPage() {
                 onChange={(e) => handleToggle2FA(e.value)}
               />
             }
-          /> */}
+          />
           <SettingItem
             icon={Lock}
             label="Session Timeout"
@@ -278,6 +285,29 @@ export function SettingsPage() {
         {/* Section 5: Advanced & Data */}
         <SettingSection title="Advanced & Data">
           <SettingItem
+            icon={Sparkles}
+            label="Gemini AI Copilot Key"
+            description="Set your Google Gemini API Key to enable the Aether Copilot agent."
+            control={
+              <div className="flex items-center gap-2">
+                <input
+                  type="password"
+                  placeholder="AIzaSy..."
+                  value={geminiKeyInput}
+                  onChange={(e) => setGeminiKeyInput(e.target.value)}
+                  className="w-48 sm:w-64 h-10 px-3 text-xs rounded-md bg-surface-subtle border border-border-strong text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary font-mono"
+                />
+                <Button
+                  variant="primary"
+                  onClick={() => updateGeminiApiKey(geminiKeyInput)}
+                  className="h-10 px-4 rounded-md! font-bold text-xs bg-primary! text-white! cursor-pointer"
+                >
+                  Save
+                </Button>
+              </div>
+            }
+          />
+          <SettingItem
             icon={Database}
             label="Auto-Archive Records"
             description="Periodically move closed projects to the historical database."
@@ -333,7 +363,7 @@ export function SettingsPage() {
       </div>
 
       {/* System Status Card */}
-      {/* <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
+      <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 rounded-xl bg-surface-elevated flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500 shrink-0">
             <Cpu size={32} />
@@ -362,7 +392,7 @@ export function SettingsPage() {
             'Check for Updates'
           )}
         </Button>
-      </div> */}
+      </div>
 
       {/* API Token Management Modal */}
       <ApiTokenModal

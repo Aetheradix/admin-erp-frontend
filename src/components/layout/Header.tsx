@@ -1,4 +1,4 @@
-import { Bell, Menu, Settings } from 'lucide-react';
+import { Bell, Menu, Settings, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { SearchBar } from '@/components/ui/composed/SearchBar';
@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/primitives/Button';
 
 interface HeaderProps {
   onMenuClick?: () => void;
+  onCopilotClick?: () => void;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -37,8 +38,20 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       {/* Right Actions */}
       <div className="flex items-center gap-3 sm:gap-4 ml-auto">
+        {/* Gemini AI Copilot Button */}
         <Button
           variant="ghost"
+          onClick={onCopilotClick}
+          aria-label="Gemini AI Copilot"
+          title="Aether Copilot (Gemini AI)"
+          className="w-13! h-13! rounded-pill! bg-primary/10! border-primary/20! hover:bg-primary/20! text-primary transition-all duration-150 relative group"
+        >
+          <Sparkles size={20} className="animate-pulse group-hover:scale-110 transition-transform" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/settings')}
           aria-label="Settings"
           className="hidden sm:flex w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150"
         >

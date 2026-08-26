@@ -10,6 +10,7 @@ import {
   setDarkMode,
   setAccentColor,
   setAutoArchive,
+  setGeminiApiKey,
   resetAllSettings,
 } from '@/store/slices/settingsSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
@@ -126,6 +127,15 @@ export const useSettings = () => {
     });
   };
 
+  const updateGeminiApiKey = (key: string) => {
+    dispatch(setGeminiApiKey(key.trim()));
+    showToast({
+      severity: 'success',
+      summary: 'Gemini API Key',
+      detail: 'Google Gemini API Key has been updated.',
+    });
+  };
+
   const handleResetSettings = () => {
     dispatch(resetAllSettings());
   };
@@ -141,6 +151,7 @@ export const useSettings = () => {
     updateDarkMode,
     updateAccentColor,
     updateAutoArchive,
+    updateGeminiApiKey,
     handleResetSettings,
     LANGUAGES,
     THEME_COLORS,
