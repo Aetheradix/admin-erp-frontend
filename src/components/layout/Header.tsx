@@ -2,6 +2,7 @@ import { Bell, Menu, Settings, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { SearchBar } from '@/components/ui/composed/SearchBar';
+import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { Avatar } from '@/components/ui/primitives/Avatar';
 import { Button } from '@/components/ui/primitives/Button';
 
@@ -13,6 +14,7 @@ interface HeaderProps {
 export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const search = useGlobalSearch();
 
   return (
     <header className="h-24 w-full flex items-center justify-between px-6 sm:px-8 lg:px-10 z-20 bg-background/80 backdrop-blur-md border-b border-border-subtle">
@@ -27,11 +29,20 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           <Menu size={20} className="text-muted" />
         </Button>
 
-        {/* Search Bar - Composed Component */}
+        {/* Inline Search Bar with Dropdown */}
         <div className="hidden md:block flex-1">
           <SearchBar
-            placeholder="Search features, documents, staff..."
-            className="group-hover:border-primary! transition-all duration-300"
+            isOpen={search.isOpen}
+            open={search.open}
+            close={search.close}
+            query={search.query}
+            setQuery={search.setQuery}
+            groupedResults={search.groupedResults}
+            flatResults={search.flatResults}
+            activeIndex={search.activeIndex}
+            setActiveIndex={search.setActiveIndex}
+            onKeyDown={search.onKeyDown}
+            selectItem={search.selectItem}
           />
         </div>
       </div>
