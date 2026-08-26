@@ -26,7 +26,7 @@ export interface SettingsState {
 const STORAGE_KEY = 'aether_settings';
 
 const DEFAULT_STATE: SettingsState = {
-  language: 'English',
+  language: 'English (US)',
   density: 'compact',
   twoFactorEnabled: true,
   sessionTimeoutEnabled: true,
@@ -43,6 +43,9 @@ function loadFromStorage(): SettingsState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      if (parsed.language === 'English') {
+        parsed.language = 'English (US)';
+      }
       return { ...DEFAULT_STATE, ...parsed };
     }
   } catch {

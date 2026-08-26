@@ -62,8 +62,26 @@ export const useSettings = () => {
     });
   };
 
-  const updatePushNotifications = (enabled: boolean) => {
+  const updatePushNotifications = async (enabled: boolean) => {
     dispatch(setPushNotifications(enabled));
+    if (enabled && typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        if (Notification.permission !== 'granted') {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            new Notification('AetherERP Push Notifications', {
+              body: 'Real-time project alerts and system notifications are now active.',
+            });
+          }
+        } else {
+          new Notification('AetherERP Push Notifications', {
+            body: 'Real-time project alerts and system notifications are now active.',
+          });
+        }
+      } catch {
+        // Notification permission denied or not supported in frame
+      }
+    }
     showToast({
       severity: 'info',
       summary: 'Push Notifications',

@@ -143,7 +143,10 @@ export function SettingsPage() {
               <Select
                 options={LANGUAGES}
                 value={settings.language}
-                onChange={(e) => updateLanguage(e.value as string)}
+                onChange={(e) => {
+                  const val = typeof e === 'string' ? e : e?.value || e;
+                  if (val) updateLanguage(val as string);
+                }}
                 className="w-48!"
               />
             }
@@ -158,8 +161,8 @@ export function SettingsPage() {
                   variant="ghost"
                   onClick={() => updateDensity('compact')}
                   className={`h-10 px-4 rounded-lg! text-xs font-bold transition-all ${settings.density === 'compact'
-                      ? 'bg-surface-elevated shadow-xs text-primary! font-black'
-                      : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-surface-elevated shadow-xs text-primary! font-black'
+                    : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                   Compact
@@ -168,8 +171,8 @@ export function SettingsPage() {
                   variant="ghost"
                   onClick={() => updateDensity('spacious')}
                   className={`h-10 px-4 rounded-lg! text-xs font-bold transition-all ${settings.density === 'spacious'
-                      ? 'bg-surface-elevated shadow-xs text-primary! font-black'
-                      : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-surface-elevated shadow-xs text-primary! font-black'
+                    : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                   Spacious
@@ -181,7 +184,7 @@ export function SettingsPage() {
 
         {/* Section 2: Account Security */}
         <SettingSection title="Account Security">
-          <SettingItem
+          {/* <SettingItem
             icon={Shield}
             label="Two-Factor Authentication"
             description="Enhanced security layer for login and high-privilege actions."
@@ -191,7 +194,7 @@ export function SettingsPage() {
                 onChange={(e) => handleToggle2FA(e.value)}
               />
             }
-          />
+          /> */}
           <SettingItem
             icon={Lock}
             label="Session Timeout"
@@ -330,7 +333,7 @@ export function SettingsPage() {
       </div>
 
       {/* System Status Card */}
-      <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
+      {/* <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 rounded-xl bg-surface-elevated flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500 shrink-0">
             <Cpu size={32} />
@@ -359,7 +362,7 @@ export function SettingsPage() {
             'Check for Updates'
           )}
         </Button>
-      </div>
+      </div> */}
 
       {/* API Token Management Modal */}
       <ApiTokenModal
