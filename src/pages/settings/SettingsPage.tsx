@@ -1,33 +1,32 @@
-import { useState } from 'react';
-import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { SettingItem, SettingSection } from './components/SettingUI';
-import { useSettings } from './hooks/useSettings';
-import {
-  Bell,
-  Palette,
-  Globe,
-  Mail,
-  Lock,
-  Moon,
-  Sun,
-  Monitor,
-  Database,
-  Share2,
-  Trash2,
-  Check,
-  RotateCw,
-  Sparkles,
-} from 'lucide-react';
-import { InputSwitch } from '@/components/ui/primitives/Switch';
-import { Select } from '@/components/ui/primitives/Select';
-import { Button } from '@/components/ui/primitives/Button';
-import { ApiTokenModal } from './components/ApiTokenModal';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
+import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { Button } from '@/components/ui/primitives/Button';
+import { Select } from '@/components/ui/primitives/Select';
+import { InputSwitch } from '@/components/ui/primitives/Switch';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import {
+  Bell,
+  Check,
+  Database,
+  Globe,
+  Lock,
+  Mail,
+  Monitor,
+  Moon,
+  Palette,
+  Share2,
+  Sparkles,
+  Sun,
+  Trash2
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ApiTokenModal } from './components/ApiTokenModal';
+import { SettingItem, SettingSection } from './components/SettingUI';
+import { useSettings } from './hooks/useSettings';
 
 dayjs.extend(relativeTime);
 
@@ -191,7 +190,7 @@ export function SettingsPage() {
 
         {/* Section 2: Account Security */}
         <SettingSection title="Account Security">
-          <SettingItem
+          {/* <SettingItem
             icon={Shield}
             label="Two-Factor Authentication"
             description="Enhanced security layer for login and high-privilege actions."
@@ -201,7 +200,7 @@ export function SettingsPage() {
                 onChange={(e) => handleToggle2FA(e.value)}
               />
             }
-          />
+          /> */}
           <SettingItem
             icon={Lock}
             label="Session Timeout"
@@ -363,7 +362,7 @@ export function SettingsPage() {
       </div>
 
       {/* System Status Card */}
-      <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
+      {/* <div className="mt-10 p-10 rounded-xl bg-surface-subtle border border-border-strong flex flex-col lg:flex-row items-center justify-between gap-8 group">
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 rounded-xl bg-surface-elevated flex items-center justify-center text-primary shadow-soft group-hover:scale-110 transition-transform duration-500 shrink-0">
             <Cpu size={32} />
@@ -392,7 +391,7 @@ export function SettingsPage() {
             'Check for Updates'
           )}
         </Button>
-      </div>
+      </div> */}
 
       {/* API Token Management Modal */}
       <ApiTokenModal visible={tokenModalVisible} onHide={() => setTokenModalVisible(false)} />
