@@ -100,6 +100,13 @@ export interface Reimbursement {
   status: string;
   receiptUrl?: string;
   description: string;
+  user_id: number;
+  employee_name: string; // ← ADD THIS
+  title: string;
+  expense_date: string;
+  created_at: string;
+  updated_at: string;
+  approved_at: string | null;
 }
 
 export interface GalleryItem {

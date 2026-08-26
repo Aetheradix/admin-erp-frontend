@@ -3,7 +3,6 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { useProfile } from './hooks/useProfile';
 import { AdminElevationRequest } from '../staff/components/AdminElevationRequest';
-
 import { ProfileHeader, type TabType } from './components/ProfileHeader';
 import { ProfileInfoTab } from './components/ProfileInfoTab';
 import { OrganizationTab } from './components/OrganizationTab';

@@ -128,19 +128,35 @@ export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
 
 export const mapReimbursement = (item: Record<string, unknown>): Reimbursement => ({
   id: item.id as string | number,
+  user_id: Number(item.user_id ?? 0),
+
   item: String(item.item ?? item.title ?? ''),
+  title: String(item.title ?? item.item ?? ''),
+
   category: String(item.category ?? ''),
   amount: Number(item.amount ?? 0),
+
   date: item.created_at
     ? new Date(String(item.created_at)).toISOString().split('T')[0]
     : String(item.date ?? ''),
+
+  expense_date: String(item.expense_date ?? ''),
   status: String(item.status ?? 'Pending'),
+
   receiptUrl: item.receipt_url
     ? String(item.receipt_url)
     : item.receiptUrl
       ? String(item.receiptUrl)
       : undefined,
+
   description: String(item.description ?? ''),
+
+  // 👇 This was missing
+  employee_name: String(item.employee_name ?? 'Unknown Employee'),
+
+  created_at: String(item.created_at ?? ''),
+  updated_at: String(item.updated_at ?? ''),
+  approved_at: item.approved_at ? String(item.approved_at) : null,
 });
 
 export const mapGalleryItem = (item: Record<string, unknown>): GalleryItem => ({
