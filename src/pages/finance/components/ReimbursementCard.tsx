@@ -156,6 +156,10 @@ export function ReimbursementCard({ request, onApprove, onReject }: Reimbursemen
               <span className="text-[10px] font-black text-muted uppercase tracking-widest">
                 {request.category}
               </span>
+
+              <span className="text-xs font-semibold text-muted-foreground mt-1">
+                Raised by {request.employee_name ?? 'Unknown Employee'}
+              </span>
             </div>
           </div>
 
