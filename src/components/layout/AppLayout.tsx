@@ -127,7 +127,7 @@ export default function AppLayout() {
         <Header onMenuClick={toggleSidebar} onCopilotClick={() => setIsCopilotOpen(true)} />
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
-          <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
             <Outlet />
           </div>
         </main>

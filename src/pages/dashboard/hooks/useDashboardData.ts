@@ -62,33 +62,33 @@ export const useDashboardData = () => {
   const { data: attendanceStats } = useGetAttendanceStatsQuery();
   const { data: rawUsers } = useGetUsersQuery();
 
-  // Merge live projects with defaults if needed
-  const projects = (rawProjects && rawProjects.length > 0)
+  // Merge live projects with defaults if needed with defensive optional chaining
+  const projects = Array.isArray(rawProjects) && rawProjects.length > 0
     ? rawProjects.map((p, idx) => ({
-      id: String(p.id),
-      title: p.title || p.name || `Project #${p.id}`,
-      tasks: rawTasks ? rawTasks.filter((t) => String(t.project_id) === String(p.id)).length || 12 : 12,
-      value: p.value || `$ ${(35000 + idx * 15000).toLocaleString()}`,
-      color: p.color || PRESET_COLORS[idx % PRESET_COLORS.length],
-      category: p.category ? p.category.toUpperCase() : 'ERP',
-      participants: rawUsers ? Math.min(rawUsers.length, 12) : (p.participants || 5),
+      id: String(p?.id || idx + 1),
+      title: p?.title || p?.name || `Project #${p?.id || idx + 1}`,
+      tasks: Array.isArray(rawTasks) ? rawTasks.filter((t) => String(t?.project_id) === String(p?.id)).length || 12 : 12,
+      value: p?.value || `$ ${(35000 + idx * 15000).toLocaleString()}`,
+      color: p?.color || PRESET_COLORS[idx % PRESET_COLORS.length],
+      category: p?.category ? p.category.toUpperCase() : 'ERP',
+      participants: Array.isArray(rawUsers) && rawUsers.length > 0 ? Math.min(rawUsers.length, 12) : (p?.participants || 5),
     }))
     : DEFAULT_PROJECTS;
 
-  // Calculate live task metrics
-  const totalTasksCount = rawTasks ? rawTasks.length : 1003;
-  const completedTasksCount = rawTasks
-    ? rawTasks.filter((t) => t.task_status === 'Completed').length
+  // Calculate live task metrics safely
+  const totalTasksCount = Array.isArray(rawTasks) ? rawTasks.length : 1003;
+  const completedTasksCount = Array.isArray(rawTasks)
+    ? rawTasks.filter((t) => t?.task_status === 'Completed').length
     : 720;
   const taskCompletionRate = Math.round((completedTasksCount / (totalTasksCount || 1)) * 100);
 
-  // Calculate live financial claims metrics
-  const totalReimbursementAmount = rawReimbursements
-    ? rawReimbursements.reduce((sum, r) => sum + (Number(r.amount) || 0), 0)
+  // Calculate live financial claims metrics safely
+  const totalReimbursementAmount = Array.isArray(rawReimbursements)
+    ? rawReimbursements.reduce((sum, r) => sum + (Number(r?.amount) || 0), 0)
     : 391991;
 
-  // Calculate live staff / attendance metrics
-  const totalUsersCount = rawUsers ? rawUsers.length : 24;
+  // Calculate live staff / attendance metrics safely
+  const totalUsersCount = Array.isArray(rawUsers) ? rawUsers.length : 24;
   const isCheckedIn = attendanceStatus?.status === 'checked-in';
 
   const stats = {
@@ -101,7 +101,7 @@ export const useDashboardData = () => {
     totalTasks: totalTasksCount,
     totalUsers: totalUsersCount,
     isCheckedIn: isCheckedIn,
-    attendanceStats: attendanceStats,
+    attendanceStats: attendanceStats || null,
   };
 
   return {
@@ -111,7 +111,7 @@ export const useDashboardData = () => {
     liveCounts: {
       projects: projects.length,
       tasks: totalTasksCount,
-      reimbursements: rawReimbursements ? rawReimbursements.length : 8,
+      reimbursements: Array.isArray(rawReimbursements) ? rawReimbursements.length : 8,
       users: totalUsersCount,
       isCheckedIn: isCheckedIn,
     },
