@@ -8,6 +8,7 @@ import { useGetDepartmentsQuery, useRegisterMutation } from '@/store/api/authApi
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+
 const SignupPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -56,34 +57,12 @@ const SignupPage = () => {
     return { label: 'Strong', color: 'text-green-600' };
   })();
 
-  // const handleSignup = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (password !== confirmPassword) {
-  //     showToast({ severity: 'error', summary: 'Error', detail: "Passwords don't match", life: 3000 });
-  //     return;
-  //   }
-  //   try {
-  //     await register({
-  //       username,
-  //       email,
-  //       password,
-  //       contact_number: contactNumber,
-  //       department: department || 'Engineering'
-  //     }).unwrap();
-  //     setIsSuccess(true);
-  //   } catch (err: unknown) {
-  //     const error = err as { data?: { message?: string } };
-  //     showToast({ severity: 'error', summary: 'Error', detail: error.data?.message || 'Signup failed', life: 3000 });
-  //     console.error('Signup failed', err);
-  //   }
-  // };
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^[4-9]\d{9}$/;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Username validation
     if (!username.trim()) {
       showToast({
         severity: 'error',
@@ -94,7 +73,6 @@ const SignupPage = () => {
       return;
     }
 
-    // Email validation
     if (!email.trim()) {
       showToast({
         severity: 'error',
@@ -115,7 +93,6 @@ const SignupPage = () => {
       return;
     }
 
-    // Contact number validation
     if (!contactNumber.trim()) {
       showToast({
         severity: 'error',
@@ -136,7 +113,6 @@ const SignupPage = () => {
       return;
     }
 
-    // Password validation
     if (password.length < 8) {
       showToast({
         severity: 'error',
@@ -224,17 +200,17 @@ const SignupPage = () => {
   if (isSuccess) {
     return (
       <AuthLayout title="Account Created" subtitle="YOUR SECURE WORKSPACE IS NOW READY FOR USE.">
-        <div className="text-center space-y-8 animate-in fade-in zoom-in duration-500">
+        <div className="text-center space-y-8 animate-in fade-in zoom-in duration-500 py-6">
           <div className="w-20 h-20 bg-emerald-500/10 rounded-[32px] flex items-center justify-center text-emerald-500 mx-auto mb-6">
             <i className="pi pi-check-circle text-4xl" />
           </div>
           <div className="space-y-4">
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">
               Welcome Aboard!
             </h2>
-            <p className="text-muted text-sm leading-relaxed max-w-xs mx-auto italic font-bold">
-              Your employee account has been successfully activated. You can now log in to access
-              your ERP dashboard and tools.
+            <p className="text-muted text-sm leading-relaxed max-w-xs mx-auto font-medium">
+              Your employee account has been successfully registered. You can now sign in to access
+              your ERP workspace.
             </p>
           </div>
           <Button
@@ -251,10 +227,10 @@ const SignupPage = () => {
 
   return (
     <AuthLayout
-      title="Get Beta Access"
-      subtitle="JOIN THE NEXT GENERATION OF ENTERPRISE RESOURCE PLANNING."
+      title="Create Your Account"
+      subtitle="ENTER YOUR DETAILS TO REGISTER ON AETHERERP WORKSPACE."
     >
-      <form onSubmit={handleSignup} className="space-y-6">
+      <form onSubmit={handleSignup} className="space-y-5">
         <FormField label="Full Name" required>
           <Input
             type="text"
@@ -275,11 +251,11 @@ const SignupPage = () => {
           />
         </FormField>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
-          <FormField label="Contact Number">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Contact Number" required>
             <Input
               type="text"
-              placeholder="e.g. +91 9876543210"
+              placeholder="e.g. 9876543210"
               value={contactNumber}
               onChange={(e) => setContactNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
               className="h-14 rounded-2xl!"
@@ -305,7 +281,7 @@ const SignupPage = () => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-14 rounded-2xl!"
+              className="h-14 rounded-2xl! pr-12"
             />
             <button
               type="button"
@@ -335,16 +311,16 @@ const SignupPage = () => {
         <Button
           type="submit"
           variant="primary"
-          className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
+          className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm mt-2"
           loading={isRegistering}
         >
-          JOIN THE WAITLIST
+          CREATE ACCOUNT
         </Button>
       </form>
 
-      <div className="mt-10 pt-10 border-t border-border-subtle text-center">
+      <div className="mt-8 pt-6 border-t border-border-subtle text-center">
         <p className="text-sm text-muted font-medium">
-          Already a member?{' '}
+          Already have an account?{' '}
           <Link to="/auth/login" className="text-primary font-black hover:underline">
             Sign In
           </Link>

@@ -12,8 +12,9 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
       <Toast />
-      {/* Left Side - Dark Hero Section (Inspired by the reference image) */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-[#0a0a0b] relative overflow-hidden group">
+
+      {/* Left Side - Dark Hero Section */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-[#0a0a0b] relative overflow-hidden group min-h-screen">
         {/* Abstract Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
@@ -29,7 +30,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 max-w-lg mb-20">
+        <div className="relative z-10 max-w-lg my-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -51,18 +52,18 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
               </span>
             </div>
 
-            <h1 className="text-6xl font-black text-white leading-[1.1] mb-8 tracking-tighter">
-              Your teams brain, <br />
+            <h1 className="text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-6 tracking-tighter">
+              Your team's brain, <br />
               <span className="text-primary italic">always</span> accessible.
             </h1>
-            <p className="text-lg text-white/40 font-medium leading-relaxed">
+            <p className="text-base lg:text-lg text-white/40 font-medium leading-relaxed">
               AetherERP keeps your collective intelligence flowing across every tool, every
-              conversation, every decision. Never loose context again.
+              conversation, every decision. Never lose context again.
             </p>
           </motion.div>
         </div>
 
-        {/* Bottom Navigation (Mocked) */}
+        {/* Bottom Navigation */}
         <div className="relative z-10 flex gap-8 text-[11px] font-black text-white/40 uppercase tracking-[0.2em]">
           <a href="#" className="hover:text-white transition-colors">
             Features
@@ -76,9 +77,9 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         </div>
       </div>
 
-      {/* Right Side - Form Section */}
-      <div className="flex items-center justify-center p-8 bg-white relative">
-        <div className="w-full max-w-md">
+      {/* Right Side - Scrollable Form Section (Fixes text overlay bug) */}
+      <div className="flex flex-col justify-between min-h-screen p-8 sm:p-12 bg-white overflow-y-auto">
+        <div className="w-full max-w-md mx-auto my-auto">
           {/* Mobile Logo */}
           <div className="mb-10 lg:hidden flex items-center gap-3">
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
@@ -92,27 +93,27 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-4xl font-black text-black mb-2 tracking-tight">{title}</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-black mb-2 tracking-tight">{title}</h2>
             {subtitle && (
               <p className="text-muted font-medium mb-8 uppercase text-[10px] tracking-widest">
                 {subtitle}
               </p>
             )}
 
-            <div className="mt-8">{children}</div>
+            <div>{children}</div>
           </motion.div>
         </div>
 
-        {/* Bottom Logo Cloud (Inspired by reference) */}
-        <div className="absolute bottom-12 left-0 w-full hidden lg:flex flex-col items-center px-8">
-          <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em] mb-6">
+        {/* Bottom Logo Cloud (Placed in normal DOM flow to prevent text overlays) */}
+        <div className="w-full hidden lg:flex flex-col items-center pt-8 mt-8 border-t border-border-subtle/50">
+          <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em] mb-4">
             Backed By the Best
           </p>
-          <div className="flex items-center justify-center gap-12 opacity-30 grayscale saturate-0">
-            <span className="font-black text-xl italic tracking-tighter">LOGOIPSUM</span>
-            <span className="font-black text-xl italic tracking-tighter uppercase">Generic</span>
-            <span className="font-black text-xl italic tracking-tighter">LOGO</span>
-            <span className="font-black text-xl italic tracking-tighter">IPSUM</span>
+          <div className="flex items-center justify-center gap-8 opacity-30 grayscale saturate-0">
+            <span className="font-black text-sm italic tracking-tighter">LOGOIPSUM</span>
+            <span className="font-black text-sm italic tracking-tighter uppercase">Generic</span>
+            <span className="font-black text-sm italic tracking-tighter">LOGO</span>
+            <span className="font-black text-sm italic tracking-tighter">IPSUM</span>
           </div>
         </div>
       </div>
