@@ -72,7 +72,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
           {/* Active indicator */}
           {(isChildActive || isParentActive) && (
             <motion.div
-              className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_12px_rgba(232,88,58,0.8)] z-20"
+              className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_12px_var(--primary-glow)] z-20"
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             />
           )}
@@ -80,8 +80,8 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
           <item.icon
             size={20}
             className={`shrink-0 relative z-10 transition-colors duration-200 ${isChildActive || isParentActive
-                ? 'text-primary'
-                : 'text-white/40 group-hover:text-white'
+              ? 'text-primary'
+              : 'text-white/40 group-hover:text-white'
               }`}
           />
 
@@ -94,8 +94,8 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
                 animate="open"
                 exit="closed"
                 className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden flex-1 text-left ${isChildActive || isParentActive
-                    ? 'text-white'
-                    : 'text-white/60 group-hover:text-white'
+                  ? 'text-white'
+                  : 'text-white/60 group-hover:text-white'
                   }`}
               >
                 {getTranslatedLabel(item.label, t)}
@@ -191,7 +191,7 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
           {isActive && (
             <motion.div
               layoutId="activeIndicator"
-              className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_12px_rgba(232,88,58,0.8)] z-20"
+              className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_12px_var(--primary-glow)] z-20"
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             />
           )}
