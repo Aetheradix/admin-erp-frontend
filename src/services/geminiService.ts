@@ -1,6 +1,6 @@
 export interface GeminiMessage {
-    role: 'user' | 'model';
-    parts: { text: string }[];
+  role: 'user' | 'model';
+  parts: { text: string }[];
 }
 
 const SYSTEM_INSTRUCTION = `You are Aether Copilot, an advanced Agentic AI Assistant integrated into AetherERP (Enterprise Resource Planning System).
@@ -11,12 +11,12 @@ Workspace context:
 - Key Capabilities: Providing business insights, drafting task checklists, summarizing workflow guidelines, explaining system features, suggesting team management optimizations, and assisting with settings configuration.`;
 
 const SUPPORTED_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-pro',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro',
 ];
 
 /**
@@ -24,10 +24,15 @@ const SUPPORTED_MODELS = [
  * Provides instant, intelligent ERP assistance when a live API key is missing or invalid.
  */
 function generateSmartFallbackResponse(prompt: string): string {
-    const p = prompt.toLowerCase();
+  const p = prompt.toLowerCase();
 
-    if (p.includes('summarize') || p.includes('overview') || p.includes('erp') || p.includes('module')) {
-        return `### 🚀 **AetherERP System Overview**
+  if (
+    p.includes('summarize') ||
+    p.includes('overview') ||
+    p.includes('erp') ||
+    p.includes('module')
+  ) {
+    return `### 🚀 **AetherERP System Overview**
 
 AetherERP is a modern, unified Enterprise Resource Planning suite designed for high-velocity teams:
 
@@ -40,10 +45,15 @@ AetherERP is a modern, unified Enterprise Resource Planning suite designed for h
 7. ⚙️ **Settings & Customization**: Dynamic dark mode, custom accent themes, density toggles, and security policies.
 
 *How would you like to proceed? I can help you configure any module or draft a custom workflow checklist!*`;
-    }
+  }
 
-    if (p.includes('task') || p.includes('checklist') || p.includes('strategy') || p.includes('assign')) {
-        return `### ✅ **Task & Workflow Strategy Guide**
+  if (
+    p.includes('task') ||
+    p.includes('checklist') ||
+    p.includes('strategy') ||
+    p.includes('assign')
+  ) {
+    return `### ✅ **Task & Workflow Strategy Guide**
 
 To optimize productivity in the **Tasks Module**:
 
@@ -53,10 +63,15 @@ To optimize productivity in the **Tasks Module**:
 - 📋 **Sub-task Execution**: Break down complex projects into actionable 3-step checklists.
 
 *Tip: You can use the quick actions below to generate a pre-formatted sprint task breakdown!*`;
-    }
+  }
 
-    if (p.includes('finance') || p.includes('invoice') || p.includes('report') || p.includes('expense')) {
-        return `### 💳 **Financial & Invoicing Insights**
+  if (
+    p.includes('finance') ||
+    p.includes('invoice') ||
+    p.includes('report') ||
+    p.includes('expense')
+  ) {
+    return `### 💳 **Financial & Invoicing Insights**
 
 AetherERP Finance provides full fiscal visibility across your enterprise:
 
@@ -66,10 +81,17 @@ AetherERP Finance provides full fiscal visibility across your enterprise:
 - 🧾 **Audit Logs**: Secure historical records with auto-archiving protocols.
 
 *Need help setting up automated invoice reminders or exporting financial statements? Ask away!*`;
-    }
+  }
 
-    if (p.includes('theme') || p.includes('setting') || p.includes('dark') || p.includes('color') || p.includes('density') || p.includes('key')) {
-        return `### ⚙️ **Settings & System Customization Guide**
+  if (
+    p.includes('theme') ||
+    p.includes('setting') ||
+    p.includes('dark') ||
+    p.includes('color') ||
+    p.includes('density') ||
+    p.includes('key')
+  ) {
+    return `### ⚙️ **Settings & System Customization Guide**
 
 You can customize your AetherERP experience in **System Settings**:
 
@@ -79,9 +101,9 @@ You can customize your AetherERP experience in **System Settings**:
 - 🔑 **Gemini API Key**: Enter your Google AI Studio API Key (\`AIzaSy...\`) in the **Advanced & Data** section to unlock live Google Gemini AI capabilities!
 
 *Click the key icon (🔑) in the Copilot header to update your live Gemini API Key anytime.*`;
-    }
+  }
 
-    return `### ✨ **Aether Copilot Assistant**
+  return `### ✨ **Aether Copilot Assistant**
 
 I received your prompt: *"_${prompt}_"*
 
@@ -96,94 +118,91 @@ I am ready to assist you with:
 }
 
 export async function sendGeminiPrompt(
-    prompt: string,
-    history: GeminiMessage[],
-    apiKey?: string
+  prompt: string,
+  history: GeminiMessage[],
+  apiKey?: string
 ): Promise<string> {
-    const keyToUse =
-        apiKey?.trim() ||
-        import.meta.env.VITE_GEMINI_API_KEY ||
-        '';
+  const keyToUse = apiKey?.trim() || import.meta.env.VITE_GEMINI_API_KEY || '';
 
-    // If no valid key is provided or if key is dummy/AQ string, fallback to Smart ERP Copilot Engine
-    if (!keyToUse || keyToUse.startsWith('AQ.')) {
-        return generateSmartFallbackResponse(prompt);
-    }
-
-    const sanitizedHistory: GeminiMessage[] = history.map((msg) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: msg.parts.map((p) => ({ text: p.text || '' })),
-    }));
-
-    const userContent: GeminiMessage = {
-        role: 'user',
-        parts: [{ text: prompt }],
-    };
-
-    const contents = [...sanitizedHistory, userContent];
-
-    // Try live Google Gemini API endpoints
-    for (const modelName of SUPPORTED_MODELS) {
-        try {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-                keyToUse
-            )}`;
-
-            let body: any = {
-                system_instruction: {
-                    parts: [{ text: SYSTEM_INSTRUCTION }],
-                },
-                contents: contents,
-            };
-
-            let response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-goog-api-key': keyToUse,
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!response.ok && response.status === 400) {
-                const legacyContents = [
-                    {
-                        role: 'user',
-                        parts: [{ text: `[System Instructions]\n${SYSTEM_INSTRUCTION}` }],
-                    },
-                    {
-                        role: 'model',
-                        parts: [
-                            {
-                                text: 'Understood. I am Aether Copilot, your ERP assistant.',
-                            },
-                        ],
-                    },
-                    ...contents,
-                ];
-
-                response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-goog-api-key': keyToUse,
-                    },
-                    body: JSON.stringify({ contents: legacyContents }),
-                });
-            }
-
-            if (response.ok) {
-                const data = await response.json();
-                const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (responseText) {
-                    return responseText;
-                }
-            }
-        } catch {
-            // Continue to next model
-        }
-    }
-
-    // If live API calls failed (e.g., invalid key), return smart fallback response
+  // If no valid key is provided or if key is dummy/AQ string, fallback to Smart ERP Copilot Engine
+  if (!keyToUse || keyToUse.startsWith('AQ.')) {
     return generateSmartFallbackResponse(prompt);
+  }
+
+  const sanitizedHistory: GeminiMessage[] = history.map((msg) => ({
+    role: msg.role === 'user' ? 'user' : 'model',
+    parts: msg.parts.map((p) => ({ text: p.text || '' })),
+  }));
+
+  const userContent: GeminiMessage = {
+    role: 'user',
+    parts: [{ text: prompt }],
+  };
+
+  const contents = [...sanitizedHistory, userContent];
+
+  // Try live Google Gemini API endpoints
+  for (const modelName of SUPPORTED_MODELS) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+        keyToUse
+      )}`;
+
+      let body: any = {
+        system_instruction: {
+          parts: [{ text: SYSTEM_INSTRUCTION }],
+        },
+        contents: contents,
+      };
+
+      let response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-goog-api-key': keyToUse,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok && response.status === 400) {
+        const legacyContents = [
+          {
+            role: 'user',
+            parts: [{ text: `[System Instructions]\n${SYSTEM_INSTRUCTION}` }],
+          },
+          {
+            role: 'model',
+            parts: [
+              {
+                text: 'Understood. I am Aether Copilot, your ERP assistant.',
+              },
+            ],
+          },
+          ...contents,
+        ];
+
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-goog-api-key': keyToUse,
+          },
+          body: JSON.stringify({ contents: legacyContents }),
+        });
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (responseText) {
+          return responseText;
+        }
+      }
+    } catch {
+      // Continue to next model
+    }
+  }
+
+  // If live API calls failed (e.g., invalid key), return smart fallback response
+  return generateSmartFallbackResponse(prompt);
 }

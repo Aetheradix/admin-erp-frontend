@@ -20,7 +20,7 @@ import {
   Share2,
   Sparkles,
   Sun,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

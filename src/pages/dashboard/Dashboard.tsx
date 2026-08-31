@@ -14,7 +14,7 @@ import {
   Package,
   BarChart3,
   Settings,
-  ArrowUpRight
+  ArrowUpRight,
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -29,7 +29,9 @@ const Dashboard = () => {
       subtitle: 'Attendance Velocity',
       icon: Clock,
       route: '/checkin',
-      color: liveCounts.isCheckedIn ? 'text-emerald-500 bg-emerald-500/10' : 'text-amber-500 bg-amber-500/10',
+      color: liveCounts.isCheckedIn
+        ? 'text-emerald-500 bg-emerald-500/10'
+        : 'text-amber-500 bg-amber-500/10',
       badge: liveCounts.isCheckedIn ? 'ACTIVE' : 'OFFLINE',
     },
     {
