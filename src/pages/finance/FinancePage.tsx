@@ -19,6 +19,9 @@ export function FinancePage() {
     activeCategory,
     setActiveCategory,
     CATEGORIES,
+    activeStatus,
+    setActiveStatus,
+    STATUSES,
     handleRequestSubmit,
     handleApprove,
     handleReject,
@@ -55,6 +58,14 @@ export function FinancePage() {
           tabs={CATEGORIES}
           activeTab={activeCategory}
           onTabChange={setActiveCategory}
+        />
+
+        <ExplorerBar
+          title="Request Status"
+          countLabel={`${filteredRequests.length} requests`}
+          tabs={STATUSES}
+          activeTab={activeStatus}
+          onTabChange={setActiveStatus}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
