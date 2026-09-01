@@ -50,7 +50,10 @@ function App() {
           {/* Redirects for convenience */}
           <Route path="/login" element={<Navigate to="/auth/login" replace />} />
           <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
-          <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
+          <Route
+            path="/forgot-password"
+            element={<Navigate to="/auth/forgot-password" replace />}
+          />
 
           <Route element={<ProtectedApp />}>
             <Route path="/*" element={<AppFeature />} />

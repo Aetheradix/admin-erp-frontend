@@ -93,7 +93,9 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl sm:text-4xl font-black text-black mb-2 tracking-tight">{title}</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-black mb-2 tracking-tight">
+              {title}
+            </h2>
             {subtitle && (
               <p className="text-muted font-medium mb-8 uppercase text-[10px] tracking-widest">
                 {subtitle}

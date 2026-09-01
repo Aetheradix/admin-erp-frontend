@@ -1,7 +1,6 @@
 export type { Reimbursement } from '@/types/models';
 
 export const mockReimbursements: import('@/types/models').Reimbursement[] = [
-
   {
     id: 'R1',
     item: 'Monitor',
@@ -74,4 +73,3 @@ export const mockReimbursements: import('@/types/models').Reimbursement[] = [
     approved_at: null,
   },
 ];
-

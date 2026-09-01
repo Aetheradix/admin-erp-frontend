@@ -96,7 +96,16 @@ const AppFeature = () => {
       return true;
     };
 
-    const features = ['Blogs', 'Gallery', 'Events', 'Careers', 'Attendance', 'Finance', 'Grievances', 'Guest Pass'];
+    const features = [
+      'Blogs',
+      'Gallery',
+      'Events',
+      'Careers',
+      'Attendance',
+      'Finance',
+      'Grievances',
+      'Guest Pass',
+    ];
     for (const f of features) {
       map[f] = check(f);
     }

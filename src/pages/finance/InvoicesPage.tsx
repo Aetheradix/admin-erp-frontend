@@ -94,9 +94,9 @@ export function InvoicesPage() {
       items: prev.items.map((item, i) =>
         i === index
           ? {
-            ...item,
-            [field]: value,
-          }
+              ...item,
+              [field]: value,
+            }
           : item
       ),
     }));

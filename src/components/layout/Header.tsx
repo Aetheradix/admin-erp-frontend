@@ -57,7 +57,10 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           title="Aether Copilot (Gemini AI)"
           className="w-13! h-13! rounded-pill! bg-primary/10! border-primary/20! hover:bg-primary/20! text-primary transition-all duration-150 relative group"
         >
-          <Sparkles size={20} className="animate-pulse group-hover:scale-110 transition-transform" />
+          <Sparkles
+            size={20}
+            className="animate-pulse group-hover:scale-110 transition-transform"
+          />
         </Button>
 
         <Button
