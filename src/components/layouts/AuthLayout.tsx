@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Toast } from '@/components/ui/composed/Toast';
+import { ARXLogo } from '@/config/arx-logo';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -23,8 +24,8 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
 
         {/* Logo/Brand */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-black font-black text-xl">A</span>
+          <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center shadow-lg p-2.5 border border-white/10">
+            <ARXLogo className="w-full h-full text-white" />
           </div>
           <span className="text-white font-black text-2xl tracking-tighter">AetherERP</span>
         </div>
@@ -82,8 +83,8 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         <div className="w-full max-w-md mx-auto my-auto">
           {/* Mobile Logo */}
           <div className="mb-10 lg:hidden flex items-center gap-3">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-lg">A</span>
+            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center p-2">
+              <ARXLogo className="w-full h-full text-white" />
             </div>
             <span className="text-black font-black text-xl tracking-tighter">AetherERP</span>
           </div>
