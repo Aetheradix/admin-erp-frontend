@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 // Timeout duration: 30 minutes in milliseconds
-const TIMEOUT_MS = 30 * 60 * 1000;
+const TIMEOUT_MS = 1 * 60 * 1000;
 
 export function useSessionTimeout() {
   const { sessionTimeoutEnabled } = useAppSelector(selectSettings);
