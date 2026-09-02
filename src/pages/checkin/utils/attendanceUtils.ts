@@ -189,7 +189,7 @@ export function generateMonthAttendanceRecords(year: number, monthZeroIndexed: n
         // Past / Today Days: Generate attendance record (Shift Start: 10:00 AM)
         const isLate = day % 4 === 0;
         const lateMins = isLate ? 10 + (day % 3) * 5 : 0;
-        const checkInHour = 10;
+        // const checkInHour = 10;
         const checkInMin = isLate ? lateMins : (day % 5);
         const checkInTimeStr = `10:${String(checkInMin).padStart(2, '0')} AM`;
 
