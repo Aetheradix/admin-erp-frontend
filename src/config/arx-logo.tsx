@@ -2,10 +2,12 @@ import * as React from "react";
 
 export type ARXLogoProps = React.SVGProps<SVGSVGElement> & {
   isCheckedIn?: boolean;
+  isOnBreak?: boolean;
 };
 
 export const ARXLogo: React.FC<ARXLogoProps> = ({
   isCheckedIn = false,
+  isOnBreak = false,
   className = "",
   ...props
 }) => (
@@ -27,28 +29,40 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
         id="g66"
         transform="translate(-35.86566,-46.256711)"
       >
-        {/* Style tag for smooth green status pulse keyframes */}
+        {/* Status keyframes: green pulse (checked-in) & yellow pulse (on break) */}
         <style>
           {`
-            @keyframes arxStatusPulse {
+            @keyframes arxGreenPulse {
               0%, 100% { fill-opacity: 1; filter: drop-shadow(0 0 2px rgba(34, 197, 94, 0.8)); }
               50% { fill-opacity: 0.35; filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0)); }
             }
-            .arx-status-pulse {
-              animation: arxStatusPulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            @keyframes arxYellowPulse {
+              0%, 100% { fill-opacity: 1; filter: drop-shadow(0 0 3px rgba(234, 179, 8, 0.9)); }
+              50% { fill-opacity: 0.3; filter: drop-shadow(0 0 0px rgba(234, 179, 8, 0)); }
             }
+            .arx-status-green  { animation: arxGreenPulse  1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            .arx-status-yellow { animation: arxYellowPulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
           `}
         </style>
 
-        {/* Center status triangle: turns green (#22C55E) and blinks when checked-in, white (#FFFFFF) otherwise */}
+        {/* Center status triangle:
+            🟡 Yellow blinking  → on break
+            🟢 Green blinking   → checked-in (not on break)
+            ⚪ White            → checked-out / normal */}
         <path
           id="path60"
-          className={isCheckedIn ? "arx-status-pulse" : ""}
+          className={
+            isOnBreak
+              ? "arx-status-yellow"
+              : isCheckedIn
+                ? "arx-status-green"
+                : ""
+          }
           style={{
-            fill: isCheckedIn ? "#22C55E" : "#FFFFFF",
+            fill: isOnBreak ? "#EAB308" : isCheckedIn ? "#22C55E" : "#FFFFFF",
             fillOpacity: 1,
             strokeWidth: 0.264583,
-            transition: "fill 0.3s ease",
+            transition: "fill 0.4s ease",
           }}
           d="m 104.30216,102.19738 -17.336926,29.55995 17.336926,-8.92452 17.33641,8.92452 z"
         />

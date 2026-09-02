@@ -6,11 +6,12 @@ import { useGetAttendanceStatusQuery } from '@/store/api/attendanceSlice';
 export function SidebarLogo({ isOpen }: { isOpen: boolean }) {
   const { data: attendanceStatus } = useGetAttendanceStatusQuery();
   const isCheckedIn = attendanceStatus?.status === 'checked-in';
+  const isOnBreak = !!attendanceStatus?.onBreak;
 
   return (
     <div className="h-24 flex items-center px-5 gap-3">
       <div className={`shrink-0 rounded-[14px] bg-white/5 border border-white/10 flex items-center justify-center text-primary shadow-md transition-all hover:scale-105 active:scale-95 ${isOpen ? 'w-14 h-14 p-2' : 'w-9 h-9 p-1.5'}`}>
-        <ARXLogo isCheckedIn={isCheckedIn} className="w-full h-full text-white" />
+        <ARXLogo isCheckedIn={isCheckedIn} isOnBreak={isOnBreak} className="w-full h-full text-white" />
       </div>
       <AnimatePresence initial={false}>
         {isOpen && (
