@@ -5,7 +5,6 @@ import {
     LogOut,
     Coffee,
     Clock,
-    Briefcase,
     AlertTriangle,
     CheckCircle2,
     Hourglass,
@@ -179,8 +178,8 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                                     disabled={isSubmittingMood}
                                     title={`Feeling ${m.label}`}
                                     className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all border ${selectedMood === m.value
-                                            ? 'bg-primary/10 border-primary/30 text-primary shadow-sm'
-                                            : 'bg-surface-subtle border-transparent hover:bg-surface-elevated text-muted'
+                                        ? 'bg-primary/10 border-primary/30 text-primary shadow-sm'
+                                        : 'bg-surface-subtle border-transparent hover:bg-surface-elevated text-muted'
                                         }`}
                                 >
                                     <m.icon size={16} />

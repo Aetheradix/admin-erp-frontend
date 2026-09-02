@@ -12,9 +12,6 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 import {
   generateMonthAttendanceRecords,
   calculateMonthSummary,
-  formatHoursAndMinutes,
-  formatMinutes,
-  type DayDetailedRecord,
 } from '../utils/attendanceUtils';
 
 export const useAttendance = () => {

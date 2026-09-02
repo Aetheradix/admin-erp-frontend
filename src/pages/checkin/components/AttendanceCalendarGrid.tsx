@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, Calendar as CalendarIcon, Sun, Home, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, Calendar as CalendarIcon, Sun, Clock } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { DayDetailedRecord } from '../utils/attendanceUtils';
 

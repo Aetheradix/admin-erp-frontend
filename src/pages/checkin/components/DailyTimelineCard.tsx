@@ -8,7 +8,6 @@ import {
     AlertTriangle,
     Zap,
     MapPin,
-    CheckCircle2,
 } from 'lucide-react';
 import { formatFullDate } from '@/utils/date';
 import { formatHoursAndMinutes, formatMinutes, type DayDetailedRecord } from '../utils/attendanceUtils';

@@ -3,7 +3,6 @@ import {
     CheckCircle2,
     Clock,
     AlertTriangle,
-    Calendar as CalendarIcon,
     TrendingUp,
     Coffee,
     Zap,

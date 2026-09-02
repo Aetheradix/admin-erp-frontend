@@ -6,7 +6,6 @@ import {
     AlertTriangle,
     Calendar as CalendarIcon,
     Sun,
-    Clock,
     Zap,
 } from 'lucide-react';
 import { formatDate } from '@/utils/date';
