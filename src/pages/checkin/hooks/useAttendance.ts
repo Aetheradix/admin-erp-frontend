@@ -75,21 +75,20 @@ export const useAttendance = () => {
   const isCheckedIn = status?.status === 'checked-in';
   const isOnBreak = !!status?.onBreak;
 
-  const checkInTimeDisplay = status?.lastAction || '09:17 AM';
-  const checkOutTimeDisplay = isCheckedIn ? 'In Progress' : '06:08 PM';
-  const shiftTimingDisplay = '09:00 AM – 06:00 PM';
+  const checkInTimeDisplay = status?.lastAction || '10:05 AM';
+  const checkOutTimeDisplay = isCheckedIn ? 'In Progress' : '05:04 PM';
+  const shiftTimingDisplay = '10:00 AM – 05:00 PM';
 
   // Live elapsed time logic
   const liveWorkingTime = useMemo(() => {
     if (!isCheckedIn) return '0h 0m';
-    // Calculate difference between now and check-in time if available
-    return '5h 42m'; // Live calculated display format
+    return '4h 45m'; // Live calculated display format
   }, [isCheckedIn, time]);
 
-  const totalBreakDisplay = isOnBreak ? '42 min (Active)' : '32 min';
-  const netWorkingDisplay = '5h 10m';
-  const isLate = true; // Late status flag for today
-  const lateDurationDisplay = '17 min late';
+  const totalBreakDisplay = isOnBreak ? '30 min (Active)' : '25 min';
+  const netWorkingDisplay = '6h 35m';
+  const isLate = true; // Late status flag for today (checked in after 10:00 AM)
+  const lateDurationDisplay = '5 min late';
 
   const handleAttendance = async () => {
     try {

@@ -10,11 +10,11 @@ export interface DayDetailedRecord {
     id: string | number;
     date: string; // YYYY-MM-DD
     status: 'Present' | 'Late' | 'Absent' | 'On Leave' | 'Holiday' | 'Weekend' | 'Half Day';
-    shift: string; // e.g. "09:00 AM – 06:00 PM"
-    shiftStart: string; // e.g. "09:00 AM"
-    shiftEnd: string; // e.g. "06:00 PM"
-    checkIn?: string; // e.g. "09:17 AM"
-    checkOut?: string; // e.g. "06:08 PM"
+    shift: string; // e.g. "10:00 AM – 05:00 PM"
+    shiftStart: string; // e.g. "10:00 AM"
+    shiftEnd: string; // e.g. "05:00 PM"
+    checkIn?: string; // e.g. "10:05 AM"
+    checkOut?: string; // e.g. "05:04 PM"
     breaks: BreakItem[];
     totalBreakMinutes: number;
     grossWorkingHours: number; // decimal hours
@@ -40,7 +40,7 @@ export interface MonthAttendanceSummary {
     attendancePercentage: number;
 }
 
-// Convert "09:15 AM" or "18:30" to minutes from midnight
+// Convert "10:15 AM" or "17:30" to minutes from midnight
 export function parseTimeToMinutes(timeStr: string): number {
     if (!timeStr) return 0;
     const clean = timeStr.trim().toUpperCase();
@@ -57,7 +57,7 @@ export function parseTimeToMinutes(timeStr: string): number {
     return hours * 60 + minutes;
 }
 
-// Format decimal hours to readable string like "5h 42m" or "0h 0m"
+// Format decimal hours to readable string like "6h 35m" or "0h 0m"
 export function formatHoursAndMinutes(decimalHours: number): string {
     if (!decimalHours || decimalHours <= 0) return '0h 0m';
     const totalMinutes = Math.round(decimalHours * 60);
@@ -68,7 +68,7 @@ export function formatHoursAndMinutes(decimalHours: number): string {
     return `${hrs}h ${mins}m`;
 }
 
-// Format minutes to readable string like "32m" or "1h 15m"
+// Format minutes to readable string like "25m" or "1h 15m"
 export function formatMinutes(totalMinutes: number): string {
     if (!totalMinutes || totalMinutes <= 0) return '0m';
     const hrs = Math.floor(totalMinutes / 60);
@@ -78,10 +78,15 @@ export function formatMinutes(totalMinutes: number): string {
     return `${hrs}h ${mins}m`;
 }
 
-// Generate realistic mock records for a full month if backend data is incomplete
+// Generate realistic records for past & present days ONLY (Shift: 10:00 AM – 05:00 PM)
 export function generateMonthAttendanceRecords(year: number, monthZeroIndexed: number): DayDetailedRecord[] {
     const records: DayDetailedRecord[] = [];
     const daysInMonth = new Date(year, monthZeroIndexed + 1, 0).getDate();
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDay = now.getDate();
 
     for (let day = 1; day <= daysInMonth; day++) {
         const d = new Date(year, monthZeroIndexed, day);
@@ -94,9 +99,9 @@ export function generateMonthAttendanceRecords(year: number, monthZeroIndexed: n
                 id: `day-${dateStr}`,
                 date: dateStr,
                 status: 'Weekend',
-                shift: '09:00 AM – 06:00 PM',
-                shiftStart: '09:00 AM',
-                shiftEnd: '06:00 PM',
+                shift: '10:00 AM – 05:00 PM',
+                shiftStart: '10:00 AM',
+                shiftEnd: '05:00 PM',
                 breaks: [],
                 totalBreakMinutes: 0,
                 grossWorkingHours: 0,
@@ -109,15 +114,44 @@ export function generateMonthAttendanceRecords(year: number, monthZeroIndexed: n
             continue;
         }
 
-        // Specific Fixed Holidays or Leaves for demo realism
+        // STRICT FUTURE DATE CHECK: No future attendance punches
+        const isFuture =
+            year > currentYear ||
+            (year === currentYear && monthZeroIndexed > currentMonth) ||
+            (year === currentYear && monthZeroIndexed === currentMonth && day > currentDay);
+
+        if (isFuture) {
+            if (day === 15) {
+                records.push({
+                    id: `day-${dateStr}`,
+                    date: dateStr,
+                    status: 'Holiday',
+                    shift: '10:00 AM – 05:00 PM',
+                    shiftStart: '10:00 AM',
+                    shiftEnd: '05:00 PM',
+                    breaks: [],
+                    totalBreakMinutes: 0,
+                    grossWorkingHours: 0,
+                    netWorkingHours: 0,
+                    isLate: false,
+                    lateMinutes: 0,
+                    earlyDepartureMinutes: 0,
+                    overtimeHours: 0,
+                    notes: 'Upcoming Holiday: Foundation Day',
+                });
+            }
+            continue;
+        }
+
+        // Past Holidays or Leaves
         if (day === 15) {
             records.push({
                 id: `day-${dateStr}`,
                 date: dateStr,
                 status: 'Holiday',
-                shift: '09:00 AM – 06:00 PM',
-                shiftStart: '09:00 AM',
-                shiftEnd: '06:00 PM',
+                shift: '10:00 AM – 05:00 PM',
+                shiftStart: '10:00 AM',
+                shiftEnd: '05:00 PM',
                 breaks: [],
                 totalBreakMinutes: 0,
                 grossWorkingHours: 0,
@@ -131,14 +165,14 @@ export function generateMonthAttendanceRecords(year: number, monthZeroIndexed: n
             continue;
         }
 
-        if (day === 8) {
+        if (day === 8 && day <= currentDay) {
             records.push({
                 id: `day-${dateStr}`,
                 date: dateStr,
                 status: 'On Leave',
-                shift: '09:00 AM – 06:00 PM',
-                shiftStart: '09:00 AM',
-                shiftEnd: '06:00 PM',
+                shift: '10:00 AM – 05:00 PM',
+                shiftStart: '10:00 AM',
+                shiftEnd: '05:00 PM',
                 breaks: [],
                 totalBreakMinutes: 0,
                 grossWorkingHours: 0,
@@ -152,45 +186,45 @@ export function generateMonthAttendanceRecords(year: number, monthZeroIndexed: n
             continue;
         }
 
-        // Randomize Present vs Late for past days
+        // Past / Today Days: Generate attendance record (Shift Start: 10:00 AM)
         const isLate = day % 4 === 0;
-        const lateMins = isLate ? 15 + (day % 3) * 7 : 0;
-        const checkInHour = isLate ? 9 : 8;
-        const checkInMin = isLate ? lateMins : 50 + (day % 10);
-        const checkInTimeStr = `${String(checkInHour).padStart(2, '0')}:${String(checkInMin).padStart(2, '0')} AM`;
+        const lateMins = isLate ? 10 + (day % 3) * 5 : 0;
+        const checkInHour = 10;
+        const checkInMin = isLate ? lateMins : (day % 5);
+        const checkInTimeStr = `10:${String(checkInMin).padStart(2, '0')} AM`;
 
-        const checkOutMin = 5 + (day % 25);
-        const checkOutTimeStr = `06:${String(checkOutMin).padStart(2, '0')} PM`;
+        const checkOutMin = (day % 15);
+        const checkOutTimeStr = `05:${String(checkOutMin).padStart(2, '0')} PM`;
 
         const breaks: BreakItem[] = [
             {
                 id: `b1-${day}`,
-                label: 'Coffee Break',
-                startTime: '11:10 AM',
-                endTime: '11:22 AM',
+                label: 'Tea Break',
+                startTime: '11:30 AM',
+                endTime: '11:42 AM',
                 durationMinutes: 12,
             },
             {
                 id: `b2-${day}`,
                 label: 'Lunch Break',
-                startTime: '01:15 PM',
-                endTime: '01:45 PM',
+                startTime: '01:30 PM',
+                endTime: '02:00 PM',
                 durationMinutes: 30,
             },
         ];
 
         const totalBreakMinutes = 42;
-        const grossWorkingHours = 9.2;
-        const netWorkingHours = 8.5;
-        const overtimeHours = day % 5 === 0 ? 1.2 : 0;
+        const grossWorkingHours = 7.0;
+        const netWorkingHours = 6.3;
+        const overtimeHours = day % 6 === 0 ? 1.0 : 0;
 
         records.push({
             id: `day-${dateStr}`,
             date: dateStr,
             status: isLate ? 'Late' : 'Present',
-            shift: '09:00 AM – 06:00 PM',
-            shiftStart: '09:00 AM',
-            shiftEnd: '06:00 PM',
+            shift: '10:00 AM – 05:00 PM',
+            shiftStart: '10:00 AM',
+            shiftEnd: '05:00 PM',
             checkIn: checkInTimeStr,
             checkOut: checkOutTimeStr,
             breaks,
@@ -258,9 +292,10 @@ export function calculateMonthSummary(records: DayDetailedRecord[]): MonthAttend
     const avgBreakMinutes = Math.round(totalBreakMins / workingDaysCount);
 
     const totalExpectedWorkingDays = records.length - (weekendDays + holidayDays);
-    const attendancePercentage = totalExpectedWorkingDays > 0
-        ? Math.round((presentDays / totalExpectedWorkingDays) * 100)
-        : 100;
+    const attendancePercentage =
+        totalExpectedWorkingDays > 0
+            ? Math.round((presentDays / totalExpectedWorkingDays) * 100)
+            : 100;
 
     return {
         presentDays,

@@ -37,11 +37,11 @@ interface TodayAttendanceSummaryProps {
 }
 
 const MOODS = [
-    { value: 1, icon: Frown, label: 'Awful', color: 'text-error' },
-    { value: 2, icon: Frown, label: 'Bad', color: 'text-warning' },
-    { value: 3, icon: Meh, label: 'Okay', color: 'text-info' },
-    { value: 4, icon: Smile, label: 'Good', color: 'text-success' },
-    { value: 5, icon: Smile, label: 'Great', color: 'text-primary' },
+    { value: 1, icon: Frown, label: 'Awful' },
+    { value: 2, icon: Frown, label: 'Bad' },
+    { value: 3, icon: Meh, label: 'Okay' },
+    { value: 4, icon: Smile, label: 'Good' },
+    { value: 5, icon: Smile, label: 'Great' },
 ];
 
 export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
@@ -69,77 +69,74 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
     const getStatusBadge = () => {
         if (isOnBreak) {
             return (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs uppercase tracking-widest animate-pulse">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black text-xs uppercase tracking-widest animate-pulse">
                     <Coffee size={14} /> ON BREAK
                 </span>
             );
         }
         if (isCheckedIn) {
             return (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs uppercase tracking-widest">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs uppercase tracking-widest">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" /> IN OFFICE
                 </span>
             );
         }
         return (
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-surface-subtle border border-border-subtle text-muted font-black text-xs uppercase tracking-widest">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-surface-subtle border border-border-subtle text-muted font-black text-xs uppercase tracking-widest">
                 <LogOut size={14} /> CHECKED OUT
             </span>
         );
     };
 
     return (
-        <div className="bg-surface-elevated rounded-[40px] p-8 sm:p-10 border border-border-subtle shadow-xl relative overflow-hidden flex flex-col gap-8 transition-all hover:shadow-2xl">
-            {/* Background Decorative Gradient Radial */}
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="bg-surface-elevated rounded-[36px] p-6 sm:p-8 border border-border-subtle shadow-xl relative overflow-hidden flex flex-col gap-6 transition-all hover:shadow-2xl">
             {/* Top Header Row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border-subtle/60 pb-6">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm">
-                        <Clock size={24} />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border-subtle/60 pb-5">
+                <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm shrink-0">
+                        <Clock size={22} />
                     </div>
                     <div>
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-xl font-black text-foreground tracking-tight">Today's Attendance</h2>
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <h2 className="text-lg font-black text-foreground tracking-tight">Today's Attendance</h2>
                             {getStatusBadge()}
                         </div>
-                        <p className="text-xs font-bold text-muted mt-1 tracking-wide">{formatFullDate(time)}</p>
+                        <p className="text-xs font-bold text-muted mt-0.5">{formatFullDate(time)}</p>
                     </div>
                 </div>
 
                 {/* Live Real-Time Digital Clock */}
-                <div className="flex flex-col items-start sm:items-end">
-                    <span className="text-3xl font-black tracking-tighter text-foreground">
+                <div className="flex flex-col items-start sm:items-end shrink-0">
+                    <span className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground">
                         {formatTime(time)}
                     </span>
-                    <span className="text-[10px] font-black text-primary/80 uppercase tracking-widest">
-                        Real-time Clock
+                    <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest">
+                        Real-Time Clock
                     </span>
                 </div>
             </div>
 
-            {/* Main Grid: Clock Actions & Live Summary Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                {/* Left Column: Action Control Hub (5 Cols) */}
-                <div className="lg:col-span-5 flex flex-col justify-between gap-5 bg-surface-subtle/50 p-6 rounded-[32px] border border-border-subtle">
+            {/* Main Grid Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* Left Column: Action Control Hub */}
+                <div className="lg:col-span-4 flex flex-col justify-between gap-4 bg-surface-subtle/50 p-5 rounded-[28px] border border-border-subtle">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-widest text-muted">Attendance Actions</span>
-                        <span className="text-[11px] font-bold text-muted">Shift: <strong className="text-foreground">{shiftTimingDisplay}</strong></span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted">Quick Actions</span>
+                        <span className="text-[10px] font-bold text-muted">Shift: <strong className="text-foreground">{shiftTimingDisplay}</strong></span>
                     </div>
 
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                         <Button
                             variant={isCheckedIn ? 'ghost' : 'primary'}
                             aria-label={isCheckedIn ? 'Check Out' : 'Check In'}
-                            className={`w-full h-16 rounded-[22px]! text-base shadow-xl ${isCheckedIn ? 'border-2 border-border-strong! hover:bg-surface-elevated' : 'shadow-primary/30'
-                                } flex items-center justify-center gap-3 active:scale-95 transition-all cursor-pointer`}
+                            className={`w-full h-14 rounded-2xl! text-sm shadow-lg ${isCheckedIn ? 'border-2 border-border-strong! hover:bg-surface-elevated' : 'shadow-primary/30'
+                                } flex items-center justify-center gap-2.5 active:scale-95 transition-all cursor-pointer`}
                             onClick={handleAttendance}
                             loading={isLoading}
                             disabled={isLoading || isOnBreak}
                         >
-                            {isCheckedIn ? <LogOut size={20} /> : <LogIn size={20} />}
-                            <span className="font-black tracking-widest uppercase">
+                            {isCheckedIn ? <LogOut size={18} /> : <LogIn size={18} />}
+                            <span className="font-black tracking-wider uppercase">
                                 {isCheckedIn ? 'Check Out' : 'Check In'}
                             </span>
                         </Button>
@@ -147,14 +144,16 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                         <Button
                             variant={isOnBreak ? 'ghost' : 'secondary'}
                             aria-label={isOnBreak ? 'End Break' : 'Take Break'}
-                            className={`w-full h-14 rounded-[22px]! text-sm shadow-md ${isOnBreak ? 'border-2 border-amber-500/40! text-amber-500 bg-amber-500/5' : 'bg-surface-elevated border border-border-subtle hover:border-primary/40'
-                                } flex items-center justify-center gap-3 active:scale-95 transition-all cursor-pointer`}
+                            className={`w-full h-12 rounded-2xl! text-xs shadow-sm ${isOnBreak
+                                    ? 'border-2 border-amber-500/40! text-amber-500 bg-amber-500/5'
+                                    : 'bg-surface-elevated border border-border-subtle hover:border-primary/40'
+                                } flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer`}
                             onClick={handleBreak}
                             loading={isBreakLoading}
                             disabled={isBreakLoading || !isCheckedIn}
                         >
-                            <Coffee size={18} className={isOnBreak ? 'text-amber-500' : 'text-muted'} />
-                            <span className="font-black tracking-widest uppercase">
+                            <Coffee size={16} className={isOnBreak ? 'text-amber-500' : 'text-muted'} />
+                            <span className="font-black tracking-wider uppercase">
                                 {isOnBreak ? 'End Break' : 'Take Break'}
                             </span>
                         </Button>
@@ -163,26 +162,26 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                     {/* Integrated Mood Selector */}
                     <div className="pt-3 border-t border-border-subtle/50">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-black text-muted uppercase tracking-widest">Employee Mood</span>
+                            <span className="text-[9px] font-black text-muted uppercase tracking-wider">How are you feeling today?</span>
                             {selectedMood && (
-                                <span className="text-[10px] font-bold text-success flex items-center gap-1">
-                                    <CheckCircle2 size={12} /> Logged
+                                <span className="text-[9px] font-bold text-success flex items-center gap-1">
+                                    <CheckCircle2 size={11} /> Saved
                                 </span>
                             )}
                         </div>
-                        <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center justify-between gap-1">
                             {MOODS.map((m) => (
                                 <button
                                     key={m.value}
                                     onClick={() => logMood(m.value, m.label)}
                                     disabled={isSubmittingMood}
                                     title={`Feeling ${m.label}`}
-                                    className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all border ${selectedMood === m.value
-                                        ? 'bg-primary/10 border-primary/30 text-primary shadow-sm'
-                                        : 'bg-surface-subtle border-transparent hover:bg-surface-elevated text-muted'
+                                    className={`flex-1 flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all border ${selectedMood === m.value
+                                            ? 'bg-primary/10 border-primary/30 text-primary shadow-sm'
+                                            : 'bg-surface-subtle border-transparent hover:bg-surface-elevated text-muted'
                                         }`}
                                 >
-                                    <m.icon size={16} />
+                                    <m.icon size={15} />
                                     <span className="text-[8px] font-bold uppercase">{m.label}</span>
                                 </button>
                             ))}
@@ -190,86 +189,86 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                     </div>
                 </div>
 
-                {/* Right Column: Live Shift Metrics Matrix (7 Cols) */}
-                <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {/* Right Column: Live Shift Metrics Cards (8 Cols) */}
+                <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-3.5">
                     {/* Card 1: Check-in Time */}
-                    <div className="bg-surface-subtle p-5 rounded-[24px] border border-border-subtle flex flex-col justify-between">
+                    <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
                         <div className="flex items-center justify-between text-muted">
                             <span className="text-[10px] font-black uppercase tracking-wider">Check In</span>
-                            <LogIn size={16} className="text-primary" />
+                            <LogIn size={15} className="text-primary" />
                         </div>
-                        <div className="mt-3">
-                            <span className="text-xl font-black text-foreground block">{checkInTimeDisplay}</span>
-                            <span className="text-[10px] font-bold text-muted mt-0.5 block">First Punch Today</span>
+                        <div className="mt-2.5">
+                            <span className="text-lg font-black text-foreground block">{checkInTimeDisplay}</span>
+                            <span className="text-[9px] font-bold text-muted mt-0.5 block">First Punch Today</span>
                         </div>
                     </div>
 
                     {/* Card 2: Check-out Time */}
-                    <div className="bg-surface-subtle p-5 rounded-[24px] border border-border-subtle flex flex-col justify-between">
+                    <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
                         <div className="flex items-center justify-between text-muted">
                             <span className="text-[10px] font-black uppercase tracking-wider">Check Out</span>
-                            <LogOut size={16} className="text-muted" />
+                            <LogOut size={15} className="text-muted" />
                         </div>
-                        <div className="mt-3">
-                            <span className="text-xl font-black text-foreground block">{checkOutTimeDisplay}</span>
-                            <span className="text-[10px] font-bold text-muted mt-0.5 block">Last Punch Today</span>
+                        <div className="mt-2.5">
+                            <span className="text-lg font-black text-foreground block">{checkOutTimeDisplay}</span>
+                            <span className="text-[9px] font-bold text-muted mt-0.5 block">Last Punch Today</span>
                         </div>
                     </div>
 
                     {/* Card 3: Late Status */}
-                    <div className="bg-surface-subtle p-5 rounded-[24px] border border-border-subtle flex flex-col justify-between">
+                    <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
                         <div className="flex items-center justify-between text-muted">
                             <span className="text-[10px] font-black uppercase tracking-wider">Punctuality</span>
-                            {isLate ? <AlertTriangle size={16} className="text-warning" /> : <CheckCircle2 size={16} className="text-success" />}
+                            {isLate ? <AlertTriangle size={15} className="text-warning" /> : <CheckCircle2 size={15} className="text-success" />}
                         </div>
-                        <div className="mt-3">
+                        <div className="mt-2.5">
                             {isLate ? (
                                 <div>
                                     <span className="text-sm font-black text-warning block">LATE</span>
-                                    <span className="text-[10px] font-bold text-warning/80 mt-0.5 block">{lateDurationDisplay}</span>
+                                    <span className="text-[9px] font-bold text-warning/80 mt-0.5 block">{lateDurationDisplay}</span>
                                 </div>
                             ) : (
                                 <div>
                                     <span className="text-sm font-black text-success block">ON TIME</span>
-                                    <span className="text-[10px] font-bold text-muted mt-0.5 block">Within Shift Window</span>
+                                    <span className="text-[9px] font-bold text-muted mt-0.5 block">Shift Window</span>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Card 4: Live Session Timer */}
-                    <div className="bg-surface-subtle p-5 rounded-[24px] border border-border-subtle flex flex-col justify-between">
+                    <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
                         <div className="flex items-center justify-between text-muted">
                             <span className="text-[10px] font-black uppercase tracking-wider">Current Session</span>
-                            <Activity size={16} className="text-info" />
+                            <Activity size={15} className="text-info" />
                         </div>
-                        <div className="mt-3">
-                            <span className="text-xl font-black text-foreground block">{liveWorkingTime}</span>
-                            <span className="text-[10px] font-bold text-muted mt-0.5 block">Live Clock Elapsed</span>
+                        <div className="mt-2.5">
+                            <span className="text-lg font-black text-foreground block">{liveWorkingTime}</span>
+                            <span className="text-[9px] font-bold text-muted mt-0.5 block">Live Clock Elapsed</span>
                         </div>
                     </div>
 
                     {/* Card 5: Total Break */}
-                    <div className="bg-surface-subtle p-5 rounded-[24px] border border-border-subtle flex flex-col justify-between">
+                    <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
                         <div className="flex items-center justify-between text-muted">
                             <span className="text-[10px] font-black uppercase tracking-wider">Total Break</span>
-                            <Coffee size={16} className="text-amber-500" />
+                            <Coffee size={15} className="text-amber-500" />
                         </div>
-                        <div className="mt-3">
-                            <span className="text-xl font-black text-foreground block">{totalBreakDisplay}</span>
-                            <span className="text-[10px] font-bold text-muted mt-0.5 block">Cumulative Breaks</span>
+                        <div className="mt-2.5">
+                            <span className="text-lg font-black text-foreground block">{totalBreakDisplay}</span>
+                            <span className="text-[9px] font-bold text-muted mt-0.5 block">Cumulative Breaks</span>
                         </div>
                     </div>
 
                     {/* Card 6: Net Working Time */}
-                    <div className="bg-surface-subtle p-5 rounded-[24px] border border-border-subtle flex flex-col justify-between bg-primary/5 border-primary/20">
+                    <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between bg-primary/5 border-primary/20">
                         <div className="flex items-center justify-between text-primary">
                             <span className="text-[10px] font-black uppercase tracking-wider">Net Working</span>
-                            <Hourglass size={16} className="text-primary" />
+                            <Hourglass size={15} className="text-primary" />
                         </div>
-                        <div className="mt-3">
-                            <span className="text-xl font-black text-primary block">{netWorkingDisplay}</span>
-                            <span className="text-[10px] font-bold text-primary/80 mt-0.5 block">Gross minus Breaks</span>
+                        <div className="mt-2.5">
+                            <span className="text-lg font-black text-primary block">{netWorkingDisplay}</span>
+                            <span className="text-[9px] font-bold text-primary/80 mt-0.5 block">Gross minus Breaks</span>
                         </div>
                     </div>
                 </div>
