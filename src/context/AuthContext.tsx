@@ -28,10 +28,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (credentials: LoginCredentials) => {
     try {
+      // Clear any stale activity timestamp BEFORE login so useSessionTimeout
+      // never reads an old timestamp and fires a false timeout on the fresh session.
+      localStorage.removeItem('aether_last_activity');
+
       const response = await loginApi(credentials).unwrap();
       if (response && response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
+        // Stamp a fresh activity time so the session timeout clock starts now.
+        localStorage.setItem('aether_last_activity', String(Date.now()));
         setIsAuthenticated(true);
         setUser(response.user);
       }
@@ -51,6 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // ← KEY FIX: always clear the activity timestamp on logout so it
+      // cannot cause a spurious "Session Expired" on the next fresh login.
+      localStorage.removeItem('aether_last_activity');
       setIsAuthenticated(false);
       setUser(null);
     }

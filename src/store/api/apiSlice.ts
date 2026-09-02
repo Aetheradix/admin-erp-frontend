@@ -33,6 +33,9 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     try {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // Clear activity timestamp so stale session cannot cause a false
+      // "Session Timeout" on the next login attempt.
+      localStorage.removeItem('aether_last_activity');
     } catch {
       // Ignore
     }

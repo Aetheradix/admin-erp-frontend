@@ -39,7 +39,10 @@ export function useSessionTimeout() {
       navigate('/auth/login', { replace: true });
     };
 
-    // Check if user was idle for > 30 minutes while tab was closed or asleep
+    // ─── Stale-session check (only runs once per mount) ───────────────────
+    // If aether_last_activity does NOT exist, this is a fresh session
+    // (login() clears it before the API call and sets it after a successful
+    // response). We must NOT treat a missing timestamp as "expired".
     const storedLastActivity = localStorage.getItem('aether_last_activity');
     if (storedLastActivity) {
       const elapsed = Date.now() - parseInt(storedLastActivity, 10);
@@ -48,6 +51,8 @@ export function useSessionTimeout() {
         return;
       }
     }
+    // If no timestamp exists yet, skip the stale check entirely — the
+    // activity timer will be initialized by resetTimer() below.
 
     const updateActivityTimestamp = () => {
       localStorage.setItem('aether_last_activity', String(Date.now()));
