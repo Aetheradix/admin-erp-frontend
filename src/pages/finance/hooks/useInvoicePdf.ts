@@ -8,34 +8,41 @@ export function useInvoicePdf() {
   const [pdfInvoice, setPdfInvoice] = useState<InvoiceForm | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  const generateInvoicePDF = async (invoiceData: InvoiceForm) => {
+  const generateInvoicePDF = async (invoiceData: InvoiceForm): Promise<Blob> => {
     try {
       setIsGeneratingPdf(true);
       setPdfInvoice(invoiceData);
 
-      // Give React time to render the template
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            resolve();
+          });
+        });
+      });
+
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       if (!invoicePdfRef.current) {
-        console.error('Invoice template element not found.');
-        return;
+        throw new Error('Invoice template element not found.');
       }
 
-      const element = invoicePdfRef.current;
-
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(invoicePdfRef.current, {
         scale: 2,
         useCORS: true,
+        allowTaint: false,
         backgroundColor: '#ffffff',
         logging: false,
+        imageTimeout: 15000,
       });
 
-      const imageData = canvas.toDataURL('image/png');
+      const imageData = canvas.toDataURL('image/png', 1);
 
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
+        compress: true,
       });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -52,15 +59,19 @@ export function useInvoicePdf() {
       heightLeft -= pageHeight;
 
       while (heightLeft > 0) {
-        position = heightLeft - imageHeight;
+        position -= pageHeight;
+
         pdf.addPage();
+
         pdf.addImage(imageData, 'PNG', 0, position, imageWidth, imageHeight);
+
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`${invoiceData.invoiceNumber}.pdf`);
+      return pdf.output('blob');
     } catch (error) {
       console.error('PDF generation failed:', error);
+      throw error;
     } finally {
       setIsGeneratingPdf(false);
     }

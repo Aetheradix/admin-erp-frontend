@@ -95,13 +95,15 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
       }}
       header="Create Invoice"
       modal
-      className="w-[95vw] max-w-[1600px] mx-auto"
+      className="w-[98vw] max-w-[1900px] mx-auto"
       contentClassName="p-0"
       headerClassName="px-8 pt-7 pb-5 text-2xl font-black tracking-tight border-none"
       pt={{
         root: {
-          className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-surface-elevated',
+          className:
+            'w-full rounded-[32px] overflow-hidden border-none shadow-2xl bg-surface-elevated',
         },
+
         mask: {
           className: 'backdrop-blur-md bg-black/40',
         },

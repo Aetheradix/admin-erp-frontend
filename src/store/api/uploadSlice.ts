@@ -10,6 +10,15 @@ interface UploadFileResponse {
   };
 }
 
+interface UploadInvoiceResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    invoiceUrl: string;
+  };
+}
+
 export const uploadApi = createApi({
   reducerPath: 'uploadApi',
   baseQuery: fetchBaseQuery({
@@ -43,7 +52,26 @@ export const uploadApi = createApi({
         };
       },
     }),
+
+    uploadInvoice: builder.mutation<
+      UploadInvoiceResponse,
+      {
+        file: Blob;
+      }
+    >({
+      query: ({ file }) => {
+        const formData = new FormData();
+
+        formData.append('file', file, 'invoice.pdf');
+
+        return {
+          url: '/upload/invoice',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
   }),
 });
 
-export const { useUploadFileMutation } = uploadApi;
+export const { useUploadFileMutation, useUploadInvoiceMutation } = uploadApi;

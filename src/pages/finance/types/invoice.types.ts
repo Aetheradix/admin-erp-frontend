@@ -36,7 +36,9 @@ export interface Invoice {
   id: string;
   client: string;
   amount: number;
-  status: string;
+  status: 'Paid' | 'Pending' | 'Overdue';
   date: string;
-  data?: InvoiceForm;
+  data?: InvoiceForm & {
+    invoiceUrl?: string;
+  };
 }

@@ -1,6 +1,6 @@
 import React from 'react';
-import type { ColumnsType } from 'antd/es/table';
 import { Dropdown } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { CheckCircle, Clock, AlertCircle, MoreVertical, Download } from 'lucide-react';
 import type { Invoice } from '../types/invoice.types';
@@ -21,7 +21,7 @@ const statusIcons: Record<string, { icon: React.ElementType; color: string }> = 
 };
 
 interface GetInvoiceColumnsProps {
-  onDownloadPdf: (invoiceData: NonNullable<Invoice['data']>) => void;
+  onDownloadPdf: (invoice: Invoice) => void;
 }
 
 export function getInvoiceColumns({ onDownloadPdf }: GetInvoiceColumnsProps): ColumnsType<Invoice> {
@@ -52,6 +52,7 @@ export function getInvoiceColumns({ onDownloadPdf }: GetInvoiceColumnsProps): Co
       key: 'status',
       render: (status) => {
         const State = statusIcons[status] || statusIcons.Pending;
+
         return (
           <div className={`flex items-center gap-2 text-xs font-bold ${State.color}`}>
             <State.icon size={14} />
@@ -89,11 +90,7 @@ export function getInvoiceColumns({ onDownloadPdf }: GetInvoiceColumnsProps): Co
               items: menuItems,
               onClick: ({ key }) => {
                 if (key === 'download') {
-                  if (!record.data) {
-                    console.error('Invoice data not available');
-                    return;
-                  }
-                  onDownloadPdf(record.data);
+                  onDownloadPdf(record);
                 }
               },
             }}
