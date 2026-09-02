@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
-import { Table } from 'antd';
+import { Table, message } from 'antd';
+
+import { useUploadInvoiceMutation } from '@/store/api/uploadSlice';
+
 import InvoiceTemplate from './components/InvoiceTemplate';
 import { useInvoicePdf } from './hooks/useInvoicePdf';
 import { InvoiceFormModal } from './components/InvoiceFormModal';
 import { getInvoiceColumns } from './components/InvoiceColumns';
+
 import type { Invoice, InvoiceForm, InvoiceItem } from './types/invoice.types';
 
 const initialInvoices: Invoice[] = [
@@ -79,6 +83,8 @@ export function InvoicesPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<InvoiceForm>(emptyInvoiceForm);
 
+  const [uploadInvoice, { isLoading: isUploadingPdf }] = useUploadInvoiceMutation();
+
   const { invoicePdfRef, pdfInvoice, generateInvoicePDF } = useInvoicePdf();
 
   const updateField = <K extends keyof InvoiceForm>(field: K, value: InvoiceForm[K]) => {
@@ -94,9 +100,9 @@ export function InvoicesPage() {
       items: prev.items.map((item, i) =>
         i === index
           ? {
-            ...item,
-            [field]: value,
-          }
+              ...item,
+              [field]: value,
+            }
           : item
       ),
     }));
@@ -123,35 +129,141 @@ export function InvoicesPage() {
     }));
   };
 
-  const handleSubmit = () => {
-    if (!form.billToName) return;
+  const handleSubmit = async () => {
+    if (!form.billToName.trim()) {
+      message.error('Customer name is required.');
+      return;
+    }
 
-    const subTotal = form.items.reduce(
-      (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
-      0
-    );
-    const gstAmount = (subTotal * Number(form.gstRate || 0)) / 100;
-    const total = subTotal + gstAmount;
+    try {
+      message.loading({
+        content: 'Generating invoice PDF...',
+        key: 'invoice-pdf',
+      });
 
-    const newInvoice: Invoice = {
-      id: form.invoiceNumber,
-      client: form.billToName,
-      amount: total,
-      status: 'Pending',
-      date: form.invoiceDate || new Date().toISOString().slice(0, 10),
-      data: {
-        ...form,
-        items: form.items.map((item) => ({ ...item })),
-      },
-    };
+      const subTotal = form.items.reduce(
+        (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
+        0
+      );
 
-    setInvoices((prev) => [newInvoice, ...prev]);
-    setForm(emptyInvoiceForm);
-    setShowForm(false);
+      const gstAmount = (subTotal * Number(form.gstRate || 0)) / 100;
+
+      const total = subTotal + gstAmount;
+
+      const newInvoice: Invoice = {
+        id: form.invoiceNumber,
+        client: form.billToName,
+        amount: total,
+        status: 'Pending',
+        date: form.invoiceDate || new Date().toISOString().slice(0, 10),
+        data: {
+          ...form,
+          items: form.items.map((item) => ({
+            ...item,
+          })),
+        },
+      };
+
+      const pdfBlob = await generateInvoicePDF(newInvoice.data!);
+
+      message.loading({
+        content: 'Uploading invoice to storage...',
+        key: 'invoice-pdf',
+      });
+
+      const uploadResponse = await uploadInvoice({
+        file: pdfBlob,
+      }).unwrap();
+
+      console.log('Invoice upload response:', uploadResponse);
+
+      const invoiceUrl = uploadResponse.data.invoiceUrl;
+
+      if (!invoiceUrl) {
+        throw new Error('Invoice uploaded but storage URL was not returned.');
+      }
+
+      const savedInvoice: Invoice = {
+        ...newInvoice,
+        data: {
+          ...newInvoice.data!,
+          invoiceUrl,
+        },
+      };
+
+      setInvoices((prev) => [savedInvoice, ...prev]);
+
+      setForm(emptyInvoiceForm);
+      setShowForm(false);
+
+      message.success({
+        content: 'Invoice created and uploaded successfully.',
+        key: 'invoice-pdf',
+      });
+    } catch (error) {
+      console.error('Invoice creation failed:', error);
+
+      message.error({
+        content: error instanceof Error ? error.message : 'Unable to create invoice.',
+        key: 'invoice-pdf',
+      });
+    }
+  };
+
+  const downloadInvoice = async (invoice: Invoice) => {
+    try {
+      const invoiceUrl = invoice.data?.invoiceUrl;
+
+      if (!invoiceUrl) {
+        message.error('Invoice file is not available.');
+        return;
+      }
+
+      message.loading({
+        content: 'Downloading invoice...',
+        key: 'invoice-download',
+      });
+
+      const response = await fetch(invoiceUrl);
+
+      if (!response.ok) {
+        throw new Error('Unable to fetch invoice from storage.');
+      }
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const anchor = document.createElement('a');
+
+      anchor.href = url;
+
+      anchor.download = `${invoice.id}.pdf`;
+
+      document.body.appendChild(anchor);
+
+      anchor.click();
+
+      anchor.remove();
+
+      window.URL.revokeObjectURL(url);
+
+      message.success({
+        content: 'Invoice downloaded successfully.',
+        key: 'invoice-download',
+      });
+    } catch (error) {
+      console.error('Invoice download failed:', error);
+
+      message.error({
+        content: error instanceof Error ? error.message : 'Unable to download invoice.',
+        key: 'invoice-download',
+      });
+    }
   };
 
   const columns = getInvoiceColumns({
-    onDownloadPdf: generateInvoicePDF,
+    onDownloadPdf: downloadInvoice,
   });
 
   return (
@@ -165,12 +277,15 @@ export function InvoicesPage() {
           { label: 'Invoices' },
         ]}
         primaryAction={{
-          label: 'Create Invoice',
+          label: isUploadingPdf ? 'Uploading...' : 'Create Invoice',
           onClick: () => {
+            if (isUploadingPdf) return;
+
             setForm({
               ...emptyInvoiceForm,
               invoiceNumber: `INV-2026-${String(invoices.length + 1).padStart(3, '0')}`,
             });
+
             setShowForm(true);
           },
           icon: 'pi pi-plus',
@@ -194,7 +309,10 @@ export function InvoicesPage() {
 
       <InvoiceFormModal
         visible={showForm}
-        onHide={() => setShowForm(false)}
+        onHide={() => {
+          if (isUploadingPdf) return;
+          setShowForm(false);
+        }}
         form={form}
         updateField={updateField}
         updateItem={updateItem}
@@ -205,7 +323,6 @@ export function InvoicesPage() {
         setForm={setForm}
       />
 
-      {/* Off-screen PDF Template Renderer */}
       {pdfInvoice && (
         <div
           style={{
@@ -222,3 +339,5 @@ export function InvoicesPage() {
     </div>
   );
 }
+
+export default InvoicesPage;

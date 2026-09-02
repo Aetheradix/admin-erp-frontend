@@ -51,7 +51,7 @@ export interface SalarySlipData {
 
 interface SalarySlipFormProps {
   onClose: () => void;
-  onCreate: (data: SalarySlipData) => void;
+  onCreate: (data: SalarySlipData) => Promise<void>;
 }
 
 const initialForm: SalarySlipData = {

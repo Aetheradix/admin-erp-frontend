@@ -1,7 +1,10 @@
 import { useGetProjectsQuery } from '@/store/api/projectSlice';
 import { useGetTasksQuery } from '@/store/api/taskSlice';
 import { useGetReimbursementsQuery } from '@/store/api/financeApiSlice';
-import { useGetAttendanceStatusQuery, useGetAttendanceStatsQuery } from '@/store/api/attendanceSlice';
+import {
+  useGetAttendanceStatusQuery,
+  useGetAttendanceStatsQuery,
+} from '@/store/api/attendanceSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 
 const DEFAULT_PROJECTS = [
@@ -63,17 +66,23 @@ export const useDashboardData = () => {
   const { data: rawUsers } = useGetUsersQuery();
 
   // Merge live projects with defaults if needed with defensive optional chaining
-  const projects = Array.isArray(rawProjects) && rawProjects.length > 0
-    ? rawProjects.map((p, idx) => ({
-      id: String(p?.id || idx + 1),
-      title: p?.title || p?.name || `Project #${p?.id || idx + 1}`,
-      tasks: Array.isArray(rawTasks) ? rawTasks.filter((t) => String(t?.project_id) === String(p?.id)).length || 12 : 12,
-      value: p?.value || `$ ${(35000 + idx * 15000).toLocaleString()}`,
-      color: p?.color || PRESET_COLORS[idx % PRESET_COLORS.length],
-      category: p?.category ? p.category.toUpperCase() : 'ERP',
-      participants: Array.isArray(rawUsers) && rawUsers.length > 0 ? Math.min(rawUsers.length, 12) : (p?.participants || 5),
-    }))
-    : DEFAULT_PROJECTS;
+  const projects =
+    Array.isArray(rawProjects) && rawProjects.length > 0
+      ? rawProjects.map((p, idx) => ({
+          id: String(p?.id || idx + 1),
+          title: p?.title || p?.name || `Project #${p?.id || idx + 1}`,
+          tasks: Array.isArray(rawTasks)
+            ? rawTasks.filter((t) => String(t?.project_id) === String(p?.id)).length || 12
+            : 12,
+          value: p?.value || `$ ${(35000 + idx * 15000).toLocaleString()}`,
+          color: p?.color || PRESET_COLORS[idx % PRESET_COLORS.length],
+          category: p?.category ? p.category.toUpperCase() : 'ERP',
+          participants:
+            Array.isArray(rawUsers) && rawUsers.length > 0
+              ? Math.min(rawUsers.length, 12)
+              : p?.participants || 5,
+        }))
+      : DEFAULT_PROJECTS;
 
   // Calculate live task metrics safely
   const totalTasksCount = Array.isArray(rawTasks) ? rawTasks.length : 1003;

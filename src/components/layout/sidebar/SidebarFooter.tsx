@@ -13,8 +13,9 @@ export function SidebarFooter({ isOpen, onLogout }: { isOpen: boolean; onLogout:
         variant="ghost"
         onClick={onLogout}
         aria-label={t('nav.signOut')}
-        className={`flex items-center w-full rounded-xl py-3.5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-200 group ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center px-0'
-          }`}
+        className={`flex items-center w-full rounded-xl py-3.5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-200 group ${
+          isOpen ? 'justify-start gap-4 px-4' : 'justify-center px-0'
+        }`}
       >
         <LogOut
           size={20}

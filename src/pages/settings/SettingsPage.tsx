@@ -61,10 +61,7 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader
-        title={t('settings.title')}
-        description={t('settings.description')}
-      />
+      <PageHeader title={t('settings.title')} description={t('settings.description')} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-16">
         <GeneralSettingsSection

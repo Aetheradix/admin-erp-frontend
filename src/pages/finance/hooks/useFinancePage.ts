@@ -17,19 +17,25 @@ const CATEGORIES = [
   'Office Supplies',
 ];
 
+const STATUSES = ['All', 'Pending', 'Approved', 'Rejected'];
+
 export const useFinancePage = () => {
   const { data: requests = [], isLoading } = useGetReimbursementsQuery();
 
   const [createReimbursement] = useCreateReimbursementMutation();
-
   const [updateReimbursementStatus] = useUpdateReimbursementStatusMutation();
 
   const [showForm, setShowForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeStatus, setActiveStatus] = useState('All');
 
-  const filteredRequests = requests.filter(
-    (r: Reimbursement) => activeCategory === 'All' || r.category === activeCategory
-  );
+  const filteredRequests = requests.filter((r: Reimbursement) => {
+    const matchesCategory = activeCategory === 'All' || r.category === activeCategory;
+
+    const matchesStatus = activeStatus === 'All' || r.status === activeStatus;
+
+    return matchesCategory && matchesStatus;
+  });
 
   const handleRequestSubmit = async (data: Partial<Reimbursement>) => {
     try {
@@ -120,6 +126,9 @@ export const useFinancePage = () => {
     activeCategory,
     setActiveCategory,
     CATEGORIES,
+    activeStatus,
+    setActiveStatus,
+    STATUSES,
     handleRequestSubmit,
     handleApprove,
     handleReject,

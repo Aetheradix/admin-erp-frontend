@@ -155,7 +155,6 @@
 }
 
 @layer base {
-
   button:not([aria-label]),
   a:not([aria-label]):has(svg) {
     /* Accessibility marker: Ensure icon-buttons have aria-labels */
@@ -300,9 +299,8 @@
 }
 
 @layer components {
-
   /* Blog DataTable Customizations */
-  .blog-datatable .ant-table-thead>tr>th {
+  .blog-datatable .ant-table-thead > tr > th {
     background: transparent !important;
     color: var(--muted) !important;
     font-size: 10px !important;
@@ -313,16 +311,16 @@
     border-bottom: 1px solid var(--border-subtle) !important;
   }
 
-  .blog-datatable .ant-table-tbody>tr {
+  .blog-datatable .ant-table-tbody > tr {
     transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
   }
 
-  .blog-datatable .ant-table-tbody>tr:hover>td {
+  .blog-datatable .ant-table-tbody > tr:hover > td {
     background-color: var(--surface-subtle) !important;
   }
 
-  .blog-datatable .ant-table-tbody>tr>td {
+  .blog-datatable .ant-table-tbody > tr > td {
     padding: 1.25rem 1rem !important;
     border: none !important;
   }

@@ -6,27 +6,27 @@ import fr from './locales/fr.json';
 import de from './locales/de.json';
 
 export const LANGUAGE_MAP: Record<string, string> = {
-    'English (US)': 'en',
-    'English (UK)': 'en',
-    Spanish: 'es',
-    French: 'fr',
-    German: 'de',
+  'English (US)': 'en',
+  'English (UK)': 'en',
+  Spanish: 'es',
+  French: 'fr',
+  German: 'de',
 };
 
 const resources = {
-    en: { translation: en },
-    es: { translation: es },
-    fr: { translation: fr },
-    de: { translation: de },
+  en: { translation: en },
+  es: { translation: es },
+  fr: { translation: fr },
+  de: { translation: de },
 };
 
 i18n.use(initReactI18next).init({
-    resources,
-    lng: 'en',
-    fallbackLng: 'en',
-    interpolation: {
-        escapeValue: false,
-    },
+  resources,
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
 });
 
 export default i18n;

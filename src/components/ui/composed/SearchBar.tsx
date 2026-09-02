@@ -91,7 +91,10 @@ export const SearchBar = ({
             'transition-all duration-300 cursor-pointer group'
           )}
         >
-          <Search size={16} className="text-muted shrink-0 group-hover:text-primary transition-colors" />
+          <Search
+            size={16}
+            className="text-muted shrink-0 group-hover:text-primary transition-colors"
+          />
           <span className="text-sm text-muted font-medium truncate flex-1 text-left">
             Search features, documents, staff...
           </span>
@@ -147,9 +150,7 @@ export const SearchBar = ({
                   <p className="text-muted text-sm font-medium">
                     No results for "<span className="text-foreground">{query}</span>"
                   </p>
-                  <p className="text-muted/60 text-xs mt-1">
-                    Try a different search term
-                  </p>
+                  <p className="text-muted/60 text-xs mt-1">Try a different search term</p>
                 </div>
               ) : (
                 CATEGORY_ORDER.map((cat) => {
@@ -158,9 +159,7 @@ export const SearchBar = ({
 
                   return (
                     <div key={cat} className="global-search-group">
-                      <p className="global-search-group-label">
-                        {CATEGORY_LABELS[cat] || cat}
-                      </p>
+                      <p className="global-search-group-label">{CATEGORY_LABELS[cat] || cat}</p>
                       {items.map((item) => {
                         flatIdx++;
                         const idx = flatIdx;
@@ -197,7 +196,10 @@ export const SearchBar = ({
                               )}
                             </div>
                             {isActive && (
-                              <CornerDownLeft size={13} className="text-primary shrink-0 opacity-50" />
+                              <CornerDownLeft
+                                size={13}
+                                className="text-primary shrink-0 opacity-50"
+                              />
                             )}
                           </button>
                         );
