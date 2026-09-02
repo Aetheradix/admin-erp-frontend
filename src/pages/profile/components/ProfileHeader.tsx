@@ -26,12 +26,12 @@ export const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   return (
     <div className="bg-surface-elevated rounded-3xl border border-border-subtle shadow-soft overflow-hidden">
-      <div className="p-8 sm:p-10 border-b border-border-subtle bg-gradient-to-r from-surface-subtle via-white to-primary-soft/20 relative">
+      <div className="p-8 sm:p-10 border-b border-border-subtle bg-gradient-to-r from-surface-subtle via-surface-elevated to-primary-soft/20 relative">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           {/* Avatar & Info */}
           <div className="flex items-center gap-6">
             <div className="relative group/avatar">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-primary/10 flex items-center justify-center text-primary text-3xl font-black">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-surface-elevated shadow-lg overflow-hidden bg-primary/10 flex items-center justify-center text-primary text-3xl font-black">
                 {user.image ? (
                   <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
@@ -40,7 +40,7 @@ export const ProfileHeader = ({
               </div>
               <button
                 onClick={onStartEdit}
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer border-2 border-white"
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer border-2 border-surface-elevated"
                 title="Change picture / Edit profile"
               >
                 <Camera size={14} />
@@ -102,9 +102,8 @@ export const ProfileHeader = ({
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`pb-3 text-sm font-extrabold capitalize tracking-wide transition-all relative cursor-pointer ${
-                activeTab === tab ? 'text-primary' : 'text-muted hover:text-foreground'
-              }`}
+              className={`pb-3 text-sm font-extrabold capitalize tracking-wide transition-all relative cursor-pointer ${activeTab === tab ? 'text-primary' : 'text-muted hover:text-foreground'
+                }`}
             >
               {tab}
               {activeTab === tab && (

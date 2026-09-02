@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 
 export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background text-foreground">
       <Toast />
 
       {/* Left Side - Dark Hero Section */}
@@ -78,15 +78,15 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
         </div>
       </div>
 
-      {/* Right Side - Scrollable Form Section (Fixes text overlay bug) */}
-      <div className="flex flex-col justify-between min-h-screen p-8 sm:p-12 bg-white overflow-y-auto">
+      {/* Right Side - Scrollable Form Section (Theme Aware) */}
+      <div className="flex flex-col justify-between min-h-screen p-8 sm:p-12 bg-background text-foreground overflow-y-auto border-l border-border-subtle">
         <div className="w-full max-w-md mx-auto my-auto">
           {/* Mobile Logo */}
           <div className="mb-10 lg:hidden flex items-center gap-3">
-            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center p-2">
-              <ARXLogo className="w-full h-full text-white" />
+            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center p-2 border border-primary/20">
+              <ARXLogo className="w-full h-full text-primary" />
             </div>
-            <span className="text-black font-black text-xl tracking-tighter">AetherERP</span>
+            <span className="text-foreground font-black text-xl tracking-tighter">AetherERP</span>
           </div>
 
           <motion.div
@@ -94,7 +94,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl sm:text-4xl font-black text-black mb-2 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-foreground mb-2 tracking-tight">
               {title}
             </h2>
             {subtitle && (
@@ -107,12 +107,12 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
           </motion.div>
         </div>
 
-        {/* Bottom Logo Cloud (Placed in normal DOM flow to prevent text overlays) */}
-        <div className="w-full hidden lg:flex flex-col items-center pt-8 mt-8 border-t border-border-subtle/50">
+        {/* Bottom Logo Cloud */}
+        <div className="w-full hidden lg:flex flex-col items-center pt-8 mt-8 border-t border-border-subtle">
           <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em] mb-4">
             Backed By the Best
           </p>
-          <div className="flex items-center justify-center gap-8 opacity-30 grayscale saturate-0">
+          <div className="flex items-center justify-center gap-8 opacity-40 grayscale saturate-0 text-muted">
             <span className="font-black text-sm italic tracking-tighter">LOGOIPSUM</span>
             <span className="font-black text-sm italic tracking-tighter uppercase">Generic</span>
             <span className="font-black text-sm italic tracking-tighter">LOGO</span>

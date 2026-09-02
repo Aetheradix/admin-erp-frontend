@@ -29,19 +29,6 @@ const LoginPage = () => {
   const [requestOTP, { isLoading: isOtpRequestLoading }] = useRequestOTPMutation();
   const [loginWithOTP, { isLoading: isOtpLoginLoading }] = useLoginWithOTPMutation();
 
-  // const handlePasswordLogin = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   try {
-  //     //authLogin handles the actual mutation and state update
-  //     await authLogin({ email, password });
-
-  //     navigate('/');
-  //   } catch (err: unknown) {
-  //     console.error('Login failed', err);
-  //     showToast({ severity: 'error', summary: 'Error', detail: (err as { data?: { message?: string } }).data?.message || 'Login failed', life: 3000 });
-  //   }
-  // };
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
@@ -78,9 +65,7 @@ const LoginPage = () => {
     }
 
     try {
-      // authLogin handles the actual mutation and state update
       await authLogin({ email, password });
-
       navigate('/');
     } catch (err: unknown) {
       console.error('Login failed', err);
@@ -92,6 +77,7 @@ const LoginPage = () => {
       });
     }
   };
+
   const handleRequestOTP = async () => {
     try {
       await requestOTP({ email }).unwrap();
@@ -117,7 +103,6 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const response = await loginWithOTP({ email, otp }).unwrap();
-      // Manual update since context login only takes credentials for password login currently
       if (response && response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
@@ -140,16 +125,22 @@ const LoginPage = () => {
           : "WE'LL SEND A SECURE CODE TO YOUR REGISTERED EMAIL."
       }
     >
-      <div className="flex bg-surface-subtle p-1 rounded-2xl mb-8">
+      <div className="flex bg-surface-subtle p-1 rounded-2xl mb-8 border border-border-subtle">
         <button
           onClick={() => setLoginMode('password')}
-          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'password' ? 'bg-white shadow-soft text-primary' : 'text-muted hover:text-foreground'}`}
+          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'password'
+              ? 'bg-background shadow-sm text-primary border border-border-subtle'
+              : 'text-muted hover:text-foreground'
+            }`}
         >
           PASSWORD
         </button>
         <button
           onClick={() => setLoginMode('otp')}
-          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'otp' ? 'bg-white shadow-soft text-primary' : 'text-muted hover:text-foreground'}`}
+          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'otp'
+              ? 'bg-background shadow-sm text-primary border border-border-subtle'
+              : 'text-muted hover:text-foreground'
+            }`}
         >
           SECURE OTP
         </button>
@@ -179,7 +170,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
               >
                 {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
               </button>
@@ -222,7 +213,7 @@ const LoginPage = () => {
                   type="button"
                   onClick={handleRequestOTP}
                   disabled={!email || isOtpRequestLoading}
-                  className="absolute right-2 top-2 bottom-2 px-4 rounded-xl bg-black text-white text-[10px] font-black tracking-widest hover:bg-black/90 disabled:opacity-50 transition-all"
+                  className="absolute right-2 top-2 bottom-2 px-4 rounded-xl bg-primary text-white text-[10px] font-black tracking-widest hover:bg-primary/90 disabled:opacity-50 transition-all"
                 >
                   {isOtpRequestLoading ? 'SENDING...' : 'SEND CODE'}
                 </button>

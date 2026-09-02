@@ -37,7 +37,7 @@ export const OverviewTab = ({ user }: OverviewTabProps) => {
         <div className="bg-surface-subtle/50 p-6 rounded-2xl border border-border-subtle flex flex-col gap-4">
           <h4 className="text-xs font-black text-foreground uppercase tracking-wider">Manager</h4>
           {user.manager ? (
-            <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-border-subtle">
+            <div className="flex items-center gap-4 bg-surface-elevated p-4 rounded-xl border border-border-subtle">
               {user.manager.image ? (
                 <img
                   src={user.manager.image}

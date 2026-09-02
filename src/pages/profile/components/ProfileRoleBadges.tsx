@@ -45,7 +45,7 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
       ))}
 
       {isAddingRole ? (
-        <div className="flex items-center gap-1 bg-white border border-primary rounded-full px-2 py-0.5 shadow-sm animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center gap-1 bg-surface-elevated border border-primary rounded-full px-2 py-0.5 shadow-sm animate-in fade-in zoom-in-95 duration-150">
           <input
             type="text"
             value={newRoleInput}
@@ -55,7 +55,7 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
               if (e.key === 'Escape') setIsAddingRole(false);
             }}
             placeholder="Role name..."
-            className="text-xs font-semibold px-2 py-0.5 outline-none w-28 text-foreground"
+            className="text-xs font-semibold px-2 py-0.5 outline-none w-28 text-foreground bg-transparent"
             autoFocus
           />
           <button

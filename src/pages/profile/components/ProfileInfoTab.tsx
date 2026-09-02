@@ -149,7 +149,7 @@ export const ProfileInfoTab = ({
       </div>
 
       {/* Work Hours & Status Banner */}
-      <div className="bg-gradient-to-r from-primary-soft/30 via-white to-surface-subtle p-6 rounded-2xl border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-primary-soft/30 via-surface-elevated to-surface-subtle p-6 rounded-2xl border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
             <Clock size={20} />

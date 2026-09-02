@@ -18,7 +18,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
           {/* Line Leader (if exists) */}
           {user.lineLeader && (
             <>
-              <div className="w-full bg-white p-4 rounded-2xl border border-border-subtle shadow-xs flex items-center justify-between">
+              <div className="w-full bg-surface-elevated p-4 rounded-2xl border border-border-subtle shadow-xs flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <img
                     src={
@@ -51,7 +51,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
           {/* Direct Manager (if exists) */}
           {user.manager && (
             <>
-              <div className="w-full bg-white p-4 rounded-2xl border border-border-subtle shadow-xs flex items-center justify-between">
+              <div className="w-full bg-surface-elevated p-4 rounded-2xl border border-border-subtle shadow-xs flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <img
                     src={
@@ -80,7 +80,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
           )}
 
           {/* Current User Node */}
-          <div className="w-full bg-gradient-to-r from-primary-soft/40 to-white p-5 rounded-2xl border-2 border-primary shadow-soft flex items-center justify-between">
+          <div className="w-full bg-gradient-to-r from-primary-soft/40 to-surface-elevated p-5 rounded-2xl border-2 border-primary shadow-soft flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full border-2 border-primary shadow-md overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-black">
                 {user.image ? (
@@ -112,7 +112,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
                   {user.teamMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="bg-white p-3 rounded-xl border border-border-subtle flex items-center gap-3"
+                      className="bg-surface-elevated p-3 rounded-xl border border-border-subtle flex items-center gap-3"
                     >
                       <img
                         src={
