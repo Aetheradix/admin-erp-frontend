@@ -5,16 +5,10 @@ import {
   MapPin,
 } from 'lucide-react';
 
-interface ResourceCardProps {
-  resource: {
-    id: number;
-    name: string;
-    type: string;
-    location?: string;
-    capacity?: number | null;
-    description?: string;
-  };
+import type { Resource } from '../types/index.types';
 
+interface ResourceCardProps {
+  resource: Resource;
   onBook: () => void;
 }
 

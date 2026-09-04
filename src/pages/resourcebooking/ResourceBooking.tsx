@@ -10,9 +10,11 @@ import {
   useGetAllResourceBookingsQuery,
 } from '../../store/api/resourceBookingSlice';
 
+import type { Resource } from './types/index.types';
+
 const ResourceBookingPage = () => {
   const [bookingOpen, setBookingOpen] = useState(false);
-  const [selectedResource, setSelectedResource] = useState<any>(null);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [search, setSearch] = useState('');
 
   const {
@@ -20,11 +22,12 @@ const ResourceBookingPage = () => {
     isLoading: myBookingsLoading,
   } = useGetMyResourceBookingsQuery();
 
+  // Prefixed with underscore to suppress TS6133 unused variable warning
   const {
-    data: allBookings = [],
+    data: _allBookings = [],
   } = useGetAllResourceBookingsQuery();
 
-  const resources = [
+  const resources: Resource[] = [
     {
       id: 1,
       name: 'Conference Room A',
@@ -32,6 +35,7 @@ const ResourceBookingPage = () => {
       location: '2nd Floor',
       capacity: 10,
       description: 'Large meeting room with display and whiteboard.',
+      status: 'Active',
     },
     {
       id: 2,
@@ -40,6 +44,7 @@ const ResourceBookingPage = () => {
       location: 'IT Department',
       capacity: null,
       description: 'HD projector for presentations and meetings.',
+      status: 'Active',
     },
     {
       id: 3,
@@ -48,10 +53,11 @@ const ResourceBookingPage = () => {
       location: 'Parking Area',
       capacity: 5,
       description: 'Company sedan for official business travel.',
+      status: 'Active',
     },
   ];
 
-  const openBooking = (resource: any = null) => {
+  const openBooking = (resource: Resource | null = null) => {
     setSelectedResource(resource);
     setBookingOpen(true);
   };

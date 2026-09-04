@@ -9,13 +9,13 @@ import {
   useCancelResourceBookingMutation,
   useDeleteResourceBookingMutation,
   useGetResourceBookingStatsQuery,
+  type ResourceBooking,
 } from '@/store/api/resourceBookingSlice';
 
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 import type {
   Resource,
-  ResourceBooking,
   ResourceBookingStatus,
   CreateResourceBookingRequest,
 } from '../types/index.types';
@@ -107,55 +107,51 @@ export const useResourceBookingPage = () => {
   // Filter My Bookings
   // ============================================================
 
-  const filteredMyBookings = myBookings.filter(
-    (booking: ResourceBooking) => {
-      const searchValue = search.toLowerCase();
+  const filteredMyBookings = myBookings.filter((booking) => {
+    const searchValue = search.toLowerCase();
 
-      const matchesSearch =
-        !search ||
-        booking.resource_name
-          ?.toLowerCase()
-          .includes(searchValue) ||
-        booking.purpose
-          ?.toLowerCase()
-          .includes(searchValue);
+    const matchesSearch =
+      !search ||
+      booking.resource_name
+        ?.toLowerCase()
+        .includes(searchValue) ||
+      booking.purpose
+        ?.toLowerCase()
+        .includes(searchValue);
 
-      const matchesStatus =
-        activeStatus === 'All' ||
-        booking.status === activeStatus;
+    const matchesStatus =
+      activeStatus === 'All' ||
+      booking.status === activeStatus;
 
-      return matchesSearch && matchesStatus;
-    }
-  );
+    return matchesSearch && matchesStatus;
+  });
 
 
   // ============================================================
   // Filter All Bookings
   // ============================================================
 
-  const filteredAllBookings = allBookings.filter(
-    (booking: ResourceBooking) => {
-      const searchValue = search.toLowerCase();
+  const filteredAllBookings = allBookings.filter((booking) => {
+    const searchValue = search.toLowerCase();
 
-      const matchesSearch =
-        !search ||
-        booking.resource_name
-          ?.toLowerCase()
-          .includes(searchValue) ||
-        booking.username
-          ?.toLowerCase()
-          .includes(searchValue) ||
-        booking.purpose
-          ?.toLowerCase()
-          .includes(searchValue);
+    const matchesSearch =
+      !search ||
+      booking.resource_name
+        ?.toLowerCase()
+        .includes(searchValue) ||
+      booking.username
+        ?.toLowerCase()
+        .includes(searchValue) ||
+      booking.purpose
+        ?.toLowerCase()
+        .includes(searchValue);
 
-      const matchesStatus =
-        activeStatus === 'All' ||
-        booking.status === activeStatus;
+    const matchesStatus =
+      activeStatus === 'All' ||
+      booking.status === activeStatus;
 
-      return matchesSearch && matchesStatus;
-    }
-  );
+    return matchesSearch && matchesStatus;
+  });
 
 
   // ============================================================
