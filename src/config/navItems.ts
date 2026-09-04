@@ -145,6 +145,7 @@
 import {
   BarChart3,
   Building2,
+  CalendarDays,
   CheckSquare,
   CreditCard,
   LayoutDashboard,
@@ -155,6 +156,7 @@ import {
   Image,
   type LucideIcon,
 } from 'lucide-react';
+
 
 export type UserRole = 'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee';
 
@@ -233,6 +235,37 @@ export const navItems: NavItem[] = [
     description: 'Task management',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
   },
+  {
+  label: 'Resource Booking',
+  path: '/resource-booking',
+  icon: CalendarDays,
+  category: 'MANAGEMENT',
+  description: 'Book and manage company resources',
+  roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+  children: [
+    {
+      label: 'Book Resource',
+      path: '/resource-booking',
+      roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    },
+    {
+      label: 'My Bookings',
+      path: '/resource-booking/my-bookings',
+      roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    },
+    {
+      label: 'Calendar',
+      path: '/resource-booking/calendar',
+      roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    },
+    {
+      label: 'All Bookings',
+      path: '/resource-booking/all',
+      roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+    },
+  ],
+},
+
   {
     label: 'Finance',
     path: '/finance',
