@@ -25,7 +25,9 @@ const TeamsModule = lazy(() => import('@/pages/teams'));
 const UsersModule = lazy(() => import('@/pages/users'));
 const TasksModule = lazy(() => import('@/pages/tasks'));
 const InventoryModule = lazy(() => import('@/pages/inventory'));
-
+const ResourceBookingModule = lazy(
+  () => import('@/pages/resourcebooking')
+);
 const ContentLoadingFallback = () => (
   <div className="w-full h-64 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
     <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -38,6 +40,7 @@ const ContentLoadingFallback = () => (
 );
 
 const AppFeature = () => {
+  
   const { user } = useAuth();
   const { isLoading } = useGetMyPermissionsQuery(undefined, { skip: !user });
 
@@ -83,6 +86,7 @@ const AppFeature = () => {
 
       const lower = feature.toLowerCase();
       let permKey: string | null = null;
+      if (lower === 'resource booking') permKey = 'resource_booking';
       if (lower === 'organization' || lower === 'teams' || lower === 'team') permKey = 'users';
       else if (lower === 'tasks') permKey = 'projects';
       else if (lower === 'finance') permKey = 'finance';
@@ -105,12 +109,23 @@ const AppFeature = () => {
       'Finance',
       'Grievances',
       'Guest Pass',
+      'Resouce Booking'
     ];
     for (const f of features) {
       map[f] = check(f);
     }
+
+    console.log('🔍 [allowedMap Calculation]:', {
+      userDesignation: user?.designation,
+      currentUserRoleName,
+      roleObjFound: !!roleObj,
+      visibleSections,
+      resourceBookingAllowed: map['Resource Booking'],
+    });
     return map;
   }, [user]);
+
+  
 
   if (isLoading) return <ContentLoadingFallback />;
 
@@ -128,6 +143,16 @@ const AppFeature = () => {
           path="/blogs/*"
           element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />}
         />
+        <Route
+  path="/resource-booking/*"
+  element={
+    allowedMap['Resource Booking'] ?? true ? ( // 👈 Default to true if undefined
+      <ResourceBookingModule />
+    ) : (
+      <Navigate to="/" replace />
+    )
+  }
+/>
         <Route
           path="/gallery/*"
           element={allowedMap['Gallery'] ? <GalleryModule /> : <Navigate to="/" replace />}
