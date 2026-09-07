@@ -8,8 +8,18 @@ import { AttendanceHistoryTable } from './components/AttendanceHistoryTable';
 import { Clock, Calendar as CalendarIcon, BarChart3 } from 'lucide-react';
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 export const CheckInPage: React.FC = () => {
@@ -49,18 +59,23 @@ export const CheckInPage: React.FC = () => {
       {/* Navigation Tabs Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border-subtle pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Attendance Hub</h1>
-          <p className="text-xs font-bold text-muted mt-0.5">Track your daily punches, breaks, and monthly attendance records</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            Attendance Hub
+          </h1>
+          <p className="text-xs font-bold text-muted mt-0.5">
+            Track your daily punches, breaks, and monthly attendance records
+          </p>
         </div>
 
         {/* Tab Buttons */}
         <div className="flex items-center gap-1.5 p-1.5 bg-surface-elevated rounded-2xl border border-border-subtle shadow-sm">
           <button
             onClick={() => setActiveTab('today')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${activeTab === 'today'
-              ? 'bg-primary text-white shadow-md'
-              : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-              }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === 'today'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+            }`}
           >
             <Clock size={15} />
             <span>Today's Punch</span>
@@ -68,10 +83,11 @@ export const CheckInPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('calendar')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${activeTab === 'calendar'
-              ? 'bg-primary text-white shadow-md'
-              : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-              }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === 'calendar'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+            }`}
           >
             <CalendarIcon size={15} />
             <span>Calendar</span>
@@ -79,10 +95,11 @@ export const CheckInPage: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${activeTab === 'history'
-              ? 'bg-primary text-white shadow-md'
-              : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-              }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === 'history'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+            }`}
           >
             <BarChart3 size={15} />
             <span>History & Stats</span>
@@ -117,7 +134,11 @@ export const CheckInPage: React.FC = () => {
             <div className="lg:col-span-7 xl:col-span-8">
               <DailyTimelineCard
                 selectedDate={new Date()}
-                record={monthRecords.find((r) => r.date === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`)}
+                record={monthRecords.find(
+                  (r) =>
+                    r.date ===
+                    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`
+                )}
               />
             </div>
             <div className="lg:col-span-5 xl:col-span-4">
@@ -144,10 +165,7 @@ export const CheckInPage: React.FC = () => {
             />
           </div>
           <div className="lg:col-span-5 xl:col-span-4">
-            <DailyTimelineCard
-              selectedDate={selectedDate}
-              record={selectedDayRecord}
-            />
+            <DailyTimelineCard selectedDate={selectedDate} record={selectedDayRecord} />
           </div>
         </div>
       )}

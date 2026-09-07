@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 export type ARXLogoProps = React.SVGProps<SVGSVGElement> & {
   isCheckedIn?: boolean;
@@ -8,7 +8,7 @@ export type ARXLogoProps = React.SVGProps<SVGSVGElement> & {
 export const ARXLogo: React.FC<ARXLogoProps> = ({
   isCheckedIn = false,
   isOnBreak = false,
-  className = "",
+  className = '',
   ...props
 }) => {
   const [isPulsingGreen, setIsPulsingGreen] = React.useState(false);
@@ -44,14 +44,8 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
       className={className}
       {...props}
     >
-      <g
-        id="layer1"
-        transform="translate(-0.407122,-6.296154)"
-      >
-        <g
-          id="g66"
-          transform="translate(-35.86566,-46.256711)"
-        >
+      <g id="layer1" transform="translate(-0.407122,-6.296154)">
+        <g id="g66" transform="translate(-35.86566,-46.256711)">
           {/* Status keyframes: green pulse (5-sec check-in) & yellow pulse (on break) */}
           <style>
             {`
@@ -77,17 +71,20 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
             id="path60"
             className={
               isOnBreak
-                ? "arx-status-yellow"
+                ? 'arx-status-yellow'
                 : isCheckedIn && isPulsingGreen
-                  ? "arx-status-green"
-                  : ""
+                  ? 'arx-status-green'
+                  : ''
             }
             style={{
-              fill: isOnBreak ? "#EAB308" : isCheckedIn ? "#22C55E" : "#FFFFFF",
+              fill: isOnBreak ? '#EAB308' : isCheckedIn ? '#22C55E' : '#FFFFFF',
               fillOpacity: 1,
               strokeWidth: 0.264583,
-              filter: isCheckedIn && !isPulsingGreen && !isOnBreak ? "drop-shadow(0 0 3px rgba(34, 197, 94, 0.7))" : undefined,
-              transition: "fill 0.4s ease, filter 0.4s ease",
+              filter:
+                isCheckedIn && !isPulsingGreen && !isOnBreak
+                  ? 'drop-shadow(0 0 3px rgba(34, 197, 94, 0.7))'
+                  : undefined,
+              transition: 'fill 0.4s ease, filter 0.4s ease',
             }}
             d="m 104.30216,102.19738 -17.336926,29.55995 17.336926,-8.92452 17.33641,8.92452 z"
           />
@@ -96,7 +93,7 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
           <path
             id="path61"
             style={{
-              fill: "#FFFFFF",
+              fill: '#FFFFFF',
               fillOpacity: 1,
               strokeWidth: 0.264583,
             }}
@@ -107,7 +104,7 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
           <path
             id="path62"
             style={{
-              fill: "#FFFFFF",
+              fill: '#FFFFFF',
               fillOpacity: 1,
               strokeWidth: 0.264583,
             }}
@@ -118,7 +115,7 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
           <path
             id="path51"
             style={{
-              fill: "#FFFFFF",
+              fill: '#FFFFFF',
               fillOpacity: 1,
               strokeWidth: 0.264583,
             }}
@@ -129,7 +126,7 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
           <path
             id="path65"
             style={{
-              fill: "#FFFFFF",
+              fill: '#FFFFFF',
               fillOpacity: 1,
               strokeWidth: 0.264583,
             }}
@@ -140,7 +137,7 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
           <path
             id="path66"
             style={{
-              fill: "#FFFFFF",
+              fill: '#FFFFFF',
               fillOpacity: 1,
               strokeWidth: 0.264583,
             }}

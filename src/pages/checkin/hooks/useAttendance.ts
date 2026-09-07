@@ -9,10 +9,7 @@ import {
 } from '@/store/api/attendanceSlice';
 import { useSubmitMoodMutation } from '@/store/api/moodSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import {
-  generateMonthAttendanceRecords,
-  calculateMonthSummary,
-} from '../utils/attendanceUtils';
+import { generateMonthAttendanceRecords, calculateMonthSummary } from '../utils/attendanceUtils';
 
 export const useAttendance = () => {
   const [time, setTime] = useState(new Date());

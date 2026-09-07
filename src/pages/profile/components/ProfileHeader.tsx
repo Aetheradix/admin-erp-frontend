@@ -102,8 +102,9 @@ export const ProfileHeader = ({
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`pb-3 text-sm font-extrabold capitalize tracking-wide transition-all relative cursor-pointer ${activeTab === tab ? 'text-primary' : 'text-muted hover:text-foreground'
-                }`}
+              className={`pb-3 text-sm font-extrabold capitalize tracking-wide transition-all relative cursor-pointer ${
+                activeTab === tab ? 'text-primary' : 'text-muted hover:text-foreground'
+              }`}
             >
               {tab}
               {activeTab === tab && (

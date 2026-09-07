@@ -128,19 +128,21 @@ const LoginPage = () => {
       <div className="flex bg-surface-subtle p-1 rounded-2xl mb-8 border border-border-subtle">
         <button
           onClick={() => setLoginMode('password')}
-          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'password'
+          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${
+            loginMode === 'password'
               ? 'bg-background shadow-sm text-primary border border-border-subtle'
               : 'text-muted hover:text-foreground'
-            }`}
+          }`}
         >
           PASSWORD
         </button>
         <button
           onClick={() => setLoginMode('otp')}
-          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${loginMode === 'otp'
+          className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${
+            loginMode === 'otp'
               ? 'bg-background shadow-sm text-primary border border-border-subtle'
               : 'text-muted hover:text-foreground'
-            }`}
+          }`}
         >
           SECURE OTP
         </button>

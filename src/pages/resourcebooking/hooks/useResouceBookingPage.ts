@@ -27,32 +27,21 @@ export const useResourceBookingPage = () => {
 
   const [showForm, setShowForm] = useState(false);
 
-  const [selectedResource, setSelectedResource] =
-    useState<Resource | null>(null);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
-  const [selectedBooking, setSelectedBooking] =
-    useState<ResourceBooking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<ResourceBooking | null>(null);
 
   const [search, setSearch] = useState('');
 
-  const [activeResourceType, setActiveResourceType] =
-    useState('All');
+  const [activeResourceType, setActiveResourceType] = useState('All');
 
-  const [activeStatus, setActiveStatus] =
-    useState('All');
-
+  const [activeStatus, setActiveStatus] = useState('All');
 
   // ============================================================
   // Filters
   // ============================================================
 
-  const RESOURCE_TYPES = [
-    'All',
-    'Room',
-    'Equipment',
-    'Vehicle',
-    'Other',
-  ];
+  const RESOURCE_TYPES = ['All', 'Room', 'Equipment', 'Vehicle', 'Other'];
 
   const STATUSES: Array<'All' | ResourceBookingStatus> = [
     'All',
@@ -62,7 +51,6 @@ export const useResourceBookingPage = () => {
     'Cancelled',
     'Completed',
   ];
-
 
   // ============================================================
   // Queries
@@ -80,28 +68,17 @@ export const useResourceBookingPage = () => {
     refetch: refetchMyBookings,
   } = useGetMyResourceBookingsQuery();
 
-  const {
-    data: stats,
-    isLoading: statsLoading,
-  } = useGetResourceBookingStatsQuery();
-
+  const { data: stats, isLoading: statsLoading } = useGetResourceBookingStatsQuery();
 
   // ============================================================
   // Mutations
   // ============================================================
 
-  const [createResourceBooking, {
-    isLoading: isCreating,
-  }] = useCreateResourceBookingMutation();
+  const [createResourceBooking, { isLoading: isCreating }] = useCreateResourceBookingMutation();
 
-  const [cancelResourceBooking, {
-    isLoading: isCancelling,
-  }] = useCancelResourceBookingMutation();
+  const [cancelResourceBooking, { isLoading: isCancelling }] = useCancelResourceBookingMutation();
 
-  const [deleteResourceBooking, {
-    isLoading: isDeleting,
-  }] = useDeleteResourceBookingMutation();
-
+  const [deleteResourceBooking, { isLoading: isDeleting }] = useDeleteResourceBookingMutation();
 
   // ============================================================
   // Filter My Bookings
@@ -112,20 +89,13 @@ export const useResourceBookingPage = () => {
 
     const matchesSearch =
       !search ||
-      booking.resource_name
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      booking.purpose
-        ?.toLowerCase()
-        .includes(searchValue);
+      booking.resource_name?.toLowerCase().includes(searchValue) ||
+      booking.purpose?.toLowerCase().includes(searchValue);
 
-    const matchesStatus =
-      activeStatus === 'All' ||
-      booking.status === activeStatus;
+    const matchesStatus = activeStatus === 'All' || booking.status === activeStatus;
 
     return matchesSearch && matchesStatus;
   });
-
 
   // ============================================================
   // Filter All Bookings
@@ -136,35 +106,23 @@ export const useResourceBookingPage = () => {
 
     const matchesSearch =
       !search ||
-      booking.resource_name
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      booking.username
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      booking.purpose
-        ?.toLowerCase()
-        .includes(searchValue);
+      booking.resource_name?.toLowerCase().includes(searchValue) ||
+      booking.username?.toLowerCase().includes(searchValue) ||
+      booking.purpose?.toLowerCase().includes(searchValue);
 
-    const matchesStatus =
-      activeStatus === 'All' ||
-      booking.status === activeStatus;
+    const matchesStatus = activeStatus === 'All' || booking.status === activeStatus;
 
     return matchesSearch && matchesStatus;
   });
-
 
   // ============================================================
   // Open Booking Form
   // ============================================================
 
-  const openBookingForm = (
-    resource: Resource | null = null
-  ) => {
+  const openBookingForm = (resource: Resource | null = null) => {
     setSelectedResource(resource);
     setShowForm(true);
   };
-
 
   // ============================================================
   // Close Booking Form
@@ -175,14 +133,11 @@ export const useResourceBookingPage = () => {
     setSelectedResource(null);
   };
 
-
   // ============================================================
   // Create Booking
   // ============================================================
 
-  const handleBookingSubmit = async (
-    data: CreateResourceBookingRequest
-  ) => {
+  const handleBookingSubmit = async (data: CreateResourceBookingRequest) => {
     try {
       await createResourceBooking(data).unwrap();
 
@@ -194,7 +149,6 @@ export const useResourceBookingPage = () => {
         detail: 'Resource booking created successfully.',
         life: 3000,
       });
-
     } catch (err: unknown) {
       const apiError = err as {
         data?: {
@@ -202,22 +156,16 @@ export const useResourceBookingPage = () => {
         };
       };
 
-      console.error(
-        'Failed to create resource booking:',
-        err
-      );
+      console.error('Failed to create resource booking:', err);
 
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          apiError.data?.message ||
-          'Failed to create resource booking.',
+        detail: apiError.data?.message || 'Failed to create resource booking.',
         life: 3000,
       });
     }
   };
-
 
   // ============================================================
   // Cancel Booking
@@ -233,7 +181,6 @@ export const useResourceBookingPage = () => {
         detail: 'Resource booking cancelled successfully.',
         life: 3000,
       });
-
     } catch (err: unknown) {
       const apiError = err as {
         data?: {
@@ -241,22 +188,16 @@ export const useResourceBookingPage = () => {
         };
       };
 
-      console.error(
-        'Failed to cancel resource booking:',
-        err
-      );
+      console.error('Failed to cancel resource booking:', err);
 
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          apiError.data?.message ||
-          'Failed to cancel resource booking.',
+        detail: apiError.data?.message || 'Failed to cancel resource booking.',
         life: 3000,
       });
     }
   };
-
 
   // ============================================================
   // Delete Booking
@@ -276,7 +217,6 @@ export const useResourceBookingPage = () => {
         detail: 'Resource booking deleted successfully.',
         life: 3000,
       });
-
     } catch (err: unknown) {
       const apiError = err as {
         data?: {
@@ -284,53 +224,36 @@ export const useResourceBookingPage = () => {
         };
       };
 
-      console.error(
-        'Failed to delete resource booking:',
-        err
-      );
+      console.error('Failed to delete resource booking:', err);
 
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          apiError.data?.message ||
-          'Failed to delete resource booking.',
+        detail: apiError.data?.message || 'Failed to delete resource booking.',
         life: 3000,
       });
     }
   };
 
-
   // ============================================================
   // Select Booking
   // ============================================================
 
-  const openBookingDetails = (
-    booking: ResourceBooking
-  ) => {
+  const openBookingDetails = (booking: ResourceBooking) => {
     setSelectedBooking(booking);
   };
-
 
   const closeBookingDetails = () => {
     setSelectedBooking(null);
   };
 
-
   // ============================================================
   // Loading State
   // ============================================================
 
-  const isLoading =
-    allBookingsLoading ||
-    myBookingsLoading ||
-    statsLoading;
+  const isLoading = allBookingsLoading || myBookingsLoading || statsLoading;
 
-  const isMutating =
-    isCreating ||
-    isCancelling ||
-    isDeleting;
-
+  const isMutating = isCreating || isCancelling || isDeleting;
 
   // ============================================================
   // Return

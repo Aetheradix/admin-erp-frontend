@@ -1,13 +1,10 @@
-import * as React from "react";
+import * as React from 'react';
 
 type SVGViewerProps = React.SVGProps<SVGSVGElement> & {
   isCheckedIn?: boolean;
 };
 
-const SVGComponent = ({
-  isCheckedIn = false,
-  ...props
-}: SVGViewerProps) => (
+const SVGComponent = ({ isCheckedIn = false, ...props }: SVGViewerProps) => (
   <svg
     width="136.05865mm"
     height="117.82993mm"
@@ -17,19 +14,13 @@ const SVGComponent = ({
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <g
-      id="layer1"
-      transform="translate(-0.407122,-6.296154)"
-    >
-      <g
-        id="g66"
-        transform="translate(-35.86566,-46.256711)"
-      >
+    <g id="layer1" transform="translate(-0.407122,-6.296154)">
+      <g id="g66" transform="translate(-35.86566,-46.256711)">
         {/* Center status triangle */}
         <path
           id="path60"
           style={{
-            fill: isCheckedIn ? "#22C55E" : "#FFFFFF",
+            fill: isCheckedIn ? '#22C55E' : '#FFFFFF',
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}
@@ -40,7 +31,7 @@ const SVGComponent = ({
         <path
           id="path61"
           style={{
-            fill: "#FFFFFF",
+            fill: '#FFFFFF',
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}
@@ -51,7 +42,7 @@ const SVGComponent = ({
         <path
           id="path62"
           style={{
-            fill: "#FFFFFF",
+            fill: '#FFFFFF',
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}
@@ -62,7 +53,7 @@ const SVGComponent = ({
         <path
           id="path51"
           style={{
-            fill: "#FFFFFF",
+            fill: '#FFFFFF',
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}
@@ -73,7 +64,7 @@ const SVGComponent = ({
         <path
           id="path65"
           style={{
-            fill: "#FFFFFF",
+            fill: '#FFFFFF',
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}
@@ -84,7 +75,7 @@ const SVGComponent = ({
         <path
           id="path66"
           style={{
-            fill: "#FFFFFF",
+            fill: '#FFFFFF',
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}

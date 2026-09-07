@@ -17,15 +17,10 @@ const ResourceBookingPage = () => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [search, setSearch] = useState('');
 
-  const {
-    data: myBookings = [],
-    isLoading: myBookingsLoading,
-  } = useGetMyResourceBookingsQuery();
+  const { data: myBookings = [], isLoading: myBookingsLoading } = useGetMyResourceBookingsQuery();
 
   // Prefixed with underscore to suppress TS6133 unused variable warning
-  const {
-    data: _allBookings = [],
-  } = useGetAllResourceBookingsQuery();
+  const { data: _allBookings = [] } = useGetAllResourceBookingsQuery();
 
   const resources: Resource[] = [
     {
@@ -73,17 +68,13 @@ const ResourceBookingPage = () => {
 
   return (
     <div className="space-y-6 p-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">
-            Resource Booking
-          </h1>
+          <h1 className="text-2xl font-semibold">Resource Booking</h1>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Book conference rooms, equipment, vehicles and other
-            company resources.
+            Book conference rooms, equipment, vehicles and other company resources.
           </p>
         </div>
 
@@ -102,16 +93,11 @@ const ResourceBookingPage = () => {
 
       {/* Resource Section */}
       <div className="space-y-4">
-
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">
-              Available Resources
-            </h2>
+            <h2 className="text-lg font-semibold">Available Resources</h2>
 
-            <p className="text-sm text-muted-foreground">
-              Select a resource to create a booking.
-            </p>
+            <p className="text-sm text-muted-foreground">Select a resource to create a booking.</p>
           </div>
 
           <div className="relative w-64">
@@ -142,42 +128,27 @@ const ResourceBookingPage = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">
-              My Upcoming Bookings
-            </h2>
+            <h2 className="text-lg font-semibold">My Upcoming Bookings</h2>
 
-            <p className="text-sm text-muted-foreground">
-              Your upcoming resource reservations.
-            </p>
+            <p className="text-sm text-muted-foreground">Your upcoming resource reservations.</p>
           </div>
         </div>
 
         <div className="rounded-xl border bg-card">
           {myBookingsLoading ? (
-            <div className="p-6 text-sm text-muted-foreground">
-              Loading bookings...
-            </div>
+            <div className="p-6 text-sm text-muted-foreground">Loading bookings...</div>
           ) : myBookings.length === 0 ? (
             <div className="p-10 text-center">
-              <p className="font-medium">
-                No upcoming bookings
-              </p>
+              <p className="font-medium">No upcoming bookings</p>
 
-              <p className="mt-1 text-sm text-muted-foreground">
-                Book a resource to see it here.
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">Book a resource to see it here.</p>
             </div>
           ) : (
             <div className="divide-y">
               {myBookings.slice(0, 5).map((booking) => (
-                <div
-                  key={booking.id}
-                  className="flex items-center justify-between p-4"
-                >
+                <div key={booking.id} className="flex items-center justify-between p-4">
                   <div>
-                    <p className="font-medium">
-                      {booking.resource_name}
-                    </p>
+                    <p className="font-medium">{booking.resource_name}</p>
 
                     <p className="text-sm text-muted-foreground">
                       {booking.purpose || 'Resource booking'}
@@ -186,22 +157,16 @@ const ResourceBookingPage = () => {
 
                   <div className="text-right">
                     <p className="text-sm font-medium">
-                      {new Date(
-                        booking.start_datetime
-                      ).toLocaleDateString()}
+                      {new Date(booking.start_datetime).toLocaleDateString()}
                     </p>
 
                     <p className="text-xs text-muted-foreground">
-                      {new Date(
-                        booking.start_datetime
-                      ).toLocaleTimeString([], {
+                      {new Date(booking.start_datetime).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
                       {' - '}
-                      {new Date(
-                        booking.end_datetime
-                      ).toLocaleTimeString([], {
+                      {new Date(booking.end_datetime).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}

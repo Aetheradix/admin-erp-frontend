@@ -22,9 +22,7 @@ const ResourceBookingSheet = ({
   resources,
   onClose,
 }: ResourceBookingSheetProps) => {
-  const [resourceId, setResourceId] = useState<number | ''>(
-    resource?.id ?? ''
-  );
+  const [resourceId, setResourceId] = useState<number | ''>(resource?.id ?? '');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -32,8 +30,7 @@ const ResourceBookingSheet = ({
   const [notes, setNotes] = useState('');
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
 
-  const [createBooking, { isLoading: creating }] =
-    useCreateResourceBookingMutation();
+  const [createBooking, { isLoading: creating }] = useCreateResourceBookingMutation();
 
   useEffect(() => {
     if (open) {
@@ -48,30 +45,22 @@ const ResourceBookingSheet = ({
   }, [open, resource]);
 
   const canCheckAvailability =
-    !!resourceId &&
-    !!date &&
-    !!startTime &&
-    !!endTime &&
-    startTime < endTime;
+    !!resourceId && !!date && !!startTime && !!endTime && startTime < endTime;
 
-  const startDatetime =
-    date && startTime ? `${date} ${startTime}:00` : '';
-  const endDatetime =
-    date && endTime ? `${date} ${endTime}:00` : '';
+  const startDatetime = date && startTime ? `${date} ${startTime}:00` : '';
+  const endDatetime = date && endTime ? `${date} ${endTime}:00` : '';
 
-  const {
-    data: availability,
-    isFetching: checkingAvailability,
-  } = useCheckResourceAvailabilityQuery(
-    {
-      resource_id: Number(resourceId),
-      start_datetime: startDatetime,
-      end_datetime: endDatetime,
-    },
-    {
-      skip: !availabilityChecked || !canCheckAvailability,
-    }
-  );
+  const { data: availability, isFetching: checkingAvailability } =
+    useCheckResourceAvailabilityQuery(
+      {
+        resource_id: Number(resourceId),
+        start_datetime: startDatetime,
+        end_datetime: endDatetime,
+      },
+      {
+        skip: !availabilityChecked || !canCheckAvailability,
+      }
+    );
 
   const handleCheckAvailability = () => {
     if (!canCheckAvailability) return;
@@ -119,11 +108,7 @@ const ResourceBookingSheet = ({
           ) : (
             <Button
               type="primary"
-              disabled={
-                !availability?.available ||
-                creating ||
-                checkingAvailability
-              }
+              disabled={!availability?.available || creating || checkingAvailability}
               loading={creating}
               onClick={handleSubmit}
             >
@@ -201,9 +186,7 @@ const ResourceBookingSheet = ({
 
         {/* Validation Error */}
         {startTime && endTime && startTime >= endTime && (
-          <p className="text-sm text-red-500">
-            End time must be after start time.
-          </p>
+          <p className="text-sm text-red-500">End time must be after start time.</p>
         )}
 
         {/* Purpose */}
@@ -231,11 +214,7 @@ const ResourceBookingSheet = ({
         {availabilityChecked && (
           <div className="pt-2">
             {checkingAvailability ? (
-              <Alert
-                type="info"
-                message="Checking availability..."
-                showIcon
-              />
+              <Alert type="info" message="Checking availability..." showIcon />
             ) : availability?.available ? (
               <Alert
                 type="success"

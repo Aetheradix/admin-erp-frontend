@@ -1,33 +1,20 @@
-import {
-  CalendarCheck,
-  Clock3,
-  CircleAlert,
-  CheckCircle2,
-} from 'lucide-react';
+import { CalendarCheck, Clock3, CircleAlert, CheckCircle2 } from 'lucide-react';
 
 interface BookingStatsProps {
   bookings: any[];
 }
 
-const BookingStats = ({
-  bookings,
-}: BookingStatsProps) => {
-
+const BookingStats = ({ bookings }: BookingStatsProps) => {
   const total = bookings.length;
 
   const confirmed = bookings.filter(
-    (booking) =>
-      booking.status?.toLowerCase() === 'confirmed'
+    (booking) => booking.status?.toLowerCase() === 'confirmed'
   ).length;
 
-  const pending = bookings.filter(
-    (booking) =>
-      booking.status?.toLowerCase() === 'pending'
-  ).length;
+  const pending = bookings.filter((booking) => booking.status?.toLowerCase() === 'pending').length;
 
   const cancelled = bookings.filter(
-    (booking) =>
-      booking.status?.toLowerCase() === 'cancelled'
+    (booking) => booking.status?.toLowerCase() === 'cancelled'
   ).length;
 
   const stats = [
@@ -67,27 +54,16 @@ const BookingStats = ({
         const Icon = stat.icon;
 
         return (
-          <div
-            key={stat.label}
-            className="rounded-xl border bg-card p-5"
-          >
+          <div key={stat.label} className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">
-                  {stat.label}
-                </p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
 
-                <p className="mt-2 text-2xl font-semibold">
-                  {stat.value}
-                </p>
+                <p className="mt-2 text-2xl font-semibold">{stat.value}</p>
               </div>
 
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}
-              >
-                <Icon
-                  className={`h-5 w-5 ${stat.color}`}
-                />
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}>
+                <Icon className={`h-5 w-5 ${stat.color}`} />
               </div>
             </div>
           </div>

@@ -88,9 +88,7 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
     getResourceBookingById: builder.query<ResourceBooking, number>({
       query: (id) => `/schedule/${id}`,
 
-      transformResponse: (
-        response: ResourceBookingResponse
-      ) => {
+      transformResponse: (response: ResourceBookingResponse) => {
         if (!response?.data) {
           throw new Error('Resource booking not found');
         }
@@ -98,20 +96,12 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
         return response.data;
       },
 
-      providesTags: (_result, _error, id) => [
-        { type: 'ResourceBooking', id },
-      ],
+      providesTags: (_result, _error, id) => [{ type: 'ResourceBooking', id }],
     }),
-    getResourceBookingsByResource: builder.query<
-      ResourceBooking[],
-      number
-    >({
-      query: (resourceId) =>
-        `/schedule/resource/${resourceId}`,
+    getResourceBookingsByResource: builder.query<ResourceBooking[], number>({
+      query: (resourceId) => `/schedule/resource/${resourceId}`,
 
-      transformResponse: (
-        response: ResourceBookingsResponse
-      ) => {
+      transformResponse: (response: ResourceBookingsResponse) => {
         return response?.data ?? [];
       },
 
@@ -123,7 +113,6 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-
     checkResourceAvailability: builder.query<
       ResourceAvailability,
       {
@@ -132,11 +121,7 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
         end_datetime: string;
       }
     >({
-      query: ({
-        resource_id,
-        start_datetime,
-        end_datetime,
-      }) => ({
+      query: ({ resource_id, start_datetime, end_datetime }) => ({
         url: '/schedule/availability',
         params: {
           resource_id,
@@ -145,13 +130,11 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
         },
       }),
 
-      transformResponse: (
-        response: {
-          success: boolean;
-          message?: string;
-          data?: ResourceAvailability;
-        }
-      ) => {
+      transformResponse: (response: {
+        success: boolean;
+        message?: string;
+        data?: ResourceAvailability;
+      }) => {
         return (
           response?.data ?? {
             available: false,
@@ -163,11 +146,7 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
       providesTags: ['ResourceBooking'],
     }),
 
-
-    createResourceBooking: builder.mutation<
-      ResourceBookingResponse,
-      CreateResourceBookingRequest
-    >({
+    createResourceBooking: builder.mutation<ResourceBookingResponse, CreateResourceBookingRequest>({
       query: (body) => ({
         url: '/schedule',
         method: 'POST',
@@ -176,10 +155,7 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['ResourceBooking'],
     }),
-    cancelResourceBooking: builder.mutation<
-      ResourceBookingResponse,
-      number
-    >({
+    cancelResourceBooking: builder.mutation<ResourceBookingResponse, number>({
       query: (id) => ({
         url: `/schedule/${id}/cancel`,
         method: 'PATCH',
@@ -202,15 +178,10 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['ResourceBooking'],
     }),
-    getResourceBookingStats: builder.query<
-      ResourceBookingStats,
-      void
-    >({
+    getResourceBookingStats: builder.query<ResourceBookingStats, void>({
       query: () => '/schedule/stats',
 
-      transformResponse: (
-        response: ResourceBookingStatsResponse
-      ) => {
+      transformResponse: (response: ResourceBookingStatsResponse) => {
         return (
           response?.data ?? {
             byStatus: {},
@@ -222,7 +193,6 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
 
       providesTags: ['ResourceBooking'],
     }),
-
   }),
 });
 

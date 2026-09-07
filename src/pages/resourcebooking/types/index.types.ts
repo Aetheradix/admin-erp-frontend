@@ -4,15 +4,9 @@
 // Resource
 // ============================================================
 
-export type ResourceType =
-  | 'Room'
-  | 'Equipment'
-  | 'Vehicle'
-  | 'Other';
+export type ResourceType = 'Room' | 'Equipment' | 'Vehicle' | 'Other';
 
-export type ResourceStatus =
-  | 'Active'
-  | 'Inactive';
+export type ResourceStatus = 'Active' | 'Inactive';
 
 export interface Resource {
   id: number;
@@ -36,17 +30,12 @@ export interface Resource {
   updated_at?: string;
 }
 
-
 // ============================================================
 // Resource Booking
 // ============================================================
 
 export type ResourceBookingStatus =
-  | 'Pending'
-  | 'Confirmed'
-  | 'Rejected'
-  | 'Cancelled'
-  | 'Completed';
+  'Pending' | 'Confirmed' | 'Rejected' | 'Cancelled' | 'Completed';
 
 export interface ResourceBooking {
   id: number;
@@ -86,7 +75,6 @@ export interface ResourceBooking {
   email?: string;
 }
 
-
 // ============================================================
 // Create Booking
 // ============================================================
@@ -103,7 +91,6 @@ export interface CreateResourceBookingRequest {
   notes?: string;
 }
 
-
 // ============================================================
 // Update Booking Status
 // ============================================================
@@ -116,7 +103,6 @@ export interface UpdateResourceBookingStatusRequest {
   admin_comment?: string;
 }
 
-
 // ============================================================
 // Availability Request
 // ============================================================
@@ -128,7 +114,6 @@ export interface CheckResourceAvailabilityRequest {
 
   end_datetime: string;
 }
-
 
 // ============================================================
 // Availability Response
@@ -148,7 +133,6 @@ export interface ResourceAvailability {
   conflicting_booking?: ResourceBooking | null;
 }
 
-
 // ============================================================
 // API Response
 // ============================================================
@@ -160,7 +144,6 @@ export interface ResourceBookingResponse {
 
   data?: ResourceBooking;
 }
-
 
 // ============================================================
 // Resource List Response
@@ -174,7 +157,6 @@ export interface ResourcesResponse {
   data: Resource[];
 }
 
-
 // ============================================================
 // Booking List Response
 // ============================================================
@@ -186,7 +168,6 @@ export interface ResourceBookingsResponse {
 
   data: ResourceBooking[];
 }
-
 
 // ============================================================
 // Statistics

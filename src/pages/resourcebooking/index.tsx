@@ -11,13 +11,13 @@ const ResourceBookingModule = () => {
     <Routes>
       {/* Matches /resource-booking */}
       <Route index element={<ResourceBookingPage />} />
-      
+
       {/* Matches /resource-booking/my-bookings */}
       <Route path="my-bookings" element={<MyBookingsPage />} />
-      
+
       {/* Matches /resource-booking/calendar */}
       <Route path="calendar" element={<ResourceCalendarPage />} />
-      
+
       {/* Matches /resource-booking/all */}
       <Route path="all" element={<AllBookingsPage />} />
     </Routes>
