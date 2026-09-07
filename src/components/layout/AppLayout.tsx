@@ -2,7 +2,7 @@ import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/sidebar/Sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
 import { Toast } from '@/components/ui/composed/Toast';
 import { CursorGlow } from '@/components/ui/composed/CursorGlow';
@@ -10,8 +10,9 @@ import { useAppSelector } from '@/store/hooks';
 import { selectAccentColor, selectDarkMode, selectDensity } from '@/store/slices/settingsSlice';
 
 import { GeminiAiDrawer } from '@/components/ui/composed/GeminiAiDrawer';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Calendar, ChevronRight, X } from 'lucide-react';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { useGetEventsQuery } from '@/store/api/eventSlice';
 
 function hexToRgb(hex: string) {
   const clean = hex.replace('#', '');
@@ -24,9 +25,14 @@ function hexToRgb(hex: string) {
 }
 
 export default function AppLayout() {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const { data: events = [] } = useGetEventsQuery();
+  const activeEvent = events.length > 0 ? events[0] : null;
 
   const darkMode = useAppSelector(selectDarkMode);
   const accentColor = useAppSelector(selectAccentColor);
@@ -125,6 +131,48 @@ export default function AppLayout() {
 
       <div className="flex-1 flex flex-col relative overflow-hidden h-full bg-background shadow-sm border border-border-subtle">
         <Header onMenuClick={toggleSidebar} onCopilotClick={() => setIsCopilotOpen(true)} />
+
+        {/* Global Event Happening Banner */}
+        {showBanner && activeEvent && (
+          <div className="bg-primary/10 border-b border-primary/20 px-6 py-2.5 flex items-center justify-between gap-4 animate-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+              </span>
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground truncate">
+                <Calendar size={14} className="text-primary flex-shrink-0" />
+                <span className="font-black text-primary uppercase text-[10px] tracking-wider px-2 py-0.5 bg-primary/15 rounded-md flex-shrink-0">
+                  Happening Event
+                </span>
+                <span className="truncate">{activeEvent.title}</span>
+                {activeEvent.time && (
+                  <span className="text-muted font-semibold text-[11px] hidden sm:inline">
+                    • {activeEvent.time}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => navigate('/events')}
+                className="text-xs font-black text-primary hover:underline flex items-center gap-1"
+              >
+                <span>View Event</span>
+                <ChevronRight size={12} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBanner(false)}
+                className="text-muted hover:text-foreground p-1 rounded-lg transition-colors"
+                aria-label="Dismiss event notification banner"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
           <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">

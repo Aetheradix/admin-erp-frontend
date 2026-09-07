@@ -89,6 +89,33 @@ export interface ERPEvent {
   organizer: string;
   attendees: number;
   date?: string;
+  tags?: string[];
+  user_id?: string | number;
+  author_name?: string;
+  author_email?: string;
+  author_department?: string;
+  employee_status?: string;
+}
+
+export interface EventFilters {
+  category?: string;
+  categories?: string[];
+  tags?: string[];
+  employee_status?: string;
+  employee_statuses?: string[];
+  department?: string;
+  departments?: string[];
+  start_date?: string;
+  end_date?: string;
+  search?: string;
+  user_id?: string | number;
+}
+
+export interface FilterOptions {
+  categories: string[];
+  tags: string[];
+  employeeStatuses: string[];
+  departments: string[];
 }
 
 export interface Reimbursement {

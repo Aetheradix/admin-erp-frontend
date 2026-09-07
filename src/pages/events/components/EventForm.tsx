@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { useEffect, useState } from 'react';
+import { Sparkles, PartyPopper, Wrench, Mic, Rocket } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 
 interface EventFormProps {
@@ -12,6 +13,53 @@ interface EventFormProps {
   onSubmit: (data: Partial<ERPEvent>) => void;
   onCancel: () => void;
 }
+
+const TEMPLATE_PRESETS = [
+  {
+    label: 'Social Party',
+    icon: PartyPopper,
+    category: 'Social',
+    title: 'Team Social Celebration',
+    description: 'Monthly team gathering to celebrate wins, birthdays, and milestones together.',
+    location: 'Rooftop Lounge & Terrace',
+    organizer: 'Culture & Welfare Team',
+    time: '5:00 PM - 8:00 PM',
+    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
+  },
+  {
+    label: 'Tech Workshop',
+    icon: Wrench,
+    category: 'Workshop',
+    title: 'Frontend & AI Engineering Workshop',
+    description: 'Interactive hands-on session exploring next-gen frontend tools and LLM integrations.',
+    location: 'Innovation Lab Room 4',
+    organizer: 'Engineering Team',
+    time: '2:00 PM - 5:00 PM',
+    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=60',
+  },
+  {
+    label: 'Town Hall',
+    icon: Mic,
+    category: 'Meeting',
+    title: 'Quarterly All-Hands Town Hall',
+    description: 'Company-wide updates, strategic roadmap overview, and open Q&A session with leadership.',
+    location: 'Main Auditorium / Hybrid',
+    organizer: 'Executive Board',
+    time: '11:00 AM - 1:00 PM',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60',
+  },
+  {
+    label: 'Product Launch',
+    icon: Rocket,
+    category: 'Conference',
+    title: 'AetherERP v2.0 Keynote Launch',
+    description: 'Official unveiling of the next-generation ERP platform and feature showcase.',
+    location: 'Grand Conference Center',
+    organizer: 'Product Operations',
+    time: '10:00 AM - 12:30 PM',
+    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60',
+  },
+];
 
 export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) => {
   const [formData, setFormData] = useState<Partial<ERPEvent>>({
@@ -35,6 +83,19 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
     }
   }, [initialData]);
 
+  const applyTemplate = (preset: typeof TEMPLATE_PRESETS[0]) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: preset.title,
+      category: preset.category,
+      description: preset.description,
+      location: preset.location,
+      organizer: preset.organizer,
+      time: preset.time,
+      image: preset.image,
+    }));
+  };
+
   const categories = [
     { label: 'Conference', value: 'Conference' },
     { label: 'Workshop', value: 'Workshop' },
@@ -43,7 +104,33 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
   ];
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
+      {/* Quick Presets Bar */}
+      {!initialData && (
+        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15 flex flex-col gap-2.5">
+          <div className="flex items-center gap-1.5 text-xs font-black text-primary uppercase tracking-wider">
+            <Sparkles size={14} />
+            <span>Quick Event Presets (Click to autofill)</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {TEMPLATE_PRESETS.map((preset) => {
+              const IconComponent = preset.icon;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => applyTemplate(preset)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-primary hover:text-white text-xs font-bold text-foreground border border-border-subtle shadow-xs transition-all cursor-pointer group"
+                >
+                  <IconComponent size={14} className="text-primary group-hover:text-white transition-colors" />
+                  <span>{preset.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-6">
           <FormField label="Event Title" required id="event-title">
@@ -91,19 +178,15 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
             <Calendar
               id="event-date"
               value={formData.date ? new Date(formData.date) : null}
-              onChange={(e) =>
+              onChange={(e) => {
+                const selected = e.value as Date | null;
                 setFormData({
                   ...formData,
-                  date:
-                    e.value?.toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }) || '',
-                })
-              }
+                  date: selected ? selected.toISOString() : '',
+                });
+              }}
               placeholder="Select date"
-              dateFormat="MM d, yy"
+              dateFormat="yy-mm-dd"
             />
           </FormField>
 

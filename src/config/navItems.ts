@@ -146,6 +146,7 @@ import {
   BarChart3,
   Building2,
   CalendarDays,
+  CalendarCheck,
   CheckSquare,
   CreditCard,
   LayoutDashboard,
@@ -227,6 +228,14 @@ export const navItems: NavItem[] = [
     ],
   },
   {
+    label: 'Events & Calendar',
+    path: '/events',
+    icon: CalendarDays,
+    category: 'MANAGEMENT',
+    description: 'Event planner & dynamic filters',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  },
+  {
     label: 'Tasks',
     path: '/tasks',
     icon: CheckSquare,
@@ -237,7 +246,7 @@ export const navItems: NavItem[] = [
   {
     label: 'Resource Booking',
     path: '/resource-booking',
-    icon: CalendarDays,
+    icon: CalendarCheck,
     category: 'MANAGEMENT',
     description: 'Book and manage company resources',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],

@@ -1,10 +1,11 @@
-import { Bell, Menu, Settings, Sparkles } from 'lucide-react';
+import { Menu, Settings, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { SearchBar } from '@/components/ui/composed/SearchBar';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { Avatar } from '@/components/ui/primitives/Avatar';
 import { Button } from '@/components/ui/primitives/Button';
+import { EventNotificationDropdown } from './EventNotificationDropdown';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -72,15 +73,8 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           <Settings size={18} className="text-muted transition-transform hover:rotate-45" />
         </Button>
 
-        {/* Notifications */}
-        <Button
-          variant="ghost"
-          aria-label="Notifications"
-          className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 group"
-        >
-          <Bell size={18} className="text-muted group-hover:rotate-12 transition-transform" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-pill bg-primary ring-2 ring-white"></span>
-        </Button>
+        {/* Notifications Dropdown */}
+        <EventNotificationDropdown />
 
         <div className="h-10 w-px bg-border-subtle mx-1 hidden sm:block"></div>
 

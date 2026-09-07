@@ -111,6 +111,14 @@ export const mapCareer = (career: Record<string, unknown>): Career => ({
 
 export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
   const eventDate = String(event.event_date ?? event.date ?? '');
+  const rawTags = event.tags;
+  let parsedTags: string[] = [];
+  if (Array.isArray(rawTags)) {
+    parsedTags = rawTags.map(String);
+  } else if (typeof rawTags === 'string' && rawTags.trim()) {
+    parsedTags = rawTags.split(',').map((t) => t.trim()).filter(Boolean);
+  }
+
   return {
     id: String(event.id ?? ''),
     title: String(event.title ?? ''),
@@ -120,9 +128,15 @@ export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
     location: String(event.location ?? ''),
     category: String(event.category ?? 'Meeting'),
     image: String(event.image_url ?? event.image ?? ''),
-    organizer: String(event.organizer ?? ''),
+    organizer: String(event.author_name ?? event.organizer ?? ''),
     attendees: Number(event.attendees ?? 0),
     date: event.date ? String(event.date) : formatDisplayDate(eventDate),
+    tags: parsedTags,
+    user_id: event.user_id ? String(event.user_id) : undefined,
+    author_name: event.author_name ? String(event.author_name) : undefined,
+    author_email: event.author_email ? String(event.author_email) : undefined,
+    author_department: event.author_department ? String(event.author_department) : undefined,
+    employee_status: event.employee_status ? String(event.employee_status) : undefined,
   };
 };
 
