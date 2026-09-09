@@ -26,7 +26,7 @@ const MouseGlow = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const { r, g, b } = hexToRgb(accentColor || '#e8583a');
+  const { r, g, b } = hexToRgb(accentColor || '#3b82f6');
   const opacity1 = darkMode ? 0.12 : 0.08;
   const opacity2 = darkMode ? 0.04 : 0.02;
 

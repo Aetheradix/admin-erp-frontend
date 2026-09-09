@@ -27,27 +27,29 @@ export const EventPassModal = ({ isOpen, onClose, passData }: EventPassModalProp
     window.print();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-zinc-950 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-        {/* Top Header */}
-        <div className="relative p-6 bg-linear-to-r from-primary/20 via-orange-500/10 to-amber-500/20 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
-              <Ticket size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-widest text-primary">
-                  Official Entry Pass
-                </span>
-                <span className="flex items-center gap-1 text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  <CheckCircle2 size={10} /> Verified
-                </span>
-              </div>
-              <h2 className="text-lg font-black text-white leading-tight">VIP Access Ticket</h2>
-            </div>
-          </div>
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="relative w-full max-w-lg bg-zinc-950 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+                {/* Top Header */}
+                <div className="relative p-6 bg-linear-to-r from-primary/20 via-primary/10 to-transparent border-b border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+                            <Ticket size={20} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-black uppercase tracking-widest text-primary">
+                                    Official Entry Pass
+                                </span>
+                                <span className="flex items-center gap-1 text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                                    <CheckCircle2 size={10} /> Verified
+                                </span>
+                            </div>
+                            <h2 className="text-lg font-black text-white leading-tight">
+                                VIP Access Ticket
+                            </h2>
+                        </div>
+                    </div>
 
           <button
             type="button"

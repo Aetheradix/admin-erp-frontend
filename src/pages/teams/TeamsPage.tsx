@@ -18,7 +18,7 @@ interface Team {
 }
 
 const COLORS = [
-  '#E8583A',
+  '#3B82F6',
   '#8B5CF6',
   '#10B981',
   '#F59E0B',
@@ -43,7 +43,7 @@ const initialTeams: Team[] = [
     lead: 'Sarah Chen',
     members: 24,
     department: 'Technology',
-    color: '#E8583A',
+    color: '#3B82F6',
     projects: 8,
   },
   {
