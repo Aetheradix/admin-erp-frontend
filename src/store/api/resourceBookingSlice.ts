@@ -1,20 +1,29 @@
 import { apiSlice } from './apiSlice';
+import type {
+  Resource,
+  ResourceType,
+  ResourceStatus,
+  ResourceBooking,
+  ResourceBookingStatus,
+  ResourceAvailability,
+  ResourceBookingStats,
+  CreateResourceBookingRequest,
+} from '../../pages/resourcebooking/types/index.types';
 
 /* ============================================================
-   RESOURCE
+   TYPE RE-EXPORTS (Satisfies component imports from this slice)
 ============================================================ */
 
-export interface Resource {
-  id: number;
-  name: string;
-  type?: string | null;
-  location?: string | null;
-  description?: string | null;
-  capacity?: number | null;
-  is_active: number | boolean;
-  created_at?: string;
-  updated_at?: string;
-}
+export type {
+  Resource,
+  ResourceType,
+  ResourceStatus,
+  ResourceBooking,
+  ResourceBookingStatus,
+  ResourceAvailability,
+  ResourceBookingStats,
+  CreateResourceBookingRequest,
+};
 
 export interface CreateResourceRequest {
   name: string;
@@ -25,297 +34,205 @@ export interface CreateResourceRequest {
   is_active?: boolean;
 }
 
-export interface ResourcesResponse {
-  success: boolean;
-  message?: string;
-  data: Resource[];
-}
-
-export interface ResourceResponse {
-  success: boolean;
-  message: string;
-  data?: Resource;
-}
-
 /* ============================================================
-   RESOURCE BOOKING
+   HELPER TRANSFORMERS (Backend Raw -> Strict UI Types)
 ============================================================ */
 
-export interface ResourceBooking {
-  id: number;
-  resource_id: number;
-  booked_by: number;
-  calendar_event_id?: number | null;
+const mapResourceType = (type?: string | null): ResourceType => {
+  if (!type) return 'Other';
+  const t = type.trim().toLowerCase();
+  if (t === 'room') return 'Room';
+  if (t === 'equipment') return 'Equipment';
+  if (t === 'vehicle') return 'Vehicle';
+  return 'Other';
+};
 
-  start_datetime: string;
-  end_datetime: string;
+const mapResourceStatus = (raw: { status?: string; is_active?: number | boolean }): ResourceStatus => {
+  if (raw.status === 'Active' || raw.status === 'Inactive') {
+    return raw.status;
+  }
+  return raw.is_active ? 'Active' : 'Inactive';
+};
 
-  purpose?: string | null;
-  notes?: string | null;
+const mapBookingStatus = (status?: string): ResourceBookingStatus => {
+  if (!status) return 'Pending';
+  const s = status.trim().toLowerCase();
+  switch (s) {
+    case 'confirmed': return 'Confirmed';
+    case 'rejected': return 'Rejected';
+    case 'cancelled': return 'Cancelled';
+    case 'completed': return 'Completed';
+    default: return 'Pending';
+  }
+};
 
-  status: 'pending' | 'confirmed' | 'cancelled' | 'rejected' | 'completed';
+const transformResource = (raw: any): Resource => ({
+  id: raw.id,
+  name: raw.name ?? '',
+  type: mapResourceType(raw.type),
+  description: raw.description ?? null,
+  location: raw.location ?? null,
+  capacity: raw.capacity ?? null,
+  status: mapResourceStatus(raw),
+  image_url: raw.image_url ?? null,
+  created_at: raw.created_at,
+  updated_at: raw.updated_at,
+});
 
-  created_at: string;
-  updated_at: string;
-
-  // Joined resource data
-  resource_name?: string;
-  resource_type?: string;
-  location?: string | null;
-
-  // Joined user data
-  username?: string;
-  email?: string;
-}
-
-export interface ResourceAvailability {
-  available: boolean;
-  conflict: boolean;
-}
-
-export interface CreateResourceBookingRequest {
-  resource_id: number;
-  start_datetime: string;
-  end_datetime: string;
-  purpose?: string;
-  notes?: string;
-  calendar_event_id?: number | null;
-}
-
-export interface ResourceBookingResponse {
-  success: boolean;
-  message: string;
-  data?: ResourceBooking;
-}
-
-export interface ResourceBookingsResponse {
-  success: boolean;
-  message?: string;
-  data: ResourceBooking[];
-}
-
-export interface ResourceBookingStats {
-  byStatus: Record<string, number>;
-  byResourceType: Record<string, number>;
-  recent: ResourceBooking[];
-}
-
-export interface ResourceBookingStatsResponse {
-  success: boolean;
-  message?: string;
-  data: ResourceBookingStats;
-}
+const transformBooking = (raw: any): ResourceBooking => ({
+  id: raw.id,
+  resource_id: raw.resource_id,
+  user_id: raw.user_id ?? raw.booked_by ?? 0,
+  start_datetime: raw.start_datetime,
+  end_datetime: raw.end_datetime,
+  purpose: raw.purpose ?? null,
+  notes: raw.notes ?? null,
+  status: mapBookingStatus(raw.status),
+  approved_by: raw.approved_by ?? null,
+  approved_at: raw.approved_at ?? null,
+  created_at: raw.created_at,
+  updated_at: raw.updated_at,
+  resource_name: raw.resource_name,
+  resource_type: raw.resource_type ? mapResourceType(raw.resource_type) : undefined,
+  resource_location: raw.resource_location ?? raw.location ?? null,
+  username: raw.username,
+  email: raw.email,
+});
 
 /* ============================================================
-   API
+   API SLICE
 ============================================================ */
 
 export const resourceBookingSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    /* ========================================================
-       RESOURCES
-    ======================================================== */
-
+    // GET ALL RESOURCES
     getResources: builder.query<Resource[], void>({
       query: () => '/schedule/get-all',
-
-      transformResponse: (response: ResourcesResponse) => {
-        return response?.data ?? [];
+      transformResponse: (response: { success: boolean; data: any[] }) => {
+        const list = response?.data ?? [];
+        return list.map(transformResource);
       },
-
       providesTags: ['Resource'],
     }),
 
-    createResource: builder.mutation<ResourceResponse, CreateResourceRequest>({
+    // CREATE RESOURCE
+    createResource: builder.mutation<{ success: boolean; message: string; data?: Resource }, CreateResourceRequest>({
       query: (body) => ({
         url: '/schedule/create-resource',
         method: 'POST',
         body,
       }),
-
       invalidatesTags: ['Resource'],
     }),
 
-    /* ========================================================
-       RESOURCE BOOKINGS
-    ======================================================== */
-
+    // GET ALL BOOKINGS
     getAllResourceBookings: builder.query<ResourceBooking[], void>({
       query: () => '/schedule',
-
-      transformResponse: (response: ResourceBookingsResponse) => {
-        return response?.data ?? [];
+      transformResponse: (response: { success: boolean; data: any[] }) => {
+        const list = response?.data ?? [];
+        return list.map(transformBooking);
       },
-
       providesTags: ['ResourceBooking'],
     }),
 
+    // GET MY BOOKINGS
     getMyResourceBookings: builder.query<ResourceBooking[], void>({
       query: () => '/schedule/my',
-
-      transformResponse: (response: ResourceBookingsResponse) => {
-        return response?.data ?? [];
+      transformResponse: (response: { success: boolean; data: any[] }) => {
+        const list = response?.data ?? [];
+        return list.map(transformBooking);
       },
-
       providesTags: ['ResourceBooking'],
     }),
 
+    // GET BOOKING BY ID
     getResourceBookingById: builder.query<ResourceBooking, number>({
       query: (id) => `/schedule/${id}`,
-
-      transformResponse: (response: ResourceBookingResponse) => {
-        if (!response?.data) {
-          throw new Error('Resource booking not found');
-        }
-
-        return response.data;
+      transformResponse: (response: { success: boolean; data?: any }) => {
+        if (!response?.data) throw new Error('Resource booking not found');
+        return transformBooking(response.data);
       },
-
-      providesTags: (_result, _error, id) => [
-        {
-          type: 'ResourceBooking',
-          id,
-        },
-      ],
+      providesTags: (_res, _err, id) => [{ type: 'ResourceBooking', id }],
     }),
 
-    getResourceBookingsByResource: builder.query<ResourceBooking[], number>({
-      query: (resourceId) => `/schedule/resource/${resourceId}`,
-
-      transformResponse: (response: ResourceBookingsResponse) => {
-        return response?.data ?? [];
-      },
-
-      providesTags: (_result, _error, resourceId) => [
-        {
-          type: 'ResourceBooking',
-          id: `RESOURCE-${resourceId}`,
-        },
-      ],
-    }),
-
-    /* ========================================================
-       CHECK AVAILABILITY
-    ======================================================== */
-
+    // CHECK AVAILABILITY
     checkResourceAvailability: builder.query<
       ResourceAvailability,
-      {
-        resource_id: number;
-        start_datetime: string;
-        end_datetime: string;
-      }
+      { resource_id: number; start_datetime: string; end_datetime: string }
     >({
-      query: ({ resource_id, start_datetime, end_datetime }) => ({
+      query: (params) => ({
         url: '/schedule/availability',
-        params: {
-          resource_id,
-          start_datetime,
-          end_datetime,
-        },
+        params,
       }),
-
-      transformResponse: (response: {
-        success: boolean;
-        message?: string;
-        data?: ResourceAvailability;
-      }) => {
+      transformResponse: (response: { success: boolean; data?: ResourceAvailability }) => {
         return (
           response?.data ?? {
             available: false,
-            conflict: false,
+            message: 'Unable to check availability',
           }
         );
       },
-
       providesTags: ['ResourceBooking'],
     }),
 
-    /* ========================================================
-       CREATE BOOKING
-    ======================================================== */
-
-    createResourceBooking: builder.mutation<ResourceBookingResponse, CreateResourceBookingRequest>({
+    // CREATE BOOKING
+    createResourceBooking: builder.mutation<
+      { success: boolean; message: string; data?: ResourceBooking },
+      CreateResourceBookingRequest
+    >({
       query: (body) => ({
         url: '/schedule',
         method: 'POST',
         body,
       }),
-
       invalidatesTags: ['ResourceBooking'],
     }),
 
-    /* ========================================================
-       CANCEL BOOKING
-    ======================================================== */
-
-    cancelResourceBooking: builder.mutation<ResourceBookingResponse, number>({
+    // CANCEL BOOKING
+    cancelResourceBooking: builder.mutation<{ success: boolean; message: string }, number>({
       query: (id) => ({
         url: `/schedule/${id}/cancel`,
         method: 'PATCH',
       }),
-
       invalidatesTags: ['ResourceBooking'],
     }),
 
-    /* ========================================================
-       DELETE BOOKING
-    ======================================================== */
-
-    deleteResourceBooking: builder.mutation<
-      {
-        success: boolean;
-        message: string;
-        data?: unknown;
-      },
-      number
-    >({
+    // DELETE BOOKING
+    deleteResourceBooking: builder.mutation<{ success: boolean; message: string }, number>({
       query: (id) => ({
         url: `/schedule/${id}`,
         method: 'DELETE',
       }),
-
       invalidatesTags: ['ResourceBooking'],
     }),
 
-    /* ========================================================
-       BOOKING STATS
-    ======================================================== */
-
+    // BOOKING STATS
     getResourceBookingStats: builder.query<ResourceBookingStats, void>({
       query: () => '/schedule/stats',
-
-      transformResponse: (response: ResourceBookingStatsResponse) => {
-        return (
-          response?.data ?? {
-            byStatus: {},
-            byResourceType: {},
-            recent: [],
-          }
-        );
+      transformResponse: (response: { success: boolean; data?: any }) => {
+        const data = response?.data ?? {};
+        const byStatus = data.byStatus ?? {};
+        return {
+          total: data.total ?? 0,
+          pending: data.pending ?? byStatus.pending ?? 0,
+          confirmed: data.confirmed ?? byStatus.confirmed ?? 0,
+          rejected: data.rejected ?? byStatus.rejected ?? 0,
+          cancelled: data.cancelled ?? byStatus.cancelled ?? 0,
+          completed: data.completed ?? byStatus.completed ?? 0,
+        };
       },
-
       providesTags: ['ResourceBooking'],
     }),
   }),
-
   overrideExisting: false,
 });
 
-/* ============================================================
-   HOOKS
-============================================================ */
-
 export const {
-  // Resources
   useGetResourcesQuery,
   useCreateResourceMutation,
-
-  // Bookings
   useGetAllResourceBookingsQuery,
   useGetMyResourceBookingsQuery,
   useGetResourceBookingByIdQuery,
-  useGetResourceBookingsByResourceQuery,
   useCheckResourceAvailabilityQuery,
   useCreateResourceBookingMutation,
   useCancelResourceBookingMutation,

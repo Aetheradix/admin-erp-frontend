@@ -80,9 +80,9 @@ const ResourceBookingModal = ({
          * These statuses should not block availability.
          */
         if (
-          booking.status === 'cancelled' ||
-          booking.status === 'rejected' ||
-          booking.status === 'completed'
+          booking.status === 'Cancelled' ||
+          booking.status === 'Rejected' ||
+          booking.status === 'Completed'
         ) {
           return false;
         }
