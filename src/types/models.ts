@@ -77,6 +77,16 @@ export interface Career {
   status: string;
 }
 
+export interface EventAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: 'image' | 'file';
+  size?: string;
+  uploaded_by?: string;
+  uploaded_at?: string;
+}
+
 export interface ERPEvent {
   id: string | number;
   title: string;
@@ -95,6 +105,14 @@ export interface ERPEvent {
   author_email?: string;
   author_department?: string;
   employee_status?: string;
+  start_time?: string;
+  end_time?: string;
+  max_participants?: number;
+  status?: string;
+  registered_users?: string[];
+  is_registered?: boolean;
+  media_attachments?: EventAttachment[];
+  photos?: string[];
 }
 
 export interface EventFilters {

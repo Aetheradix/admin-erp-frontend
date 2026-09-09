@@ -137,6 +137,18 @@ export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
     author_email: event.author_email ? String(event.author_email) : undefined,
     author_department: event.author_department ? String(event.author_department) : undefined,
     employee_status: event.employee_status ? String(event.employee_status) : undefined,
+    start_time: event.start_time ? String(event.start_time) : undefined,
+    end_time: event.end_time ? String(event.end_time) : undefined,
+    max_participants: event.max_participants ? Number(event.max_participants) : undefined,
+    status: event.status ? String(event.status) : undefined,
+    registered_users: Array.isArray(event.registered_users)
+      ? event.registered_users.map(String)
+      : undefined,
+    is_registered: Boolean(event.is_registered),
+    media_attachments: Array.isArray(event.media_attachments)
+      ? (event.media_attachments as ERPEvent['media_attachments'])
+      : undefined,
+    photos: Array.isArray(event.photos) ? event.photos.map(String) : undefined,
   };
 };
 
