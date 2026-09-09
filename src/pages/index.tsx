@@ -18,7 +18,7 @@ const GuestPassModule = lazy(() => import('@/pages/guest-pass'));
 const RulebookModule = lazy(() => import('@/pages/rulebook'));
 const SettingsModule = lazy(() => import('@/pages/settings'));
 const Profile = lazy(() => import('@/pages/profile/Profile'));
-
+const RecreationalBenefits = lazy(() => import('@/pages/recreationalbenefits/index'));
 // New Modules
 const OrganizationModule = lazy(() => import('@/pages/organization'));
 const TeamsModule = lazy(() => import('@/pages/teams'));
@@ -179,6 +179,7 @@ const AppFeature = () => {
           path="/guest-pass/*"
           element={allowedMap['Guest Pass'] ? <GuestPassModule /> : <Navigate to="/" replace />}
         />
+        <Route path="/recreational-benefits/*" element={<RecreationalBenefits />} />
         <Route path="/rulebook/*" element={<RulebookModule />} />
         <Route path="/settings/*" element={<SettingsModule />} />
       </Routes>

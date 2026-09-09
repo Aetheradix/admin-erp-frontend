@@ -202,4 +202,3 @@ export const EventCard = ({ event, onEdit, onDelete, onRegister }: EventCardProp
     </div>
   );
 };
-

@@ -68,6 +68,10 @@ export const apiSlice = createApi({
     'Tasks',
     'Settings',
     'ResourceBooking',
+    'RecreationalBenefit',
+    'RecreationalBenefitAssignment',
+    'RecreationalBenefitUsage',
+    'MyRecreationalBenefit',
   ],
   endpoints: () => ({}),
 });

@@ -116,7 +116,10 @@ export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
   if (Array.isArray(rawTags)) {
     parsedTags = rawTags.map(String);
   } else if (typeof rawTags === 'string' && rawTags.trim()) {
-    parsedTags = rawTags.split(',').map((t) => t.trim()).filter(Boolean);
+    parsedTags = rawTags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
   }
 
   return {

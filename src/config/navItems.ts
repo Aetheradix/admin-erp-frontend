@@ -154,6 +154,7 @@ import {
   Settings,
   Clock,
   FileText,
+  Gift,
   Image,
   type LucideIcon,
 } from 'lucide-react';
@@ -270,6 +271,32 @@ export const navItems: NavItem[] = [
         label: 'All Bookings',
         path: '/resource-booking/all',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+    ],
+  },
+
+  {
+    label: 'Recreational Benefits',
+    path: '/recreational-benefits',
+    icon: Gift,
+    category: 'MANAGEMENT',
+    description: 'Manage employee recreational benefits and perks',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    children: [
+      {
+        label: 'Perks',
+        path: '/recreational-benefits/perks',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'Create Benefit',
+        path: '/recreational-benefits/create',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'My Benefits',
+        path: '/recreational-benefits/my-benefits',
+        roles: ['Employee'],
       },
     ],
   },

@@ -15,7 +15,16 @@ import {
   type EventPassData,
 } from '@/store/api/eventSlice';
 import type { ERPEvent, EventFilters } from '@/types/models';
-import { Building2, Calendar as CalendarIcon, Filter, RotateCcw, Search, Tag, UserCheck, X } from 'lucide-react';
+import {
+  Building2,
+  Calendar as CalendarIcon,
+  Filter,
+  RotateCcw,
+  Search,
+  Tag,
+  UserCheck,
+  X,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { EventCard } from './components/EventCard';
 import { EventFilterDrawer } from './components/EventFilterDrawer';
@@ -218,10 +227,11 @@ const Events = () => {
             <Button
               variant="secondary"
               onClick={() => setShowFilterDrawer(true)}
-              className={`h-12 rounded-2xl! px-4 border-border-subtle! gap-2 font-bold text-xs ${activeFilterCount > 0
-                ? 'bg-primary text-white border-primary hover:bg-primary/90'
-                : 'text-foreground'
-                }`}
+              className={`h-12 rounded-2xl! px-4 border-border-subtle! gap-2 font-bold text-xs ${
+                activeFilterCount > 0
+                  ? 'bg-primary text-white border-primary hover:bg-primary/90'
+                  : 'text-foreground'
+              }`}
             >
               <Filter size={18} />
               <span>Filters</span>
@@ -328,7 +338,9 @@ const Events = () => {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setFilters((p) => ({ ...p, start_date: undefined, end_date: undefined }))}
+                  onClick={() =>
+                    setFilters((p) => ({ ...p, start_date: undefined, end_date: undefined }))
+                  }
                   className="hover:text-red-500"
                 >
                   <X size={12} />
@@ -425,4 +437,3 @@ const Events = () => {
 };
 
 export default Events;
-
