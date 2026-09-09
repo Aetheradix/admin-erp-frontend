@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
-import { Badge } from '@/components/ui/primitives/Badge';
 import {
   Upload,
   Image as ImageIcon,
@@ -8,12 +7,14 @@ import {
   Download,
   Eye,
   Plus,
-  Sparkles,
   FileCheck,
+  Loader2,
+  X,
 } from 'lucide-react';
 import type { EventAttachment } from '@/types/models';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { saveEventAttachmentLocally, getEventAttachments } from '../utils/eventUtils';
+import { API_URL } from '@/config/env';
 
 interface EventMediaUploaderProps {
   eventId: string | number;
@@ -21,6 +22,13 @@ interface EventMediaUploaderProps {
   initialAttachments?: EventAttachment[];
   isReadOnly?: boolean;
   onAttachmentAdded?: (attachment: EventAttachment) => void;
+}
+
+interface UploadingFile {
+  id: string;
+  name: string;
+  progress: 'uploading' | 'done' | 'error';
+  error?: string;
 }
 
 export const EventMediaUploader = ({
@@ -34,99 +42,158 @@ export const EventMediaUploader = ({
     getEventAttachments(eventId, initialAttachments)
   );
   const [selectedPreview, setSelectedPreview] = useState<EventAttachment | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const images = attachments.filter((a) => a.type === 'image');
+  const documents = attachments.filter((a) => a.type !== 'image');
+
+  const uploadToServer = async (file: File): Promise<{ url: string }> => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_URL}/upload/file`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message || `Upload failed (${res.status})`);
+    }
+
+    const json = await res.json();
+    if (!json.url && !json.data?.url) throw new Error('No URL returned from server');
+    return { url: json.url || json.data?.url };
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      const isImage = file.type.startsWith('image/');
-      const reader = new FileReader();
+    const fileArray = Array.from(files);
+    const uploaders: UploadingFile[] = fileArray.map((f) => ({
+      id: `upload_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      name: f.name,
+      progress: 'uploading' as const,
+    }));
+    setUploadingFiles((prev) => [...prev, ...uploaders]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
 
-      reader.onload = (uploadEvent) => {
-        const base64Data = uploadEvent.target?.result as string;
-        const newAttachment: EventAttachment = {
-          id: `media_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          name: file.name,
-          url: base64Data,
-          type: isImage ? 'image' : 'file',
-          size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-          uploaded_by: 'You',
-          uploaded_at: new Date().toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          }),
-        };
-
-        const updated = saveEventAttachmentLocally(eventId, newAttachment);
-        setAttachments(updated);
-        onAttachmentAdded?.(newAttachment);
-
-        showToast({
-          severity: 'success',
-          summary: 'Uploaded Successfully',
-          detail: `Added "${file.name}" to event memories.`,
-          life: 3000,
-        });
-      };
-
-      reader.readAsDataURL(file);
-    });
-
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    await Promise.all(
+      fileArray.map(async (file, idx) => {
+        const uploader = uploaders[idx];
+        try {
+          const { url } = await uploadToServer(file);
+          const isImage = file.type.startsWith('image/');
+          const newAttachment: EventAttachment = {
+            id: uploader.id,
+            name: file.name,
+            url,
+            type: isImage ? 'image' : 'file',
+            size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+            uploaded_by: 'You',
+            uploaded_at: new Date().toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            }),
+          };
+          const updated = saveEventAttachmentLocally(eventId, newAttachment);
+          setAttachments(updated);
+          onAttachmentAdded?.(newAttachment);
+          setUploadingFiles((prev) =>
+            prev.map((u) => (u.id === uploader.id ? { ...u, progress: 'done' as const } : u))
+          );
+          showToast({ severity: 'success', summary: 'Uploaded!', detail: `"${file.name}" saved to server.`, life: 3000 });
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Upload failed';
+          setUploadingFiles((prev) =>
+            prev.map((u) => (u.id === uploader.id ? { ...u, progress: 'error' as const, error: msg } : u))
+          );
+          showToast({ severity: 'error', summary: 'Upload Failed', detail: `"${file.name}": ${msg}`, life: 4000 });
+        } finally {
+          setTimeout(() => {
+            setUploadingFiles((prev) => prev.filter((u) => u.id !== uploader.id));
+          }, 1800);
+        }
+      })
+    );
   };
 
-  const images = attachments.filter((a) => a.type === 'image');
-  const documents = attachments.filter((a) => a.type === 'file');
+  const isUploading = uploadingFiles.some((u) => u.progress === 'uploading');
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top Banner & Upload Trigger */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl bg-linear-to-r from-primary/10 via-amber-500/5 to-primary/5 border border-primary/20">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1">
-              <Sparkles size={14} />
-              Event Recap & Memories
+    <div className="flex flex-col gap-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-black text-foreground">Media & Files</span>
+          {attachments.length > 0 && (
+            <span className="text-xs font-bold text-muted bg-surface-subtle px-2 py-0.5 rounded-full">
+              {attachments.length} file{attachments.length !== 1 ? 's' : ''}
             </span>
-            <Badge variant="primary" className="text-[10px] font-black rounded-lg">
-              {attachments.length} Assets
-            </Badge>
-          </div>
-          <p className="text-xs text-muted font-medium mt-1">
-            Browse and share photographs, slide presentations, certificates, and recordings from this event.
-          </p>
+          )}
+          {isUploading && (
+            <span className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+              <Loader2 size={11} className="animate-spin" />
+              Uploading...
+            </span>
+          )}
         </div>
-
         {!isReadOnly && (
           <div>
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.zip"
+              accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.zip,.xls,.xlsx,.csv,.mp4,.mp3,.wav"
               multiple
               className="hidden"
             />
             <Button
               variant="primary"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
               className="h-11 rounded-2xl! px-5! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
             >
-              <Upload size={14} />
-              <span>Upload Photos / Files</span>
+              {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              <span>{isUploading ? 'Uploading...' : 'Upload Photos / Files'}</span>
             </Button>
           </div>
         )}
       </div>
 
+      {/* Active Uploads Progress */}
+      {uploadingFiles.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {uploadingFiles.map((u) => (
+            <div
+              key={u.id}
+              className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-semibold transition-all ${
+                u.progress === 'uploading'
+                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  : u.progress === 'done'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : 'bg-red-50 border-red-200 text-red-600'
+              }`}
+            >
+              {u.progress === 'uploading' && <Loader2 size={13} className="animate-spin flex-shrink-0" />}
+              {u.progress === 'done' && <FileCheck size={13} className="flex-shrink-0" />}
+              {u.progress === 'error' && <X size={13} className="flex-shrink-0" />}
+              <span className="truncate flex-1">{u.name}</span>
+              <span className="flex-shrink-0">
+                {u.progress === 'uploading' ? 'Uploading to server...' : u.error || u.progress}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Media Grid */}
-      {attachments.length === 0 ? (
+      {attachments.length === 0 && uploadingFiles.length === 0 ? (
         <div className="py-12 px-6 rounded-3xl border-2 border-dashed border-border-strong bg-surface-subtle/50 flex flex-col items-center justify-center text-center gap-3">
           <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-muted border border-border-subtle shadow-xs">
             <ImageIcon size={26} className="text-primary/70" />
@@ -150,7 +217,6 @@ export const EventMediaUploader = ({
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          {/* Photo Gallery Section */}
           {images.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -175,9 +241,7 @@ export const EventMediaUploader = ({
                       </div>
                     </div>
                     <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                      <span className="text-[10px] font-bold text-white truncate block">
-                        {img.name}
-                      </span>
+                      <span className="text-[10px] font-bold text-white truncate block">{img.name}</span>
                     </div>
                   </div>
                 ))}
@@ -185,7 +249,6 @@ export const EventMediaUploader = ({
             </div>
           )}
 
-          {/* Document & Files Section */}
           {documents.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -206,12 +269,11 @@ export const EventMediaUploader = ({
                         <h5 className="text-xs font-bold text-foreground truncate">{doc.name}</h5>
                         <div className="flex items-center gap-2 text-[10px] text-muted font-medium mt-0.5">
                           <span>{doc.size || 'Document'}</span>
-                          <span>â€¢</span>
+                          <span>·</span>
                           <span>{doc.uploaded_at}</span>
                         </div>
                       </div>
                     </div>
-
                     <a
                       href={doc.url}
                       download={doc.name}
@@ -228,7 +290,7 @@ export const EventMediaUploader = ({
         </div>
       )}
 
-      {/* High-res Image Preview Lightbox Modal */}
+      {/* Lightbox */}
       {selectedPreview && (
         <div
           onClick={() => setSelectedPreview(null)}
@@ -248,9 +310,7 @@ export const EventMediaUploader = ({
             <div className="p-4 bg-zinc-900 border-t border-white/10 flex items-center justify-between">
               <div>
                 <h5 className="text-sm font-bold text-white truncate">{selectedPreview.name}</h5>
-                <span className="text-[10px] text-zinc-400">
-                  Uploaded on {selectedPreview.uploaded_at}
-                </span>
+                <span className="text-[10px] text-zinc-400">Uploaded on {selectedPreview.uploaded_at}</span>
               </div>
               <div className="flex items-center gap-2">
                 <a

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import {
   useCreateEventMutation,
+  useUpdateEventMutation,
   useDeleteEventMutation,
   useGetEventsQuery,
   useGetFilterOptionsQuery,
@@ -60,6 +61,7 @@ const Events = () => {
   const { data: filterOptions } = useGetFilterOptionsQuery();
   const { data: events = [], isLoading } = useGetEventsQuery(filters);
   const [createEvent] = useCreateEventMutation();
+  const [updateEvent] = useUpdateEventMutation();
   const [deleteEvent] = useDeleteEventMutation();
   const [registerEvent] = useRegisterEventMutation();
 
@@ -287,7 +289,13 @@ const Events = () => {
   const handleSubmit = async (data: Partial<ERPEvent>) => {
     try {
       if (editingEvent) {
-        console.warn('Update event called');
+        await updateEvent({ id: editingEvent.id, data }).unwrap();
+        showToast({
+          severity: 'success',
+          summary: 'Updated',
+          detail: `Event "${data.title}" updated successfully!`,
+          life: 3500,
+        });
       } else {
         await createEvent(data).unwrap();
         showToast({
@@ -298,6 +306,7 @@ const Events = () => {
         });
       }
       setShowForm(false);
+      setEditingEvent(null);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to save event:', err);

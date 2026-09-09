@@ -107,6 +107,7 @@ export interface ERPEvent {
   location: string;
   category: string;
   image: string;
+  image_url?: string;
   organizer: string;
   attendees: number;
   date?: string;

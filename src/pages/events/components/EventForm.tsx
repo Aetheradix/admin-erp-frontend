@@ -4,9 +4,11 @@ import { Calendar } from '@/components/ui/primitives/Calendar';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
-import { useEffect, useState } from 'react';
-import { Sparkles, PartyPopper, Wrench, Mic, Rocket, PlusCircle } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Sparkles, PartyPopper, Wrench, Mic, Rocket, PlusCircle, Upload, Image as ImageIcon, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
+import { useUploadFileMutation } from '@/store/api/eventSlice';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 interface EventFormProps {
   initialData?: ERPEvent | null;
@@ -81,6 +83,9 @@ const TEMPLATE_PRESETS = [
 ];
 
 export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories }: EventFormProps) => {
+  const [uploadFile, { isLoading: isUploadingImage }] = useUploadFileMutation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const baseCategoryList = Array.from(
     new Set([...DEFAULT_CATEGORIES, ...(availableCategories || []).filter((c) => c !== 'All')])
   );
@@ -105,6 +110,37 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
     image:
       'https://images.unsplash.com/photo-1540575861501-7ce058a877c3?q=80&w=2070&auto=format&fit=crop',
   });
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const res = await uploadFile(file).unwrap();
+      if (res.url) {
+        setFormData((prev) => ({
+          ...prev,
+          image: res.url,
+          image_url: res.url,
+        }));
+        showToast({
+          severity: 'success',
+          summary: 'Banner Uploaded',
+          detail: 'Event banner image uploaded successfully!',
+          life: 3000,
+        });
+      }
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string }; message?: string };
+      console.error('Failed to upload image:', err);
+      showToast({
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: apiError?.data?.message || apiError?.message || 'Failed to upload banner image',
+        life: 3500,
+      });
+    }
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -215,6 +251,64 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
           </div>
         </div>
       )}
+
+      {/* Banner Image Uploader & Preview Box */}
+      <div className="p-4.5 rounded-3xl bg-surface-subtle/70 border border-border-subtle flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <ImageIcon size={15} className="text-primary" />
+            <span>Event Banner Image (Upload to Hostinger)</span>
+          </label>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageFileChange}
+            accept="image/*"
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage}
+            className="px-3.5 py-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer transition-all disabled:opacity-50"
+          >
+            {isUploadingImage ? (
+              <>
+                <Loader2 size={13} className="animate-spin" />
+                <span>Uploading Image...</span>
+              </>
+            ) : (
+              <>
+                <Upload size={13} />
+                <span>Upload New Banner Image</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Live Banner Preview */}
+        <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-zinc-900 border border-border-subtle group/banner">
+          <img
+            src={formData.image || formData.image_url}
+            alt="Event banner preview"
+            className="w-full h-full object-cover group-hover/banner:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src =
+                'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=60';
+            }}
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent flex items-end justify-between p-3.5">
+            <span className="text-[11px] font-bold text-white/90 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg truncate max-w-[80%] border border-white/10">
+              {formData.image || formData.image_url || 'Default Banner Image'}
+            </span>
+            {isUploadingImage && (
+              <span className="text-[10px] font-black text-amber-300 bg-black/60 px-2 py-1 rounded-md animate-pulse">
+                Saving to Hostinger...
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-5">
