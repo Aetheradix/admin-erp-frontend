@@ -1,3 +1,4 @@
+import { useAuth } from '@/hooks/useAuth';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
@@ -23,6 +24,8 @@ import { EventForm } from './components/EventForm';
 import { EventPassModal } from './components/EventPassModal';
 
 const Events = () => {
+  const { user } = useAuth();
+  const [registeringEventId, setRegisteringEventId] = useState<string | number | null>(null);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [filters, setFilters] = useState<EventFilters>({
     category: 'All',
@@ -88,11 +91,22 @@ const Events = () => {
 
   const handleRegister = async (event: ERPEvent) => {
     try {
-      const result = await registerEvent(event.id).unwrap();
+      setRegisteringEventId(event.id);
+      const result = await registerEvent({
+        id: event.id,
+        email: user?.email,
+        username: user?.username,
+      }).unwrap();
+
+      const emailRecipient = result.data?.recipientEmail || user?.email;
+      const wasEmailed = result.data?.emailSent;
+
       showToast({
         severity: 'success',
-        summary: '🎟️ Registered!',
-        detail: `Pass generated! VIP entry ticket emailed to ${result.data?.recipientEmail || 'your email'}.`,
+        summary: 'Registration Confirmed!',
+        detail: wasEmailed
+          ? `Pass generated! VIP entry ticket has been sent to ${emailRecipient}.`
+          : `Pass generated! VIP entry ticket is ready.`,
         life: 5000,
       });
       if (result.data) {
@@ -107,6 +121,8 @@ const Events = () => {
         detail: apiError.data?.message || 'Could not register for this event.',
         life: 3000,
       });
+    } finally {
+      setRegisteringEventId(null);
     }
   };
 
@@ -357,6 +373,7 @@ const Events = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onRegister={handleRegister}
+            isRegistering={registeringEventId === event.id}
           />
         ))}
         {events.length === 0 && (

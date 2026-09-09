@@ -20,6 +20,7 @@ interface EventCardProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onRegister?: (event: ERPEvent) => void;
+  isRegistering?: boolean;
 }
 
 const CATEGORY_IMAGES: Record<string, string> = {
@@ -36,7 +37,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
 const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=60';
 
-export const EventCard = ({ event, onEdit, onDelete, onRegister }: EventCardProps) => {
+export const EventCard = ({ event, onEdit, onDelete, onRegister, isRegistering }: EventCardProps) => {
   const [imageSrc, setImageSrc] = useState(
     event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
   );
@@ -53,7 +54,7 @@ export const EventCard = ({ event, onEdit, onDelete, onRegister }: EventCardProp
   const month = Number.isNaN(eventDate.getTime())
     ? 'EVENT'
     : eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const day = Number.isNaN(eventDate.getDate()) ? '•' : eventDate.getDate();
+  const day = Number.isNaN(eventDate.getDate()) ? '--' : eventDate.getDate();
 
   return (
     <div className="group bg-white rounded-3xl border border-border-subtle overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
@@ -193,10 +194,20 @@ export const EventCard = ({ event, onEdit, onDelete, onRegister }: EventCardProp
         <Button
           variant="primary"
           onClick={() => onRegister?.(event)}
-          className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer"
+          disabled={isRegistering}
+          className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <span>Register Now</span>
-          <ArrowUpRight size={14} />
+          {isRegistering ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Registering...</span>
+            </>
+          ) : (
+            <div className="flex items-center gap-1">
+              <span>Register Now</span>
+              <ArrowUpRight size={14} />
+            </div>
+          )}
         </Button>
       </div>
     </div>

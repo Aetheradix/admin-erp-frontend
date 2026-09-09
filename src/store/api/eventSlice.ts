@@ -2,6 +2,13 @@ import type { ERPEvent, EventFilters, FilterOptions } from '@/types/models';
 import { apiSlice } from './apiSlice';
 import { mapEvent } from './mappers';
 
+export interface RegisterEventPayload {
+  id: string | number;
+  email?: string;
+  username?: string;
+  name?: string;
+}
+
 export interface EventPassData {
   passCode: string;
   eventId: number | string;
@@ -88,11 +95,25 @@ export const eventSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Event'],
     }),
-    registerEvent: builder.mutation<{ success: boolean; data: EventPassData }, string | number>({
-      query: (id) => ({
-        url: `/events/${id}/register`,
-        method: 'POST',
-      }),
+    registerEvent: builder.mutation<
+      { success: boolean; message?: string; data: EventPassData },
+      string | number | RegisterEventPayload
+    >({
+      query: (arg) => {
+        const id = typeof arg === 'object' ? arg.id : arg;
+        const body =
+          typeof arg === 'object'
+            ? {
+                email: arg.email,
+                username: arg.username || arg.name,
+              }
+            : undefined;
+        return {
+          url: `/events/${id}/register`,
+          method: 'POST',
+          body,
+        };
+      },
       invalidatesTags: ['Event'],
     }),
     updateEvent: builder.mutation<ERPEvent, { id: string | number; data: Partial<ERPEvent> }>({
