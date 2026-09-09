@@ -42,7 +42,7 @@ const integrations = [
     category: 'Communication',
     icon: Mail,
     connected: true,
-    color: '#E8583A',
+    color: '#3B82F6',
   },
   {
     id: 5,

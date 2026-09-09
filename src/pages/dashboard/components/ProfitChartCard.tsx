@@ -15,12 +15,12 @@ export default function ProfitChartCard() {
           const { ctx, chartArea } = chart;
           if (!chartArea) return undefined;
           const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          gradient.addColorStop(0, 'rgba(232, 88, 58, 0)');
-          gradient.addColorStop(0.2, 'rgba(232, 88, 58, 0.4)');
-          gradient.addColorStop(1, '#E8583A');
+          gradient.addColorStop(0, 'rgba(59, 130, 246, 0)');
+          gradient.addColorStop(0.2, 'rgba(59, 130, 246, 0.4)');
+          gradient.addColorStop(1, '#3B82F6');
           return gradient;
         },
-        hoverBackgroundColor: '#E8583A',
+        hoverBackgroundColor: '#3B82F6',
         borderRadius: 6,
         data: [45, 60, 40, 75, 50, 65, 55, 90, 60, 70],
         barThickness: 12,

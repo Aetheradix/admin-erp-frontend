@@ -13,7 +13,7 @@ const DEFAULT_PROJECTS = [
     title: 'Decem App',
     tasks: 908,
     value: '$ 391,991',
-    color: '#E8583A',
+    color: '#3B82F6',
     category: 'FINANCE',
     participants: 14,
   },
@@ -55,7 +55,7 @@ const DEFAULT_PROJECTS = [
   },
 ];
 
-const PRESET_COLORS = ['#E8583A', '#fbbd34', '#9747ff', '#34d399', '#fb7185', '#3b82f6'];
+const PRESET_COLORS = ['#3B82F6', '#6366F1', '#9747ff', '#34d399', '#fb7185', '#06B6D4'];
 
 export const useDashboardData = () => {
   const { data: rawProjects, isLoading: isLoadingProjects } = useGetProjectsQuery();
