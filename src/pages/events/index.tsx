@@ -43,6 +43,12 @@ import {
 
 const Events = () => {
   const { user } = useAuth();
+  const isAdmin = Boolean(
+    user?.role &&
+      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
+        String(user.role).toLowerCase().includes(r)
+      )
+  );
   const [registeringEventId, setRegisteringEventId] = useState<string | number | null>(null);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [eventScope, setEventScope] = useState<'upcoming' | 'previous' | 'all'>('upcoming');
@@ -317,11 +323,15 @@ const Events = () => {
       <PageHeader
         title="Event Planner & Directory"
         description="Streamline hostings, manage real-time registrations, dynamic categories, and event memories across the team."
-        primaryAction={{
-          label: 'Schedule New Event',
-          onClick: handleCreate,
-          icon: 'pi pi-calendar-plus',
-        }}
+        primaryAction={
+          isAdmin
+            ? {
+                label: 'Schedule New Event',
+                onClick: handleCreate,
+                icon: 'pi pi-calendar-plus',
+              }
+            : undefined
+        }
       />
 
       {/* Scope Selector: Upcoming vs Previous vs All */}

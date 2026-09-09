@@ -211,149 +211,82 @@ export function isUserRegisteredForEvent(
 
   const idStr = String(eventId);
   const identifier = (userIdentifier || '').trim().toLowerCase();
+  if (!identifier) return false;
 
-  // Check event model list
+  // 1. Check registered_users from database
   if (
-    identifier &&
     eventData?.registered_users &&
-    eventData.registered_users.some((u) => u.toLowerCase() === identifier)
+    eventData.registered_users.some((u) => u && u.toLowerCase() === identifier)
   ) {
     return true;
   }
 
+  // 2. Check participants from database
+  if (
+    eventData?.participants &&
+    eventData.participants.some(
+      (p) =>
+        (p.email && p.email.toLowerCase() === identifier) ||
+        (p.name && p.name.toLowerCase() === identifier)
+    )
+  ) {
+    return true;
+  }
+
+  // 3. Check local storage
   const all = getAllLocalRegistrations();
   const eventState = all[idStr];
-  if (!eventState) return false;
-
-  if (identifier && eventState.registeredUsers.includes(identifier)) {
+  if (
+    eventState &&
+    (eventState.registeredUsers.includes(identifier) ||
+      eventState.participants?.some(
+        (p) =>
+          (p.email && p.email.toLowerCase() === identifier) ||
+          (p.name && p.name.toLowerCase() === identifier)
+      ))
+  ) {
     return true;
   }
 
   return false;
 }
 
-export interface RegisterUserParams {
-  userIdentifier?: string | null;
-  name?: string;
-  email?: string;
-  department?: string;
-  avatar?: string;
-  role?: string;
-  passCode?: string;
-}
-
-export function registerUserForEventLocally(
-  eventId: string | number,
-  userParams: string | RegisterUserParams
-): { newCountOffset: number; success: boolean } {
-  if (!eventId) return { newCountOffset: 0, success: false };
-  const idStr = String(eventId);
-
-  const identifier =
-    typeof userParams === 'string'
-      ? userParams.trim().toLowerCase()
-      : (userParams.email || userParams.userIdentifier || userParams.name || 'current_user')
-          .trim()
-          .toLowerCase();
-
-  const all = getAllLocalRegistrations();
-  const current = all[idStr] || { registeredUsers: [], addedAttendees: 0, participants: [] };
-  if (!current.participants) current.participants = [];
-
-  if (current.registeredUsers.includes(identifier)) {
-    return { newCountOffset: current.addedAttendees, success: false };
-  }
-
-  current.registeredUsers.push(identifier);
-  current.addedAttendees += 1;
-
-  const displayName =
-    typeof userParams === 'object' && userParams.name
-      ? userParams.name
-      : typeof userParams === 'object' && userParams.email
-        ? userParams.email.split('@')[0]
-        : identifier.includes('@')
-          ? identifier.split('@')[0]
-          : identifier;
-
-  const now = new Date();
-  const timeFormatted = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const dateFormatted = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-  const participant: EventParticipant = {
-    id: `part_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-    name: displayName.charAt(0).toUpperCase() + displayName.slice(1),
-    email: typeof userParams === 'object' && userParams.email ? userParams.email : identifier,
-    department: typeof userParams === 'object' ? userParams.department || 'Corporate' : 'Corporate',
-    avatar: typeof userParams === 'object' ? userParams.avatar : undefined,
-    role: typeof userParams === 'object' ? userParams.role || 'Attendee' : 'Attendee',
-    joinedAt: `Joined ${dateFormatted} at ${timeFormatted}`,
-    passCode:
-      typeof userParams === 'object' && userParams.passCode ? userParams.passCode : undefined,
-  };
-
-  current.participants.unshift(participant);
-  all[idStr] = current;
-
-  try {
-    localStorage.setItem(REGISTRATIONS_STORAGE_KEY, JSON.stringify(all));
-  } catch (err) {
-    console.error('Failed to save local registration', err);
-  }
-
-  return { newCountOffset: current.addedAttendees, success: true };
-}
-
-const SAMPLE_COLLEAGUES = [
-  { name: 'Priya Sharma', email: 'priya.sharma@aether.internal', department: 'Engineering' },
-  { name: 'Rahul Verma', email: 'rahul.v@aether.internal', department: 'Product Design' },
-  { name: 'Ananya Patel', email: 'ananya.p@aether.internal', department: 'People Operations' },
-  { name: 'Vikram Singh', email: 'vikram.s@aether.internal', department: 'Finance' },
-  { name: 'Neha Gupta', email: 'neha.g@aether.internal', department: 'Marketing' },
-  { name: 'Rohan Mehta', email: 'rohan.m@aether.internal', department: 'Engineering' },
-  { name: 'Aarav Nair', email: 'aarav.n@aether.internal', department: 'Operations' },
-];
-
 export function getEventParticipantsList(event: ERPEvent): EventParticipant[] {
+  // 1. Get backend participants from database
+  const backendParticipants: EventParticipant[] = (event.participants || []).map((p) => ({
+    id: String(p.id || `bp_${Math.random()}`),
+    name: p.name || 'Attendee',
+    email: p.email || '',
+    department: p.department || 'Corporate',
+    joinedAt: p.joinedAt || 'Registered',
+    passCode: p.passCode,
+  }));
+
+  // 2. Get local participants
   const all = getAllLocalRegistrations();
   const local = all[String(event.id)];
-  const localList = local?.participants || [];
+  const localList: EventParticipant[] = local?.participants || [];
 
-  // If we already have local registrations, return them
-  if (localList.length > 0) {
-    return localList;
-  }
+  // Merge unique by email or id
+  const map = new Map<string, EventParticipant>();
+  backendParticipants.forEach((p) => {
+    const key = (p.email || p.id).toLowerCase();
+    map.set(key, p);
+  });
+  localList.forEach((p) => {
+    const key = (p.email || p.id).toLowerCase();
+    if (!map.has(key)) {
+      map.set(key, p);
+    }
+  });
 
-  // Otherwise, if attendees count > 0, generate matching seed participants for realistic presentation
-  const baseAttendees = Number(event.attendees || 0);
-  if (baseAttendees <= 0) {
-    return [];
-  }
-
-  const list: EventParticipant[] = [];
-  const countToGenerate = Math.min(baseAttendees, SAMPLE_COLLEAGUES.length);
-
-  for (let i = 0; i < countToGenerate; i++) {
-    const person = SAMPLE_COLLEAGUES[i % SAMPLE_COLLEAGUES.length];
-    list.push({
-      id: `seed_${event.id}_${i}`,
-      name: person.name,
-      email: person.email,
-      department: person.department,
-      role: i === 0 && event.author_department ? `${event.author_department} Lead` : 'Confirmed Attendee',
-      joinedAt: 'Registered',
-    });
-  }
-
-  return list;
+  return Array.from(map.values());
 }
 
 export function getDynamicAttendeesCount(event: ERPEvent): number {
   const baseAttendees = Number(event.attendees || 0);
-  const all = getAllLocalRegistrations();
-  const local = all[String(event.id)];
-  const added = local?.addedAttendees || 0;
-  return baseAttendees + added;
+  const participants = getEventParticipantsList(event);
+  return Math.max(baseAttendees, participants.length);
 }
 
 /**
@@ -402,4 +335,65 @@ export function saveEventAttachmentLocally(
   }
 
   return list;
+}
+
+export interface RegisterOptions {
+  userIdentifier?: string;
+  name?: string;
+  email?: string;
+  department?: string;
+  avatar?: string;
+  role?: string;
+  passCode?: string;
+}
+
+export function registerUserForEventLocally(
+  eventId: string | number,
+  options?: RegisterOptions | string
+): void {
+  if (!eventId) return;
+  const idStr = String(eventId);
+  const all = getAllLocalRegistrations();
+  const state: EventLocalState = all[idStr] || { registeredUsers: [], addedAttendees: 0, participants: [] };
+
+  let identifier = '';
+  let participantObj: EventParticipant | null = null;
+
+  if (typeof options === 'string') {
+    identifier = options.trim().toLowerCase();
+  } else if (options && typeof options === 'object') {
+    identifier = (options.email || options.userIdentifier || options.name || '').trim().toLowerCase();
+    participantObj = {
+      id: `local_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      name: options.name || 'Confirmed Participant',
+      email: options.email || identifier,
+      department: options.department || 'Corporate',
+      avatar: options.avatar,
+      role: options.role || 'Participant',
+      joinedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      passCode: options.passCode,
+    };
+  }
+
+  if (identifier && !state.registeredUsers.includes(identifier)) {
+    state.registeredUsers.push(identifier);
+    state.addedAttendees += 1;
+  }
+
+  if (participantObj) {
+    state.participants = state.participants || [];
+    const exists = state.participants.some(
+      (p) => (p.email && p.email.toLowerCase() === participantObj!.email.toLowerCase()) || p.name === participantObj!.name
+    );
+    if (!exists) {
+      state.participants.unshift(participantObj);
+    }
+  }
+
+  all[idStr] = state;
+  try {
+    localStorage.setItem(REGISTRATIONS_STORAGE_KEY, JSON.stringify(all));
+  } catch (err) {
+    console.error('Failed to save local registration', err);
+  }
 }

@@ -144,6 +144,9 @@ export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
     registered_users: Array.isArray(event.registered_users)
       ? event.registered_users.map(String)
       : undefined,
+    participants: Array.isArray(event.participants)
+      ? (event.participants as ERPEvent['participants'])
+      : undefined,
     is_registered: Boolean(event.is_registered),
     media_attachments: Array.isArray(event.media_attachments)
       ? (event.media_attachments as ERPEvent['media_attachments'])

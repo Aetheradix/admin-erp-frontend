@@ -10,9 +10,7 @@ import {
   Users,
   Building2,
   Tag,
-  ShieldCheck,
   CheckCircle2,
-  Ticket,
   ArrowUpRight,
   Edit2,
   Trash2,
@@ -81,9 +79,14 @@ export const EventDetailsModal = ({
   isRegistering = false,
   onEdit,
   onDelete,
-  onViewPass,
 }: EventDetailsModalProps) => {
   const { user } = useAuth();
+  const isAdmin = Boolean(
+    user?.role &&
+      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
+        String(user.role).toLowerCase().includes(r)
+      )
+  );
   const [activeTab, setActiveTab] = useState<'details' | 'participants' | 'media'>('details');
   const [participantSearch, setParticipantSearch] = useState('');
 
@@ -173,7 +176,7 @@ export const EventDetailsModal = ({
 
             {/* Action Buttons & Close */}
             <div className="flex items-center gap-2">
-              {onEdit && (
+              {isAdmin && onEdit && (
                 <button
                   type="button"
                   onClick={() => {
@@ -186,7 +189,7 @@ export const EventDetailsModal = ({
                   <Edit2 size={15} />
                 </button>
               )}
-              {onDelete && (
+              {isAdmin && onDelete && (
                 <button
                   type="button"
                   onClick={() => {
@@ -598,74 +601,7 @@ export const EventDetailsModal = ({
         </div>
 
         {/* Modal Footer Action Bar */}
-        <div className="p-5 sm:px-8 bg-surface-subtle border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted">
-            <ShieldCheck size={16} className="text-emerald-500 flex-shrink-0" />
-            <span>
-              {isPast
-                ? 'This event has concluded. View uploaded photos & files above.'
-                : 'Registration confirms VIP access and generates a digital pass ticket.'}
-            </span>
-          </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            {isPast ? (
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Button
-                  variant="secondary"
-                  onClick={() => setActiveTab('media')}
-                  className="w-full sm:w-auto h-12 rounded-2xl! px-6! font-black text-xs uppercase tracking-wider gap-2 shadow-xs cursor-pointer"
-                >
-                  <Sparkles size={15} />
-                  <span>View & Upload Memories</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled
-                  className="w-full sm:w-auto h-12 rounded-2xl! px-6! font-bold text-xs uppercase tracking-wider opacity-60 cursor-not-allowed"
-                >
-                  Event Ended
-                </Button>
-              </div>
-            ) : isRegistered ? (
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <div className="px-4 py-2.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-xs font-black">
-                  <CheckCircle2 size={16} />
-                  <span>You're Registered!</span>
-                </div>
-                {onViewPass && (
-                  <Button
-                    variant="primary"
-                    onClick={() => onViewPass(event)}
-                    className="h-12 rounded-2xl! px-6! font-black text-xs uppercase tracking-wider gap-2 shadow-lg cursor-pointer"
-                  >
-                    <Ticket size={16} />
-                    <span>View VIP Ticket</span>
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <Button
-                variant="primary"
-                onClick={() => onRegister(event)}
-                disabled={isRegistering}
-                className="w-full sm:w-auto h-12 rounded-2xl! px-8! font-black text-xs uppercase tracking-wider gap-2 shadow-lg shadow-primary/25 cursor-pointer disabled:opacity-60"
-              >
-                {isRegistering ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Registering...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Register / Join Event</span>
-                    <ArrowUpRight size={16} />
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
       </div>
     </Dialog>
   );

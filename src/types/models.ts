@@ -87,6 +87,17 @@ export interface EventAttachment {
   uploaded_at?: string;
 }
 
+export interface EventParticipant {
+  id: string;
+  name: string;
+  email: string;
+  department?: string;
+  avatar?: string;
+  role?: string;
+  joinedAt?: string;
+  passCode?: string;
+}
+
 export interface ERPEvent {
   id: string | number;
   title: string;
@@ -110,6 +121,7 @@ export interface ERPEvent {
   max_participants?: number;
   status?: string;
   registered_users?: string[];
+  participants?: EventParticipant[];
   is_registered?: boolean;
   media_attachments?: EventAttachment[];
   photos?: string[];

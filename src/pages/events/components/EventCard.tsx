@@ -62,6 +62,12 @@ export const EventCard = ({
   isRegistering,
 }: EventCardProps) => {
   const { user } = useAuth();
+  const isAdmin = Boolean(
+    user?.role &&
+      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
+        String(user.role).toLowerCase().includes(r)
+      )
+  );
   const [imageSrc, setImageSrc] = useState(
     event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
   );
@@ -126,34 +132,36 @@ export const EventCard = ({
             <span className="text-sm font-black tracking-tight">{day}</span>
           </div>
 
-          {/* Glass Action Capsule */}
-          <div
-            className="flex items-center gap-1 p-1 bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(String(event.id));
-              }}
-              className="w-8 h-8 rounded-xl bg-white/10 text-white hover:bg-white hover:text-primary flex items-center justify-center transition-all cursor-pointer"
-              title="Edit Event"
+          {/* Glass Action Capsule - Admin Only */}
+          {isAdmin && (
+            <div
+              className="flex items-center gap-1 p-1 bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Edit2 size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(String(event.id));
-              }}
-              className="w-8 h-8 rounded-xl bg-white/10 text-rose-300 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-              title="Delete Event"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(String(event.id));
+                }}
+                className="w-8 h-8 rounded-xl bg-white/10 text-white hover:bg-white hover:text-primary flex items-center justify-center transition-all cursor-pointer"
+                title="Edit Event"
+              >
+                <Edit2 size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(String(event.id));
+                }}
+                className="w-8 h-8 rounded-xl bg-white/10 text-rose-300 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Delete Event"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Bottom Floating Bar: Category & Status */}
