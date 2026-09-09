@@ -24,29 +24,34 @@ const TEMPLATE_PRESETS = [
     location: 'Rooftop Lounge & Terrace',
     organizer: 'Culture & Welfare Team',
     time: '5:00 PM - 8:00 PM',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
+    image:
+      'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
   },
   {
     label: 'Tech Workshop',
     icon: Wrench,
     category: 'Workshop',
     title: 'Frontend & AI Engineering Workshop',
-    description: 'Interactive hands-on session exploring next-gen frontend tools and LLM integrations.',
+    description:
+      'Interactive hands-on session exploring next-gen frontend tools and LLM integrations.',
     location: 'Innovation Lab Room 4',
     organizer: 'Engineering Team',
     time: '2:00 PM - 5:00 PM',
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=60',
+    image:
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=60',
   },
   {
     label: 'Town Hall',
     icon: Mic,
     category: 'Meeting',
     title: 'Quarterly All-Hands Town Hall',
-    description: 'Company-wide updates, strategic roadmap overview, and open Q&A session with leadership.',
+    description:
+      'Company-wide updates, strategic roadmap overview, and open Q&A session with leadership.',
     location: 'Main Auditorium / Hybrid',
     organizer: 'Executive Board',
     time: '11:00 AM - 1:00 PM',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60',
+    image:
+      'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60',
   },
   {
     label: 'Product Launch',
@@ -57,7 +62,8 @@ const TEMPLATE_PRESETS = [
     location: 'Grand Conference Center',
     organizer: 'Product Operations',
     time: '10:00 AM - 12:30 PM',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60',
+    image:
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60',
   },
 ];
 
@@ -83,7 +89,7 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
     }
   }, [initialData]);
 
-  const applyTemplate = (preset: typeof TEMPLATE_PRESETS[0]) => {
+  const applyTemplate = (preset: (typeof TEMPLATE_PRESETS)[0]) => {
     setFormData((prev) => ({
       ...prev,
       title: preset.title,
@@ -122,7 +128,10 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                   onClick={() => applyTemplate(preset)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-primary hover:text-white text-xs font-bold text-foreground border border-border-subtle shadow-xs transition-all cursor-pointer group"
                 >
-                  <IconComponent size={14} className="text-primary group-hover:text-white transition-colors" />
+                  <IconComponent
+                    size={14}
+                    className="text-primary group-hover:text-white transition-colors"
+                  />
                   <span>{preset.label}</span>
                 </button>
               );

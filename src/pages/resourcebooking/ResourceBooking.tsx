@@ -2,55 +2,46 @@ import { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 
 import ResourceCard from './components/ResourceCard';
-import ResourceBookingSheet from './components/ResourceBookingSheet';
+import ResourceBookingModal from './components/ResourceBookingModal';
+import AddResourceModal from './components/AddResourceModal';
 import BookingStats from './components/BookingStats';
 
-import {
-  useGetMyResourceBookingsQuery,
-  useGetAllResourceBookingsQuery,
-} from '../../store/api/resourceBookingSlice';
+import { useResourceBookingPage } from './hooks/useResouceBookingPage';
 
 import type { Resource } from './types/index.types';
 
-const ResourceBookingPage = () => {
+const ResourceBooking = () => {
+  /* ============================================================
+     UI STATE
+  ============================================================ */
+
   const [bookingOpen, setBookingOpen] = useState(false);
+
+  const [addResourceOpen, setAddResourceOpen] = useState(false);
+
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+
   const [search, setSearch] = useState('');
 
-  const { data: myBookings = [], isLoading: myBookingsLoading } = useGetMyResourceBookingsQuery();
+  /* ============================================================
+     PAGE HOOK
+  ============================================================ */
 
-  // Prefixed with underscore to suppress TS6133 unused variable warning
-  const { data: _allBookings = [] } = useGetAllResourceBookingsQuery();
+  const {
+    resources,
+    allBookings,
+    myBookings,
 
-  const resources: Resource[] = [
-    {
-      id: 1,
-      name: 'Conference Room A',
-      type: 'Room',
-      location: '2nd Floor',
-      capacity: 10,
-      description: 'Large meeting room with display and whiteboard.',
-      status: 'Active',
-    },
-    {
-      id: 2,
-      name: 'Projector 01',
-      type: 'Equipment',
-      location: 'IT Department',
-      capacity: null,
-      description: 'HD projector for presentations and meetings.',
-      status: 'Active',
-    },
-    {
-      id: 3,
-      name: 'Company Car 01',
-      type: 'Vehicle',
-      location: 'Parking Area',
-      capacity: 5,
-      description: 'Company sedan for official business travel.',
-      status: 'Active',
-    },
-  ];
+    handleBookingSubmit,
+    handleCreateResource,
+
+    isCreating,
+    isCreatingResource,
+  } = useResourceBookingPage();
+
+  /* ============================================================
+     BOOKING MODAL
+  ============================================================ */
 
   const openBooking = (resource: Resource | null = null) => {
     setSelectedResource(resource);
@@ -62,13 +53,35 @@ const ResourceBookingPage = () => {
     setSelectedResource(null);
   };
 
+  /* ============================================================
+     RESOURCE SEARCH
+  ============================================================ */
+
   const filteredResources = resources.filter((resource) =>
-    resource.name.toLowerCase().includes(search.toLowerCase())
+    resource.name.toLowerCase().includes(search.trim().toLowerCase())
   );
+
+  /* ============================================================
+     ADD RESOURCE
+  ============================================================ */
+
+  const handleAddResource = async (data: Parameters<typeof handleCreateResource>[0]) => {
+    await handleCreateResource(data);
+
+    // Only reached when the API request succeeds
+    setAddResourceOpen(false);
+  };
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Resource Booking</h1>
@@ -78,20 +91,41 @@ const ResourceBookingPage = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => openBooking()}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-        >
-          <Plus className="h-4 w-4" />
-          Book Resource
-        </button>
+        <div className="flex items-center gap-3">
+          {/* ADD RESOURCE */}
+
+          <button
+            type="button"
+            onClick={() => setAddResourceOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            <Plus className="h-4 w-4" />
+            Add Resource
+          </button>
+
+          {/* BOOK RESOURCE */}
+
+          <button
+            type="button"
+            onClick={() => openBooking()}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            Book Resource
+          </button>
+        </div>
       </div>
 
-      {/* Statistics */}
+      {/* ======================================================
+          STATISTICS
+      ====================================================== */}
+
       <BookingStats bookings={myBookings} />
 
-      {/* Resource Section */}
+      {/* ======================================================
+          AVAILABLE RESOURCES
+      ====================================================== */}
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -100,44 +134,66 @@ const ResourceBookingPage = () => {
             <p className="text-sm text-muted-foreground">Select a resource to create a booking.</p>
           </div>
 
+          {/* SEARCH */}
+
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              className="absolute left-3 top-1/2 h-4 w-4
+                         -translate-y-1/2
+                         text-muted-foreground"
+            />
 
             <input
               type="text"
               placeholder="Search resources..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none"
+              className="w-full rounded-lg border
+                         bg-background
+                         py-2 pl-9 pr-3
+                         text-sm outline-none
+                         focus:ring-2
+                         focus:ring-primary/20"
             />
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredResources.map((resource) => (
-            <ResourceCard
-              key={resource.id}
-              resource={resource}
-              onBook={() => openBooking(resource)}
-            />
-          ))}
-        </div>
+        {/* RESOURCE LIST */}
+
+        {filteredResources.length === 0 ? (
+          <div className="rounded-xl border bg-card p-10 text-center">
+            <p className="font-medium">No resources found</p>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add a resource or try a different search term.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredResources.map((resource) => (
+              <ResourceCard
+                key={resource.id}
+                resource={resource}
+                onBook={() => openBooking(resource)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Upcoming Bookings */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">My Upcoming Bookings</h2>
+      {/* ======================================================
+          MY UPCOMING BOOKINGS
+      ====================================================== */}
 
-            <p className="text-sm text-muted-foreground">Your upcoming resource reservations.</p>
-          </div>
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">My Upcoming Bookings</h2>
+
+          <p className="text-sm text-muted-foreground">Your upcoming resource reservations.</p>
         </div>
 
         <div className="rounded-xl border bg-card">
-          {myBookingsLoading ? (
-            <div className="p-6 text-sm text-muted-foreground">Loading bookings...</div>
-          ) : myBookings.length === 0 ? (
+          {myBookings.length === 0 ? (
             <div className="p-10 text-center">
               <p className="font-medium">No upcoming bookings</p>
 
@@ -165,7 +221,9 @@ const ResourceBookingPage = () => {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
+
                       {' - '}
+
                       {new Date(booking.end_datetime).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -179,15 +237,32 @@ const ResourceBookingPage = () => {
         </div>
       </div>
 
-      {/* Booking Sheet */}
-      <ResourceBookingSheet
+      {/* ======================================================
+          ADD RESOURCE MODAL
+      ====================================================== */}
+
+      <AddResourceModal
+        open={addResourceOpen}
+        onClose={() => setAddResourceOpen(false)}
+        onSubmit={handleAddResource}
+        isSubmitting={isCreatingResource}
+      />
+
+      {/* ======================================================
+          BOOKING MODAL
+      ====================================================== */}
+
+      <ResourceBookingModal
         open={bookingOpen}
         resource={selectedResource}
         resources={resources}
+        bookings={allBookings}
         onClose={closeBooking}
+        onSubmit={handleBookingSubmit}
+        isSubmitting={isCreating}
       />
     </div>
   );
 };
 
-export default ResourceBookingPage;
+export default ResourceBooking;

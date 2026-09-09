@@ -37,7 +37,13 @@ const CATEGORY_IMAGES: Record<string, string> = {
 const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=60';
 
-export const EventCard = ({ event, onEdit, onDelete, onRegister, isRegistering }: EventCardProps) => {
+export const EventCard = ({
+  event,
+  onEdit,
+  onDelete,
+  onRegister,
+  isRegistering,
+}: EventCardProps) => {
   const [imageSrc, setImageSrc] = useState(
     event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
   );
@@ -213,4 +219,3 @@ export const EventCard = ({ event, onEdit, onDelete, onRegister, isRegistering }
     </div>
   );
 };
-
