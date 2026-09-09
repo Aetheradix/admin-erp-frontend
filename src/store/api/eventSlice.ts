@@ -142,4 +142,3 @@ export const {
   useUpdateEventMutation,
   useDeleteEventMutation,
 } = eventSlice;
-

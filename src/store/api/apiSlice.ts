@@ -68,6 +68,7 @@ export const apiSlice = createApi({
     'Tasks',
     'Settings',
     'ResourceBooking',
+    'Resource',
   ],
   endpoints: () => ({}),
 });
