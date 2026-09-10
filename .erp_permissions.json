@@ -1,0 +1,35 @@
+{
+  "/events": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee"
+  ],
+  "/calendar": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee"
+  ],
+  "/resource-booking": [
+    "SuperAdmin"
+  ],
+  "/resource-booking/my-bookings": [
+    "SuperAdmin"
+  ],
+  "/resource-booking/calendar": [
+    "SuperAdmin"
+  ],
+  "/resource-booking/all": [
+    "SuperAdmin"
+  ],
+  "/": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee"
+  ]
+}

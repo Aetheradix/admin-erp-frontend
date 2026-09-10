@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { type NavItem as NavItemType } from '@/config/navItems';
 import { labelVariants } from './variants';
+import { useAuth } from '../../../hooks/useAuth';
+import { isSuperAdmin } from '@/utils/pagePermissions';
 
 const getTranslatedLabel = (label: string, t: (key: string) => string) => {
   const map: Record<string, string> = {
@@ -34,10 +36,20 @@ const getTranslatedLabel = (label: string, t: (key: string) => string) => {
   return map[label] ? t(map[label]) : label;
 };
 
-export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }) {
+interface NavItemProps {
+  item: NavItemType;
+  isOpen: boolean;
+  onOpenAccessControl?: (item: NavItemType, rect: DOMRect) => void;
+}
+
+export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const location = useLocation();
   const hasChildren = item.children && item.children.length > 0;
+  const [isHovered, setIsHovered] = useState(false);
+  const superAdmin = isSuperAdmin(user);
+  const showEye = superAdmin && isOpen;
 
   // Auto-expand if current path matches any child
   const isChildActive = hasChildren
@@ -47,10 +59,18 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
 
   const [expanded, setExpanded] = useState(isChildActive || isParentActive);
 
+  const handleEyeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    onOpenAccessControl?.(item, rect);
+  };
+
   // For items with children, toggle expand instead of navigating
   if (hasChildren) {
     return (
-      <div>
+      <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div className="relative flex items-center">
         <button
           onClick={() => setExpanded(!expanded)}
           className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
@@ -124,6 +144,27 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
           </AnimatePresence>
         </button>
 
+        {/* Eye icon – Super Admin only, visible on modules with sub-pages */}
+        <AnimatePresence>
+          {showEye && (isHovered || isChildActive || isParentActive) && (
+            <motion.button
+              key="eye-btn"
+              type="button"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+              onClick={handleEyeClick}
+              title="Manage page access for this module"
+              aria-label={`Manage access for ${item.label}`}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25"
+            >
+              <Eye size={14} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+        </div>
+
         {/* Children sub-menu */}
         <AnimatePresence initial={false}>
           {expanded && isOpen && (
@@ -167,65 +208,91 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
 
   // Standard nav item (no children)
   return (
-    <NavLink
-      to={item.path}
-      end={item.path === '/'}
-      aria-label={`Navigate to ${item.label}`}
-      className={({ isActive }) =>
-        `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
-          isActive ? 'text-white' : 'text-white/40 hover:text-white'
-        }`
-      }
+    <div
+      className="relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {({ isActive }) => (
-        <>
-          {/* Torch glow */}
-          <AnimatePresence>
+      <NavLink
+        to={item.path}
+        end={item.path === '/'}
+        aria-label={`Navigate to ${item.label}`}
+        className={({ isActive }) =>
+          `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
+            isActive ? 'text-white' : 'text-white/40 hover:text-white'
+          }`
+        }
+      >
+        {({ isActive }) => (
+          <>
+            {/* Torch glow */}
+            <AnimatePresence>
+              {isActive && (
+                <motion.div
+                  key="glow"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-linear-to-r from-primary/20 via-primary/5 to-transparent pointer-events-none"
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Active indicator */}
             {isActive && (
               <motion.div
-                key="glow"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-linear-to-r from-primary/20 via-primary/5 to-transparent pointer-events-none"
+                layoutId="activeIndicator"
+                className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_12px_var(--primary-glow)] z-20"
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               />
             )}
-          </AnimatePresence>
 
-          {/* Active indicator */}
-          {isActive && (
-            <motion.div
-              layoutId="activeIndicator"
-              className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_12px_var(--primary-glow)] z-20"
-              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            <item.icon
+              size={20}
+              className={`shrink-0 relative z-10 transition-colors duration-200 ${
+                isActive ? 'text-primary' : 'text-white/40 group-hover:text-white'
+              }`}
             />
-          )}
 
-          <item.icon
-            size={20}
-            className={`shrink-0 relative z-10 transition-colors duration-200 ${
-              isActive ? 'text-primary' : 'text-white/40 group-hover:text-white'
-            }`}
-          />
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.span
+                  key={`label-${item.path}`}
+                  variants={labelVariants}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
+                  className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden ${
+                    isActive ? 'text-white' : 'text-white/60 group-hover:text-white'
+                  }`}
+                >
+                  {getTranslatedLabel(item.label, t)}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </NavLink>
 
-          <AnimatePresence initial={false}>
-            {isOpen && (
-              <motion.span
-                key={`label-${item.path}`}
-                variants={labelVariants}
-                initial="closed"
-                animate="open"
-                exit="closed"
-                className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden ${
-                  isActive ? 'text-white' : 'text-white/60 group-hover:text-white'
-                }`}
-              >
-                {getTranslatedLabel(item.label, t)}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </>
-      )}
-    </NavLink>
+      {/* Eye icon for single-page items – Super Admin only */}
+      <AnimatePresence>
+        {showEye && (isHovered || isParentActive) && (
+          <motion.button
+            key="eye-btn-single"
+            type="button"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            onClick={handleEyeClick}
+            title={`Manage access for ${item.label}`}
+            aria-label={`Manage access for ${item.label}`}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25"
+          >
+            <Eye size={14} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

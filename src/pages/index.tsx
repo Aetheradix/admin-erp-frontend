@@ -106,7 +106,7 @@ const AppFeature = () => {
       'Finance',
       'Grievances',
       'Guest Pass',
-      'Resouce Booking',
+      'Resource Booking',
     ];
     for (const f of features) {
       map[f] = check(f);

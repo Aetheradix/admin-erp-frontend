@@ -17,10 +17,12 @@ export function NavSection({
   category,
   items,
   isOpen,
+  onOpenAccessControl,
 }: {
   category: string;
   items: NavItemType[];
   isOpen: boolean;
+  onOpenAccessControl?: (item: NavItemType, rect: DOMRect) => void;
 }) {
   if (items.length === 0) return null;
 
@@ -42,7 +44,12 @@ export function NavSection({
       </AnimatePresence>
       <div className="flex flex-col gap-1">
         {items.map((item) => (
-          <NavItem key={item.path} item={item} isOpen={isOpen} />
+          <NavItem
+            key={item.path}
+            item={item}
+            isOpen={isOpen}
+            onOpenAccessControl={onOpenAccessControl}
+          />
         ))}
       </div>
     </div>

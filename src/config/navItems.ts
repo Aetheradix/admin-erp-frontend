@@ -211,8 +211,18 @@ export const navItems: NavItem[] = [
     roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
     children: [
       {
+        label: 'Company Profile',
+        path: '/org',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+      {
         label: 'New Accounts',
         path: '/org/approvals',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'Branches',
+        path: '/org/branches',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
@@ -221,7 +231,7 @@ export const navItems: NavItem[] = [
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
-        label: 'Team',
+        label: 'Team Directory',
         path: '/staff',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
@@ -234,6 +244,18 @@ export const navItems: NavItem[] = [
     category: 'MANAGEMENT',
     description: 'Event planner & dynamic filters',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    children: [
+      {
+        label: 'Events Planner',
+        path: '/events',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+      {
+        label: 'Attendance Calendar',
+        path: '/calendar',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+    ],
   },
   {
     label: 'Tasks',
