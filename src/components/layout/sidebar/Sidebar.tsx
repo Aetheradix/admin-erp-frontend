@@ -11,7 +11,13 @@ import { NavSection } from './NavSection';
 import { SidebarFooter } from './SidebarFooter';
 import { sidebarVariants } from './variants';
 import { PageAccessPanel } from './PageAccessPanel';
-import { canAccessPage, isSuperAdmin } from '@/utils/pagePermissions';
+import {
+  canAccessPage,
+  isSuperAdmin,
+  getUserRoles,
+  normalizeRole,
+  syncRemotePermissions,
+} from '@/utils/pagePermissions';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -62,6 +68,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   useEffect(() => {
+    // Sync remote permissions across browsers/incognito on mount
+    syncRemotePermissions();
+
     const handleConfigChange = () => {
       setConfigVersion((v) => v + 1);
     };
@@ -117,8 +126,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const currentUserRoleName = (() => {
     if (!user) return 'Viewer';
+    const primaryRole = getUserRoles(user)[0] || 'Employee';
 
-    switch (user.role) {
+    switch (primaryRole) {
       case 'SuperAdmin':
         return 'Super Admin';
 
@@ -131,11 +141,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       case 'FinanceAdmin':
         return 'Finance Admin';
 
-      case 'Employee':
-        return 'Employee';
+      case 'Manager':
+        return 'Manager';
 
+      case 'Employee':
       default:
-        return 'Viewer';
+        return 'Employee';
     }
   })();
 
@@ -161,7 +172,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (isSuperAdminUser) return true;
 
     // 1. Check static user role access
-    if (item.roles && user?.role && !item.roles.includes(user.role)) {
+    const userRoles = getUserRoles(user);
+    if (
+      item.roles &&
+      userRoles.length > 0 &&
+      !item.roles.some((r) => userRoles.includes(normalizeRole(r)))
+    ) {
       return false;
     }
 

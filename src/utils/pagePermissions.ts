@@ -43,8 +43,36 @@ export const normalizeRole = (roleStr: string | undefined): string => {
   if (clean === 'hr' || clean === 'hradmin' || clean === 'humanresources') return 'HrAdmin';
   if (clean === 'finance' || clean === 'financeadmin') return 'FinanceAdmin';
   if (clean === 'manager') return 'Manager';
-  if (clean === 'employee' || clean === 'staff') return 'Employee';
+  if (
+    clean === 'employee' ||
+    clean === 'staff' ||
+    clean === 'user' ||
+    clean === 'regular' ||
+    clean === 'normal' ||
+    clean === 'viewer'
+  ) {
+    return 'Employee';
+  }
   return roleStr;
+};
+
+/**
+ * Extracts all assigned normalized roles from a user object.
+ */
+export const getUserRoles = (user: User | null | undefined): string[] => {
+  if (!user) return [];
+  const roles: string[] = [];
+  if (user.role) roles.push(String(user.role));
+  if (Array.isArray((user as any).roles)) {
+    (user as any).roles.forEach((r: any) => {
+      if (typeof r === 'string') roles.push(r);
+      else if (r && typeof r.name === 'string') roles.push(r.name);
+    });
+  }
+  if (roles.length === 0) {
+    roles.push('Employee');
+  }
+  return [...new Set(roles.map(normalizeRole))];
 };
 
 /**
@@ -64,7 +92,7 @@ export const getStoredPagePermissions = (): Record<string, string[]> => {
 };
 
 /**
- * Save updated page permissions to localStorage and dispatch events across tabs and windows.
+ * Save updated page permissions to localStorage, server sync endpoint, and broadcast across tabs.
  */
 export const saveStoredPagePermissions = (permissions: Record<string, string[]>) => {
   try {
@@ -81,10 +109,57 @@ export const saveStoredPagePermissions = (permissions: Record<string, string[]>)
         // BroadcastChannel fallback ignored
       }
     }
+
+    // Sync to dev server endpoint so Incognito and other browsers get the permissions
+    if (typeof fetch !== 'undefined') {
+      fetch('/__erp_permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(permissions),
+      }).catch(() => {
+        // server endpoint optional in pure static builds
+      });
+    }
   } catch (err) {
     console.error('Failed to save erp_page_permissions:', err);
   }
 };
+
+/**
+ * Fetch permissions from the server endpoint (allows Incognito to receive permissions from Normal window)
+ */
+export const syncRemotePermissions = async () => {
+  if (typeof fetch === 'undefined') return;
+  try {
+    const res = await fetch('/__erp_permissions');
+    if (res.ok) {
+      const serverPerms = await res.json();
+      if (serverPerms && Object.keys(serverPerms).length > 0) {
+        const local = getStoredPagePermissions();
+        // If different from local, update localStorage and notify listeners
+        if (JSON.stringify(serverPerms) !== JSON.stringify(local)) {
+          localStorage.setItem(PAGE_PERMISSIONS_STORAGE_KEY, JSON.stringify(serverPerms));
+          window.dispatchEvent(new Event(ERP_CONFIG_CHANGED_EVENT));
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+};
+
+// Auto-sync permissions on startup and when user switches between windows/tabs (e.g. Incognito to Normal)
+if (typeof window !== 'undefined') {
+  syncRemotePermissions();
+  window.addEventListener('focus', () => {
+    syncRemotePermissions();
+  });
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      syncRemotePermissions();
+    }
+  });
+}
 
 /**
  * Get active allowed roles for a given page path.
@@ -141,9 +216,8 @@ export const canAccessPage = (
   if (!user) return false;
   if (isSuperAdmin(user)) return true;
 
-  const allowedRoles = getEffectivePageRoles(pagePath, defaultRoles);
-  const userNormalized = normalizeRole(user.role);
+  const allowedRoles = getEffectivePageRoles(pagePath, defaultRoles).map(normalizeRole);
+  const userRoles = getUserRoles(user);
 
-  return allowedRoles.some((r) => normalizeRole(r) === userNormalized);
+  return userRoles.some((uRole) => allowedRoles.includes(uRole));
 };
-
