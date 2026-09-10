@@ -2,6 +2,7 @@ import type { User } from '@/types/auth';
 
 export const PAGE_PERMISSIONS_STORAGE_KEY = 'erp_page_permissions';
 export const ERP_CONFIG_CHANGED_EVENT = 'erp_config_changed';
+export const ERP_BROADCAST_CHANNEL = 'erp_permissions_channel';
 
 export interface RoleDefinition {
   id: string;
@@ -63,12 +64,23 @@ export const getStoredPagePermissions = (): Record<string, string[]> => {
 };
 
 /**
- * Save updated page permissions to localStorage and dispatch event.
+ * Save updated page permissions to localStorage and dispatch events across tabs and windows.
  */
 export const saveStoredPagePermissions = (permissions: Record<string, string[]>) => {
   try {
     localStorage.setItem(PAGE_PERMISSIONS_STORAGE_KEY, JSON.stringify(permissions));
     window.dispatchEvent(new Event(ERP_CONFIG_CHANGED_EVENT));
+
+    // Broadcast across other browser tabs/windows
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel(ERP_BROADCAST_CHANNEL);
+        bc.postMessage({ type: ERP_CONFIG_CHANGED_EVENT, timestamp: Date.now() });
+        bc.close();
+      } catch {
+        // BroadcastChannel fallback ignored
+      }
+    }
   } catch (err) {
     console.error('Failed to save erp_page_permissions:', err);
   }
@@ -76,7 +88,7 @@ export const saveStoredPagePermissions = (permissions: Record<string, string[]>)
 
 /**
  * Get active allowed roles for a given page path.
- * Falls back to default roles from nav items or default roles for all.
+ * Falls back to default roles from nav items or standard default.
  */
 export const getEffectivePageRoles = (
   path: string,
@@ -84,7 +96,6 @@ export const getEffectivePageRoles = (
 ): string[] => {
   const stored = getStoredPagePermissions();
   if (stored[path] && Array.isArray(stored[path])) {
-    // Ensure SuperAdmin is always included
     const roles = stored[path];
     if (!roles.includes('SuperAdmin')) {
       return ['SuperAdmin', ...roles];
@@ -93,14 +104,29 @@ export const getEffectivePageRoles = (
   }
 
   // Fallback to defaultRoles or standard all-role default
-  const defaults = defaultRoles && defaultRoles.length > 0
-    ? defaultRoles
-    : ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee', 'Manager'];
+  const defaults =
+    defaultRoles && defaultRoles.length > 0
+      ? defaultRoles
+      : ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee', 'Manager'];
 
   if (!defaults.includes('SuperAdmin')) {
     return ['SuperAdmin', ...defaults];
   }
   return defaults;
+};
+
+/**
+ * Checks whether a specific role (e.g. Employee) is allowed to access a given page path.
+ */
+export const isRoleAllowedForPage = (
+  path: string,
+  roleId: string,
+  defaultRoles?: string[]
+): boolean => {
+  if (roleId === 'SuperAdmin') return true;
+  const roles = getEffectivePageRoles(path, defaultRoles);
+  const targetNorm = normalizeRole(roleId);
+  return roles.some((r) => normalizeRole(r) === targetNorm);
 };
 
 /**
@@ -118,6 +144,6 @@ export const canAccessPage = (
   const allowedRoles = getEffectivePageRoles(pagePath, defaultRoles);
   const userNormalized = normalizeRole(user.role);
 
-  // Check if any normalized allowed role matches the normalized user role
   return allowedRoles.some((r) => normalizeRole(r) === userNormalized);
 };
+

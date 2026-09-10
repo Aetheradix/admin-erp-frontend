@@ -65,9 +65,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const handleConfigChange = () => {
       setConfigVersion((v) => v + 1);
     };
+
     window.addEventListener('erp_config_changed', handleConfigChange);
+    window.addEventListener('storage', handleConfigChange);
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel('erp_permissions_channel');
+      channel.onmessage = () => {
+        handleConfigChange();
+      };
+    } catch {
+      // BroadcastChannel fallback
+    }
+
     return () => {
       window.removeEventListener('erp_config_changed', handleConfigChange);
+      window.removeEventListener('storage', handleConfigChange);
+      if (channel) {
+        channel.close();
+      }
     };
   }, []);
 
@@ -98,18 +115,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return [];
   })();
 
-  // const currentUserRoleName = (() => {
-  //   if (!user) return 'Viewer';
-  //   const desc = user.designation?.toLowerCase() || '';
-  //   if (desc.includes('super admin')) return 'Super Admin';
-  //   if (desc.includes('admin')) return 'Admin';
-  //   if (desc.includes('manager')) return 'Manager';
-  //   if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
-
-  //   if (user.role === 'admin') return 'Admin';
-  //   return 'Viewer';
-  // })();
-
   const currentUserRoleName = (() => {
     if (!user) return 'Viewer';
 
@@ -133,6 +138,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         return 'Viewer';
     }
   })();
+
   const labelToPermissionKey = (label: string): string | null => {
     const lower = label.toLowerCase();
     if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
@@ -141,68 +147,94 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (lower === 'inventory') return 'inventory';
     if (lower === 'settings') return 'settings';
     if (lower === 'analytics') return 'reports';
+    if (lower.includes('resource')) return 'resource_booking';
+    if (lower.includes('event')) return 'events';
+    if (lower === 'blogs') return 'blogs';
+    if (lower === 'gallery') return 'gallery';
     return null;
   };
 
-  // const filteredNavItems = navItems.filter((item) => {
-  //   // 1. Basic Role Check
-  //   if (item.roles && item.roles !== user?.role) return false;
+  const isSuperAdminUser = isSuperAdmin(user);
 
-  //   // 2. Global Section Toggle check
-  //   if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) return false;
-
-  //   // 3. Role-based check
-  //   const permKey = labelToPermissionKey(item.label);
-  //   if (permKey) {
-  //     const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
-  //     if (roleObj && roleObj.permissions[permKey] === false) {
-  //       return false;
-  //     }
-  //   }
-
-  //   return true;
-  // });
-
+  // 1. Initial filter by base roles, global sections, and dynamic role permissions
   const filteredNavItems = navItems.filter((item) => {
-    // 1. Check user role access
+    if (isSuperAdminUser) return true;
+
+    // 1. Check static user role access
     if (item.roles && user?.role && !item.roles.includes(user.role)) {
       return false;
     }
 
-    // 2. Global Section Toggle
+    // 2. Global Section Toggle from Settings
     if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) {
       return false;
     }
 
     // 3. Dynamic role permissions
     const permKey = labelToPermissionKey(item.label);
-
     if (permKey) {
       const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
-      if (roleObj && roleObj.permissions[permKey] === false) {
+      if (roleObj && roleObj.permissions && roleObj.permissions[permKey] === false) {
         return false;
       }
     }
+
     return true;
   });
 
-  const isSuperAdminUser = isSuperAdmin(user);
-
   const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
-  const navItemsWithBadge = slicedNavItems.map((item) => ({
-    ...item,
-    children: item.children
-      ?.filter((child) => {
-        // Super Admin always sees everything
-        if (isSuperAdminUser) return true;
-        // Filter children based on page-level permissions
-        return canAccessPage(child.path, user, child.roles?.map(String));
-      })
-      .map((child) => ({
-        ...child,
-        badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
-      })),
-  }));
+
+  // 2. Filter children and parent modules based on Page Access Permissions
+  const navItemsWithBadge = slicedNavItems
+    .map((item) => {
+      if (isSuperAdminUser) {
+        return {
+          ...item,
+          children: item.children?.map((child) => ({
+            ...child,
+            badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
+          })),
+        };
+      }
+
+      // If module has sub-pages, filter each child by canAccessPage
+      if (item.children && item.children.length > 0) {
+        const allowedChildren = item.children
+          .filter((child) => canAccessPage(child.path, user, child.roles?.map(String)))
+          .map((child) => ({
+            ...child,
+            badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
+          }));
+
+        return {
+          ...item,
+          children: allowedChildren,
+        };
+      }
+
+      return {
+        ...item,
+      };
+    })
+    .filter((item) => {
+      // Super Admin always sees all modules
+      if (isSuperAdminUser) return true;
+
+      const originalItem = navItems.find((n) => n.path === item.path && n.label === item.label);
+
+      // If this module originally had sub-pages:
+      if (originalItem?.children && originalItem.children.length > 0) {
+        // If there are still accessible sub-pages, keep it!
+        if (item.children && item.children.length > 0) {
+          return true;
+        }
+        // If all sub-pages were restricted, check if the parent path itself is explicitly accessible
+        return canAccessPage(item.path, user, item.roles?.map(String));
+      }
+
+      // Single-page module (no sub-pages, e.g. Tasks, Blogs, Gallery):
+      return canAccessPage(item.path, user, item.roles?.map(String));
+    });
 
   return (
     <motion.aside
@@ -253,12 +285,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <SidebarFooter isOpen={isOpen} onLogout={handleLogout} />
 
-      {/* Page Access Panel – rendered outside sidebar scroll area */}
       <AnimatePresence>
         {accessPanelItem && (
           <PageAccessPanel
             key={accessPanelItem.path}
-            moduleItem={accessPanelItem}
+            moduleItem={
+              navItems.find((n) => n.path === accessPanelItem.path) || accessPanelItem
+            }
             triggerRect={accessPanelTriggerRect}
             onClose={handleCloseAccessPanel}
           />
