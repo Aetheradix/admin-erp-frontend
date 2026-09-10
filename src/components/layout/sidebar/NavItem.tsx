@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { type NavItem as NavItemType } from '@/config/navItems';
 import { labelVariants } from './variants';
+import { useAuth } from '../../../hooks/useAuth';
+import { isSuperAdmin } from '@/utils/pagePermissions';
 
 const getTranslatedLabel = (label: string, t: (key: string) => string) => {
   const map: Record<string, string> = {
@@ -34,10 +36,20 @@ const getTranslatedLabel = (label: string, t: (key: string) => string) => {
   return map[label] ? t(map[label]) : label;
 };
 
-export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }) {
+interface NavItemProps {
+  item: NavItemType;
+  isOpen: boolean;
+  onOpenAccessControl?: (item: NavItemType, rect: DOMRect) => void;
+}
+
+export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const location = useLocation();
   const hasChildren = item.children && item.children.length > 0;
+  const [isHovered, setIsHovered] = useState(false);
+  const superAdmin = isSuperAdmin(user);
+  const showEye = superAdmin && hasChildren && isOpen;
 
   // Auto-expand if current path matches any child
   const isChildActive = hasChildren
@@ -47,10 +59,17 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
 
   const [expanded, setExpanded] = useState(isChildActive || isParentActive);
 
+  const handleEyeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    onOpenAccessControl?.(item, rect);
+  };
+
   // For items with children, toggle expand instead of navigating
   if (hasChildren) {
     return (
-      <div>
+      <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div className="relative flex items-center">
         <button
           onClick={() => setExpanded(!expanded)}
           className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
@@ -123,6 +142,27 @@ export function NavItem({ item, isOpen }: { item: NavItemType; isOpen: boolean }
             )}
           </AnimatePresence>
         </button>
+
+        {/* Eye icon – Super Admin only, visible on modules with sub-pages */}
+        <AnimatePresence>
+          {showEye && (isHovered || isChildActive || isParentActive) && (
+            <motion.button
+              key="eye-btn"
+              type="button"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+              onClick={handleEyeClick}
+              title="Manage page access for this module"
+              aria-label={`Manage access for ${item.label}`}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25"
+            >
+              <Eye size={14} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+        </div>
 
         {/* Children sub-menu */}
         <AnimatePresence initial={false}>

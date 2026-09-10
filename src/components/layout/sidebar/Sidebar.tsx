@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
-import { navItems } from '@/config/navItems';
+import { navItems, type NavItem as NavItemType } from '@/config/navItems';
 import { Button } from '@/components/ui/primitives/Button';
 import { usePendingUsers } from '@/pages/settings/hooks/usePendingUsers';
 import { SidebarLogo } from './SidebarLogo';
 import { NavSection } from './NavSection';
 import { SidebarFooter } from './SidebarFooter';
 import { sidebarVariants } from './variants';
+import { PageAccessPanel } from './PageAccessPanel';
+import { canAccessPage, isSuperAdmin } from '@/utils/pagePermissions';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,6 +44,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const [configVersion, setConfigVersion] = useState(0);
+
+  // PageAccessPanel state – tracked separately so it re-reads perms on every open
+  const [accessPanelItem, setAccessPanelItem] = useState<NavItemType | null>(null);
+  const [accessPanelTriggerRect, setAccessPanelTriggerRect] = useState<DOMRect | null>(null);
+
+  const handleOpenAccessPanel = (item: NavItemType, rect: DOMRect) => {
+    setAccessPanelItem(item);
+    setAccessPanelTriggerRect(rect);
+  };
+
+  const handleCloseAccessPanel = () => {
+    setAccessPanelItem(null);
+    setAccessPanelTriggerRect(null);
+    // Bump configVersion so nav re-renders with fresh permissions
+    setConfigVersion((v) => v + 1);
+  };
 
   useEffect(() => {
     const handleConfigChange = () => {
@@ -168,19 +186,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return true;
   });
 
-  console.log('Logged user:', user);
-  console.log('Current role:', user?.role);
-  console.log('Role name:', currentUserRoleName);
-  console.log('Sidebar items:', filteredNavItems);
+  const isSuperAdminUser = isSuperAdmin(user);
 
   const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
   const navItemsWithBadge = slicedNavItems.map((item) => ({
     ...item,
-    children: item.children?.map((child) => ({
-      ...child,
-      badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
-    })),
+    children: item.children
+      ?.filter((child) => {
+        // Super Admin always sees everything
+        if (isSuperAdminUser) return true;
+        // Filter children based on page-level permissions
+        return canAccessPage(child.path, user, child.roles?.map(String));
+      })
+      .map((child) => ({
+        ...child,
+        badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
+      })),
   }));
+
   return (
     <motion.aside
       custom={isMobile}
@@ -223,11 +246,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             category={category}
             items={navItemsWithBadge.filter((item) => item.category === category)}
             isOpen={isOpen}
+            onOpenAccessControl={isSuperAdminUser ? handleOpenAccessPanel : undefined}
           />
         ))}
       </nav>
 
       <SidebarFooter isOpen={isOpen} onLogout={handleLogout} />
+
+      {/* Page Access Panel – rendered outside sidebar scroll area */}
+      <AnimatePresence>
+        {accessPanelItem && (
+          <PageAccessPanel
+            key={accessPanelItem.path}
+            moduleItem={accessPanelItem}
+            triggerRect={accessPanelTriggerRect}
+            onClose={handleCloseAccessPanel}
+          />
+        )}
+      </AnimatePresence>
     </motion.aside>
   );
 }

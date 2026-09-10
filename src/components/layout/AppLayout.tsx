@@ -13,6 +13,7 @@ import { GeminiAiDrawer } from '@/components/ui/composed/GeminiAiDrawer';
 import { Sparkles, Calendar, ChevronRight, X } from 'lucide-react';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { useGetEventsQuery } from '@/store/api/eventSlice';
+import { PageAccessGuard } from '@/components/layout/PageAccessGuard';
 
 function hexToRgb(hex: string) {
   const clean = hex.replace('#', '');
@@ -176,7 +177,9 @@ export default function AppLayout() {
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
           <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <Outlet />
+            <PageAccessGuard>
+              <Outlet />
+            </PageAccessGuard>
           </div>
         </main>
       </div>
