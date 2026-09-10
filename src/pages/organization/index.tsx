@@ -1,7 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
-import { OrganizationPage } from './OrganizationPage';
-import { BranchesPage } from './BranchesPage';
+import { Route, Routes } from 'react-router-dom';
 import ApprovalPage from './ApprovalPage';
+import { OrganizationPage } from './OrganizationPage';
 
 const OrganizationModule = () => {
   return (
