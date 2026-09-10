@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Building2, MapPin, Globe, Calendar, Users, Mail, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { BranchesPage } from './BranchesPage';
 
 const companyInfo = {
   name: 'Aetheradix Technologies',
@@ -89,6 +90,7 @@ export function OrganizationPage() {
           </motion.div>
         ))}
       </div>
+      <BranchesPage/>
     </div>
   );
 }

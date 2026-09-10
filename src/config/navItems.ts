@@ -216,22 +216,22 @@ export const navItems: NavItem[] = [
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
-        label: 'New Accounts',
+        label: 'User Management',
         path: '/org/approvals',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
-      {
-        label: 'Branches',
-        path: '/org/branches',
-        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
-      },
+      // {
+      //   label: 'Branches',
+      //   path: '/org/branches',
+      //   roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      // },
       {
         label: 'Teams',
         path: '/teams',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
-        label: 'Team Directory',
+        label: 'Employee Directory',
         path: '/staff',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },

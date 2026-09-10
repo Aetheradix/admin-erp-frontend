@@ -7,7 +7,7 @@ const OrganizationModule = () => {
   return (
     <Routes>
       <Route path="/" element={<OrganizationPage />} />
-      <Route path="/branches" element={<BranchesPage />} />
+      {/* <Route path="/branches" element={<BranchesPage />} /> */}
       <Route path="/approvals" element={<ApprovalPage />} />
     </Routes>
   );

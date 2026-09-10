@@ -113,7 +113,7 @@ export function BranchesPage() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader
+      {/* <PageHeader
         title="Branches"
         description="Manage your organization's physical locations and regional offices."
         breadcrumbs={[
@@ -126,7 +126,7 @@ export function BranchesPage() {
           onClick: () => setShowForm(true),
           icon: 'pi pi-plus',
         }}
-      />
+      /> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {branches.map((branch, i) => (
