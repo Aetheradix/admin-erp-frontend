@@ -1,16 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import {
-  X,
-  Shield,
-  Check,
-  Search,
-  Lock,
-  RotateCcw,
-  Eye,
-  EyeOff,
-  Sparkles,
-} from 'lucide-react';
+import { X, Shield, Check, Search, Lock, RotateCcw, Eye, EyeOff, Sparkles } from 'lucide-react';
 import type { NavItem } from '@/config/navItems';
 import {
   AVAILABLE_ROLES,
@@ -27,11 +17,7 @@ interface PageAccessPanelProps {
   onClose: () => void;
 }
 
-export function PageAccessPanel({
-  moduleItem,
-  triggerRect,
-  onClose,
-}: PageAccessPanelProps) {
+export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccessPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -60,11 +46,8 @@ export function PageAccessPanel({
     const initial: Record<string, string[]> = {};
 
     targetPages.forEach((page) => {
-      const defaultRoles = page.roles
-        ? page.roles.map(String)
-        : moduleItem.roles?.map(String);
-      initial[page.path] =
-        stored[page.path] || getEffectivePageRoles(page.path, defaultRoles);
+      const defaultRoles = page.roles ? page.roles.map(String) : moduleItem.roles?.map(String);
+      initial[page.path] = stored[page.path] || getEffectivePageRoles(page.path, defaultRoles);
     });
 
     return initial;
@@ -132,9 +115,7 @@ export function PageAccessPanel({
     setPageRoles((prev) => {
       const current = prev[path] || ['SuperAdmin'];
       const targetNorm = normalizeRole(roleId);
-      const isCurrentlyAllowed = current.some(
-        (r) => normalizeRole(r) === targetNorm
-      );
+      const isCurrentlyAllowed = current.some((r) => normalizeRole(r) === targetNorm);
 
       let updatedRoles: string[];
       if (isCurrentlyAllowed) {
@@ -201,9 +182,7 @@ export function PageAccessPanel({
   const resetAllToDefaults = () => {
     const initial: Record<string, string[]> = {};
     targetPages.forEach((page) => {
-      const defaultRoles = page.roles
-        ? page.roles.map(String)
-        : moduleItem.roles?.map(String);
+      const defaultRoles = page.roles ? page.roles.map(String) : moduleItem.roles?.map(String);
       initial[page.path] = defaultRoles || [
         'SuperAdmin',
         'Admin',
@@ -238,9 +217,7 @@ export function PageAccessPanel({
   const filteredPages = targetPages.filter((page) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    return (
-      page.label.toLowerCase().includes(q) || page.path.toLowerCase().includes(q)
-    );
+    return page.label.toLowerCase().includes(q) || page.path.toLowerCase().includes(q);
   });
 
   // Calculate master toggle state for current selected role
@@ -423,9 +400,7 @@ export function PageAccessPanel({
           <div className="flex items-center justify-between text-[11px] font-semibold text-white/40 uppercase tracking-wider px-1">
             <span>Pages ({filteredPages.length})</span>
             <span>
-              {selectedRole === 'ALL'
-                ? 'Role Badges'
-                : `Toggle Visibility (${selectedRole})`}
+              {selectedRole === 'ALL' ? 'Role Badges' : `Toggle Visibility (${selectedRole})`}
             </span>
           </div>
 
@@ -438,9 +413,7 @@ export function PageAccessPanel({
               const currentRoles = pageRoles[page.path] || ['SuperAdmin'];
               const isAllowedForSelectedRole =
                 selectedRole === 'SuperAdmin' ||
-                currentRoles.some(
-                  (r) => normalizeRole(r) === normalizeRole(selectedRole)
-                );
+                currentRoles.some((r) => normalizeRole(r) === normalizeRole(selectedRole));
 
               return (
                 <div
@@ -475,9 +448,7 @@ export function PageAccessPanel({
                       <div className="flex items-center gap-3 shrink-0">
                         <span
                           className={`text-xs font-semibold ${
-                            isAllowedForSelectedRole
-                              ? 'text-emerald-400'
-                              : 'text-white/40'
+                            isAllowedForSelectedRole ? 'text-emerald-400' : 'text-white/40'
                           }`}
                         >
                           {isAllowedForSelectedRole ? 'Visible' : 'Hidden'}
@@ -504,9 +475,7 @@ export function PageAccessPanel({
                           >
                             <span
                               className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                                isAllowedForSelectedRole
-                                  ? 'translate-x-5'
-                                  : 'translate-x-0'
+                                isAllowedForSelectedRole ? 'translate-x-5' : 'translate-x-0'
                               }`}
                             />
                           </button>
@@ -518,9 +487,7 @@ export function PageAccessPanel({
                         {AVAILABLE_ROLES.map((role) => {
                           const isRoleChecked =
                             role.isSuperAdmin ||
-                            currentRoles.some(
-                              (r) => normalizeRole(r) === normalizeRole(role.id)
-                            );
+                            currentRoles.some((r) => normalizeRole(r) === normalizeRole(role.id));
                           const isLocked = role.isSuperAdmin;
 
                           return (
@@ -533,8 +500,8 @@ export function PageAccessPanel({
                                 isLocked
                                   ? 'bg-amber-400/15 text-amber-300 cursor-not-allowed border border-amber-400/20'
                                   : isRoleChecked
-                                  ? 'bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30'
-                                  : 'bg-white/5 text-white/30 border border-white/5 hover:border-white/20'
+                                    ? 'bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30'
+                                    : 'bg-white/5 text-white/30 border border-white/5 hover:border-white/20'
                               }`}
                               title={
                                 isLocked
