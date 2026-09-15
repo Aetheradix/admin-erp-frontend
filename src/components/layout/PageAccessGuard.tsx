@@ -3,7 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { canAccessPage, isSuperAdmin, AVAILABLE_ROLES, normalizeRole } from '@/utils/pagePermissions';
+import {
+  canAccessPage,
+  isSuperAdmin,
+  AVAILABLE_ROLES,
+  normalizeRole,
+} from '@/utils/pagePermissions';
 import { navItems } from '@/config/navItems';
 
 interface PageAccessGuardProps {
@@ -50,9 +55,10 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
   const hasAccess = canAccessPage(currentPath, user, defaultRoles);
 
   if (!hasAccess) {
-    const userRoleLabel = AVAILABLE_ROLES.find(
-      (r) => normalizeRole(r.id) === normalizeRole(user?.role || '')
-    )?.label || user?.role || 'your role';
+    const userRoleLabel =
+      AVAILABLE_ROLES.find((r) => normalizeRole(r.id) === normalizeRole(user?.role || ''))?.label ||
+      user?.role ||
+      'your role';
 
     return (
       <motion.div

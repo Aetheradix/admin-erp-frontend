@@ -47,7 +47,10 @@ const mapResourceType = (type?: string | null): ResourceType => {
   return 'Other';
 };
 
-const mapResourceStatus = (raw: { status?: string; is_active?: number | boolean }): ResourceStatus => {
+const mapResourceStatus = (raw: {
+  status?: string;
+  is_active?: number | boolean;
+}): ResourceStatus => {
   if (raw.status === 'Active' || raw.status === 'Inactive') {
     return raw.status;
   }
@@ -58,11 +61,16 @@ const mapBookingStatus = (status?: string): ResourceBookingStatus => {
   if (!status) return 'Pending';
   const s = status.trim().toLowerCase();
   switch (s) {
-    case 'confirmed': return 'Confirmed';
-    case 'rejected': return 'Rejected';
-    case 'cancelled': return 'Cancelled';
-    case 'completed': return 'Completed';
-    default: return 'Pending';
+    case 'confirmed':
+      return 'Confirmed';
+    case 'rejected':
+      return 'Rejected';
+    case 'cancelled':
+      return 'Cancelled';
+    case 'completed':
+      return 'Completed';
+    default:
+      return 'Pending';
   }
 };
 
@@ -116,7 +124,10 @@ export const resourceBookingSlice = apiSlice.injectEndpoints({
     }),
 
     // CREATE RESOURCE
-    createResource: builder.mutation<{ success: boolean; message: string; data?: Resource }, CreateResourceRequest>({
+    createResource: builder.mutation<
+      { success: boolean; message: string; data?: Resource },
+      CreateResourceRequest
+    >({
       query: (body) => ({
         url: '/schedule/create-resource',
         method: 'POST',

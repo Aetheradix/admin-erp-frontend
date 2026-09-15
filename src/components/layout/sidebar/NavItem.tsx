@@ -115,7 +115,9 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
           <button
             onClick={handleParentClick}
             className={`relative w-full flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden cursor-pointer ${
-              isAnyChildActive || isParentExactActive ? 'text-white' : 'text-white/40 hover:text-white'
+              isAnyChildActive || isParentExactActive
+                ? 'text-white'
+                : 'text-white/40 hover:text-white'
             }`}
           >
             {/* Torch glow */}
@@ -180,7 +182,10 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                   className="p-1 -mr-1 hover:bg-white/10 rounded transition-colors"
                   title={expanded ? 'Collapse menu' : 'Expand menu'}
                 >
-                  <motion.div animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
+                  <motion.div
+                    animate={{ rotate: expanded ? 90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <ChevronRight size={14} className="text-white/30 hover:text-white/70" />
                   </motion.div>
                 </motion.div>
@@ -227,13 +232,11 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                       key={child.path}
                       to={child.path}
                       end={child.path === item.path}
-                      className={
-                        `block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 animated-underline ${
-                          active
-                            ? 'text-white bg-primary/20 font-semibold'
-                            : 'text-white/40 hover:text-white/80 hover:bg-white/5'
-                        }`
-                      }
+                      className={`block px-4 py-2 rounded-md text-[13px] font-medium transition-all duration-200 animated-underline ${
+                        active
+                          ? 'text-white bg-primary/20 font-semibold'
+                          : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                      }`}
                     >
                       <span>{getTranslatedLabel(child.label, t)}</span>
 

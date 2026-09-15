@@ -69,6 +69,9 @@ export const apiSlice = createApi({
     'Settings',
     'ResourceBooking',
     'Resource',
+    'Perks',
+    'PerkTypes',
+    'UserPerks',
   ],
   endpoints: () => ({}),
 });

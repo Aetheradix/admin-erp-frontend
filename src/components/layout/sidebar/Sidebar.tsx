@@ -305,9 +305,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {accessPanelItem && (
           <PageAccessPanel
             key={accessPanelItem.path}
-            moduleItem={
-              navItems.find((n) => n.path === accessPanelItem.path) || accessPanelItem
-            }
+            moduleItem={navItems.find((n) => n.path === accessPanelItem.path) || accessPanelItem}
             triggerRect={accessPanelTriggerRect}
             onClose={handleCloseAccessPanel}
           />

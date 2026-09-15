@@ -90,7 +90,7 @@ export function OrganizationPage() {
           </motion.div>
         ))}
       </div>
-      <BranchesPage/>
+      <BranchesPage />
     </div>
   );
 }

@@ -165,10 +165,7 @@ if (typeof window !== 'undefined') {
  * Get active allowed roles for a given page path.
  * Falls back to default roles from nav items or standard default.
  */
-export const getEffectivePageRoles = (
-  path: string,
-  defaultRoles?: string[]
-): string[] => {
+export const getEffectivePageRoles = (path: string, defaultRoles?: string[]): string[] => {
   const stored = getStoredPagePermissions();
   if (stored[path] && Array.isArray(stored[path])) {
     const roles = stored[path];
