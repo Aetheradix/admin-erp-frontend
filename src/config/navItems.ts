@@ -318,7 +318,7 @@ export const navItems: NavItem[] = [
     {
       label: 'Perk Types',
       path: '/benefits-perks/perk-types',
-      roles: ['SuperAdmin', 'Admin'],
+      roles: ['SuperAdmin', 'Admin','HrAdmin','FinanceAdmin'],
     },
   ],
 },

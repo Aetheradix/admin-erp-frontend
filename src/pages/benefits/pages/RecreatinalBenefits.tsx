@@ -102,7 +102,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
 
   const employeesCovered = perks.reduce(
     (total, perk) =>
-      total + Number(perk.assigned ?? 0),
+      total + getNumericValue(perk.assigned),
     0
   );
 
@@ -225,7 +225,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
 
           </div>
 
-          {/* PERK TYPE - DATABASE */}
+          {/* PERK TYPE */}
 
           <select
             value={activePerkType}
@@ -245,10 +245,10 @@ export default function RecreationalBenefits(): React.JSX.Element {
             {!perkTypesLoading &&
               perkTypes.map((type) => (
                 <option
-                  key={type.id}
-                  value={String(type.id)}
+                  key={getPrimitiveValue(type.id)}
+                  value={String(getPrimitiveValue(type.id))}
                 >
-                  {type.name}
+                  {displayValue(type.name)}
                 </option>
               ))}
 
@@ -374,28 +374,33 @@ export default function RecreationalBenefits(): React.JSX.Element {
                   {filteredPerks.map((perk) => (
 
                     <tr
-                      key={perk.id}
+                      key={getPrimitiveValue(perk.id)}
                       className="hover:bg-gray-50"
                     >
 
-                      {/* PERK */}
+                      {/* =================================================
+                          PERK
+                      ================================================= */}
 
                       <td className="px-6 py-4">
 
                         <div className="flex items-center gap-3">
 
                           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-xl">
-                            {perk.icon || '🎁'}
+                            {displayValue(perk.icon, '🎁')}
                           </div>
 
                           <div>
 
                             <p className="text-sm font-medium text-gray-900">
-                              {perk.name}
+                              {displayValue(perk.name)}
                             </p>
 
                             <p className="max-w-sm truncate text-xs text-gray-500">
-                              {perk.description || 'No description'}
+                              {displayValue(
+                                perk.description,
+                                'No description'
+                              )}
                             </p>
 
                           </div>
@@ -404,7 +409,9 @@ export default function RecreationalBenefits(): React.JSX.Element {
 
                       </td>
 
-                      {/* TYPE FROM DATABASE */}
+                      {/* =================================================
+                          TYPE
+                      ================================================= */}
 
                       <td className="px-6 py-4 text-sm text-gray-600">
 
@@ -415,7 +422,9 @@ export default function RecreationalBenefits(): React.JSX.Element {
 
                       </td>
 
-                      {/* VALUE */}
+                      {/* =================================================
+                          VALUE
+                      ================================================= */}
 
                       <td className="px-6 py-4">
 
@@ -424,22 +433,31 @@ export default function RecreationalBenefits(): React.JSX.Element {
                         </p>
 
                         <p className="text-xs text-gray-500">
-                          {perk.frequency || '-'}
+                          {displayValue(
+                            perk.frequency
+                          )}
                         </p>
 
                       </td>
 
-                      {/* ELIGIBILITY */}
+                      {/* =================================================
+                          ELIGIBILITY
+                      ================================================= */}
 
                       <td className="px-6 py-4">
 
                         <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-                          {perk.eligibility || 'All Employees'}
+                          {displayValue(
+                            perk.eligibility,
+                            'All Employees'
+                          )}
                         </span>
 
                       </td>
 
-                      {/* ASSIGNED */}
+                      {/* =================================================
+                          ASSIGNED
+                      ================================================= */}
 
                       <td className="px-6 py-4">
 
@@ -450,13 +468,17 @@ export default function RecreationalBenefits(): React.JSX.Element {
                           }
                           className="text-sm font-medium text-blue-600 hover:underline"
                         >
-                          {Number(perk.assigned ?? 0)}
+                          {getNumericValue(
+                            perk.assigned
+                          )}
                           {' employees'}
                         </button>
 
                       </td>
 
-                      {/* STATUS */}
+                      {/* =================================================
+                          STATUS
+                      ================================================= */}
 
                       <td className="px-6 py-4">
 
@@ -470,7 +492,9 @@ export default function RecreationalBenefits(): React.JSX.Element {
 
                       </td>
 
-                      {/* ACTIONS */}
+                      {/* =================================================
+                          ACTIONS
+                      ================================================= */}
 
                       <td className="px-6 py-4 text-right">
 
@@ -624,38 +648,39 @@ function PerkForm({
   onUpdate,
 }: PerkFormProps): React.JSX.Element {
 
-  /*
-   * IMPORTANT:
-   * Do not automatically select perkTypes[0].
-   *
-   * For a new perk:
-   *   perk_type_id = 0
-   *
-   * For an existing perk:
-   *   use the database value perk.perk_type_id
-   */
-
   const [form, setForm] = useState({
     perk_type_id:
-      perk?.perk_type_id ?? 0,
+      getNumericValue(perk?.perk_type_id),
 
     name:
-      perk?.name ?? '',
+      displayValue(perk?.name, ''),
 
     description:
-      perk?.description ?? '',
+      displayValue(perk?.description, ''),
 
     amount:
-      perk?.amount?.toString() ?? '',
+      getNumericValue(perk?.amount) > 0
+        ? String(getNumericValue(perk?.amount))
+        : '',
 
     frequency:
-      perk?.frequency ?? 'Monthly',
+      displayValue(
+        perk?.frequency,
+        'Monthly'
+      ),
 
     eligibility:
-      perk?.eligibility ?? 'All Employees',
+      displayValue(
+        perk?.eligibility,
+        'All Employees'
+      ),
   });
 
   const [error, setError] = useState('');
+
+  /* =========================================================
+     UPDATE FORM
+  ========================================================= */
 
   const update = (
     field: string,
@@ -670,6 +695,10 @@ function PerkForm({
     setError('');
   };
 
+  /* =========================================================
+     SUBMIT
+  ========================================================= */
+
   const submit = async (): Promise<void> => {
 
     if (!form.perk_type_id) {
@@ -677,7 +706,7 @@ function PerkForm({
       return;
     }
 
-    if (!form.name.trim()) {
+    if (!String(form.name).trim()) {
       setError('Please enter a perk name.');
       return;
     }
@@ -691,19 +720,14 @@ function PerkForm({
 
     const data: CreatePerkRequest = {
 
-      /*
-       * This ID comes from the database-loaded
-       * perkTypes list.
-       */
-      perk_type_id: Number(
-        form.perk_type_id
-      ),
+      perk_type_id:
+        Number(form.perk_type_id),
 
       name:
-        form.name.trim(),
+        String(form.name).trim(),
 
       description:
-        form.description.trim(),
+        String(form.description).trim(),
 
       amount:
         form.amount
@@ -711,10 +735,10 @@ function PerkForm({
           : null,
 
       frequency:
-        form.frequency,
+        String(form.frequency),
 
       eligibility:
-        form.eligibility,
+        String(form.eligibility),
 
       is_active:
         perk?.is_active ?? true,
@@ -746,7 +770,9 @@ function PerkForm({
 
       <div className="space-y-5">
 
-        {/* TYPE + NAME */}
+        {/* =================================================
+            TYPE + NAME
+        ================================================= */}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
@@ -774,10 +800,10 @@ function PerkForm({
                 perkTypes.map((type) => (
 
                   <option
-                    key={type.id}
-                    value={type.id}
+                    key={getPrimitiveValue(type.id)}
+                    value={getPrimitiveValue(type.id)}
                   >
-                    {type.name}
+                    {displayValue(type.name)}
                   </option>
 
                 ))}
@@ -805,7 +831,9 @@ function PerkForm({
 
         </div>
 
-        {/* DATABASE TYPE ERROR */}
+        {/* =================================================
+            DATABASE TYPE ERROR
+        ================================================= */}
 
         {!perkTypesLoading &&
           perkTypes.length === 0 && (
@@ -818,7 +846,9 @@ function PerkForm({
 
           )}
 
-        {/* FORM ERROR */}
+        {/* =================================================
+            FORM ERROR
+        ================================================= */}
 
         {error && (
 
@@ -828,7 +858,9 @@ function PerkForm({
 
         )}
 
-        {/* DESCRIPTION */}
+        {/* =================================================
+            DESCRIPTION
+        ================================================= */}
 
         <Field label="Description">
 
@@ -847,7 +879,9 @@ function PerkForm({
 
         </Field>
 
-        {/* AMOUNT + FREQUENCY */}
+        {/* =================================================
+            AMOUNT + FREQUENCY
+        ================================================= */}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
@@ -908,7 +942,9 @@ function PerkForm({
 
         </div>
 
-        {/* ELIGIBILITY */}
+        {/* =================================================
+            ELIGIBILITY
+        ================================================= */}
 
         <Field label="Eligibility">
 
@@ -949,7 +985,9 @@ function PerkForm({
 
       </div>
 
-      {/* FOOTER */}
+      {/* =================================================
+          FOOTER
+      ================================================= */}
 
       <div className="mt-6 flex justify-end gap-3 border-t pt-5">
 
@@ -993,14 +1031,6 @@ function AssignModal({
   onAssign,
 }: AssignModalProps): React.JSX.Element {
 
-  /*
-   * NOTE:
-   * Employees are still hardcoded here.
-   *
-   * If employees should also come from the database,
-   * this modal should use an employee RTK Query endpoint.
-   */
-
   const employees = [
     {
       id: 1,
@@ -1029,6 +1059,10 @@ function AssignModal({
   const [validUntil, setValidUntil] =
     useState('');
 
+  /* =========================================================
+     SUBMIT
+  ========================================================= */
+
   const submit = async (): Promise<void> => {
 
     if (!perk) {
@@ -1055,6 +1089,10 @@ function AssignModal({
     onClose();
   };
 
+  /* =========================================================
+     TOGGLE EMPLOYEE
+  ========================================================= */
+
   const toggleEmployee = (
     employeeId: number
   ): void => {
@@ -1078,11 +1116,18 @@ function AssignModal({
 
   return (
     <Modal
-      title={`Assign ${perk?.name ?? 'Perk'}`}
+      title={`Assign ${displayValue(
+        perk?.name,
+        'Perk'
+      )}`}
       onClose={onClose}
     >
 
       <div className="space-y-5">
+
+        {/* =================================================
+            EMPLOYEES
+        ================================================= */}
 
         <Field label="Select Employees">
 
@@ -1120,6 +1165,10 @@ function AssignModal({
 
         </Field>
 
+        {/* =================================================
+            VALIDITY
+        ================================================= */}
+
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
           <Field label="Valid From">
@@ -1154,6 +1203,10 @@ function AssignModal({
 
         </div>
 
+        {/* =================================================
+            INFO
+        ================================================= */}
+
         <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
           Selected employees will receive this
           benefit according to the configured
@@ -1161,6 +1214,10 @@ function AssignModal({
         </div>
 
       </div>
+
+      {/* =================================================
+          FOOTER
+      ================================================= */}
 
       <div className="mt-6 flex justify-end gap-3 border-t pt-5">
 
@@ -1265,40 +1322,214 @@ function Field({
 }
 
 /* =========================================================
-   HELPERS
+   SAFE VALUE HELPERS
 ========================================================= */
 
-function isDisabled(
-  loading: boolean,
-  typeCount: number
-): boolean {
-  return loading || typeCount === 0;
+/**
+ * Safely converts API values into something React
+ * can render.
+ *
+ * Handles values such as:
+ *
+ * "Fitness"
+ *
+ * 1500
+ *
+ * { value: "Fitness" }
+ *
+ * { value: 1500 }
+ */
+function displayValue(
+  value: unknown,
+  fallback = '-'
+): string {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return fallback;
+  }
+
+  if (
+    typeof value === 'object'
+  ) {
+
+    if (
+      'value' in value
+    ) {
+
+      const nestedValue =
+        (
+          value as {
+            value?: unknown;
+          }
+        ).value;
+
+      if (
+        nestedValue === null ||
+        nestedValue === undefined
+      ) {
+        return fallback;
+      }
+
+      return String(
+        nestedValue
+      );
+    }
+
+    return fallback;
+  }
+
+  return String(value);
 }
 
+/**
+ * Converts API values to a primitive ID.
+ *
+ * Handles:
+ *
+ * 1
+ *
+ * "1"
+ *
+ * { value: 1 }
+ *
+ * { value: "1" }
+ */
+function getPrimitiveValue(
+  value: unknown
+): string | number {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return '';
+  }
+
+  if (
+    typeof value === 'object' &&
+    'value' in value
+  ) {
+
+    return getPrimitiveValue(
+      (
+        value as {
+          value?: unknown;
+        }
+      ).value
+    );
+  }
+
+  if (
+    typeof value === 'number' ||
+    typeof value === 'string'
+  ) {
+    return value;
+  }
+
+  return String(value);
+}
+
+/**
+ * Converts API values to a number.
+ *
+ * Handles:
+ *
+ * 100
+ *
+ * "100"
+ *
+ * { value: 100 }
+ *
+ * { value: "100" }
+ */
+function getNumericValue(
+  value: unknown
+): number {
+
+  const primitive =
+    getPrimitiveValue(value);
+
+  const number =
+    Number(primitive);
+
+  return Number.isNaN(number)
+    ? 0
+    : number;
+}
+
+/* =========================================================
+   AMOUNT FORMATTER
+========================================================= */
+
 function formatAmount(
-  amount?: number | null
+  amount?: unknown
 ): string {
 
   if (
     amount === null ||
-    amount === undefined ||
-    Number.isNaN(amount)
+    amount === undefined
   ) {
     return '-';
   }
 
-  return `₹${amount.toLocaleString('en-IN')}`;
+  const numericAmount =
+    getNumericValue(amount);
+
+  if (
+    numericAmount === 0 &&
+    displayValue(amount, '') !== '0'
+  ) {
+    return '-';
+  }
+
+  return `₹${numericAmount.toLocaleString(
+    'en-IN'
+  )}`;
 }
+
+/* =========================================================
+   PERK TYPE NAME
+========================================================= */
 
 function getPerkTypeName(
   perk: Perk,
   perkTypes: PerkType[]
 ): string {
 
-  const type = perkTypes.find(
-    (item) =>
-      item.id === perk.perk_type_id
-  );
+  const perkTypeId =
+    getPrimitiveValue(
+      perk.perk_type_id
+    );
 
-  return type?.name || '-';
+  const type =
+    perkTypes.find(
+      (item) =>
+        String(
+          getPrimitiveValue(item.id)
+        ) ===
+        String(perkTypeId)
+    );
+
+  return displayValue(
+    type?.name,
+    '-'
+  );
+}
+
+/* =========================================================
+   DISABLED STATE
+========================================================= */
+
+function isDisabled(
+  loading: boolean,
+  typeCount: number
+): boolean {
+
+  return (
+    loading ||
+    typeCount === 0
+  );
 }
