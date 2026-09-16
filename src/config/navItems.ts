@@ -320,6 +320,11 @@ export const navItems: NavItem[] = [
         path: '/benefits-perks/perk-types',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
       },
+      {
+        label: 'Benefits Opt In',
+        path: '/benefits-perks/opt-in-benefits',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
     ],
   },
 

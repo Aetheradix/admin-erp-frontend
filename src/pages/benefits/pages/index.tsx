@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import MyPerksPage from '../pages/MyPerks';
 import RecreationBenefitsPage from '../pages/RecreatinalBenefits';
 import PerkTypesPage from '../pages/PerksType';
-
+import OptInBenefitsPage from './OptInBenefitsPage';
 const BenefitsPerksModule = () => {
   return (
     <Routes>
@@ -12,7 +12,7 @@ const BenefitsPerksModule = () => {
 
       {/* Matches /benefits-perks/my-perks */}
       <Route path="my-perks" element={<MyPerksPage />} />
-
+      <Route path="opt-in-benefits" element={<OptInBenefitsPage />} />
       {/* Matches /benefits-perks/recreation-benefits */}
       <Route path="recreation-benefits" element={<RecreationBenefitsPage />} />
 
