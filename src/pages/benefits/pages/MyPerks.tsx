@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import {  useBenefitsPage } from '../hooks/useBenefits';
+import { useBenefitsPage } from '../hooks/useBenefits';
 
 type MyPerkStatus = 'Active' | 'Expired';
 
@@ -41,63 +41,33 @@ export default function MyPerks(): React.JSX.Element {
   ============================================================ */
 
   const myPerks: MyPerk[] = filteredUserPerks.map((userPerk: any) => {
-    const validUntil = userPerk.valid_until
-      ? new Date(userPerk.valid_until)
-      : null;
+    const validUntil = userPerk.valid_until ? new Date(userPerk.valid_until) : null;
 
-    const isExpired =
-      validUntil !== null && validUntil.getTime() < Date.now();
+    const isExpired = validUntil !== null && validUntil.getTime() < Date.now();
 
     const perk = userPerk.perk || {};
 
-    const limit =
-      userPerk.limit ??
-      perk.limit ??
-      null;
+    const limit = userPerk.limit ?? perk.limit ?? null;
 
-    const used =
-      userPerk.used ??
-      perk.used ??
-      null;
+    const used = userPerk.used ?? perk.used ?? null;
 
     const remaining =
       userPerk.remaining ??
       perk.remaining ??
-      (limit !== null && used !== null
-        ? Math.max(limit - used, 0)
-        : null);
+      (limit !== null && used !== null ? Math.max(limit - used, 0) : null);
 
     return {
       id: Number(userPerk.id),
 
-      title:
-        userPerk.title ||
-        userPerk.name ||
-        perk.title ||
-        perk.name ||
-        'Benefit',
+      title: userPerk.title || userPerk.name || perk.title || perk.name || 'Benefit',
 
-      type:
-        userPerk.type ||
-        perk.type ||
-        perk.perk_type?.name ||
-        'Benefit',
+      type: userPerk.type || perk.type || perk.perk_type?.name || 'Benefit',
 
-      description:
-        userPerk.description ||
-        perk.description ||
-        'Company provided employee benefit.',
+      description: userPerk.description || perk.description || 'Company provided employee benefit.',
 
-      value:
-        userPerk.value ||
-        perk.value ||
-        perk.amount ||
-        'Available',
+      value: userPerk.value || perk.value || perk.amount || 'Available',
 
-      frequency:
-        userPerk.frequency ||
-        perk.frequency ||
-        'As applicable',
+      frequency: userPerk.frequency || perk.frequency || 'As applicable',
 
       used,
 
@@ -109,10 +79,7 @@ export default function MyPerks(): React.JSX.Element {
 
       validUntil: formatDate(userPerk.valid_until),
 
-      icon:
-        userPerk.icon ||
-        perk.icon ||
-        '🎁',
+      icon: userPerk.icon || perk.icon || '🎁',
 
       status: isExpired ? 'Expired' : 'Active',
     };
@@ -129,9 +96,7 @@ export default function MyPerks(): React.JSX.Element {
           <div className="text-center">
             <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
 
-            <p className="text-sm font-medium text-gray-600">
-              Loading your perks...
-            </p>
+            <p className="text-sm font-medium text-gray-600">Loading your perks...</p>
           </div>
         </div>
       </div>
@@ -151,9 +116,7 @@ export default function MyPerks(): React.JSX.Element {
               ⚠️
             </div>
 
-            <h2 className="text-lg font-semibold text-gray-900">
-              Unable to load your perks
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Unable to load your perks</h2>
 
             <p className="mt-2 text-sm text-gray-500">
               Something went wrong while fetching your benefits.
@@ -178,9 +141,7 @@ export default function MyPerks(): React.JSX.Element {
       <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              My Perks
-            </h1>
+            <h1 className="text-2xl font-semibold text-gray-900">My Perks</h1>
 
             <p className="mt-1 text-sm text-gray-500">
               Benefits and recreational perks available to you
@@ -200,23 +161,16 @@ export default function MyPerks(): React.JSX.Element {
       <div className="mb-7 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-blue-100">
-              Your Employee Benefits
-            </p>
+            <p className="text-sm text-blue-100">Your Employee Benefits</p>
 
-            <h2 className="mt-1 text-xl font-semibold">
-              Enjoy your perks 🎉
-            </h2>
+            <h2 className="mt-1 text-xl font-semibold">Enjoy your perks 🎉</h2>
 
             <p className="mt-2 max-w-xl text-sm text-blue-100">
-              Explore the recreational benefits provided by
-              your company and make the most of them.
+              Explore the recreational benefits provided by your company and make the most of them.
             </p>
           </div>
 
-          <div className="hidden text-6xl md:block">
-            🎁
-          </div>
+          <div className="hidden text-6xl md:block">🎁</div>
         </div>
       </div>
 
@@ -227,56 +181,35 @@ export default function MyPerks(): React.JSX.Element {
             🎁
           </div>
 
-          <h3 className="text-lg font-semibold text-gray-900">
-            No perks assigned
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">No perks assigned</h3>
 
           <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-            You currently don't have any employee benefits or
-            recreational perks assigned to you.
+            You currently don't have any employee benefits or recreational perks assigned to you.
           </p>
         </div>
       ) : (
         /* Perks */
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {myPerks.map((perk) => (
-            <PerkCard
-              key={perk.id}
-              perk={perk}
-              onView={() => setSelected(perk)}
-            />
+            <PerkCard key={perk.id} perk={perk} onView={() => setSelected(perk)} />
           ))}
         </div>
       )}
 
       {/* Details Modal */}
-      {selected && (
-        <PerkDetails
-          perk={selected}
-          onClose={() => setSelected(null)}
-        />
-      )}
+      {selected && <PerkDetails perk={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
-
 
 /* ================================
    Perk Card
 ================================ */
 
-function PerkCard({
-  perk,
-  onView,
-}: PerkCardProps): React.JSX.Element {
+function PerkCard({ perk, onView }: PerkCardProps): React.JSX.Element {
   const percentage =
-    perk.limit !== null &&
-    perk.used !== null &&
-    perk.limit > 0
-      ? Math.min(
-          Math.round((perk.used / perk.limit) * 100),
-          100,
-        )
+    perk.limit !== null && perk.used !== null && perk.limit > 0
+      ? Math.min(Math.round((perk.used / perk.limit) * 100), 100)
       : null;
 
   return (
@@ -289,57 +222,39 @@ function PerkCard({
             </div>
 
             <div>
-              <p className="text-xs text-gray-400">
-                {perk.type}
-              </p>
+              <p className="text-xs text-gray-400">{perk.type}</p>
 
-              <h3 className="mt-0.5 font-semibold text-gray-900">
-                {perk.title}
-              </h3>
+              <h3 className="mt-0.5 font-semibold text-gray-900">{perk.title}</h3>
             </div>
           </div>
 
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-              perk.status === 'Active'
-                ? 'bg-green-50 text-green-700'
-                : 'bg-gray-100 text-gray-500'
+              perk.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
             }`}
           >
             {perk.status}
           </span>
         </div>
 
-        <p className="mt-4 text-sm leading-5 text-gray-500">
-          {perk.description}
-        </p>
+        <p className="mt-4 text-sm leading-5 text-gray-500">{perk.description}</p>
 
         {/* Benefit */}
         <div className="mt-5 rounded-xl bg-gray-50 p-4">
-          <p className="text-xs text-gray-400">
-            Benefit
-          </p>
+          <p className="text-xs text-gray-400">Benefit</p>
 
-          <p className="mt-1 text-lg font-semibold text-gray-900">
-            {perk.value}
-          </p>
+          <p className="mt-1 text-lg font-semibold text-gray-900">{perk.value}</p>
 
-          <p className="text-xs text-gray-500">
-            {perk.frequency}
-          </p>
+          <p className="text-xs text-gray-500">{perk.frequency}</p>
         </div>
 
         {/* Usage */}
         {percentage !== null && (
           <div className="mt-5">
             <div className="mb-2 flex justify-between">
-              <span className="text-xs text-gray-500">
-                Usage
-              </span>
+              <span className="text-xs text-gray-500">Usage</span>
 
-              <span className="text-xs font-medium text-gray-700">
-                {percentage}% used
-              </span>
+              <span className="text-xs font-medium text-gray-700">{percentage}% used</span>
             </div>
 
             <div className="h-2 rounded-full bg-gray-100">
@@ -352,13 +267,9 @@ function PerkCard({
             </div>
 
             <div className="mt-2 flex justify-between text-xs">
-              <span className="text-gray-500">
-                Used ₹{perk.used}
-              </span>
+              <span className="text-gray-500">Used ₹{perk.used}</span>
 
-              <span className="font-medium text-green-600">
-                ₹{perk.remaining} remaining
-              </span>
+              <span className="font-medium text-green-600">₹{perk.remaining} remaining</span>
             </div>
           </div>
         )}
@@ -367,13 +278,9 @@ function PerkCard({
       {/* Footer */}
       <div className="border-t bg-gray-50 p-4">
         <div className="mb-3 flex justify-between">
-          <span className="text-xs text-gray-400">
-            Valid until
-          </span>
+          <span className="text-xs text-gray-400">Valid until</span>
 
-          <span className="text-xs font-medium text-gray-700">
-            {perk.validUntil}
-          </span>
+          <span className="text-xs font-medium text-gray-700">{perk.validUntil}</span>
         </div>
 
         <button
@@ -388,18 +295,11 @@ function PerkCard({
   );
 }
 
-
 /* ================================
    Details Modal
 ================================ */
 
-function PerkDetails({
-  perk,
-  onClose,
-}: {
-  perk: MyPerk;
-  onClose: () => void;
-}): React.JSX.Element {
+function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): React.JSX.Element {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
@@ -411,13 +311,9 @@ function PerkDetails({
             </div>
 
             <div>
-              <p className="text-xs text-gray-400">
-                {perk.type}
-              </p>
+              <p className="text-xs text-gray-400">{perk.type}</p>
 
-              <h2 className="font-semibold text-gray-900">
-                {perk.title}
-              </h2>
+              <h2 className="font-semibold text-gray-900">{perk.title}</h2>
             </div>
           </div>
 
@@ -433,72 +329,46 @@ function PerkDetails({
         {/* Body */}
         <div className="space-y-5 p-6">
           <div>
-            <p className="text-sm font-medium text-gray-900">
-              About this benefit
-            </p>
+            <p className="text-sm font-medium text-gray-900">About this benefit</p>
 
-            <p className="mt-2 text-sm leading-6 text-gray-500">
-              {perk.description}
-            </p>
+            <p className="mt-2 text-sm leading-6 text-gray-500">{perk.description}</p>
           </div>
 
           <div className="rounded-xl bg-blue-50 p-4">
-            <p className="text-xs text-blue-600">
-              Benefit Value
-            </p>
+            <p className="text-xs text-blue-600">Benefit Value</p>
 
-            <p className="mt-1 text-xl font-semibold text-gray-900">
-              {perk.value}
-            </p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">{perk.value}</p>
 
-            <p className="text-xs text-gray-500">
-              {perk.frequency}
-            </p>
+            <p className="text-xs text-gray-500">{perk.frequency}</p>
           </div>
 
           {perk.limit !== null && (
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg border p-4">
-                <p className="text-xs text-gray-400">
-                  Used
-                </p>
+                <p className="text-xs text-gray-400">Used</p>
 
-                <p className="mt-1 font-semibold">
-                  ₹{perk.used}
-                </p>
+                <p className="mt-1 font-semibold">₹{perk.used}</p>
               </div>
 
               <div className="rounded-lg border p-4">
-                <p className="text-xs text-gray-400">
-                  Remaining
-                </p>
+                <p className="text-xs text-gray-400">Remaining</p>
 
-                <p className="mt-1 font-semibold text-green-600">
-                  ₹{perk.remaining}
-                </p>
+                <p className="mt-1 font-semibold text-green-600">₹{perk.remaining}</p>
               </div>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg bg-gray-50 p-4">
-              <p className="text-xs text-gray-400">
-                Valid From
-              </p>
+              <p className="text-xs text-gray-400">Valid From</p>
 
-              <p className="mt-1 text-sm font-medium">
-                {perk.validFrom}
-              </p>
+              <p className="mt-1 text-sm font-medium">{perk.validFrom}</p>
             </div>
 
             <div className="rounded-lg bg-gray-50 p-4">
-              <p className="text-xs text-gray-400">
-                Valid Until
-              </p>
+              <p className="text-xs text-gray-400">Valid Until</p>
 
-              <p className="mt-1 text-sm font-medium">
-                {perk.validUntil}
-              </p>
+              <p className="mt-1 text-sm font-medium">{perk.validUntil}</p>
             </div>
           </div>
         </div>
@@ -518,14 +388,11 @@ function PerkDetails({
   );
 }
 
-
 /* ================================
    Date Formatter
 ================================ */
 
-function formatDate(
-  value?: string | null,
-): string {
+function formatDate(value?: string | null): string {
   if (!value) {
     return '—';
   }

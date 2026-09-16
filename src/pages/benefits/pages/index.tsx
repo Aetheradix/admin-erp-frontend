@@ -14,10 +14,7 @@ const BenefitsPerksModule = () => {
       <Route path="my-perks" element={<MyPerksPage />} />
 
       {/* Matches /benefits-perks/recreation-benefits */}
-      <Route
-        path="recreation-benefits"
-        element={<RecreationBenefitsPage />}
-      />
+      <Route path="recreation-benefits" element={<RecreationBenefitsPage />} />
 
       {/* Matches /benefits-perks/perk-types */}
       <Route path="perk-types" element={<PerkTypesPage />} />

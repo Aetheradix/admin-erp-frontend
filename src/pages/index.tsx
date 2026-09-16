@@ -18,9 +18,7 @@ const GuestPassModule = lazy(() => import('@/pages/guest-pass'));
 const RulebookModule = lazy(() => import('@/pages/rulebook'));
 const SettingsModule = lazy(() => import('@/pages/settings'));
 const Profile = lazy(() => import('@/pages/profile/Profile'));
-const BenefitsPerksModule = lazy(
-  () => import('@/pages/benefits/pages/index')
-);
+const BenefitsPerksModule = lazy(() => import('@/pages/benefits/pages/index'));
 // New Modules
 const OrganizationModule = lazy(() => import('@/pages/organization'));
 const TeamsModule = lazy(() => import('@/pages/teams'));
@@ -109,7 +107,6 @@ const AppFeature = () => {
       'Grievances',
       'Guest Pass',
       'Resource Booking',
-
     ];
     for (const f of features) {
       map[f] = check(f);
@@ -151,20 +148,18 @@ const AppFeature = () => {
             )
           }
         />
-        
-         <Route
-  path="/benefits-perks/*"
-  element={
-    (allowedMap['Benefits & Perks'] ?? true) ? (
-      <BenefitsPerksModule />
-    ) : (
-      <Navigate to="/" replace />
-    )
-  }
-/>
 
-        
-        
+        <Route
+          path="/benefits-perks/*"
+          element={
+            (allowedMap['Benefits & Perks'] ?? true) ? (
+              <BenefitsPerksModule />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+
         <Route
           path="/gallery/*"
           element={allowedMap['Gallery'] ? <GalleryModule /> : <Navigate to="/" replace />}

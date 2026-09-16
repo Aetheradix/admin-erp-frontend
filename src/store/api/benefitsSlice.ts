@@ -21,7 +21,6 @@ export interface PerkType {
   is_active?: boolean;
 }
 
-
 export interface UserPerk {
   id: number;
   user_id: number;
@@ -119,25 +118,17 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       query: (id) => `/perks/${id}`,
 
       transformResponse: (response: unknown) => {
-        return (
-          (response as { data?: Perk })?.data ??
-          (response as Perk)
-        );
+        return (response as { data?: Perk })?.data ?? (response as Perk);
       },
 
-      providesTags: (_result, _error, id) => [
-        { type: 'Perks', id },
-      ],
+      providesTags: (_result, _error, id) => [{ type: 'Perks', id }],
     }),
 
     /**
      * Create perk
      * POST /perks
      */
-    createPerk: builder.mutation<
-      PerkMutationResponse,
-      CreatePerkRequest
-    >({
+    createPerk: builder.mutation<PerkMutationResponse, CreatePerkRequest>({
       query: (body) => ({
         url: '/perks',
         method: 'POST',
@@ -151,30 +142,21 @@ export const benefitsSlice = apiSlice.injectEndpoints({
      * Update perk
      * PUT /perks/:id
      */
-    updatePerk: builder.mutation<
-      PerkMutationResponse,
-      UpdatePerkRequest
-    >({
+    updatePerk: builder.mutation<PerkMutationResponse, UpdatePerkRequest>({
       query: ({ id, data }) => ({
         url: `/perks/${id}`,
         method: 'PUT',
         body: data,
       }),
 
-      invalidatesTags: (_result, _error, { id }) => [
-        'Perks',
-        { type: 'Perks', id },
-      ],
+      invalidatesTags: (_result, _error, { id }) => ['Perks', { type: 'Perks', id }],
     }),
 
     /**
      * Deactivate perk
      * DELETE /perks/:id
      */
-    deletePerk: builder.mutation<
-      PerkMutationResponse,
-      number
-    >({
+    deletePerk: builder.mutation<PerkMutationResponse, number>({
       query: (id) => ({
         url: `/perks/${id}`,
         method: 'DELETE',
@@ -195,8 +177,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       query: () => '/perk-types',
 
       transformResponse: (response: unknown) => {
-        const data =
-          (response as { data?: PerkType[] })?.data ?? response;
+        const data = (response as { data?: PerkType[] })?.data ?? response;
 
         return Array.isArray(data) ? data : [];
       },
@@ -208,10 +189,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
      * Create perk type
      * POST /perk-types
      */
-    createPerkType: builder.mutation<
-      PerkTypeMutationResponse,
-      CreatePerkTypeRequest
-    >({
+    createPerkType: builder.mutation<PerkTypeMutationResponse, CreatePerkTypeRequest>({
       query: (body) => ({
         url: '/perk-types',
         method: 'POST',
@@ -225,30 +203,21 @@ export const benefitsSlice = apiSlice.injectEndpoints({
      * Update perk type
      * PUT /perk-types/:id
      */
-    updatePerkType: builder.mutation<
-      PerkTypeMutationResponse,
-      UpdatePerkTypeRequest
-    >({
+    updatePerkType: builder.mutation<PerkTypeMutationResponse, UpdatePerkTypeRequest>({
       query: ({ id, data }) => ({
         url: `/perk-types/${id}`,
         method: 'PUT',
         body: data,
       }),
 
-      invalidatesTags: (_result, _error, { id }) => [
-        'PerkTypes',
-        { type: 'PerkTypes', id },
-      ],
+      invalidatesTags: (_result, _error, { id }) => ['PerkTypes', { type: 'PerkTypes', id }],
     }),
 
     /**
      * Deactivate perk type
      * DELETE /perk-types/:id
      */
-    deletePerkType: builder.mutation<
-      PerkTypeMutationResponse,
-      number
-    >({
+    deletePerkType: builder.mutation<PerkTypeMutationResponse, number>({
       query: (id) => ({
         url: `/perk-types/${id}`,
         method: 'DELETE',
@@ -265,16 +234,8 @@ export const benefitsSlice = apiSlice.injectEndpoints({
      * Assign perk to user
      * POST /perks/:perkId/assign
      */
-    assignPerk: builder.mutation<
-      UserPerkMutationResponse,
-      AssignPerkRequest
-    >({
-      query: ({
-        perkId,
-        user_id,
-        valid_from,
-        valid_until,
-      }) => ({
+    assignPerk: builder.mutation<UserPerkMutationResponse, AssignPerkRequest>({
+      query: ({ perkId, user_id, valid_from, valid_until }) => ({
         url: `/perks/${perkId}/assign`,
         method: 'POST',
         body: {
@@ -304,14 +265,10 @@ export const benefitsSlice = apiSlice.injectEndpoints({
      * Adjust this URL to your actual route definition.
      */
     getUserPerks: builder.query<UserPerk[], number | void>({
-      query: (userId) =>
-        userId
-          ? `/users/${userId}/perks`
-          : '/users/perks',
+      query: (userId) => (userId ? `/users/${userId}/perks` : '/users/perks'),
 
       transformResponse: (response: unknown) => {
-        const data =
-          (response as { data?: UserPerk[] })?.data ?? response;
+        const data = (response as { data?: UserPerk[] })?.data ?? response;
 
         return Array.isArray(data) ? data : [];
       },
@@ -323,10 +280,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
      * Update user's perk
      * PUT /user-perks/:id
      */
-    updateUserPerk: builder.mutation<
-      UserPerkMutationResponse,
-      UpdateUserPerkRequest
-    >({
+    updateUserPerk: builder.mutation<UserPerkMutationResponse, UpdateUserPerkRequest>({
       query: ({ id, data }) => ({
         url: `/user-perks/${id}`,
         method: 'PUT',
@@ -356,4 +310,4 @@ export const {
   useAssignPerkMutation,
   useGetUserPerksQuery,
   useUpdateUserPerkMutation,
-} = benefitsSlice
+} = benefitsSlice;

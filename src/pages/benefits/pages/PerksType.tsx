@@ -2,12 +2,9 @@ import React, { useMemo, useState } from 'react';
 
 import { useBenefitsPage } from '../hooks/useBenefits';
 
-import type {
-  PerkType,
-} from '@/store/api/benefitsSlice';
+import type { PerkType } from '@/store/api/benefitsSlice';
 
 type PerkTypeStatus = 'Active' | 'Inactive';
-
 
 type PerkTypeFormData = {
   name: string;
@@ -51,9 +48,7 @@ export default function PerkTypes(): React.JSX.Element {
       return perkTypes;
     }
 
-    return perkTypes.filter((item) =>
-      item.name.toLowerCase().includes(searchValue),
-    );
+    return perkTypes.filter((item) => item.name.toLowerCase().includes(searchValue));
   }, [perkTypes, search]);
 
   /* ============================================================
@@ -61,18 +56,14 @@ export default function PerkTypes(): React.JSX.Element {
   ============================================================ */
 
   const getPerkCount = (perkTypeId: number): number => {
-    return perks.filter(
-      (perk) => perk.perk_type_id === perkTypeId,
-    ).length;
+    return perks.filter((perk) => perk.perk_type_id === perkTypeId).length;
   };
 
   /* ============================================================
      SAVE
   ============================================================ */
 
-  const save = async (
-    data: PerkTypeFormData,
-  ): Promise<void> => {
+  const save = async (data: PerkTypeFormData): Promise<void> => {
     try {
       if (editing) {
         await handleUpdatePerkType({
@@ -98,10 +89,7 @@ export default function PerkTypes(): React.JSX.Element {
       setShowModal(false);
       setEditing(null);
     } catch (error) {
-      console.error(
-        'Failed to save perk type:',
-        error,
-      );
+      console.error('Failed to save perk type:', error);
     }
   };
 
@@ -116,9 +104,7 @@ export default function PerkTypes(): React.JSX.Element {
           <div className="text-center">
             <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
 
-            <p className="text-sm font-medium text-gray-600">
-              Loading perk types...
-            </p>
+            <p className="text-sm font-medium text-gray-600">Loading perk types...</p>
           </div>
         </div>
       </div>
@@ -138,13 +124,10 @@ export default function PerkTypes(): React.JSX.Element {
               ⚠️
             </div>
 
-            <h2 className="text-lg font-semibold text-gray-900">
-              Unable to load perk types
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Unable to load perk types</h2>
 
             <p className="mt-2 text-sm text-gray-500">
-              Something went wrong while fetching perk
-              types.
+              Something went wrong while fetching perk types.
             </p>
 
             <button
@@ -166,13 +149,10 @@ export default function PerkTypes(): React.JSX.Element {
 
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Perk Types
-          </h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Perk Types</h1>
 
           <p className="mt-1 text-sm text-gray-500">
-            Manage categories used for recreational
-            benefits
+            Manage categories used for recreational benefits
           </p>
         </div>
 
@@ -192,16 +172,12 @@ export default function PerkTypes(): React.JSX.Element {
 
       <div className="mb-5 rounded-xl border bg-white p-4">
         <div className="relative max-w-md">
-          <span className="absolute left-3 top-2.5 text-gray-400">
-            🔍
-          </span>
+          <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
 
           <input
             type="text"
             value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search perk types..."
             className="w-full rounded-lg border px-3 py-2.5 pl-10 text-sm outline-none focus:border-blue-500"
           />
@@ -216,14 +192,10 @@ export default function PerkTypes(): React.JSX.Element {
             🎁
           </div>
 
-          <h3 className="text-lg font-semibold text-gray-900">
-            No perk types found
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">No perk types found</h3>
 
           <p className="mt-1 text-sm text-gray-500">
-            {search
-              ? 'Try changing your search.'
-              : 'Create your first perk type to get started.'}
+            {search ? 'Try changing your search.' : 'Create your first perk type to get started.'}
           </p>
         </div>
       ) : (
@@ -234,42 +206,26 @@ export default function PerkTypes(): React.JSX.Element {
             const perkCount = getPerkCount(type.id);
 
             return (
-              <div
-                key={type.id}
-                className="rounded-xl border bg-white p-5"
-              >
+              <div key={type.id} className="rounded-xl border bg-white p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-xl">
                     🎁
                   </div>
 
-                  <Status
-                    status={
-                      type.is_active
-                        ? 'Active'
-                        : 'Inactive'
-                    }
-                  />
+                  <Status status={type.is_active ? 'Active' : 'Inactive'} />
                 </div>
 
-                <h3 className="mt-4 text-base font-semibold text-gray-900">
-                  {type.name}
-                </h3>
+                <h3 className="mt-4 text-base font-semibold text-gray-900">{type.name}</h3>
 
                 <p className="mt-1 min-h-[40px] text-sm text-gray-500">
-                  {type.description ||
-                    'No description provided.'}
+                  {type.description || 'No description provided.'}
                 </p>
 
                 <div className="mt-5 flex items-center justify-between border-t pt-4">
                   <div>
-                    <p className="text-xs text-gray-400">
-                      Available Perks
-                    </p>
+                    <p className="text-xs text-gray-400">Available Perks</p>
 
-                    <p className="mt-1 text-sm font-semibold">
-                      {perkCount}
-                    </p>
+                    <p className="mt-1 text-sm font-semibold">{perkCount}</p>
                   </div>
 
                   <button
@@ -294,10 +250,7 @@ export default function PerkTypes(): React.JSX.Element {
       {showModal && (
         <TypeModal
           type={editing}
-          isSaving={
-            isCreatingPerkType ||
-            isUpdatingPerkType
-          }
+          isSaving={isCreatingPerkType || isUpdatingPerkType}
           onClose={() => {
             setShowModal(false);
             setEditing(null);
@@ -313,19 +266,10 @@ export default function PerkTypes(): React.JSX.Element {
    TYPE MODAL
 ============================================================ */
 
-function TypeModal({
-  type,
-  isSaving,
-  onClose,
-  onSave,
-}: TypeModalProps): React.JSX.Element {
-  const [name, setName] = useState(
-    type?.name ?? '',
-  );
+function TypeModal({ type, isSaving, onClose, onSave }: TypeModalProps): React.JSX.Element {
+  const [name, setName] = useState(type?.name ?? '');
 
-  const [description, setDescription] = useState(
-    type?.description ?? '',
-  );
+  const [description, setDescription] = useState(type?.description ?? '');
 
   const handleSave = (): void => {
     if (!name.trim() || isSaving) {
@@ -343,15 +287,9 @@ function TypeModal({
       <div className="w-full max-w-lg rounded-2xl bg-white">
         <div className="flex items-center justify-between border-b px-6 py-5">
           <div>
-            <h2 className="text-lg font-semibold">
-              {type
-                ? 'Edit Perk Type'
-                : 'Add Perk Type'}
-            </h2>
+            <h2 className="text-lg font-semibold">{type ? 'Edit Perk Type' : 'Add Perk Type'}</h2>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Create a reusable category for benefits.
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Create a reusable category for benefits.</p>
           </div>
 
           <button
@@ -366,16 +304,12 @@ function TypeModal({
 
         <div className="space-y-5 p-6">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Type Name *
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Type Name *</label>
 
             <input
               type="text"
               value={name}
-              onChange={(event) =>
-                setName(event.target.value)
-              }
+              onChange={(event) => setName(event.target.value)}
               placeholder="e.g. Wellness"
               disabled={isSaving}
               className="input"
@@ -383,15 +317,11 @@ function TypeModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Description
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
 
             <textarea
               value={description}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
+              onChange={(event) => setDescription(event.target.value)}
               rows={4}
               placeholder="Describe this category..."
               disabled={isSaving}
@@ -416,11 +346,7 @@ function TypeModal({
             disabled={!name.trim() || isSaving}
             className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSaving
-              ? 'Saving...'
-              : type
-                ? 'Update Type'
-                : 'Create Type'}
+            {isSaving ? 'Saving...' : type ? 'Update Type' : 'Create Type'}
           </button>
         </div>
       </div>
@@ -432,17 +358,11 @@ function TypeModal({
    STATUS
 ============================================================ */
 
-function Status({
-  status,
-}: {
-  status: PerkTypeStatus;
-}): React.JSX.Element {
+function Status({ status }: { status: PerkTypeStatus }): React.JSX.Element {
   return (
     <span
       className={`rounded-full px-3 py-1 text-xs font-medium ${
-        status === 'Active'
-          ? 'bg-green-50 text-green-700'
-          : 'bg-gray-100 text-gray-500'
+        status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
       }`}
     >
       {status}

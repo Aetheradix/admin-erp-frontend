@@ -298,31 +298,30 @@ export const navItems: NavItem[] = [
   },
 
   {
-  label: 'Benefits & Perks',
-  path: '/benefits-perks',
-  icon: Gift,
-  category: 'MANAGEMENT',
-  description: 'Manage employee benefits and perks',
-  roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
-  children: [
-    {
-      label: 'My Perks',
-      path: '/benefits-perks/my-perks',
-      roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
-    },
-    {
-      label: 'Recreation Benefits',
-      path: '/benefits-perks/recreation-benefits',
-      roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
-    },
-    {
-      label: 'Perk Types',
-      path: '/benefits-perks/perk-types',
-      roles: ['SuperAdmin', 'Admin','HrAdmin','FinanceAdmin'],
-    },
-  ],
-},
-
+    label: 'Benefits & Perks',
+    path: '/benefits-perks',
+    icon: Gift,
+    category: 'MANAGEMENT',
+    description: 'Manage employee benefits and perks',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    children: [
+      {
+        label: 'My Perks',
+        path: '/benefits-perks/my-perks',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+      },
+      {
+        label: 'Recreation Benefits',
+        path: '/benefits-perks/recreation-benefits',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+      },
+      {
+        label: 'Perk Types',
+        path: '/benefits-perks/perk-types',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
+    ],
+  },
 
   {
     label: 'Finance',

@@ -38,11 +38,9 @@ export const useBenefitsPage = (userId?: number) => {
 
   const [selectedPerk, setSelectedPerk] = useState<Perk | null>(null);
 
-  const [selectedPerkType, setSelectedPerkType] =
-    useState<PerkType | null>(null);
+  const [selectedPerkType, setSelectedPerkType] = useState<PerkType | null>(null);
 
-  const [selectedUserPerk, setSelectedUserPerk] =
-    useState<UserPerk | null>(null);
+  const [selectedUserPerk, setSelectedUserPerk] = useState<UserPerk | null>(null);
 
   const [showPerkForm, setShowPerkForm] = useState(false);
 
@@ -96,53 +94,29 @@ export const useBenefitsPage = (userId?: number) => {
      PERK MUTATIONS
   ============================================================ */
 
-  const [
-    createPerk,
-    { isLoading: isCreatingPerk },
-  ] = useCreatePerkMutation();
+  const [createPerk, { isLoading: isCreatingPerk }] = useCreatePerkMutation();
 
-  const [
-    updatePerk,
-    { isLoading: isUpdatingPerk },
-  ] = useUpdatePerkMutation();
+  const [updatePerk, { isLoading: isUpdatingPerk }] = useUpdatePerkMutation();
 
-  const [
-    deletePerk,
-    { isLoading: isDeletingPerk },
-  ] = useDeletePerkMutation();
+  const [deletePerk, { isLoading: isDeletingPerk }] = useDeletePerkMutation();
 
   /* ============================================================
      PERK TYPE MUTATIONS
   ============================================================ */
 
-  const [
-    createPerkType,
-    { isLoading: isCreatingPerkType },
-  ] = useCreatePerkTypeMutation();
+  const [createPerkType, { isLoading: isCreatingPerkType }] = useCreatePerkTypeMutation();
 
-  const [
-    updatePerkType,
-    { isLoading: isUpdatingPerkType },
-  ] = useUpdatePerkTypeMutation();
+  const [updatePerkType, { isLoading: isUpdatingPerkType }] = useUpdatePerkTypeMutation();
 
-  const [
-    deletePerkType,
-    { isLoading: isDeletingPerkType },
-  ] = useDeletePerkTypeMutation();
+  const [deletePerkType, { isLoading: isDeletingPerkType }] = useDeletePerkTypeMutation();
 
   /* ============================================================
      USER PERK MUTATIONS
   ============================================================ */
 
-  const [
-    assignPerk,
-    { isLoading: isAssigningPerk },
-  ] = useAssignPerkMutation();
+  const [assignPerk, { isLoading: isAssigningPerk }] = useAssignPerkMutation();
 
-  const [
-    updateUserPerk,
-    { isLoading: isUpdatingUserPerk },
-  ] = useUpdateUserPerkMutation();
+  const [updateUserPerk, { isLoading: isUpdatingUserPerk }] = useUpdateUserPerkMutation();
 
   /* ============================================================
      FILTER PERKS
@@ -174,15 +148,9 @@ export const useBenefitsPage = (userId?: number) => {
     const searchValue = search.trim().toLowerCase();
 
     return userPerks.filter((userPerk) => {
-      const perkName =
-        typeof userPerk.name === 'string'
-          ? userPerk.name
-          : '';
+      const perkName = typeof userPerk.name === 'string' ? userPerk.name : '';
 
-      const description =
-        typeof userPerk.description === 'string'
-          ? userPerk.description
-          : '';
+      const description = typeof userPerk.description === 'string' ? userPerk.description : '';
 
       const matchesSearch =
         !searchValue ||
@@ -281,9 +249,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to create perk.',
+        detail: error.data?.message || 'Failed to create perk.',
         life: 3000,
       });
 
@@ -321,9 +287,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to update perk.',
+        detail: error.data?.message || 'Failed to update perk.',
         life: 3000,
       });
 
@@ -346,9 +310,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'success',
         summary: 'Deactivated',
-        detail:
-          result.message ||
-          'Perk deactivated successfully.',
+        detail: result.message || 'Perk deactivated successfully.',
         life: 3000,
       });
 
@@ -365,9 +327,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to deactivate perk.',
+        detail: error.data?.message || 'Failed to deactivate perk.',
         life: 3000,
       });
 
@@ -379,9 +339,7 @@ export const useBenefitsPage = (userId?: number) => {
      CREATE PERK TYPE
   ============================================================ */
 
-  const handleCreatePerkType = async (
-    data: CreatePerkTypeRequest,
-  ) => {
+  const handleCreatePerkType = async (data: CreatePerkTypeRequest) => {
     try {
       const result = await createPerkType(data).unwrap();
 
@@ -390,9 +348,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'success',
         summary: 'Success',
-        detail:
-          result.message ||
-          'Perk type created successfully.',
+        detail: result.message || 'Perk type created successfully.',
         life: 3000,
       });
 
@@ -409,9 +365,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to create perk type.',
+        detail: error.data?.message || 'Failed to create perk type.',
         life: 3000,
       });
 
@@ -423,9 +377,7 @@ export const useBenefitsPage = (userId?: number) => {
      UPDATE PERK TYPE
   ============================================================ */
 
-  const handleUpdatePerkType = async (
-    data: UpdatePerkTypeRequest,
-  ) => {
+  const handleUpdatePerkType = async (data: UpdatePerkTypeRequest) => {
     try {
       const result = await updatePerkType(data).unwrap();
 
@@ -434,9 +386,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'success',
         summary: 'Updated',
-        detail:
-          result.message ||
-          'Perk type updated successfully.',
+        detail: result.message || 'Perk type updated successfully.',
         life: 3000,
       });
 
@@ -453,9 +403,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to update perk type.',
+        detail: error.data?.message || 'Failed to update perk type.',
         life: 3000,
       });
 
@@ -478,9 +426,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'success',
         summary: 'Deactivated',
-        detail:
-          result.message ||
-          'Perk type deactivated successfully.',
+        detail: result.message || 'Perk type deactivated successfully.',
         life: 3000,
       });
 
@@ -497,9 +443,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to deactivate perk type.',
+        detail: error.data?.message || 'Failed to deactivate perk type.',
         life: 3000,
       });
 
@@ -511,18 +455,14 @@ export const useBenefitsPage = (userId?: number) => {
      ASSIGN PERK
   ============================================================ */
 
-  const handleAssignPerk = async (
-    data: AssignPerkRequest,
-  ) => {
+  const handleAssignPerk = async (data: AssignPerkRequest) => {
     try {
       const result = await assignPerk(data).unwrap();
 
       showToast({
         severity: 'success',
         summary: 'Assigned',
-        detail:
-          result.message ||
-          'Perk assigned successfully.',
+        detail: result.message || 'Perk assigned successfully.',
         life: 3000,
       });
 
@@ -539,9 +479,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to assign perk.',
+        detail: error.data?.message || 'Failed to assign perk.',
         life: 3000,
       });
 
@@ -553,9 +491,7 @@ export const useBenefitsPage = (userId?: number) => {
      UPDATE USER PERK
   ============================================================ */
 
-  const handleUpdateUserPerk = async (
-    data: UpdateUserPerkRequest,
-  ) => {
+  const handleUpdateUserPerk = async (data: UpdateUserPerkRequest) => {
     try {
       const result = await updateUserPerk(data).unwrap();
 
@@ -564,9 +500,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'success',
         summary: 'Updated',
-        detail:
-          result.message ||
-          'User perk updated successfully.',
+        detail: result.message || 'User perk updated successfully.',
         life: 3000,
       });
 
@@ -583,9 +517,7 @@ export const useBenefitsPage = (userId?: number) => {
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail:
-          error.data?.message ||
-          'Failed to update user perk.',
+        detail: error.data?.message || 'Failed to update user perk.',
         life: 3000,
       });
 
@@ -598,26 +530,16 @@ export const useBenefitsPage = (userId?: number) => {
   ============================================================ */
 
   const refetchAll = async () => {
-    await Promise.all([
-      refetchPerks(),
-      refetchPerkTypes(),
-      refetchUserPerks(),
-    ]);
+    await Promise.all([refetchPerks(), refetchPerkTypes(), refetchUserPerks()]);
   };
 
   /* ============================================================
      LOADING
   ============================================================ */
 
-  const isLoading =
-    perksLoading ||
-    perkTypesLoading ||
-    userPerksLoading;
+  const isLoading = perksLoading || perkTypesLoading || userPerksLoading;
 
-  const isFetching =
-    perksFetching ||
-    perkTypesFetching ||
-    userPerksFetching;
+  const isFetching = perksFetching || perkTypesFetching || userPerksFetching;
 
   const isMutating =
     isCreatingPerk ||
