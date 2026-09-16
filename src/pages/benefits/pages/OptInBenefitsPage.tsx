@@ -3,7 +3,7 @@ import { useBenefitsPage } from '../hooks/useBenefits'; // Adjust path as needed
 import type { Perk, PerkType, UserPerk } from '@/store/api/benefitsSlice';
 
 export interface OptInBenefitsPageProps {
-  userId?: number; // Current logged-in employee ID
+  userId: number; // Strictly required logged-in employee ID
 }
 
 // Safe helper to unwrap primitives or { value: ... } objects
@@ -31,6 +31,7 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
 
   // Set of perk IDs the user has opted into
   const optedPerkIds = useMemo<Set<number>>(() => {
+    if (!userPerks) return new Set<number>();
     return new Set<number>(
       userPerks.map((userPerk: UserPerk) => {
         const id =
@@ -47,23 +48,15 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
     if (!perkTypeId) return 'General';
     const targetId =
       typeof perkTypeId === 'object' && 'value' in perkTypeId ? perkTypeId.value : perkTypeId;
-    const match = perkTypes.find((type: PerkType) => type.id === targetId);
+    const match = perkTypes?.find((type: PerkType) => type.id === targetId);
     return match?.name ? renderValue(match.name) : 'General';
   };
 
-  // Inside OptInBenefitsPage.tsx
-
   const onOptInClick = async (perkId: number): Promise<void> => {
-    // 1. Guard check narrows type from 'number | undefined' -> 'number'
-    if (!userId) {
-      console.error('Cannot opt in: userId is undefined.');
-      return;
-    }
-
     try {
       await handleAssignPerk({
         perkId,
-        user_id: userId, // TypeScript now knows userId is strictly 'number'
+        user_id: userId, // Guaranteed to be 'number'
         valid_from: new Date().toISOString(),
       });
     } catch (error: unknown) {
