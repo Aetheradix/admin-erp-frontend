@@ -1,4 +1,30 @@
 import { apiSlice } from './apiSlice';
+import type { UserRole } from '@/config/navItems';
+
+export interface AuditLog {
+  id: string;
+  targetUser: {
+    name: string;
+    email: string;
+  };
+  actionBy: {
+    name: string;
+    email: string;
+  };
+  action: 'APPROVED' | 'REJECTED';
+  assignedRole?: UserRole;
+  timestamp: string;
+}
+
+export interface InvitePayload {
+  email: string;
+  role: string;
+}
+
+export interface InviteResponse {
+  link: string;
+  tempPass: string;
+}
 
 export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -44,6 +70,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    sendInvitation: builder.mutation<{ message: string }, { email: string; role: UserRole }>({
+      query: (credentials) => ({
+        url: '/auth/send-invitation',
+        method: 'POST',
+        body: credentials,
+      }),
+      invalidatesTags: ['ApprovalLogs', 'PendingUsers'],
+    }),
     resetPassword: builder.mutation({
       query: (data) => ({
         url: '/auth/reset-password',
@@ -81,28 +115,41 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    // --- PENDING USERS & APPROVALS ---
     getPendingUsers: builder.query<any, void>({
       query: () => '/auth/pending-users',
       providesTags: ['User'],
     }),
 
-    approveAccount: builder.mutation({
+    approveAccount: builder.mutation<{ message: string }, { id: number; role: string }>({
       query: ({ id, role }) => ({
         url: `/auth/approve-account/${id}`,
         method: 'PATCH',
-        body: {
-          role,
-        },
+        body: { role },
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ['User', 'ApprovalLogs'],
     }),
 
-    rejectAccount: builder.mutation({
+    rejectAccount: builder.mutation<{ message: string }, number>({
       query: (id) => ({
         url: `/auth/reject-account/${id}`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ['User', 'ApprovalLogs'],
+    }),
+
+    // --- NEW: INVITATIONS & AUDIT LOGS ---
+    generateInvitation: builder.mutation<InviteResponse, InvitePayload>({
+      query: (data) => ({
+        url: '/auth/generate-invitation',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    getApprovalLogs: builder.query<AuditLog[], void>({
+      query: () => '/auth/approval-logs',
+      providesTags: ['ApprovalLogs'],
     }),
   }),
 });
@@ -123,4 +170,8 @@ export const {
   useGetAdminElevationRequestsQuery,
   useProcessAdminElevationMutation,
   useLogoutMutation,
+  // Export new hooks
+  useGenerateInvitationMutation,
+  useGetApprovalLogsQuery,
+  useSendInvitationMutation,
 } = authApiSlice;
