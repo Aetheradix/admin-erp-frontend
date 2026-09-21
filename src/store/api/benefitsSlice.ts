@@ -1,92 +1,18 @@
 import { apiSlice } from './apiSlice';
-
-// Adjust these interfaces to match your actual DB/service response.
-export interface Perk {
-  id: number;
-  perk_type_id?: number;
-  name?: string;
-  description?: string;
-  amount?: number | null;
-  frequency?: string | null;
-  eligibility?: string | null;
-  icon?: string | null;
-  assigned?: number | null;
-  is_active?: boolean;
-}
-
-export interface PerkType {
-  id: number;
-  name: string;
-  description?: string | null;
-  is_active?: boolean;
-}
-
-export interface UserPerk {
-  id: number;
-  user_id: number;
-  perk_id: number;
-  valid_from?: string | null;
-  valid_until?: string | null;
-  [key: string]: unknown;
-}
-
-export interface CreatePerkRequest {
-  [key: string]: unknown;
-}
-
-export interface UpdatePerkRequest {
-  id: number;
-  data: {
-    [key: string]: unknown;
-  };
-}
-
-export interface CreatePerkTypeRequest {
-  name: string;
-  description?: string;
-  is_active?: boolean;
-}
-
-export interface UpdatePerkTypeRequest {
-  id: number;
-  data: {
-    name?: string;
-    description?: string;
-    is_active?: boolean;
-  };
-}
-
-export interface AssignPerkRequest {
-  perkId: number;
-  user_id: number;
-  valid_from?: string | null;
-  valid_until?: string | null;
-}
-
-export interface UpdateUserPerkRequest {
-  id: number;
-  data: {
-    [key: string]: unknown;
-  };
-}
-
-export interface PerkMutationResponse {
-  success: boolean;
-  message: string;
-  data: Perk;
-}
-
-export interface PerkTypeMutationResponse {
-  success: boolean;
-  message: string;
-  data: PerkType;
-}
-
-export interface UserPerkMutationResponse {
-  success: boolean;
-  message: string;
-  data: UserPerk;
-}
+import type {
+  Perk,
+  PerkType,
+  UserPerk,
+  CreatePerkRequest,
+  UpdatePerkRequest,
+  CreatePerkTypeRequest,
+  UpdatePerkTypeRequest,
+  AssignPerkRequest,
+  UpdateUserPerkRequest,
+  PerkMutationResponse,
+  PerkTypeMutationResponse,
+  UserPerkMutationResponse,
+} from '../../pages/benefits/types/perks.types';
 
 export const benefitsSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -291,6 +217,18 @@ export const benefitsSlice = apiSlice.injectEndpoints({
     }),
   }),
 });
+
+export type {
+  Perk,
+  PerkType,
+  UserPerk,
+  CreatePerkRequest,
+  UpdatePerkRequest,
+  CreatePerkTypeRequest,
+  UpdatePerkTypeRequest,
+  AssignPerkRequest,
+  UpdateUserPerkRequest,
+} from '@/pages/benefits/types/perks.types';
 
 export const {
   // Perks

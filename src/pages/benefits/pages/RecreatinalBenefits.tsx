@@ -8,7 +8,7 @@ import type {
   CreatePerkRequest,
   UpdatePerkRequest,
   AssignPerkRequest,
-} from '@/store/api/benefitsSlice';
+} from '../types/perks.types';
 
 /* =========================================================
    TYPES
@@ -42,101 +42,60 @@ type FieldProps = {
 
 export default function RecreationalBenefits(): React.JSX.Element {
   const {
-    /* Perks */
     perks,
     filteredPerks,
-
-    /* Perk Types */
     perkTypes,
     perkTypesLoading,
-
-    /* Search */
     search,
     setSearch,
-
-    /* Perk Type Filter */
     activePerkType,
     setActivePerkType,
-
-    /* Status */
     activeStatus,
     setActiveStatus,
-
-    /* Forms */
     openPerkForm,
     closePerkForm,
     selectedPerk,
     showPerkForm,
-
-    /* Actions */
     handleCreatePerk,
     handleUpdatePerk,
-    handleDeletePerk,
     handleAssignPerk,
-
-    /* Loading */
     perksLoading,
     isMutating,
   } = useBenefitsPage();
 
-  /* =========================================================
-     LOCAL UI STATE
-  ========================================================= */
-
   const [showAssign, setShowAssign] = useState(false);
-
   const [assignPerk, setAssignPerk] = useState<Perk | null>(null);
 
-  /* =========================================================
-     STATISTICS
-  ========================================================= */
-
+  /* STATISTICS */
   const totalPerks = perks.length;
-
-  const activePerks = perks.filter((perk) => perk.is_active === true).length;
-
+  // Fixed: Map to SQL `status` field instead of `is_active`
+  const activePerks = perks.filter((perk) => perk.status === 'Active').length;
   const employeesCovered = perks.reduce((total, perk) => total + getNumericValue(perk.assigned), 0);
-
-  /* =========================================================
-     OPEN ASSIGN MODAL
-  ========================================================= */
 
   const openAssignModal = (perk: Perk): void => {
     setAssignPerk(perk);
     setShowAssign(true);
   };
 
-  /* =========================================================
-     CLOSE ASSIGN MODAL
-  ========================================================= */
-
   const closeAssignModal = (): void => {
     setShowAssign(false);
     setAssignPerk(null);
   };
 
-  /* =========================================================
-     TOGGLE STATUS
-  ========================================================= */
-
   const toggleStatus = async (perk: Perk): Promise<void> => {
-    await handleDeletePerk(perk.id);
+    const nextStatus: PerkStatus = perk.status === 'Active' ? 'Inactive' : 'Active';
+    await handleUpdatePerk({
+      id: perk.id,
+      data: { status: nextStatus },
+    });
   };
-
-  /* =========================================================
-     RENDER
-  ========================================================= */
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
+      {/* HEADER */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Recreational Benefits</h1>
-
           <p className="mt-1 text-sm text-gray-500">
             Create and manage employee recreational benefits
           </p>
@@ -152,29 +111,18 @@ export default function RecreationalBenefits(): React.JSX.Element {
         </button>
       </div>
 
-      {/* =====================================================
-          STATISTICS
-      ===================================================== */}
-
+      {/* STATISTICS */}
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
         <Stat title="Total Perks" value={totalPerks} icon="🎁" />
-
         <Stat title="Active Perks" value={activePerks} icon="✓" />
-
         <Stat title="Employees Covered" value={employeesCovered} icon="👥" />
       </div>
 
-      {/* =====================================================
-          SEARCH / FILTER
-      ===================================================== */}
-
+      {/* SEARCH / FILTER */}
       <div className="mb-5 rounded-xl border border-gray-200 bg-white p-4">
         <div className="flex flex-col gap-3 md:flex-row">
-          {/* SEARCH */}
-
           <div className="relative flex-1">
             <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
-
             <input
               type="text"
               value={search}
@@ -184,8 +132,6 @@ export default function RecreationalBenefits(): React.JSX.Element {
             />
           </div>
 
-          {/* PERK TYPE */}
-
           <select
             value={activePerkType}
             onChange={(event) => setActivePerkType(event.target.value)}
@@ -193,7 +139,6 @@ export default function RecreationalBenefits(): React.JSX.Element {
             className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
           >
             <option value="All">{perkTypesLoading ? 'Loading Types...' : 'All Types'}</option>
-
             {!perkTypesLoading &&
               perkTypes.map((type) => (
                 <option key={getPrimitiveValue(type.id)} value={String(getPrimitiveValue(type.id))}>
@@ -202,49 +147,32 @@ export default function RecreationalBenefits(): React.JSX.Element {
               ))}
           </select>
 
-          {/* STATUS */}
-
           <select
             value={activeStatus}
             onChange={(event) => setActiveStatus(event.target.value)}
             className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
           >
             <option value="All">All Status</option>
-
             <option value="Active">Active</option>
-
             <option value="Inactive">Inactive</option>
           </select>
         </div>
       </div>
 
-      {/* =====================================================
-          LOADING
-      ===================================================== */}
-
+      {/* TABLE */}
       {perksLoading && (
         <div className="rounded-xl border bg-white p-10 text-center">
           <div className="text-sm text-gray-500">Loading perks...</div>
         </div>
       )}
 
-      {/* =====================================================
-          EMPTY STATE
-      ===================================================== */}
-
       {!perksLoading && filteredPerks.length === 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
           <div className="text-4xl">🎁</div>
-
           <h3 className="mt-3 text-base font-semibold text-gray-900">No perks found</h3>
-
           <p className="mt-1 text-sm text-gray-500">Try changing your search or filter.</p>
         </div>
       )}
-
-      {/* =====================================================
-          TABLE
-      ===================================================== */}
 
       {!perksLoading && filteredPerks.length > 0 && (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -255,51 +183,39 @@ export default function RecreationalBenefits(): React.JSX.Element {
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
                     Perk
                   </th>
-
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
                     Type
                   </th>
-
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
                     Value
                   </th>
-
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
                     Eligibility
                   </th>
-
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
                     Assigned
                   </th>
-
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-gray-500">
                     Status
                   </th>
-
                   <th className="px-6 py-4 text-right text-xs font-semibold uppercase text-gray-500">
                     Actions
                   </th>
                 </tr>
               </thead>
-
               <tbody className="divide-y">
                 {filteredPerks.map((perk) => (
                   <tr key={getPrimitiveValue(perk.id)} className="hover:bg-gray-50">
-                    {/* =================================================
-                          PERK
-                      ================================================= */}
-
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-xl">
-                          {displayValue(perk.icon, '🎁')}
+                          🎁
                         </div>
-
                         <div>
+                          {/* Fixed: Maps to perk.title */}
                           <p className="text-sm font-medium text-gray-900">
-                            {displayValue(perk.name)}
+                            {displayValue(perk.title)}
                           </p>
-
                           <p className="max-w-sm truncate text-xs text-gray-500">
                             {displayValue(perk.description, 'No description')}
                           </p>
@@ -307,39 +223,23 @@ export default function RecreationalBenefits(): React.JSX.Element {
                       </div>
                     </td>
 
-                    {/* =================================================
-                          TYPE
-                      ================================================= */}
-
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {getPerkTypeName(perk, perkTypes)}
                     </td>
 
-                    {/* =================================================
-                          VALUE
-                      ================================================= */}
-
+                    {/* Fixed: Maps to perk.value & perk.usage_period */}
                     <td className="px-6 py-4">
                       <p className="text-sm font-medium text-gray-900">
-                        {formatAmount(perk.amount)}
+                        {formatAmount(perk.value, perk.currency ?? undefined)}
                       </p>
-
-                      <p className="text-xs text-gray-500">{displayValue(perk.frequency)}</p>
+                      <p className="text-xs text-gray-500">{displayValue(perk.usage_period)}</p>
                     </td>
-
-                    {/* =================================================
-                          ELIGIBILITY
-                      ================================================= */}
 
                     <td className="px-6 py-4">
                       <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-                        {displayValue(perk.eligibility, 'All Employees')}
+                        {parseEligibility(perk.eligibility)}
                       </span>
                     </td>
-
-                    {/* =================================================
-                          ASSIGNED
-                      ================================================= */}
 
                     <td className="px-6 py-4">
                       <button
@@ -347,22 +247,14 @@ export default function RecreationalBenefits(): React.JSX.Element {
                         onClick={() => openAssignModal(perk)}
                         className="text-sm font-medium text-blue-600 hover:underline"
                       >
-                        {getNumericValue(perk.assigned)}
-                        {' employees'}
+                        {getNumericValue(perk.assigned)} employees
                       </button>
                     </td>
 
-                    {/* =================================================
-                          STATUS
-                      ================================================= */}
-
+                    {/* Fixed: Passes perk.status directly */}
                     <td className="px-6 py-4">
-                      <Status status={perk.is_active ? 'Active' : 'Inactive'} />
+                      <Status status={perk.status ?? 'Active'} />
                     </td>
-
-                    {/* =================================================
-                          ACTIONS
-                      ================================================= */}
 
                     <td className="px-6 py-4 text-right">
                       <button
@@ -372,14 +264,13 @@ export default function RecreationalBenefits(): React.JSX.Element {
                       >
                         Edit
                       </button>
-
                       <button
                         type="button"
                         disabled={isMutating}
                         onClick={() => toggleStatus(perk)}
                         className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50"
                       >
-                        {perk.is_active ? 'Deactivate' : 'Activate'}
+                        {perk.status === 'Active' ? 'Deactivate' : 'Activate'}
                       </button>
                     </td>
                   </tr>
@@ -390,10 +281,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
         </div>
       )}
 
-      {/* =====================================================
-          PERK FORM
-      ===================================================== */}
-
+      {/* FORM MODAL */}
       {showPerkForm && (
         <PerkForm
           perk={selectedPerk}
@@ -405,10 +293,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
         />
       )}
 
-      {/* =====================================================
-          ASSIGN MODAL
-      ===================================================== */}
-
+      {/* ASSIGN MODAL */}
       {showAssign && (
         <AssignModal perk={assignPerk} onClose={closeAssignModal} onAssign={handleAssignPerk} />
       )}
@@ -417,7 +302,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
 }
 
 /* =========================================================
-   STAT
+   COMPONENTS & HELPERS
 ========================================================= */
 
 function Stat({
@@ -434,10 +319,8 @@ function Stat({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">{title}</p>
-
           <p className="mt-2 text-2xl font-semibold text-gray-900">{value}</p>
         </div>
-
         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-xl">
           {icon}
         </div>
@@ -446,13 +329,8 @@ function Stat({
   );
 }
 
-/* =========================================================
-   STATUS
-========================================================= */
-
 function Status({ status }: { status: PerkStatus }): React.JSX.Element {
   const active = status === 'Active';
-
   return (
     <span
       className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -465,7 +343,7 @@ function Status({ status }: { status: PerkStatus }): React.JSX.Element {
 }
 
 /* =========================================================
-   PERK FORM
+   PERK FORM (SCHEMA-ALIGNED)
 ========================================================= */
 
 function PerkForm({
@@ -478,36 +356,25 @@ function PerkForm({
 }: PerkFormProps): React.JSX.Element {
   const [form, setForm] = useState({
     perk_type_id: getNumericValue(perk?.perk_type_id),
-
-    name: displayValue(perk?.name, ''),
-
+    title: displayValue(perk?.title, ''),
     description: displayValue(perk?.description, ''),
-
-    amount: getNumericValue(perk?.amount) > 0 ? String(getNumericValue(perk?.amount)) : '',
-
-    frequency: displayValue(perk?.frequency, 'Monthly'),
-
-    eligibility: displayValue(perk?.eligibility, 'All Employees'),
+    value: getNumericValue(perk?.value) > 0 ? String(getNumericValue(perk?.value)) : '',
+    value_type: displayValue(perk?.value_type, 'fixed'),
+    currency: displayValue(perk?.currency, 'INR'),
+    usage_limit: perk?.usage_limit ? String(perk.usage_limit) : '',
+    usage_period: displayValue(perk?.usage_period, 'monthly'),
+    eligibility_type: parseEligibility(perk?.eligibility),
+    valid_from: displayValue(perk?.valid_from, ''),
+    valid_until: displayValue(perk?.valid_until, ''),
+    status: perk?.status ?? 'Active',
   });
 
   const [error, setError] = useState('');
 
-  /* =========================================================
-     UPDATE FORM
-  ========================================================= */
-
-  const update = (field: string, value: string | number): void => {
-    setForm((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
-
+  const update = (field: string, value: unknown): void => {
+    setForm((previous) => ({ ...previous, [field]: value }));
     setError('');
   };
-
-  /* =========================================================
-     SUBMIT
-  ========================================================= */
 
   const submit = async (): Promise<void> => {
     if (!form.perk_type_id) {
@@ -515,37 +382,29 @@ function PerkForm({
       return;
     }
 
-    if (!String(form.name).trim()) {
-      setError('Please enter a perk name.');
+    if (!String(form.title).trim()) {
+      setError('Please enter a perk title.');
       return;
     }
 
-    if (perkTypes.length === 0) {
-      setError('No perk types are available. Please create a perk type first.');
-      return;
-    }
-
+    // Construct request matching SQL columns
     const data: CreatePerkRequest = {
       perk_type_id: Number(form.perk_type_id),
-
-      name: String(form.name).trim(),
-
-      description: String(form.description).trim(),
-
-      amount: form.amount ? Number(form.amount) : null,
-
-      frequency: String(form.frequency),
-
-      eligibility: String(form.eligibility),
-
-      is_active: perk?.is_active ?? true,
+      title: String(form.title).trim(),
+      description: String(form.description).trim() || null,
+      value: form.value ? Number(form.value) : null,
+      value_type: form.value_type,
+      currency: form.currency,
+      usage_limit: form.usage_limit ? Number(form.usage_limit) : null,
+      usage_period: form.usage_period,
+      eligibility: JSON.stringify({ role: form.eligibility_type }),
+      valid_from: form.valid_from || null,
+      valid_until: form.valid_until || null,
+      status: form.status as PerkStatus,
     };
 
     if (perk) {
-      await onUpdate({
-        id: perk.id,
-        data,
-      });
+      await onUpdate({ id: perk.id, data });
     } else {
       await onCreate(data);
     }
@@ -554,22 +413,17 @@ function PerkForm({
   return (
     <Modal title={perk ? 'Edit Perk' : 'Add New Perk'} onClose={onClose}>
       <div className="space-y-5">
-        {/* =================================================
-            TYPE + NAME
-        ================================================= */}
-
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Perk Type">
             <select
               value={form.perk_type_id}
-              onChange={(event) => update('perk_type_id', Number(event.target.value))}
+              onChange={(e) => update('perk_type_id', Number(e.target.value))}
               disabled={perkTypesLoading}
               className="input disabled:cursor-not-allowed disabled:bg-gray-100"
             >
               <option value={0}>
                 {perkTypesLoading ? 'Loading perk types...' : 'Select perk type'}
               </option>
-
               {!perkTypesLoading &&
                 perkTypes.map((type) => (
                   <option key={getPrimitiveValue(type.id)} value={getPrimitiveValue(type.id)}>
@@ -579,109 +433,122 @@ function PerkForm({
             </select>
           </Field>
 
-          <Field label="Perk Name">
+          <Field label="Perk Title">
             <input
               type="text"
-              value={form.name}
-              onChange={(event) => update('name', event.target.value)}
+              value={form.title}
+              onChange={(e) => update('title', e.target.value)}
               placeholder="e.g. Food Delivery Allowance"
               className="input"
             />
           </Field>
         </div>
 
-        {/* =================================================
-            DATABASE TYPE ERROR
-        ================================================= */}
-
-        {!perkTypesLoading && perkTypes.length === 0 && (
-          <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
-            No perk types were found in the database. Please create a perk type before creating a
-            perk.
-          </div>
-        )}
-
-        {/* =================================================
-            FORM ERROR
-        ================================================= */}
-
         {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-
-        {/* =================================================
-            DESCRIPTION
-        ================================================= */}
 
         <Field label="Description">
           <textarea
             value={form.description}
-            onChange={(event) => update('description', event.target.value)}
+            onChange={(e) => update('description', e.target.value)}
             rows={3}
             className="input resize-none"
             placeholder="Describe the benefit..."
           />
         </Field>
 
-        {/* =================================================
-            AMOUNT + FREQUENCY
-        ================================================= */}
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Field label="Benefit Amount">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Field label="Value">
             <input
               type="number"
               min="0"
-              value={form.amount}
-              onChange={(event) => update('amount', event.target.value)}
+              value={form.value}
+              onChange={(e) => update('value', e.target.value)}
               placeholder="1500"
               className="input"
             />
           </Field>
 
-          <Field label="Frequency">
+          <Field label="Value Type">
             <select
-              value={form.frequency}
-              onChange={(event) => update('frequency', event.target.value)}
+              value={form.value_type}
+              onChange={(e) => update('value_type', e.target.value)}
               className="input"
             >
-              <option value="Monthly">Monthly</option>
-
-              <option value="Quarterly">Quarterly</option>
-
-              <option value="Yearly">Yearly</option>
-
-              <option value="One Time">One Time</option>
-
-              <option value="Subscription">Subscription</option>
+              <option value="fixed">Fixed Amount</option>
+              <option value="percentage">Percentage</option>
+              <option value="freebie">Freebie / Item</option>
             </select>
+          </Field>
+
+          <Field label="Currency">
+            <input
+              type="text"
+              value={form.currency}
+              onChange={(e) => update('currency', e.target.value)}
+              className="input"
+              placeholder="INR"
+            />
           </Field>
         </div>
 
-        {/* =================================================
-            ELIGIBILITY
-        ================================================= */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Field label="Usage Period">
+            <select
+              value={form.usage_period}
+              onChange={(e) => update('usage_period', e.target.value)}
+              className="input"
+            >
+              <option value="once">Once</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="lifetime">Lifetime</option>
+            </select>
+          </Field>
 
-        <Field label="Eligibility">
+          <Field label="Usage Limit (Per User)">
+            <input
+              type="number"
+              value={form.usage_limit}
+              onChange={(e) => update('usage_limit', e.target.value)}
+              placeholder="Unlimited if empty"
+              className="input"
+            />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Field label="Valid From">
+            <input
+              type="date"
+              value={form.valid_from}
+              onChange={(e) => update('valid_from', e.target.value)}
+              className="input"
+            />
+          </Field>
+
+          <Field label="Valid Until">
+            <input
+              type="date"
+              value={form.valid_until}
+              onChange={(e) => update('valid_until', e.target.value)}
+              className="input"
+            />
+          </Field>
+        </div>
+
+        <Field label="Status">
           <select
-            value={form.eligibility}
-            onChange={(event) => update('eligibility', event.target.value)}
+            value={form.status}
+            onChange={(e) => update('status', e.target.value as PerkStatus)}
             className="input"
           >
-            <option value="All Employees">All Employees</option>
-
-            <option value="Full Time">Full Time</option>
-
-            <option value="Part Time">Part Time</option>
-
-            <option value="Grade L3+">Grade L3+</option>
-
-            <option value="Management">Management</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
           </select>
         </Field>
       </div>
-
-      {/* =================================================
-          FOOTER
-      ================================================= */}
 
       <div className="mt-6 flex justify-end gap-3 border-t pt-5">
         <button
@@ -691,7 +558,6 @@ function PerkForm({
         >
           Cancel
         </button>
-
         <button
           type="button"
           onClick={submit}
@@ -711,42 +577,18 @@ function PerkForm({
 
 function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.Element {
   const employees = [
-    {
-      id: 1,
-      name: 'Rahul Sharma',
-    },
-    {
-      id: 2,
-      name: 'Priya Singh',
-    },
-    {
-      id: 3,
-      name: 'Amit Kumar',
-    },
-    {
-      id: 4,
-      name: 'Sneha Verma',
-    },
+    { id: 1, name: 'Rahul Sharma' },
+    { id: 2, name: 'Priya Singh' },
+    { id: 3, name: 'Amit Kumar' },
+    { id: 4, name: 'Sneha Verma' },
   ];
 
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
-
   const [validFrom, setValidFrom] = useState('');
-
   const [validUntil, setValidUntil] = useState('');
 
-  /* =========================================================
-     SUBMIT
-  ========================================================= */
-
   const submit = async (): Promise<void> => {
-    if (!perk) {
-      return;
-    }
-
-    if (selectedEmployees.length === 0) {
-      return;
-    }
+    if (!perk || selectedEmployees.length === 0) return;
 
     for (const userId of selectedEmployees) {
       await onAssign({
@@ -756,31 +598,18 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
         valid_until: validUntil || null,
       });
     }
-
     onClose();
   };
 
-  /* =========================================================
-     TOGGLE EMPLOYEE
-  ========================================================= */
-
   const toggleEmployee = (employeeId: number): void => {
-    setSelectedEmployees((previous) => {
-      if (previous.includes(employeeId)) {
-        return previous.filter((id) => id !== employeeId);
-      }
-
-      return [...previous, employeeId];
-    });
+    setSelectedEmployees((prev) =>
+      prev.includes(employeeId) ? prev.filter((id) => id !== employeeId) : [...prev, employeeId]
+    );
   };
 
   return (
-    <Modal title={`Assign ${displayValue(perk?.name, 'Perk')}`} onClose={onClose}>
+    <Modal title={`Assign ${displayValue(perk?.title, 'Perk')}`} onClose={onClose}>
       <div className="space-y-5">
-        {/* =================================================
-            EMPLOYEES
-        ================================================= */}
-
         <Field label="Select Employees">
           <div className="space-y-2 rounded-lg border p-3">
             {employees.map((employee) => (
@@ -794,23 +623,18 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
                   onChange={() => toggleEmployee(employee.id)}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600"
                 />
-
                 <span className="text-sm text-gray-700">{employee.name}</span>
               </label>
             ))}
           </div>
         </Field>
 
-        {/* =================================================
-            VALIDITY
-        ================================================= */}
-
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Valid From">
             <input
               type="date"
               value={validFrom}
-              onChange={(event) => setValidFrom(event.target.value)}
+              onChange={(e) => setValidFrom(e.target.value)}
               className="input"
             />
           </Field>
@@ -819,25 +643,12 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
             <input
               type="date"
               value={validUntil}
-              onChange={(event) => setValidUntil(event.target.value)}
+              onChange={(e) => setValidUntil(e.target.value)}
               className="input"
             />
           </Field>
         </div>
-
-        {/* =================================================
-            INFO
-        ================================================= */}
-
-        <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
-          Selected employees will receive this benefit according to the configured eligibility and
-          validity period.
-        </div>
       </div>
-
-      {/* =================================================
-          FOOTER
-      ================================================= */}
 
       <div className="mt-6 flex justify-end gap-3 border-t pt-5">
         <button
@@ -847,12 +658,11 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
         >
           Cancel
         </button>
-
         <button
           type="button"
           onClick={submit}
           disabled={selectedEmployees.length === 0}
-          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
           Assign Perk
         </button>
@@ -860,10 +670,6 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
     </Modal>
   );
 }
-
-/* =========================================================
-   MODAL
-========================================================= */
 
 function Modal({
   title,
@@ -880,10 +686,8 @@ function Modal({
         <div className="flex items-center justify-between border-b px-6 py-5">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-
             <p className="mt-1 text-sm text-gray-500">Configure benefit information.</p>
           </div>
-
           <button
             type="button"
             onClick={onClose}
@@ -892,160 +696,77 @@ function Modal({
             ×
           </button>
         </div>
-
         <div className="p-6">{children}</div>
       </div>
     </div>
   );
 }
 
-/* =========================================================
-   FIELD
-========================================================= */
-
 function Field({ label, children }: FieldProps): React.JSX.Element {
   return (
     <div>
       <label className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
-
       {children}
     </div>
   );
 }
 
 /* =========================================================
-   SAFE VALUE HELPERS
+   UTILITIES
 ========================================================= */
 
-/**
- * Safely converts API values into something React
- * can render.
- *
- * Handles values such as:
- *
- * "Fitness"
- *
- * 1500
- *
- * { value: "Fitness" }
- *
- * { value: 1500 }
- */
-function displayValue(value: unknown, fallback = '-'): string {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  if (typeof value === 'object') {
-    if ('value' in value) {
-      const nestedValue = (
-        value as {
-          value?: unknown;
-        }
-      ).value;
-
-      if (nestedValue === null || nestedValue === undefined) {
-        return fallback;
-      }
-
-      return String(nestedValue);
+function parseEligibility(eligibility: unknown): string {
+  if (!eligibility) return 'All Employees';
+  if (typeof eligibility === 'string') {
+    try {
+      const parsed = JSON.parse(eligibility);
+      return parsed.role || 'All Employees';
+    } catch {
+      return eligibility;
     }
-
-    return fallback;
   }
-
-  return String(value);
+  if (typeof eligibility === 'object' && 'role' in eligibility) {
+    return String((eligibility as { role?: string }).role || 'All Employees');
+  }
+  return 'All Employees';
 }
 
-/**
- * Converts API values to a primitive ID.
- *
- * Handles:
- *
- * 1
- *
- * "1"
- *
- * { value: 1 }
- *
- * { value: "1" }
- */
-function getPrimitiveValue(value: unknown): string | number {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
+function displayValue(value: unknown, fallback = '-'): string {
+  if (value === null || value === undefined) return fallback;
   if (typeof value === 'object' && 'value' in value) {
-    return getPrimitiveValue(
-      (
-        value as {
-          value?: unknown;
-        }
-      ).value
-    );
+    const val = (value as { value?: unknown }).value;
+    return val !== null && val !== undefined ? String(val) : fallback;
   }
-
-  if (typeof value === 'number' || typeof value === 'string') {
-    return value;
-  }
-
   return String(value);
 }
 
-/**
- * Converts API values to a number.
- *
- * Handles:
- *
- * 100
- *
- * "100"
- *
- * { value: 100 }
- *
- * { value: "100" }
- */
+function getPrimitiveValue(value: unknown): string | number {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object' && 'value' in value) {
+    return getPrimitiveValue((value as { value?: unknown }).value);
+  }
+  return typeof value === 'number' || typeof value === 'string' ? value : String(value);
+}
+
 function getNumericValue(value: unknown): number {
   const primitive = getPrimitiveValue(value);
-
-  const number = Number(primitive);
-
-  return Number.isNaN(number) ? 0 : number;
+  const num = Number(primitive);
+  return Number.isNaN(num) ? 0 : num;
 }
 
-/* =========================================================
-   AMOUNT FORMATTER
-========================================================= */
-
-function formatAmount(amount?: unknown): string {
-  if (amount === null || amount === undefined) {
-    return '-';
-  }
-
+function formatAmount(amount?: unknown, currency = 'INR'): string {
+  if (amount === null || amount === undefined) return '-';
   const numericAmount = getNumericValue(amount);
-
-  if (numericAmount === 0 && displayValue(amount, '') !== '0') {
-    return '-';
-  }
-
-  return `₹${numericAmount.toLocaleString('en-IN')}`;
+  if (numericAmount === 0 && displayValue(amount, '') !== '0') return '-';
+  const symbol = currency === 'INR' ? '₹' : '$';
+  return `${symbol}${numericAmount.toLocaleString('en-IN')}`;
 }
-
-/* =========================================================
-   PERK TYPE NAME
-========================================================= */
 
 function getPerkTypeName(perk: Perk, perkTypes: PerkType[]): string {
   const perkTypeId = getPrimitiveValue(perk.perk_type_id);
-
   const type = perkTypes.find((item) => String(getPrimitiveValue(item.id)) === String(perkTypeId));
-
   return displayValue(type?.name, '-');
 }
-
-/* =========================================================
-   DISABLED STATE
-========================================================= */
 
 function isDisabled(loading: boolean, typeCount: number): boolean {
   return loading || typeCount === 0;

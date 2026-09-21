@@ -158,10 +158,8 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
 
                 {/* CARD FOOTER / ACTION */}
                 <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                  {perk.eligibility && (
-                    <span className="text-xs text-gray-400">
-                      Eligible: {renderValue(perk.eligibility)}
-                    </span>
+                  {Boolean(perk.eligibility) && (
+                    <span className="text-xs text-gray-400">{String(perk.eligibility)}</span>
                   )}
 
                   <button

@@ -216,8 +216,9 @@ function ApprovalPage() {
                 <th className="p-4">Date & Time</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-border-subtle text-xs">
-              {logs.length === 0 ? (
+              {!Array.isArray(logs) || logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-4 text-center text-muted-foreground">
                     No approval logs available.
@@ -227,9 +228,11 @@ function ApprovalPage() {
                 logs.map((log) => (
                   <tr key={log.id} className="hover:bg-surface-subtle/40 transition-all">
                     <td className="p-4">
-                      <div className="font-bold text-foreground">{log.targetUser.name}</div>
+                      <div className="font-bold text-foreground">
+                        {log.targetUser?.name ?? 'N/A'}
+                      </div>
                       <div className="text-muted-foreground text-[11px]">
-                        {log.targetUser.email}
+                        {log.targetUser?.email}
                       </div>
                     </td>
                     <td className="p-4">
@@ -247,8 +250,10 @@ function ApprovalPage() {
                       {log.assignedRole ? log.assignedRole : '—'}
                     </td>
                     <td className="p-4">
-                      <div className="font-semibold text-foreground">{log.actionBy.name}</div>
-                      <div className="text-muted-foreground text-[11px]">{log.actionBy.email}</div>
+                      <div className="font-semibold text-foreground">
+                        {log.actionBy?.name ?? 'System'}
+                      </div>
+                      <div className="text-muted-foreground text-[11px]">{log.actionBy?.email}</div>
                     </td>
                     <td className="p-4 text-muted-foreground">{log.timestamp}</td>
                   </tr>
