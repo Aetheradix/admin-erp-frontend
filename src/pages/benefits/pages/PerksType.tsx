@@ -133,8 +133,7 @@ export default function PerkTypes(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void refetchPerkTypes()}
-              className="mt-5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-            >
+              className="mt-5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
               Try Again
             </button>
           </div>
@@ -162,8 +161,7 @@ export default function PerkTypes(): React.JSX.Element {
             setEditing(null);
             setShowModal(true);
           }}
-          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-        >
+          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
           + Add Perk Type
         </button>
       </div>
@@ -234,8 +232,7 @@ export default function PerkTypes(): React.JSX.Element {
                       setEditing(type);
                       setShowModal(true);
                     }}
-                    className="rounded-lg px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
-                  >
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50">
                     Edit
                   </button>
                 </div>
@@ -296,8 +293,7 @@ function TypeModal({ type, isSaving, onClose, onSave }: TypeModalProps): React.J
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="text-xl text-gray-400 hover:text-gray-700 disabled:opacity-50"
-          >
+            className="text-xl text-gray-400 hover:text-gray-700 disabled:opacity-50">
             ×
           </button>
         </div>
@@ -335,8 +331,7 @@ function TypeModal({ type, isSaving, onClose, onSave }: TypeModalProps): React.J
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-lg border bg-white px-4 py-2.5 text-sm disabled:opacity-50"
-          >
+            className="rounded-lg border bg-white px-4 py-2.5 text-sm disabled:opacity-50">
             Cancel
           </button>
 
@@ -344,8 +339,7 @@ function TypeModal({ type, isSaving, onClose, onSave }: TypeModalProps): React.J
             type="button"
             onClick={handleSave}
             disabled={!name.trim() || isSaving}
-            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
             {isSaving ? 'Saving...' : type ? 'Update Type' : 'Create Type'}
           </button>
         </div>
@@ -363,8 +357,7 @@ function Status({ status }: { status: PerkTypeStatus }): React.JSX.Element {
     <span
       className={`rounded-full px-3 py-1 text-xs font-medium ${
         status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
-      }`}
-    >
+      }`}>
       {status}
     </span>
   );

@@ -138,8 +138,7 @@ export function TeamsPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-white p-6 rounded-xl border border-border-subtle shadow-soft flex flex-col gap-1"
-          >
+            className="bg-white p-6 rounded-xl border border-border-subtle shadow-soft flex flex-col gap-1">
             <span className="text-2xl font-black text-foreground">{stat.value}</span>
             <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
               {stat.label}
@@ -155,8 +154,7 @@ export function TeamsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.08 }}
-            className="bg-white rounded-2xl border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300 relative overflow-hidden"
-          >
+            className="bg-white rounded-2xl border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
             <div
               className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl"
               style={{ backgroundColor: team.color }}
@@ -165,8 +163,7 @@ export function TeamsPage() {
               <div className="flex items-center gap-4">
                 <div
                   className="w-14 h-14 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${team.color}15` }}
-                >
+                  style={{ backgroundColor: `${team.color}15` }}>
                   <Users size={24} style={{ color: team.color }} />
                 </div>
                 <div>
@@ -210,8 +207,7 @@ export function TeamsPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">

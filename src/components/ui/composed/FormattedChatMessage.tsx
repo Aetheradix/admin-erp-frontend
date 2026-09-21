@@ -177,8 +177,7 @@ function renderInlineWithIcons(text: string, isUser?: boolean): React.ReactNode[
         return (
           <span
             key={index}
-            className="inline-flex items-center justify-center align-middle mx-1 p-1 rounded-md bg-white/20 text-white"
-          >
+            className="inline-flex items-center justify-center align-middle mx-1 p-1 rounded-md bg-white/20 text-white">
             <IconComponent size={14} />
           </span>
         );
@@ -186,8 +185,7 @@ function renderInlineWithIcons(text: string, isUser?: boolean): React.ReactNode[
       return (
         <span
           key={index}
-          className={`inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-lg ${matched.bg} ${matched.color} border border-current/10 shadow-2xs font-sans text-xs`}
-        >
+          className={`inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-lg ${matched.bg} ${matched.color} border border-current/10 shadow-2xs font-sans text-xs`}>
           <IconComponent size={13} className="shrink-0" />
         </span>
       );
@@ -250,8 +248,7 @@ export const FormattedChatMessage: React.FC<FormattedChatMessageProps> = ({ cont
       elements.push(
         <div
           key={lineIndex}
-          className="flex items-center gap-2 my-2.5 pb-1.5 border-b border-border-subtle/60 text-sm font-bold text-foreground"
-        >
+          className="flex items-center gap-2 my-2.5 pb-1.5 border-b border-border-subtle/60 text-sm font-bold text-foreground">
           <span className="w-1.5 h-4 rounded-full bg-primary" />
           <span>{renderInlineWithIcons(title)}</span>
         </div>
@@ -267,8 +264,7 @@ export const FormattedChatMessage: React.FC<FormattedChatMessageProps> = ({ cont
       elements.push(
         <div
           key={lineIndex}
-          className="flex items-start gap-2.5 my-1.5 p-2 rounded-xl bg-surface-subtle/50 hover:bg-surface-subtle border border-border-subtle/40 transition-colors group"
-        >
+          className="flex items-start gap-2.5 my-1.5 p-2 rounded-xl bg-surface-subtle/50 hover:bg-surface-subtle border border-border-subtle/40 transition-colors group">
           <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
             {num}
           </span>
@@ -300,8 +296,7 @@ export const FormattedChatMessage: React.FC<FormattedChatMessageProps> = ({ cont
       elements.push(
         <div
           key={lineIndex}
-          className="my-3 p-3 rounded-xl bg-primary/5 border border-primary/15 text-xs text-foreground font-medium flex items-start gap-2"
-        >
+          className="my-3 p-3 rounded-xl bg-primary/5 border border-primary/15 text-xs text-foreground font-medium flex items-start gap-2">
           <Sparkles size={14} className="text-primary shrink-0 mt-0.5" />
           <div className="italic">{renderInlineWithIcons(quoteText)}</div>
         </div>

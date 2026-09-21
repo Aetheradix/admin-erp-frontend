@@ -108,8 +108,7 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
             id="status-filter"
             value={activeStatus}
             onChange={handleStatusChange}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="All">All Benefits</option>
             <option value="Active">Active Only</option>
             <option value="Inactive">Inactive</option>
@@ -134,8 +133,7 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
             return (
               <div
                 key={renderValue(perk.id)}
-                className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-shadow"
-              >
+                className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
                 {/* CARD CONTENT */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -170,8 +168,7 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
                       isOptedIn
                         ? 'bg-emerald-100 text-emerald-800 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                    } ${isAssigningPerk ? 'opacity-50 cursor-wait' : ''}`}
-                  >
+                    } ${isAssigningPerk ? 'opacity-50 cursor-wait' : ''}`}>
                     {isOptedIn ? '✓ Enrolled' : 'Opt In'}
                   </button>
                 </div>

@@ -22,8 +22,7 @@ const Dashboard = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
-      >
+        className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">
             Operational Overview & Sidebar Sync
@@ -42,8 +41,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={() => navigate('/settings')}
-            className="px-4 py-2 rounded-2xl bg-primary text-white text-[11px] font-black uppercase tracking-wider hover:bg-primary-hover transition-colors shadow-sm cursor-pointer"
-          >
+            className="px-4 py-2 rounded-2xl bg-primary text-white text-[11px] font-black uppercase tracking-wider hover:bg-primary-hover transition-colors shadow-sm cursor-pointer">
             Settings
           </button>
         </div>
@@ -59,16 +57,14 @@ const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+            transition={{ duration: 0.5, delay: 0.2 }}>
             <ProjectList projects={projects} />
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+            transition={{ duration: 0.5, delay: 0.4 }}>
             <ProfitChartCard />
           </motion.div>
         </div>
@@ -78,16 +74,14 @@ const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
+            transition={{ duration: 0.5, delay: 0.3 }}>
             <StatsSummary stats={stats} />
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
+            transition={{ duration: 0.5, delay: 0.5 }}>
             <CalendarCard />
           </motion.div>
         </div>

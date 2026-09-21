@@ -53,8 +53,7 @@ export const GeneralSettingsSection: React.FC<GeneralSettingsSectionProps> = ({
                 density === 'compact'
                   ? 'bg-surface-elevated shadow-xs text-primary! font-black'
                   : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
+              }`}>
               {t('common.compact')}
             </Button>
             <Button
@@ -64,8 +63,7 @@ export const GeneralSettingsSection: React.FC<GeneralSettingsSectionProps> = ({
                 density === 'spacious'
                   ? 'bg-surface-elevated shadow-xs text-primary! font-black'
                   : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
+              }`}>
               {t('common.spacious')}
             </Button>
           </div>

@@ -42,8 +42,7 @@ export const AttendanceClockCard: React.FC<AttendanceClockCardProps> = ({
         <span
           className={`text-[11px] font-black tracking-widest uppercase ${
             status?.status === 'checked-in' ? 'text-success' : 'text-muted'
-          }`}
-        >
+          }`}>
           {status?.status === 'checked-in' ? 'IN OFFICE' : 'NOT IN'}
         </span>
       </div>
@@ -66,8 +65,7 @@ export const AttendanceClockCard: React.FC<AttendanceClockCardProps> = ({
           } flex items-center justify-center gap-4 active:scale-95 transition-all cursor-pointer`}
           onClick={handleAttendance}
           loading={isLoading}
-          disabled={isLoading}
-        >
+          disabled={isLoading}>
           {status?.status === 'checked-in' ? <LogOut size={24} /> : <LogIn size={24} />}
           <span className="font-black tracking-widest uppercase">
             {status?.status === 'checked-in' ? 'Check Out' : 'Check In'}
@@ -82,8 +80,7 @@ export const AttendanceClockCard: React.FC<AttendanceClockCardProps> = ({
           } flex items-center justify-center gap-4 active:scale-95 transition-all cursor-pointer`}
           onClick={handleBreak}
           loading={isBreakLoading}
-          disabled={isBreakLoading || status?.status !== 'checked-in'}
-        >
+          disabled={isBreakLoading || status?.status !== 'checked-in'}>
           {status?.onBreak ? <LogIn size={24} /> : <Coffee size={24} />}
           <span className="font-black tracking-widest uppercase">
             {status?.onBreak ? 'End Break' : 'Take Break'}

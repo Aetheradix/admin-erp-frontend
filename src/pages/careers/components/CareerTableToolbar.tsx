@@ -40,8 +40,7 @@ export function CareerTableToolbar({
         <div className="flex items-center gap-3 w-full lg:w-auto">
           <Button
             variant="secondary"
-            className="flex-1 lg:flex-none h-14 px-8 rounded-2xl! gap-3 border-border-subtle! hover:bg-surface-subtle transition-all duration-300"
-          >
+            className="flex-1 lg:flex-none h-14 px-8 rounded-2xl! gap-3 border-border-subtle! hover:bg-surface-subtle transition-all duration-300">
             <Filter size={18} className="text-primary" />
             <span className="font-bold text-sm uppercase tracking-wider">Advanced Filters</span>
           </Button>

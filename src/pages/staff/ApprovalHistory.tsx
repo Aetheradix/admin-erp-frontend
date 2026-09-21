@@ -28,8 +28,7 @@ export function ApprovalHistory() {
     return (
       <Badge
         variant={variant}
-        className="rounded-lg! px-3! py-1! font-bold! text-[11px]! uppercase!"
-      >
+        className="rounded-lg! px-3! py-1! font-bold! text-[11px]! uppercase!">
         <span className="flex items-center gap-1.5">
           {icon} {status}
         </span>
@@ -94,8 +93,7 @@ export function ApprovalHistory() {
           className="p-4"
           emptyMessage="No processed history found."
           rowHover
-          stripedRows
-        >
+          stripedRows>
           <Column
             header="Employee"
             body={userTemplate}

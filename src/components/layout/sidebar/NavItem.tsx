@@ -118,8 +118,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
               isAnyChildActive || isParentExactActive
                 ? 'text-white'
                 : 'text-white/40 hover:text-white'
-            }`}
-          >
+            }`}>
             {/* Torch glow */}
             <AnimatePresence>
               {(isAnyChildActive || isParentExactActive) && (
@@ -162,8 +161,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                     isAnyChildActive || isParentExactActive
                       ? 'text-white'
                       : 'text-white/60 group-hover:text-white'
-                  }`}
-                >
+                  }`}>
                   {getTranslatedLabel(item.label, t)}
                 </motion.span>
               )}
@@ -180,12 +178,10 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                   exit="closed"
                   onClick={handleChevronClick}
                   className="p-1 -mr-1 hover:bg-white/10 rounded transition-colors"
-                  title={expanded ? 'Collapse menu' : 'Expand menu'}
-                >
+                  title={expanded ? 'Collapse menu' : 'Expand menu'}>
                   <motion.div
                     animate={{ rotate: expanded ? 90 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                    transition={{ duration: 0.2 }}>
                     <ChevronRight size={14} className="text-white/30 hover:text-white/70" />
                   </motion.div>
                 </motion.div>
@@ -206,8 +202,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                 onClick={handleEyeClick}
                 title="Manage page access for this module"
                 aria-label={`Manage access for ${item.label}`}
-                className="absolute right-9 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25 cursor-pointer"
-              >
+                className="absolute right-9 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25 cursor-pointer">
                 <Eye size={14} />
               </motion.button>
             )}
@@ -222,8 +217,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2, ease: 'easeInOut' }}
-              className="overflow-hidden"
-            >
+              className="overflow-hidden">
               <div className="ml-9 pl-3 border-l border-white/10 flex flex-col gap-0.5 py-1">
                 {item.children!.map((child) => {
                   const active = isChildActive(child.path);
@@ -236,8 +230,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                         active
                           ? 'text-white bg-primary/20 font-semibold'
                           : 'text-white/40 hover:text-white/80 hover:bg-white/5'
-                      }`}
-                    >
+                      }`}>
                       <span>{getTranslatedLabel(child.label, t)}</span>
 
                       {child.badge !== undefined && child.badge > 0 && (
@@ -261,8 +254,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
     <div
       className="relative"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+      onMouseLeave={() => setIsHovered(false)}>
       <NavLink
         to={item.path}
         end={item.path === '/'}
@@ -271,8 +263,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
           `relative flex items-center ${isOpen ? 'justify-start gap-4 px-4' : 'justify-center'} py-3.5 rounded-lg transition-colors duration-200 group overflow-hidden ${
             isActive ? 'text-white' : 'text-white/40 hover:text-white'
           }`
-        }
-      >
+        }>
         {({ isActive }) => (
           <>
             {/* Torch glow */}
@@ -314,8 +305,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
                   exit="closed"
                   className={`relative z-10 text-sm font-medium whitespace-nowrap overflow-hidden ${
                     isActive ? 'text-white' : 'text-white/60 group-hover:text-white'
-                  }`}
-                >
+                  }`}>
                   {getTranslatedLabel(item.label, t)}
                 </motion.span>
               )}
@@ -337,8 +327,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
             onClick={handleEyeClick}
             title={`Manage access for ${item.label}`}
             aria-label={`Manage access for ${item.label}`}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25"
-          >
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center text-primary/70 hover:text-primary hover:bg-primary/15 transition-all duration-200 z-20 border border-primary/0 hover:border-primary/25">
             <Eye size={14} />
           </motion.button>
         )}

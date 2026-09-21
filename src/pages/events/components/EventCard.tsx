@@ -104,8 +104,7 @@ export const EventCard = ({
                 onEdit(String(event.id));
               }}
               className="w-8 h-8 rounded-xl bg-white/10 text-white hover:bg-white hover:text-primary flex items-center justify-center transition-all cursor-pointer"
-              title="Edit Event"
-            >
+              title="Edit Event">
               <Edit2 size={14} />
             </button>
             <button
@@ -115,8 +114,7 @@ export const EventCard = ({
                 onDelete(String(event.id));
               }}
               className="w-8 h-8 rounded-xl bg-white/10 text-rose-300 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-              title="Delete Event"
-            >
+              title="Delete Event">
               <Trash2 size={14} />
             </button>
           </div>
@@ -126,8 +124,7 @@ export const EventCard = ({
         <div className="absolute bottom-3.5 inset-x-3.5 flex items-center justify-between z-10">
           <Badge
             variant={categoryVariants[event.category] || 'primary'}
-            className="rounded-xl px-3 py-1 text-[10px] font-black tracking-wider uppercase backdrop-blur-md bg-white/20 text-white border border-white/20 shadow-md"
-          >
+            className="rounded-xl px-3 py-1 text-[10px] font-black tracking-wider uppercase backdrop-blur-md bg-white/20 text-white border border-white/20 shadow-md">
             {event.category || 'General'}
           </Badge>
 
@@ -157,8 +154,7 @@ export const EventCard = ({
             {event.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 px-2.5 py-0.5 rounded-lg border border-primary/15"
-              >
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 px-2.5 py-0.5 rounded-lg border border-primary/15">
                 <Tag size={9} /> #{tag}
               </span>
             ))}
@@ -201,8 +197,7 @@ export const EventCard = ({
           variant="primary"
           onClick={() => onRegister?.(event)}
           disabled={isRegistering}
-          className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-        >
+          className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
           {isRegistering ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

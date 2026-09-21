@@ -272,8 +272,7 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
         if (e.target === e.currentTarget) {
           onClose();
         }
-      }}
-    >
+      }}>
       {/* Expanded Max Width Container (max-w-7xl) */}
       <div className="bg-white w-[98vw] max-w-[1800px] max-h-[94vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
@@ -294,8 +293,7 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
           <button
             type="button"
             onClick={onClose}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition"
-          >
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition">
             <X size={20} />
           </button>
         </div>
@@ -537,8 +535,7 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
                       return (
                         <div
                           key={index}
-                          className="grid grid-cols-[1fr_140px_180px_180px_52px] gap-4 items-center bg-gray-50/50 p-2.5 rounded-xl border border-gray-100"
-                        >
+                          className="grid grid-cols-[1fr_140px_180px_180px_52px] gap-4 items-center bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
                           {/* Description */}
                           <div>
                             <input
@@ -601,8 +598,7 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
                             type="button"
                             onClick={() => removeItem(index)}
                             disabled={form.items.length === 1}
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent transition"
-                          >
+                            className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent transition">
                             <Trash2 size={18} />
                           </button>
                         </div>
@@ -612,8 +608,7 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
                     <button
                       type="button"
                       onClick={addItem}
-                      className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-xl border border-dashed border-gray-300 text-sm font-semibold text-gray-700 hover:border-black hover:text-black hover:bg-gray-50 transition"
-                    >
+                      className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-xl border border-dashed border-gray-300 text-sm font-semibold text-gray-700 hover:border-black hover:text-black hover:bg-gray-50 transition">
                       <Plus size={16} />
                       Add Line Item
                     </button>
@@ -676,15 +671,13 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
-              >
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                 Cancel
               </button>
 
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2 shadow-md hover:shadow-lg"
-              >
+                className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2 shadow-md hover:shadow-lg">
                 <FileText size={17} />
                 Create Invoice
               </button>

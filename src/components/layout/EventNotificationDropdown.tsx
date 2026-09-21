@@ -29,8 +29,7 @@ export function EventNotificationDropdown() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Notifications"
-        className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 flex items-center justify-center group cursor-pointer"
-      >
+        className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 flex items-center justify-center group cursor-pointer">
         <Bell size={18} className="text-muted group-hover:rotate-12 transition-transform" />
         {unreadCount > 0 && (
           <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-white animate-pulse" />
@@ -49,8 +48,7 @@ export function EventNotificationDropdown() {
             <button
               type="button"
               onClick={() => navigate('/events')}
-              className="text-[10px] font-black text-primary hover:underline flex items-center gap-0.5"
-            >
+              className="text-[10px] font-black text-primary hover:underline flex items-center gap-0.5">
               View All <ChevronRight size={10} />
             </button>
           </div>
@@ -64,8 +62,7 @@ export function EventNotificationDropdown() {
                     setIsOpen(false);
                     navigate('/events');
                   }}
-                  className="p-4 hover:bg-surface-subtle/80 transition-colors cursor-pointer flex gap-3 group"
-                >
+                  className="p-4 hover:bg-surface-subtle/80 transition-colors cursor-pointer flex gap-3 group">
                   <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 group-hover:scale-105 transition-transform">
                     <Calendar size={16} />
                   </div>
@@ -116,8 +113,7 @@ export function EventNotificationDropdown() {
                 setIsOpen(false);
                 navigate('/events');
               }}
-              className="text-xs font-bold text-foreground hover:text-primary transition-colors"
-            >
+              className="text-xs font-bold text-foreground hover:text-primary transition-colors">
               Open Event Planner
             </button>
           </div>

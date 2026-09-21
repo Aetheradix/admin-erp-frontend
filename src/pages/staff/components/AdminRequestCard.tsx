@@ -38,14 +38,12 @@ export const AdminRequestCard = ({ request, onAction }: AdminRequestCardProps) =
           <button
             onClick={() => onAction(request, false)}
             className="w-10 h-10 rounded-xl border border-error/20 text-error hover:bg-error hover:text-white flex items-center justify-center transition-all"
-            title="Reject Request"
-          >
+            title="Reject Request">
             <X size={18} />
           </button>
           <button
             onClick={() => onAction(request, true)}
-            className="px-6 py-2.5 rounded-xl bg-success text-white font-black text-[10px] uppercase tracking-widest hover:bg-success-dark shadow-lg shadow-success/20 transition-all flex items-center gap-2"
-          >
+            className="px-6 py-2.5 rounded-xl bg-success text-white font-black text-[10px] uppercase tracking-widest hover:bg-success-dark shadow-lg shadow-success/20 transition-all flex items-center gap-2">
             <Check size={14} /> Approve
           </button>
         </div>

@@ -110,15 +110,13 @@ export const AttendanceCalendarGrid: React.FC<AttendanceCalendarGridProps> = ({
           <button
             onClick={handlePrevMonth}
             className="w-11 h-11 rounded-2xl bg-surface-subtle hover:bg-surface-elevated flex items-center justify-center text-foreground border border-border-subtle transition-all active:scale-95 cursor-pointer"
-            title="Previous Month"
-          >
+            title="Previous Month">
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={handleNextMonth}
             className="w-11 h-11 rounded-2xl bg-surface-subtle hover:bg-surface-elevated flex items-center justify-center text-foreground border border-border-subtle transition-all active:scale-95 cursor-pointer"
-            title="Next Month"
-          >
+            title="Next Month">
             <ChevronRight size={20} />
           </button>
         </div>
@@ -129,8 +127,7 @@ export const AttendanceCalendarGrid: React.FC<AttendanceCalendarGridProps> = ({
         {WEEK_DAYS.map((day) => (
           <div
             key={day}
-            className="py-3 text-center text-[10px] font-black text-muted uppercase tracking-widest"
-          >
+            className="py-3 text-center text-[10px] font-black text-muted uppercase tracking-widest">
             {day}
           </div>
         ))}
@@ -170,8 +167,7 @@ export const AttendanceCalendarGrid: React.FC<AttendanceCalendarGridProps> = ({
                   ? 'bg-primary/10 ring-2 ring-primary ring-inset z-10'
                   : 'hover:bg-surface-subtle/80',
                 isToday && !isSelected ? 'bg-primary/5' : ''
-              )}
-            >
+              )}>
               {/* Day Number & Today indicator */}
               <div className="flex items-center justify-between">
                 <span
@@ -182,8 +178,7 @@ export const AttendanceCalendarGrid: React.FC<AttendanceCalendarGridProps> = ({
                       : isToday
                         ? 'text-primary font-black'
                         : 'text-foreground'
-                  )}
-                >
+                  )}>
                   {dayNum}
                 </span>
                 {isToday && (
@@ -200,8 +195,7 @@ export const AttendanceCalendarGrid: React.FC<AttendanceCalendarGridProps> = ({
                     className={cn(
                       'px-2 py-1 rounded-xl border text-[9px] font-black uppercase tracking-tighter flex items-center justify-between gap-1 transition-transform group-hover:scale-[1.02]',
                       getStatusBadgeStyle(record.status)
-                    )}
-                  >
+                    )}>
                     <div className="flex items-center gap-1 truncate">
                       {getStatusIcon(record.status)}
                       <span className="truncate">{record.status}</span>

@@ -54,8 +54,7 @@ export const Dialog = ({
         body: { padding: 0 },
       }}
       style={style}
-      destroyOnHidden
-    >
+      destroyOnHidden>
       {children}
     </Modal>
   );

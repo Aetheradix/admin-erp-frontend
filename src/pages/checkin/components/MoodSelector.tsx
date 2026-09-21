@@ -42,15 +42,13 @@ export const MoodSelector = ({
               selectedMood === m.value
                 ? 'bg-primary/5 border-primary/20 shadow-sm'
                 : 'bg-surface-subtle border-transparent hover:border-border-subtle hover:bg-surface-elevated'
-            }`}
-          >
+            }`}>
             <m.icon
               size={20}
               className={selectedMood === m.value ? 'text-primary' : 'text-muted/60'}
             />
             <span
-              className={`text-[8px] font-bold uppercase tracking-tighter ${selectedMood === m.value ? 'text-primary' : 'text-muted'}`}
-            >
+              className={`text-[8px] font-bold uppercase tracking-tighter ${selectedMood === m.value ? 'text-primary' : 'text-muted'}`}>
               {m.label}
             </span>
           </button>

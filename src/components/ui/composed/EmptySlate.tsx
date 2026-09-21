@@ -23,8 +23,7 @@ export const EmptySlate = ({
         className={cn(
           'col-span-full py-20 flex flex-col items-center justify-center text-center opacity-40',
           className
-        )}
-      >
+        )}>
         <Icon size={48} />
         <p className="text-sm font-black mt-4">{title}</p>
       </div>
@@ -36,8 +35,7 @@ export const EmptySlate = ({
       className={cn(
         'col-span-full py-32 flex flex-col items-center justify-center text-center gap-6 bg-white/50 backdrop-blur-sm rounded-[48px] border-2 border-dashed border-border-strong',
         className
-      )}
-    >
+      )}>
       <div className="w-24 h-24 rounded-full bg-surface-subtle flex items-center justify-center text-muted/30">
         <Icon size={48} />
       </div>

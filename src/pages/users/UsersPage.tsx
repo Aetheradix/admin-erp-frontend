@@ -188,8 +188,7 @@ export function UsersPage() {
       key: 'role',
       render: (role) => (
         <span
-          className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${roleColors[role] || 'bg-surface-subtle text-muted'}`}
-        >
+          className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${roleColors[role] || 'bg-surface-subtle text-muted'}`}>
           {role}
         </span>
       ),
@@ -253,8 +252,7 @@ export function UsersPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden"
-      >
+        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
         <Table
           columns={columns}
           dataSource={filtered}
@@ -276,8 +274,7 @@ export function UsersPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">

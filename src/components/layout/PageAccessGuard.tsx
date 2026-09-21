@@ -65,15 +65,13 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex flex-col items-center justify-center min-h-[70vh] text-center px-6"
-      >
+        className="flex flex-col items-center justify-center min-h-[70vh] text-center px-6">
         {/* Icon */}
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1, type: 'spring', bounce: 0.4 }}
-          className="w-24 h-24 rounded-3xl bg-error/10 border border-error/20 flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(225,29,72,0.12)]"
-        >
+          className="w-24 h-24 rounded-3xl bg-error/10 border border-error/20 flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(225,29,72,0.12)]">
           <ShieldAlert size={40} className="text-error" />
         </motion.div>
 
@@ -81,8 +79,7 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
+          transition={{ duration: 0.4, delay: 0.2 }}>
           <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
             Access Restricted
           </h1>
@@ -103,21 +100,18 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.35 }}
-          className="flex items-center gap-3 mt-10"
-        >
+          className="flex items-center gap-3 mt-10">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-surface-subtle text-foreground text-sm font-semibold hover:bg-surface-elevated transition-colors"
-          >
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-surface-subtle text-foreground text-sm font-semibold hover:bg-surface-elevated transition-colors">
             <ArrowLeft size={16} />
             Go Back
           </button>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-hover shadow-[0_0_15px_rgba(232,88,58,0.25)] transition-all duration-200"
-          >
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-hover shadow-[0_0_15px_rgba(232,88,58,0.25)] transition-all duration-200">
             <LayoutDashboard size={16} />
             Go to Dashboard
           </button>

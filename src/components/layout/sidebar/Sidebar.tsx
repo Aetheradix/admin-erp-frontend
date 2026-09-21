@@ -258,8 +258,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       variants={sidebarVariants}
       animate={isOpen ? 'open' : 'closed'}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed lg:static inset-y-0 left-0 z-40 h-full bg-[#0d0d0d] flex flex-col border-r border-white/5 overflow-hidden"
-    >
+      className="fixed lg:static inset-y-0 left-0 z-40 h-full bg-[#0d0d0d] flex flex-col border-r border-white/5 overflow-hidden">
       {/* Mobile close */}
       <AnimatePresence>
         {isOpen && (
@@ -268,14 +267,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute top-4 right-4 lg:hidden z-50"
-          >
+            className="absolute top-4 right-4 lg:hidden z-50">
             <Button
               variant="ghost"
               onClick={onClose}
               className="p-2 text-white/50 hover:text-white transition-colors"
-              aria-label="Close sidebar"
-            >
+              aria-label="Close sidebar">
               <X size={20} />
             </Button>
           </motion.div>
@@ -286,8 +283,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <nav
         key={`nav-config-${configVersion}`}
-        className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth"
-      >
+        className="flex-1 py-4 px-3 flex flex-col gap-2 overflow-y-auto no-scrollbar scroll-smooth">
         {NAV_CATEGORIES.map((category) => (
           <NavSection
             key={category}

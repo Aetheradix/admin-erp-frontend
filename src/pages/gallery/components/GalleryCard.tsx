@@ -15,8 +15,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="group relative break-inside-avoid mb-8 rounded-[2rem] overflow-hidden border border-white/20 shadow-soft hover:shadow-2xl transition-all duration-500 bg-white"
-    >
+      className="group relative break-inside-avoid mb-8 rounded-[2rem] overflow-hidden border border-white/20 shadow-soft hover:shadow-2xl transition-all duration-500 bg-white">
       {/* Image with Zoom */}
       <div className="relative overflow-hidden aspect-auto">
         <img
@@ -38,8 +37,7 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
           <button
             className="w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-white hover:text-primary border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center group/view active:scale-95"
             onClick={() => onView(String(item.id))}
-            aria-label={`View ${item.title} in full screen`}
-          >
+            aria-label={`View ${item.title} in full screen`}>
             <Maximize2 size={18} className="group-hover/view:scale-110 transition-transform" />
           </button>
         </div>
@@ -67,16 +65,14 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
             <button
               className="flex-1 h-12 rounded-2xl bg-white text-primary hover:bg-primary-hover hover:text-white font-black text-[10px] uppercase tracking-widest gap-2 flex items-center justify-center transition-all active:scale-95 shadow-lg"
               onClick={() => onEdit(String(item.id))}
-              aria-label={`Edit details for ${item.title}`}
-            >
+              aria-label={`Edit details for ${item.title}`}>
               <Edit2 size={14} />
               Customize
             </button>
             <button
               className="w-12 h-12 rounded-2xl bg-white/10 text-white hover:bg-red-500 hover:text-white border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center active:scale-95"
               onClick={() => onDelete(String(item.id))}
-              aria-label={`Delete ${item.title} from gallery`}
-            >
+              aria-label={`Delete ${item.title} from gallery`}>
               <Trash2 size={18} />
             </button>
           </div>

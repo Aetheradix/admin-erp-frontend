@@ -234,8 +234,7 @@ const Events = () => {
                 <button
                   type="button"
                   onClick={() => handleSearchChange('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-                >
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
                   <X size={14} />
                 </button>
               )}
@@ -247,8 +246,7 @@ const Events = () => {
                 activeFilterCount > 0
                   ? 'bg-primary text-white border-primary hover:bg-primary/90'
                   : 'text-foreground'
-              }`}
-            >
+              }`}>
               <Filter size={18} />
               <span>Filters</span>
               {activeFilterCount > 0 && (
@@ -273,8 +271,7 @@ const Events = () => {
                 <button
                   type="button"
                   onClick={() => setFilters((p) => ({ ...p, category: 'All' }))}
-                  className="hover:text-red-500"
-                >
+                  className="hover:text-red-500">
                   <X size={12} />
                 </button>
               </span>
@@ -283,8 +280,7 @@ const Events = () => {
             {filters.tags?.map((t) => (
               <span
                 key={t}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-white text-primary border border-primary/20 shadow-xs"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-white text-primary border border-primary/20 shadow-xs">
                 <Tag size={10} />
                 <span>#{t}</span>
                 <button
@@ -295,8 +291,7 @@ const Events = () => {
                       tags: p.tags?.filter((tag) => tag !== t),
                     }))
                   }
-                  className="hover:text-red-500"
-                >
+                  className="hover:text-red-500">
                   <X size={12} />
                 </button>
               </span>
@@ -305,8 +300,7 @@ const Events = () => {
             {filters.employee_statuses?.map((st) => (
               <span
                 key={st}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-white text-emerald-600 border border-emerald-500/20 shadow-xs"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-white text-emerald-600 border border-emerald-500/20 shadow-xs">
                 <UserCheck size={10} />
                 <span>Status: {st}</span>
                 <button
@@ -317,8 +311,7 @@ const Events = () => {
                       employee_statuses: p.employee_statuses?.filter((s) => s !== st),
                     }))
                   }
-                  className="hover:text-red-500"
-                >
+                  className="hover:text-red-500">
                   <X size={12} />
                 </button>
               </span>
@@ -327,8 +320,7 @@ const Events = () => {
             {filters.departments?.map((d) => (
               <span
                 key={d}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-white text-foreground border border-border-subtle shadow-xs"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-white text-foreground border border-border-subtle shadow-xs">
                 <Building2 size={10} />
                 <span>{d}</span>
                 <button
@@ -339,8 +331,7 @@ const Events = () => {
                       departments: p.departments?.filter((dept) => dept !== d),
                     }))
                   }
-                  className="hover:text-red-500"
-                >
+                  className="hover:text-red-500">
                   <X size={12} />
                 </button>
               </span>
@@ -357,8 +348,7 @@ const Events = () => {
                   onClick={() =>
                     setFilters((p) => ({ ...p, start_date: undefined, end_date: undefined }))
                   }
-                  className="hover:text-red-500"
-                >
+                  className="hover:text-red-500">
                   <X size={12} />
                 </button>
               </span>
@@ -367,8 +357,7 @@ const Events = () => {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-auto text-xs font-black text-red-500 hover:underline flex items-center gap-1"
-            >
+              className="ml-auto text-xs font-black text-red-500 hover:underline flex items-center gap-1">
               <RotateCcw size={12} />
               Clear All
             </button>
@@ -402,8 +391,7 @@ const Events = () => {
                 <Button
                   variant="secondary"
                   onClick={handleResetFilters}
-                  className="mt-4 h-10 rounded-2xl font-bold text-xs"
-                >
+                  className="mt-4 h-10 rounded-2xl font-bold text-xs">
                   Reset All Filters
                 </Button>
               )}
@@ -434,8 +422,7 @@ const Events = () => {
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <EventForm
           initialData={editingEvent}
           onSubmit={handleSubmit}

@@ -157,8 +157,7 @@ export function ItemsPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-white p-6 rounded-[28px] border border-border-subtle shadow-soft flex items-center gap-5 group"
-          >
+            className="bg-white p-6 rounded-[28px] border border-border-subtle shadow-soft flex items-center gap-5 group">
             <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
               <stat.icon size={22} />
             </div>
@@ -179,16 +178,14 @@ export function ItemsPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: i * 0.05 }}
-            className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300"
-          >
+            className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300">
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-1">
                 <h3 className="text-sm font-bold text-foreground">{item.name}</h3>
                 <span className="text-[10px] font-bold text-muted tracking-wider">{item.sku}</span>
               </div>
               <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${categoryColors[item.category] || 'bg-surface-subtle text-muted'}`}
-              >
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${categoryColors[item.category] || 'bg-surface-subtle text-muted'}`}>
                 {item.category}
               </span>
             </div>
@@ -219,8 +216,7 @@ export function ItemsPage() {
         pt={{
           root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">

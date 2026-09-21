@@ -17,8 +17,7 @@ export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: Featu
             className={cn(
               'w-16 h-16 rounded-xl flex items-center justify-center transition-transform duration-700 group-hover:rotate-12 group-hover:scale-110',
               `bg-${feature.color}-500/10 text-${feature.color}-600`
-            )}
-          >
+            )}>
             <feature.icon size={28} />
           </div>
           <div className="flex flex-col">
@@ -48,8 +47,7 @@ export const FeatureCard = ({ feature, departments, isEnabled, onToggle }: Featu
                 active
                   ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-100'
                   : 'bg-surface-subtle text-muted/60 hover:bg-surface-base hover:text-muted scale-[0.98] hover:scale-100 border border-transparent hover:border-border-subtle'
-              )}
-            >
+              )}>
               {active ? <Check size={12} strokeWidth={4} /> : <Plus size={12} strokeWidth={4} />}
               {dept}
             </button>

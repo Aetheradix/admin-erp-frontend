@@ -63,8 +63,7 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
                   <Button
                     variant="primary"
                     className="rounded-full! p-4!"
-                    aria-label="Change image"
-                  >
+                    aria-label="Change image">
                     <i className="pi pi-pencil text-xl"></i>
                   </Button>
                 </div>
@@ -153,16 +152,14 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
           variant="ghost"
           onClick={onCancel}
           className="px-8! rounded-3xl! font-bold text-muted!"
-          aria-label="Cancel asset upload"
-        >
+          aria-label="Cancel asset upload">
           Cancel
         </Button>
         <Button
           variant="primary"
           onClick={() => onSubmit(formData)}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
-          aria-label={initialData ? 'Update asset details' : 'Add asset to gallery collection'}
-        >
+          aria-label={initialData ? 'Update asset details' : 'Add asset to gallery collection'}>
           {initialData ? 'Update Asset' : 'Add to Collection'}
         </Button>
       </div>

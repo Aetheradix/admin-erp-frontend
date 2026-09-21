@@ -52,8 +52,7 @@ export const EventPassModal = ({ isOpen, onClose, passData }: EventPassModalProp
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer"
-          >
+            className="w-9 h-9 rounded-xl bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -140,15 +139,13 @@ export const EventPassModal = ({ isOpen, onClose, passData }: EventPassModalProp
             <Button
               variant="outline"
               onClick={handlePrint}
-              className="flex-1 h-11 rounded-2xl gap-2 font-bold text-xs uppercase tracking-wider border-white/20 hover:bg-white/10"
-            >
+              className="flex-1 h-11 rounded-2xl gap-2 font-bold text-xs uppercase tracking-wider border-white/20 hover:bg-white/10">
               <Printer size={14} /> Print Pass
             </Button>
             <Button
               variant="primary"
               onClick={onClose}
-              className="flex-1 h-11 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg"
-            >
+              className="flex-1 h-11 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg">
               Done & Close
             </Button>
           </div>

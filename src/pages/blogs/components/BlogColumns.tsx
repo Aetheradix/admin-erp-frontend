@@ -18,8 +18,7 @@ export function StatusCell({ status }: { status: Blog['status'] }) {
     <div className="flex justify-center">
       <Badge
         variant={STATUS_VARIANT[status]}
-        className="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border-none shadow-sm flex items-center gap-2"
-      >
+        className="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border-none shadow-sm flex items-center gap-2">
         <div className={`w-1.5 h-1.5 rounded-full animate-pulse bg-current`} />
         {status}
       </Badge>
@@ -137,16 +136,14 @@ export function ActionsCell({ id, onDelete }: ActionsCellProps) {
         variant="ghost"
         className="w-10 h-10 rounded-2xl bg-surface-subtle border border-border-subtle hover:bg-surface-elevated hover:text-primary transition-all active:scale-90"
         onClick={() => navigate(`/blogs/${id}/edit`)}
-        aria-label="Edit post"
-      >
+        aria-label="Edit post">
         <Edit2 size={16} />
       </Button>
       <Button
         variant="ghost"
         className="w-10 h-10 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500/50 hover:bg-red-500 hover:text-white transition-all active:scale-90"
         onClick={() => onDelete(id)}
-        aria-label="Delete post"
-      >
+        aria-label="Delete post">
         <Trash2 size={16} />
       </Button>
     </div>

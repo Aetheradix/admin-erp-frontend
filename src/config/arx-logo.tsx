@@ -42,8 +42,7 @@ export const ARXLogo: React.FC<ARXLogoProps> = ({
       xmlSpace="preserve"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      {...props}
-    >
+      {...props}>
       <g id="layer1" transform="translate(-0.407122,-6.296154)">
         <g id="g66" transform="translate(-35.86566,-46.256711)">
           {/* Status keyframes: green pulse (5-sec check-in) & yellow pulse (on break) */}

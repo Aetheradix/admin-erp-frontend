@@ -125,8 +125,7 @@ export default function MyPerks(): React.JSX.Element {
             <button
               type="button"
               onClick={() => refetchUserPerks()}
-              className="mt-5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-            >
+              className="mt-5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
               Try Again
             </button>
           </div>
@@ -231,8 +230,7 @@ function PerkCard({ perk, onView }: PerkCardProps): React.JSX.Element {
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
               perk.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}
-          >
+            }`}>
             {perk.status}
           </span>
         </div>
@@ -286,8 +284,7 @@ function PerkCard({ perk, onView }: PerkCardProps): React.JSX.Element {
         <button
           type="button"
           onClick={onView}
-          className="w-full rounded-lg border border-gray-200 bg-white py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50"
-        >
+          className="w-full rounded-lg border border-gray-200 bg-white py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50">
           View Details
         </button>
       </div>
@@ -320,8 +317,7 @@ function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): 
           <button
             type="button"
             onClick={onClose}
-            className="text-xl text-gray-400 hover:text-gray-700"
-          >
+            className="text-xl text-gray-400 hover:text-gray-700">
             ×
           </button>
         </div>
@@ -378,8 +374,7 @@ function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): 
           <button
             type="button"
             onClick={onClose}
-            className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-          >
+            className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
             Close
           </button>
         </div>

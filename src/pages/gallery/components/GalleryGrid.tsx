@@ -48,8 +48,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
         styles={{
           body: { background: 'transparent', padding: 0 },
         }}
-        closeIcon={null}
-      >
+        closeIcon={null}>
         <div className="relative h-screen flex flex-col justify-center items-center overflow-hidden">
           {/* Top Navbar */}
           <div className="absolute top-0 inset-x-0 p-8 flex justify-between items-center z-50">
@@ -74,8 +73,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
               <button
                 onClick={() => setIsOpen(false)}
                 className="w-12 h-12 rounded-2xl bg-white text-primary hover:bg-primary-hover hover:text-white flex items-center justify-center transition-all shadow-xl active:scale-95"
-                aria-label="Close Lightbox"
-              >
+                aria-label="Close Lightbox">
                 <X size={24} />
               </button>
             </div>
@@ -96,13 +94,11 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
               <div className="custom-arrow-right">
                 <ChevronRight size={32} />
               </div>
-            }
-          >
+            }>
             {items.map((item) => (
               <div
                 key={item.id}
-                className="h-screen flex flex-col items-center justify-center relative p-12 transition-all duration-700"
-              >
+                className="h-screen flex flex-col items-center justify-center relative p-12 transition-all duration-700">
                 <div className="relative group max-w-[85vw] max-h-[70vh]">
                   <img
                     src={item.image_url}

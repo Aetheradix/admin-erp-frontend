@@ -86,8 +86,7 @@ const Profile = () => {
         visible={showElevationDialog}
         onHide={() => setShowElevationDialog(false)}
         header="Request Admin Rights Elevation"
-        style={{ width: '450px' }}
-      >
+        style={{ width: '450px' }}>
         <AdminElevationRequest onSuccess={() => setShowElevationDialog(false)} />
       </Dialog>
 
@@ -104,8 +103,7 @@ const Profile = () => {
             isUpdatingAutoApprove || isLoadingAutoApprove ? 'cursor-not-allowed opacity-50' : ''
           }`}
           aria-pressed={user.autoApprove}
-          aria-label="Toggle auto approve"
-        >
+          aria-label="Toggle auto approve">
           <span
             className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${
               user.autoApprove ? 'translate-x-5' : 'translate-x-0'

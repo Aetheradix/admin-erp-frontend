@@ -109,8 +109,7 @@ export function MovementsPage() {
       width: 80,
       render: (_, record) => (
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center ${record.type === 'In' ? 'bg-success/10' : 'bg-error/10'}`}
-        >
+          className={`w-8 h-8 rounded-lg flex items-center justify-center ${record.type === 'In' ? 'bg-success/10' : 'bg-error/10'}`}>
           {record.type === 'In' ? (
             <ArrowDownLeft size={16} className="text-success" />
           ) : (
@@ -135,8 +134,7 @@ export function MovementsPage() {
       key: 'quantity',
       render: (quantity, record) => (
         <span
-          className={`text-sm font-bold ${record.type === 'In' ? 'text-success' : 'text-error'}`}
-        >
+          className={`text-sm font-bold ${record.type === 'In' ? 'text-success' : 'text-error'}`}>
           {record.type === 'In' ? '+' : '-'}
           {quantity}
         </span>
@@ -213,8 +211,7 @@ export function MovementsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden"
-      >
+        className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden">
         <Table
           columns={columns}
           dataSource={movements}

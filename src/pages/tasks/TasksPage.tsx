@@ -361,8 +361,7 @@ export function TasksPage() {
         {Object.entries(counts).map(([status, count]) => (
           <div
             key={status}
-            className={`rounded-xl border p-6 shadow-soft flex items-center justify-between ${statusColors[status]}`}
-          >
+            className={`rounded-xl border p-6 shadow-soft flex items-center justify-between ${statusColors[status]}`}>
             <div className="flex flex-col gap-1">
               <span className="text-2xl font-black text-foreground">{count}</span>
               <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
@@ -398,8 +397,7 @@ export function TasksPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-primary hover:underline font-bold text-[10px] w-fit"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                    onClick={(e) => e.stopPropagation()}>
                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Jira Issue: {issueKey}
                   </a>
@@ -419,15 +417,13 @@ export function TasksPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: i * 0.05 }}
-              className="bg-white rounded-xl border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300"
-            >
+              className="bg-white rounded-xl border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between">
                 <h3 className="text-sm font-bold text-foreground leading-snug flex-1 pr-3">
                   {task.title}
                 </h3>
                 <span
-                  className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}
-                >
+                  className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}>
                   {task.priority}
                 </span>
               </div>
@@ -467,8 +463,7 @@ export function TasksPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
@@ -586,8 +581,7 @@ export function TasksPage() {
               <div className="flex flex-col gap-0.5">
                 <label
                   htmlFor="syncToJira"
-                  className="text-xs font-bold text-foreground cursor-pointer select-none"
-                >
+                  className="text-xs font-bold text-foreground cursor-pointer select-none">
                   Sync Task with Jira
                 </label>
                 <span className="text-[10px] text-muted italic">

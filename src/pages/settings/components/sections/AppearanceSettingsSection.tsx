@@ -51,8 +51,7 @@ export const AppearanceSettingsSection: React.FC<AppearanceSettingsSectionProps>
                       : 'opacity-80 hover:opacity-100'
                   }`}
                   style={{ backgroundColor: color }}
-                  aria-label={`Select accent color ${name}`}
-                >
+                  aria-label={`Select accent color ${name}`}>
                   {isSelected && <Check size={14} className="text-white drop-shadow-md" />}
                 </button>
               );

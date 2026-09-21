@@ -57,8 +57,7 @@ const ResourceCard = ({ resource, onBook }: ResourceCardProps) => {
       <button
         type="button"
         onClick={onBook}
-        className="mt-5 w-full rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted"
-      >
+        className="mt-5 w-full rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">
         Book Now
       </button>
     </div>

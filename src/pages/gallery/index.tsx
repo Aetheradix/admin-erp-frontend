@@ -30,11 +30,9 @@ const GalleryStats = ({ total }: { total: number }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: idx * 0.1 }}
-        className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-6 border border-white shadow-soft flex items-center gap-6 group hover:shadow-lg transition-all"
-      >
+        className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-6 border border-white shadow-soft flex items-center gap-6 group hover:shadow-lg transition-all">
         <div
-          className={`w-12 h-12 rounded-2xl bg-${stat.color}/10 flex items-center justify-center border border-${stat.color}/20 group-hover:bg-${stat.color} transition-colors duration-500`}
-        >
+          className={`w-12 h-12 rounded-2xl bg-${stat.color}/10 flex items-center justify-center border border-${stat.color}/20 group-hover:bg-${stat.color} transition-colors duration-500`}>
           <stat.icon
             size={20}
             className={`text-${stat.color} group-hover:text-white transition-colors`}
@@ -200,8 +198,7 @@ const Gallery = () => {
               'rounded-[3rem] overflow-hidden border-none shadow-2xl bg-white/90 backdrop-blur-2xl',
           },
           mask: { className: 'backdrop-blur-md bg-black/30' },
-        }}
-      >
+        }}>
         <GalleryForm
           initialData={editingItem}
           onSubmit={handleSubmit}

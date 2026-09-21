@@ -109,8 +109,7 @@ export default function AppLayout() {
         type="button"
         onClick={() => setIsCopilotOpen(true)}
         title="Open Aether Copilot (Gemini AI)"
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer group"
-      >
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer group">
         <Sparkles size={24} className="group-hover:rotate-12 transition-transform duration-300" />
         <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-success border-2 border-background" />
       </button>
@@ -158,8 +157,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 onClick={() => navigate('/events')}
-                className="text-xs font-black text-primary hover:underline flex items-center gap-1"
-              >
+                className="text-xs font-black text-primary hover:underline flex items-center gap-1">
                 <span>View Event</span>
                 <ChevronRight size={12} />
               </button>
@@ -167,8 +165,7 @@ export default function AppLayout() {
                 type="button"
                 onClick={() => setShowBanner(false)}
                 className="text-muted hover:text-foreground p-1 rounded-lg transition-colors"
-                aria-label="Dismiss event notification banner"
-              >
+                aria-label="Dismiss event notification banner">
                 <X size={14} />
               </button>
             </div>

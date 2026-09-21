@@ -42,8 +42,7 @@ export function Approvals() {
       <div className="flex items-center gap-2">
         <Badge
           variant={variant}
-          className="rounded-lg! px-3! py-1! font-bold! text-[10px]! tracking-wider! uppercase!"
-        >
+          className="rounded-lg! px-3! py-1! font-bold! text-[10px]! tracking-wider! uppercase!">
           <span className="flex items-center gap-1.5">
             {icon} {status}
           </span>
@@ -67,16 +66,14 @@ export function Approvals() {
           variant="outline"
           size="small"
           className="h-9 px-4! rounded-md! border-green-500/20! text-green-600! hover:bg-green-50!"
-          onClick={() => handleAction(rowData, 'Approved')}
-        >
+          onClick={() => handleAction(rowData, 'Approved')}>
           Approve
         </Button>
         <Button
           variant="outline"
           size="small"
           className="h-9 px-4! rounded-md! border-red-500/20! text-red-600! hover:bg-red-50!"
-          onClick={() => handleAction(rowData, 'Rejected')}
-        >
+          onClick={() => handleAction(rowData, 'Rejected')}>
           Reject
         </Button>
       </div>
@@ -127,8 +124,7 @@ export function Approvals() {
           paginator
           rows={10}
           className="p-4"
-          emptyMessage="No pending requests found."
-        >
+          emptyMessage="No pending requests found.">
           <Column field="user" header="Employee" body={userTemplate} className="py-6" />
           <Column field="dates" header="Duration" body={dateTemplate} />
           <Column
@@ -152,8 +148,7 @@ export function Approvals() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/20' },
-        }}
-      >
+        }}>
         <ApprovalDialog
           type={actionType}
           request={selectedRequest}

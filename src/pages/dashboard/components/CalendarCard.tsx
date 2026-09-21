@@ -67,8 +67,7 @@ export default function CalendarCard() {
                 {primaryEvent.tags.slice(0, 2).map((t) => (
                   <span
                     key={t}
-                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-zinc-800 text-[9px] text-zinc-300 font-semibold"
-                  >
+                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-zinc-800 text-[9px] text-zinc-300 font-semibold">
                     <Tag size={8} /> #{t}
                   </span>
                 ))}
@@ -99,8 +98,7 @@ export default function CalendarCard() {
           type="button"
           aria-label="Calendar options"
           onClick={() => navigate('/events')}
-          className="w-10 h-10 rounded-2xl bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-all"
-        >
+          className="w-10 h-10 rounded-2xl bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-all">
           <MoreHorizontal size={18} className="text-muted" aria-hidden="true" />
         </button>
       </div>
@@ -109,8 +107,7 @@ export default function CalendarCard() {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="dashboard-calendar-container"
-        >
+          className="dashboard-calendar-container">
           <Calendar
             value={new Date()}
             inline
@@ -129,8 +126,7 @@ export default function CalendarCard() {
           <button
             type="button"
             onClick={() => navigate('/events')}
-            className="text-[10px] font-black text-primary hover:underline uppercase"
-          >
+            className="text-[10px] font-black text-primary hover:underline uppercase">
             View All
           </button>
         </div>
@@ -138,8 +134,7 @@ export default function CalendarCard() {
         {upcomingEvent ? (
           <div
             onClick={() => navigate('/events')}
-            className="bg-surface-subtle rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-primary/5 transition-colors border border-border-subtle"
-          >
+            className="bg-surface-subtle rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-primary/5 transition-colors border border-border-subtle">
             <div className="w-10 h-10 rounded-xl bg-white flex flex-col items-center justify-center border border-border-subtle shadow-sm">
               <span className="text-[8px] font-black text-primary leading-none uppercase">
                 {upcomingEvent.date

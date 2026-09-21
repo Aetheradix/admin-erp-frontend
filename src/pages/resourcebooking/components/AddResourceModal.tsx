@@ -69,12 +69,10 @@ const AddResourceModal = ({
         if (e.target === e.currentTarget) {
           handleClose();
         }
-      }}
-    >
+      }}>
       <div
         className="w-full max-w-lg rounded-xl border bg-background shadow-xl"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+        onMouseDown={(e) => e.stopPropagation()}>
         {/* HEADER */}
 
         <div className="flex items-center justify-between border-b px-6 py-4">
@@ -90,8 +88,7 @@ const AddResourceModal = ({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="rounded-md p-2 text-muted-foreground hover:bg-muted disabled:opacity-50"
-          >
+            className="rounded-md p-2 text-muted-foreground hover:bg-muted disabled:opacity-50">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -122,8 +119,7 @@ const AddResourceModal = ({
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
-            >
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
               <option value="Room">Room</option>
 
               <option value="Equipment">Equipment</option>
@@ -184,16 +180,14 @@ const AddResourceModal = ({
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
-            >
+              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50">
               Cancel
             </button>
 
             <button
               type="submit"
               disabled={isSubmitting || !name.trim()}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
               {isSubmitting ? 'Adding...' : 'Add Resource'}
             </button>
           </div>

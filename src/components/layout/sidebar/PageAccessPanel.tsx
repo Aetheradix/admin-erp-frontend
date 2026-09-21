@@ -238,8 +238,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
         isMobile
           ? 'flex items-center justify-center p-4 bg-black/70 backdrop-blur-md'
           : 'pointer-events-none'
-      }`}
-    >
+      }`}>
       <motion.div
         ref={panelRef}
         initial={{ opacity: 0, scale: 0.94, y: -8 }}
@@ -256,8 +255,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
         }
         className={`pointer-events-auto w-full max-w-[490px] bg-[#121216] border border-white/12 rounded-2xl shadow-2xl shadow-black/90 flex flex-col overflow-hidden text-white backdrop-blur-2xl ${
           isMobile ? 'max-h-[92vh]' : 'fixed max-h-[620px]'
-        }`}
-      >
+        }`}>
         {/* Panel Header */}
         <div className="relative px-5 pt-4 pb-3 border-b border-white/10 bg-gradient-to-r from-primary/10 via-white/[0.02] to-transparent">
           <div className="flex items-start justify-between gap-3">
@@ -284,8 +282,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
             <button
               onClick={onClose}
               className="text-white/40 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
-              aria-label="Close panel"
-            >
+              aria-label="Close panel">
               <X size={18} />
             </button>
           </div>
@@ -309,8 +306,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                       isActive
                         ? 'bg-primary text-white border-primary shadow-[0_0_12px_rgba(232,88,58,0.35)]'
                         : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
+                    }`}>
                     {isSuper && <Lock size={10} className="text-amber-400" />}
                     <span>{role.label}</span>
                   </button>
@@ -323,8 +319,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                   selectedRole === 'ALL'
                     ? 'bg-primary text-white border-primary shadow-[0_0_12px_rgba(232,88,58,0.35)]'
                     : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'
-                }`}
-              >
+                }`}>
                 All Roles Matrix
               </button>
             </div>
@@ -341,8 +336,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                     isMasterRoleAllEnabled
                       ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                       : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                  }`}
-                >
+                  }`}>
                   {isMasterRoleAllEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
                 </div>
                 <div>
@@ -364,8 +358,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                 onClick={() => toggleAllForSelectedRole(!isMasterRoleAllEnabled)}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                   isMasterRoleAllEnabled ? 'bg-primary' : 'bg-white/20'
-                }`}
-              >
+                }`}>
                 <span
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
                     isMasterRoleAllEnabled ? 'translate-x-5' : 'translate-x-0'
@@ -422,8 +415,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                     selectedRole !== 'ALL' && isAllowedForSelectedRole
                       ? 'bg-white/[0.04] border-white/12 shadow-sm'
                       : 'bg-white/[0.015] border-white/5 opacity-80 hover:opacity-100'
-                  }`}
-                >
+                  }`}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -449,16 +441,14 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                         <span
                           className={`text-xs font-semibold ${
                             isAllowedForSelectedRole ? 'text-emerald-400' : 'text-white/40'
-                          }`}
-                        >
+                          }`}>
                           {isAllowedForSelectedRole ? 'Visible' : 'Hidden'}
                         </span>
 
                         {selectedRole === 'SuperAdmin' ? (
                           <span
                             className="flex items-center gap-1 text-[10px] text-amber-400 font-bold uppercase px-2 py-0.5 rounded bg-amber-400/10 border border-amber-400/20"
-                            title="Super Admin always has full access"
-                          >
+                            title="Super Admin always has full access">
                             <Lock size={10} />
                             Locked
                           </span>
@@ -471,8 +461,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                               isAllowedForSelectedRole
                                 ? 'bg-primary'
                                 : 'bg-white/20 hover:bg-white/30'
-                            }`}
-                          >
+                            }`}>
                             <span
                               className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
                                 isAllowedForSelectedRole ? 'translate-x-5' : 'translate-x-0'
@@ -509,8 +498,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                                   : `Click to ${
                                       isRoleChecked ? 'remove' : 'grant'
                                     } access for ${role.label}`
-                              }
-                            >
+                              }>
                               {role.label}
                             </button>
                           );
@@ -529,8 +517,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
           <button
             type="button"
             onClick={resetAllToDefaults}
-            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors"
-          >
+            className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors">
             <RotateCcw size={13} />
             <span>Reset Defaults</span>
           </button>
@@ -542,8 +529,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
             <button
               type="button"
               onClick={handleSaveAndClose}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary-hover shadow-[0_0_15px_rgba(232,88,58,0.35)] transition-all duration-200 active:scale-95 cursor-pointer"
-            >
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary-hover shadow-[0_0_15px_rgba(232,88,58,0.35)] transition-all duration-200 active:scale-95 cursor-pointer">
               <Check size={14} />
               <span>Done</span>
             </button>

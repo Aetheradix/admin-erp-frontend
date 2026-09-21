@@ -55,8 +55,7 @@ const ForgotPasswordPage = () => {
         step === 1
           ? 'ENTER YOUR EMAIL TO RECEIVE A SECURITY RESET CODE.'
           : 'ENTER THE CODE SENT TO YOUR EMAIL AND YOUR NEW PASSWORD.'
-      }
-    >
+      }>
       <AnimatePresence mode="wait">
         {step === 1 ? (
           <motion.form
@@ -65,8 +64,7 @@ const ForgotPasswordPage = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             onSubmit={handleRequestOTP}
-            className="space-y-6"
-          >
+            className="space-y-6">
             <FormField label="Work Email" required>
               <Input
                 type="email"
@@ -81,8 +79,7 @@ const ForgotPasswordPage = () => {
               type="submit"
               variant="primary"
               className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
-              loading={isOtpRequestLoading}
-            >
+              loading={isOtpRequestLoading}>
               SEND RESET CODE
             </Button>
           </motion.form>
@@ -93,8 +90,7 @@ const ForgotPasswordPage = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             onSubmit={handleResetPassword}
-            className="space-y-6"
-          >
+            className="space-y-6">
             <FormField label="Enter 6-digit Code" required>
               <Input
                 type="text"
@@ -130,8 +126,7 @@ const ForgotPasswordPage = () => {
               type="submit"
               variant="primary"
               className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
-              loading={isResetLoading}
-            >
+              loading={isResetLoading}>
               RESET PASSWORD
             </Button>
           </motion.form>
@@ -141,8 +136,7 @@ const ForgotPasswordPage = () => {
       <div className="mt-10 pt-10 border-t border-border-subtle text-center">
         <Link
           to="/auth/login"
-          className="text-muted font-black text-xs uppercase tracking-widest hover:text-primary transition-colors"
-        >
+          className="text-muted font-black text-xs uppercase tracking-widest hover:text-primary transition-colors">
           Back to Login
         </Link>
       </div>

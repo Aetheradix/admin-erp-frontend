@@ -108,15 +108,13 @@ export const GuestPassForm = ({ onSubmit, onCancel }: GuestPassFormProps) => {
         <Button
           variant="ghost"
           onClick={onCancel}
-          className="px-8! rounded-2xl! font-bold text-muted!"
-        >
+          className="px-8! rounded-2xl! font-bold text-muted!">
           Discard
         </Button>
         <Button
           variant="primary"
           onClick={handleApply}
-          className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20"
-        >
+          className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20">
           Issue Guest Pass
         </Button>
       </div>

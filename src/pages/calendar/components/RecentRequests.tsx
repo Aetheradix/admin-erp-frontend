@@ -28,8 +28,7 @@ export const RecentRequests = ({ requests }: RecentRequestsProps) => {
         {requests.map((request) => (
           <div
             key={request.id}
-            className="group relative bg-surface-subtle/50 rounded-3xl p-6 border border-border-subtle hover:bg-white hover:shadow-md transition-all duration-300"
-          >
+            className="group relative bg-surface-subtle/50 rounded-3xl p-6 border border-border-subtle hover:bg-white hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <span
                 className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
@@ -38,8 +37,7 @@ export const RecentRequests = ({ requests }: RecentRequestsProps) => {
                     : request.status === 'Pending'
                       ? 'bg-warning/10 text-warning'
                       : 'bg-error/10 text-error'
-                }`}
-              >
+                }`}>
                 {request.status}
               </span>
               <span className="text-[10px] font-black text-primary uppercase bg-primary/5 px-3 py-1.5 rounded-xl">

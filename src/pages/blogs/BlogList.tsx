@@ -67,8 +67,7 @@ const BlogList = () => {
           scrollable={true}
           breakpoint="960px"
           rowHover
-          dataKey="id"
-        >
+          dataKey="id">
           {BLOG_COLUMNS.map((col) => (
             <Column
               key={col.key}

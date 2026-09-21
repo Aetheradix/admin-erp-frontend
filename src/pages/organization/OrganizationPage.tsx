@@ -31,8 +31,7 @@ export function OrganizationPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-10 flex flex-col lg:flex-row items-start gap-10"
-      >
+        className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-10 flex flex-col lg:flex-row items-start gap-10">
         <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center shrink-0">
           <Building2 size={40} className="text-primary" />
         </div>
@@ -52,8 +51,7 @@ export function OrganizationPage() {
             {companyInfo.values.map((v) => (
               <span
                 key={v}
-                className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider"
-              >
+                className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider">
                 {v}
               </span>
             ))}
@@ -76,8 +74,7 @@ export function OrganizationPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.08 }}
-            className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-8 flex items-start gap-5 group hover:shadow-lg transition-all duration-300"
-          >
+            className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-8 flex items-start gap-5 group hover:shadow-lg transition-all duration-300">
             <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shrink-0">
               <item.icon size={22} />
             </div>

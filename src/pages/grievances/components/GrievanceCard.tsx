@@ -82,15 +82,13 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
       <div className="flex items-center gap-6 pt-2 border-t border-border-subtle/50">
         <button
           className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
-          aria-label={`View full details of grievance #${grievance.id}`}
-        >
+          aria-label={`View full details of grievance #${grievance.id}`}>
           View Details
           <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
         <button
           className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
-          aria-label={`Submit a response to grievance #${grievance.id}`}
-        >
+          aria-label={`Submit a response to grievance #${grievance.id}`}>
           Respond
           <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
@@ -101,8 +99,7 @@ export function GrievanceCard({ grievance }: GrievanceCardProps) {
           className={cn(
             'flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border',
             getStatusStyles(grievance.status)
-          )}
-        >
+          )}>
           {getStatusIcon(grievance.status)}
           <span>{grievance.status}</span>
         </div>

@@ -26,8 +26,7 @@ export default function ProjectCard({
         backgroundColor: color,
         boxShadow: `0 20px 40px -15px ${color}33`,
       }}
-      className="group relative p-8 rounded-[2rem] flex flex-col justify-between min-h-[200px] cursor-pointer transition-all duration-500 overflow-hidden"
-    >
+      className="group relative p-8 rounded-[2rem] flex flex-col justify-between min-h-[200px] cursor-pointer transition-all duration-500 overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
       <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-black/5 rounded-full blur-2xl" />
@@ -41,8 +40,7 @@ export default function ProjectCard({
           </div>
           <motion.div
             whileHover={{ rotate: 90 }}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-colors border border-white/10"
-          >
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-colors border border-white/10">
             <MoreHorizontal size={16} className="text-white" />
           </motion.div>
         </div>
@@ -85,8 +83,7 @@ export default function ProjectCard({
             )}
             <motion.div
               whileHover={{ scale: 1.1 }}
-              className="w-8 h-8 rounded-full bg-white flex items-center justify-center z-20 shadow-lg cursor-pointer"
-            >
+              className="w-8 h-8 rounded-full bg-white flex items-center justify-center z-20 shadow-lg cursor-pointer">
               <Plus size={14} className="text-foreground" style={{ color: color }} />
             </motion.div>
           </div>

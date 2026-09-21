@@ -72,8 +72,7 @@ export function AttendancePage() {
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <AttendanceRequestForm
           onSubmit={handleRequestSubmit}
           onCancel={() => setShowRequestForm(false)}

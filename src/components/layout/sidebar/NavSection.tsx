@@ -36,8 +36,7 @@ export function NavSection({
             initial="closed"
             animate="open"
             exit="closed"
-            className="overflow-hidden"
-          >
+            className="overflow-hidden">
             <CategoryLabel label={category} />
           </motion.div>
         )}

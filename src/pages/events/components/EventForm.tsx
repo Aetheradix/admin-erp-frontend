@@ -126,8 +126,7 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                   key={preset.label}
                   type="button"
                   onClick={() => applyTemplate(preset)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-primary hover:text-white text-xs font-bold text-foreground border border-border-subtle shadow-xs transition-all cursor-pointer group"
-                >
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-primary hover:text-white text-xs font-bold text-foreground border border-border-subtle shadow-xs transition-all cursor-pointer group">
                   <IconComponent
                     size={14}
                     className="text-primary group-hover:text-white transition-colors"
@@ -234,16 +233,14 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
           variant="ghost"
           onClick={onCancel}
           className="px-8! rounded-3xl! font-bold text-muted!"
-          aria-label="Discard event details"
-        >
+          aria-label="Discard event details">
           Discard
         </Button>
         <Button
           variant="primary"
           onClick={() => onSubmit(formData)}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
-          aria-label={initialData ? 'Save changes to event' : 'Schedule this event'}
-        >
+          aria-label={initialData ? 'Save changes to event' : 'Schedule this event'}>
           {initialData ? 'Save Changes' : 'Schedule Event'}
         </Button>
       </div>

@@ -109,8 +109,7 @@ export function FinancePage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <FinanceForm onSubmit={handleRequestSubmit} onCancel={() => setShowForm(false)} />
       </Dialog>
     </div>

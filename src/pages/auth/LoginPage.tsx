@@ -123,8 +123,7 @@ const LoginPage = () => {
         loginMode === 'password'
           ? 'PLEASE ENTER YOUR CREDENTIALS TO ACCESS YOUR WORKSPACE.'
           : "WE'LL SEND A SECURE CODE TO YOUR REGISTERED EMAIL."
-      }
-    >
+      }>
       <div className="flex bg-surface-subtle p-1 rounded-2xl mb-8 border border-border-subtle">
         <button
           onClick={() => setLoginMode('password')}
@@ -132,8 +131,7 @@ const LoginPage = () => {
             loginMode === 'password'
               ? 'bg-background shadow-sm text-primary border border-border-subtle'
               : 'text-muted hover:text-foreground'
-          }`}
-        >
+          }`}>
           PASSWORD
         </button>
         <button
@@ -142,8 +140,7 @@ const LoginPage = () => {
             loginMode === 'otp'
               ? 'bg-background shadow-sm text-primary border border-border-subtle'
               : 'text-muted hover:text-foreground'
-          }`}
-        >
+          }`}>
           SECURE OTP
         </button>
       </div>
@@ -172,8 +169,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-              >
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
                 {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
               </button>
             </div>
@@ -183,8 +179,7 @@ const LoginPage = () => {
             <Link
               to="/auth/forgot-password"
               title="Forgot Password"
-              className="text-xs font-black text-primary hover:underline"
-            >
+              className="text-xs font-black text-primary hover:underline">
               Forgot password?
             </Link>
           </div>
@@ -193,8 +188,7 @@ const LoginPage = () => {
             type="submit"
             variant="primary"
             className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
-            loading={isPasswordLoading}
-          >
+            loading={isPasswordLoading}>
             GET STARTED
           </Button>
         </form>
@@ -215,8 +209,7 @@ const LoginPage = () => {
                   type="button"
                   onClick={handleRequestOTP}
                   disabled={!email || isOtpRequestLoading}
-                  className="absolute right-2 top-2 bottom-2 px-4 rounded-xl bg-primary text-white text-[10px] font-black tracking-widest hover:bg-primary/90 disabled:opacity-50 transition-all"
-                >
+                  className="absolute right-2 top-2 bottom-2 px-4 rounded-xl bg-primary text-white text-[10px] font-black tracking-widest hover:bg-primary/90 disabled:opacity-50 transition-all">
                   {isOtpRequestLoading ? 'SENDING...' : 'SEND CODE'}
                 </button>
               )}
@@ -243,8 +236,7 @@ const LoginPage = () => {
             variant="primary"
             className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
             disabled={!otpSent || !otp}
-            loading={isOtpLoginLoading}
-          >
+            loading={isOtpLoginLoading}>
             VERIFY & LOGIN
           </Button>
 
@@ -255,8 +247,7 @@ const LoginPage = () => {
                 setOtpSent(false);
                 setOtp('');
               }}
-              className="w-full text-center text-xs font-black text-muted hover:text-primary transition-colors"
-            >
+              className="w-full text-center text-xs font-black text-muted hover:text-primary transition-colors">
               Didn't receive code? Try again
             </button>
           )}

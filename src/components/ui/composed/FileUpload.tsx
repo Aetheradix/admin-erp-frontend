@@ -45,8 +45,7 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
           className={cn(
             mode === 'basic' && 'w-full h-full [&_.ant-upload]:w-full [&_.ant-upload]:h-full'
           )}
-          {...props}
-        >
+          {...props}>
           {mode === 'advanced' ? (
             <div className="bg-surface-subtle border-t border-border-strong px-6 py-8 flex flex-col items-center justify-center gap-4 cursor-pointer">
               <span className="font-bold text-primary">Attach Files</span>

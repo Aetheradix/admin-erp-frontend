@@ -135,16 +135,14 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
           variant="ghost"
           onClick={onCancel}
           className="px-6 rounded-2xl font-bold text-muted"
-          aria-label="Cancel profile edits"
-        >
+          aria-label="Cancel profile edits">
           Cancel
         </Button>
         <Button
           variant="primary"
           onClick={() => onSave(formData)}
           className="px-8 h-11 rounded-2xl font-black tracking-wide shadow-md shadow-primary/20"
-          aria-label="Save profile changes"
-        >
+          aria-label="Save profile changes">
           Save Changes
         </Button>
       </div>

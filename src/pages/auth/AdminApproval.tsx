@@ -76,8 +76,7 @@ const AdminApproval = () => {
             <Button
               onClick={() => navigate('/auth/login')}
               variant="primary"
-              className="w-full h-14 rounded-2xl! shadow-lg shadow-emerald-500/20 font-black tracking-widest text-sm"
-            >
+              className="w-full h-14 rounded-2xl! shadow-lg shadow-emerald-500/20 font-black tracking-widest text-sm">
               GO TO LOGIN
             </Button>
           </div>
@@ -99,8 +98,7 @@ const AdminApproval = () => {
             <Button
               onClick={() => navigate('/auth/login')}
               variant="ghost"
-              className="text-primary font-black uppercase tracking-widest text-xs hover:bg-primary/5 px-8 h-12 rounded-xl"
-            >
+              className="text-primary font-black uppercase tracking-widest text-xs hover:bg-primary/5 px-8 h-12 rounded-xl">
               Back to Sign In
             </Button>
           </div>

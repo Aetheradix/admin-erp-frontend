@@ -10,8 +10,10 @@ interface TabsProps {
 export const Tabs = ({ items, activeItem, onItemChange, className }: TabsProps) => {
   return (
     <div
-      className={cn('flex gap-2 p-0 border-none bg-transparent list-none m-0 flex-wrap', className)}
-    >
+      className={cn(
+        'flex gap-2 p-0 border-none bg-transparent list-none m-0 flex-wrap',
+        className
+      )}>
       {items.map((item) => {
         const isActive = item === activeItem;
         return (
@@ -24,8 +26,7 @@ export const Tabs = ({ items, activeItem, onItemChange, className }: TabsProps) 
               isActive
                 ? 'bg-primary text-white shadow-[0_10px_20px_-5px_var(--primary-glow)] scale-105 z-10'
                 : 'bg-surface-subtle text-muted hover:text-foreground hover:bg-surface-elevated active:scale-95'
-            )}
-          >
+            )}>
             {item}
           </button>
         );

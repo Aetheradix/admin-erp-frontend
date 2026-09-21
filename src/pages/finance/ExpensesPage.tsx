@@ -100,15 +100,13 @@ export function ExpensesPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.1 }}
-            className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 group hover:shadow-lg transition-all duration-300"
-          >
+            className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 group hover:shadow-lg transition-all duration-300">
             <div className="flex items-start justify-between mb-6">
               <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
                 <Receipt size={24} />
               </div>
               <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${exp.status === 'Approved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}
-              >
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${exp.status === 'Approved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
                 {exp.status}
               </span>
             </div>
@@ -142,8 +140,7 @@ export function ExpensesPage() {
         pt={{
           root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">

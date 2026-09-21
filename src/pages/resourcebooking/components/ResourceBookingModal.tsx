@@ -160,12 +160,10 @@ const ResourceBookingModal = ({
         if (e.target === e.currentTarget) {
           onClose();
         }
-      }}
-    >
+      }}>
       <div
         className="relative w-full max-w-lg overflow-hidden rounded-xl border bg-background shadow-xl"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+        onMouseDown={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
@@ -181,8 +179,7 @@ const ResourceBookingModal = ({
             onClick={onClose}
             disabled={isSubmitting}
             className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
-            aria-label="Close"
-          >
+            aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -200,8 +197,7 @@ const ResourceBookingModal = ({
               value={selectedResourceId}
               onChange={(e) => setSelectedResourceId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
-            >
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50">
               <option value="" disabled>
                 Select resource
               </option>
@@ -259,8 +255,7 @@ const ResourceBookingModal = ({
                 conflictingBooking
                   ? 'border-red-200 bg-red-50 text-red-700'
                   : 'border-green-200 bg-green-50 text-green-700'
-              }`}
-            >
+              }`}>
               {conflictingBooking ? (
                 <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
               ) : (
@@ -313,8 +308,7 @@ const ResourceBookingModal = ({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
-          >
+            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50">
             Cancel
           </button>
 
@@ -322,8 +316,7 @@ const ResourceBookingModal = ({
             type="button"
             onClick={handleSubmit}
             disabled={!isAvailable || isSubmitting}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
 
             {isSubmitting ? 'Booking...' : 'Book Resource'}

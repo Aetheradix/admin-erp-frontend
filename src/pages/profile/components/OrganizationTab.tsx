@@ -112,8 +112,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
                   {user.teamMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="bg-surface-elevated p-3 rounded-xl border border-border-subtle flex items-center gap-3"
-                    >
+                      className="bg-surface-elevated p-3 rounded-xl border border-border-subtle flex items-center gap-3">
                       <img
                         src={
                           member.image ||

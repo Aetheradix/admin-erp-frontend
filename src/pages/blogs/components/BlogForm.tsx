@@ -57,8 +57,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="col-span-12 lg:col-span-8 flex flex-col gap-8"
-      >
+        className="col-span-12 lg:col-span-8 flex flex-col gap-8">
         <div className="bg-white/60 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white shadow-soft">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -71,8 +70,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <FormField
               label="Strategic Title"
               required
-              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
-            >
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
               <Input
                 value={formData.title}
                 onChange={(e) => onValueChange('title', e.target.value)}
@@ -84,8 +82,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <FormField
               label="The Hook"
               description="A compelling summary for maximum engagement."
-              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
-            >
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
               <Textarea
                 value={formData.excerpt}
                 onChange={(e) => onValueChange('excerpt', e.target.value)}
@@ -98,8 +95,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <FormField
               label="Full Context"
               required
-              className="!text-[10px] !font-black  !tracking-[0.15em] !text-muted"
-            >
+              className="!text-[10px] !font-black  !tracking-[0.15em] !text-muted">
               <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm bg-white">
                 <RichEditor
                   value={formData.content}
@@ -123,8 +119,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="col-span-12 lg:col-span-4 flex flex-col gap-10"
-      >
+        className="col-span-12 lg:col-span-4 flex flex-col gap-10">
         {/* Actions Card */}
         <div className="bg-white/60 backdrop-blur-3xl p-10 rounded-[2.5rem] border border-white shadow-soft">
           <div className="flex flex-col gap-5">
@@ -132,8 +127,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               type="submit"
               className="w-full h-14 rounded-2xl! bg-primary shadow-xl shadow-primary/30 font-black tracking-[0.1em] text-xs uppercase flex items-center justify-center gap-3 active:scale-95 transition-all text-white"
               loading={isLoading}
-              disabled={isLoading}
-            >
+              disabled={isLoading}>
               <Save size={18} />
               {initialData ? 'Sync Changes' : 'Launch Narrative'}
             </Button>
@@ -141,8 +135,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               type="button"
               variant="ghost"
               className="w-full h-12 rounded-2xl! font-black text-[10px] uppercase tracking-widest text-muted! hover:bg-red-500/5! hover:text-red-500! flex items-center justify-center gap-2"
-              onClick={() => navigate('/blogs')}
-            >
+              onClick={() => navigate('/blogs')}>
               <X size={14} />
               Discard Draft
             </Button>
@@ -157,8 +150,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                 </span>
               </div>
               <Badge
-                className={`text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest border-none shadow-sm ${formData.status === 'Published' ? 'bg-success/10 text-success' : 'bg-surface-subtle text-muted'}`}
-              >
+                className={`text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-widest border-none shadow-sm ${formData.status === 'Published' ? 'bg-success/10 text-success' : 'bg-surface-subtle text-muted'}`}>
                 {formData.status}
               </Badge>
             </div>
@@ -166,15 +158,13 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               <button
                 type="button"
                 onClick={() => onValueChange('status', 'Draft')}
-                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Draft' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}
-              >
+                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Draft' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}>
                 Draft
               </button>
               <button
                 type="button"
                 onClick={() => onValueChange('status', 'Published')}
-                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Published' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}
-              >
+                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'Published' ? 'bg-white shadow-md text-primary' : 'text-muted hover:text-foreground'}`}>
                 Public
               </button>
             </div>
@@ -205,8 +195,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                     <Button
                       variant="primary"
                       className="rounded-full! w-12 h-12 flex items-center justify-center p-0!"
-                      aria-label="Edit featured image"
-                    >
+                      aria-label="Edit featured image">
                       <i className="pi pi-pencil text-sm" />
                     </Button>
                   </div>
@@ -244,8 +233,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
           <div className="flex flex-col gap-10">
             <FormField
               label="Classification"
-              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
-            >
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
               <Select
                 options={categories}
                 value={formData.category}
@@ -258,8 +246,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
             <FormField
               label="Strategic Tags"
               description="Separate entities with commas"
-              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted"
-            >
+              className="!text-[10px] !font-black !uppercase !tracking-[0.15em] !text-muted">
               <input
                 type="text"
                 value={formData.tags?.join(', ')}

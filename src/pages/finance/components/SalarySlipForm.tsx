@@ -327,12 +327,10 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
-      }}
-    >
+      }}>
       <div
         className="bg-white w-full max-w-6xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+        onMouseDown={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 bg-white">
           <div className="flex items-center gap-3">
@@ -351,8 +349,7 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
           <button
             type="button"
             onClick={onClose}
-            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition"
-          >
+            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition">
             <X size={20} />
           </button>
         </div>
@@ -541,8 +538,7 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
                       <button
                         type="button"
                         onClick={addEarning}
-                        className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition"
-                      >
+                        className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition">
                         <Plus size={15} />
                         Add Earning
                       </button>
@@ -593,8 +589,7 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
                                 type="button"
                                 onClick={() => removeEarning(index)}
                                 disabled={formData.earnings.length === 1}
-                                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl disabled:opacity-30 disabled:hover:bg-transparent transition"
-                              >
+                                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl disabled:opacity-30 disabled:hover:bg-transparent transition">
                                 <Trash2 size={16} />
                               </button>
                             </div>
@@ -628,8 +623,7 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
                       <button
                         type="button"
                         onClick={addDeduction}
-                        className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition"
-                      >
+                        className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition">
                         <Plus size={15} />
                         Add Deduction
                       </button>
@@ -675,8 +669,7 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
                               <button
                                 type="button"
                                 onClick={() => removeDeduction(index)}
-                                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition"
-                              >
+                                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition">
                                 <Trash2 size={16} />
                               </button>
                             </div>
@@ -788,15 +781,13 @@ const SalarySlipForm = ({ onClose, onCreate }: SalarySlipFormProps) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:bg-gray-50 transition"
-              >
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:bg-gray-50 transition">
                 Cancel
               </button>
 
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2"
-              >
+                className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2">
                 <FileText size={17} />
                 Create Salary Slip
               </button>

@@ -174,8 +174,7 @@ export function StockLevelsPage() {
         ).map(([status, count]) => (
           <div
             key={status}
-            className={`rounded-[28px] border border-border-subtle p-6 shadow-soft bg-white flex items-center gap-4`}
-          >
+            className={`rounded-[28px] border border-border-subtle p-6 shadow-soft bg-white flex items-center gap-4`}>
             <div className={`w-3 h-3 rounded-full ${statusConfig[status]?.bg || 'bg-muted'}`} />
             <div className="flex flex-col gap-0.5">
               <span className="text-xl font-black text-foreground">{count}</span>
@@ -192,8 +191,7 @@ export function StockLevelsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden"
-      >
+        className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden">
         <Table
           columns={columns}
           dataSource={stockData}

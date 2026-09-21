@@ -171,16 +171,14 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
           variant="ghost"
           onClick={onCancel}
           className="px-8! rounded-3xl! font-bold text-muted!"
-          aria-label="Discard changes"
-        >
+          aria-label="Discard changes">
           Discard
         </Button>
         <Button
           variant="primary"
           onClick={handleApply}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
-          aria-label={initialData ? 'Update staff member profile' : 'Add new staff member to team'}
-        >
+          aria-label={initialData ? 'Update staff member profile' : 'Add new staff member to team'}>
           {initialData ? 'Update Member' : 'Add to Team'}
         </Button>
       </div>

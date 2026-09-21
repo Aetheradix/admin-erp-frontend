@@ -39,8 +39,7 @@ export const Avatar = ({
         'shadow-soft border border-surface-subtle overflow-hidden bg-surface-subtle text-muted font-medium',
         className
       )}
-      style={{ width, height, ...style }}
-    >
+      style={{ width, height, ...style }}>
       {children ?? label}
     </AntAvatar>
   );

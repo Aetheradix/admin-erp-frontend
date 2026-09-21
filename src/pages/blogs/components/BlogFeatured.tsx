@@ -26,8 +26,7 @@ export const BlogFeatured = ({ blogs }: BlogFeaturedProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="lg:col-span-8 group relative aspect-[16/9] lg:aspect-auto lg:h-[480px] rounded-[2.5rem] overflow-hidden border border-white/20 shadow-2xl cursor-pointer"
-      >
+        className="lg:col-span-8 group relative aspect-[16/9] lg:aspect-auto lg:h-[480px] rounded-[2.5rem] overflow-hidden border border-white/20 shadow-2xl cursor-pointer">
         <img
           src={featured[0].image_url || ''}
           alt={featured[0].title}
@@ -75,8 +74,7 @@ export const BlogFeatured = ({ blogs }: BlogFeaturedProps) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 + idx * 0.2 }}
-            className="group flex-1 relative rounded-[2rem] overflow-hidden border border-border-subtle shadow-soft bg-white p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300"
-          >
+            className="group flex-1 relative rounded-[2rem] overflow-hidden border border-border-subtle shadow-soft bg-white p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
             <div className="flex gap-4">
               <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
                 <img

@@ -508,13 +508,11 @@ export function PayrollPage() {
                 downloadSalarySlip(record);
               }
             },
-          }}
-        >
+          }}>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors"
-          >
+            className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors">
             <MoreHorizontal size={18} />
           </button>
         </Dropdown>
@@ -555,8 +553,7 @@ export function PayrollPage() {
             type="button"
             disabled={isUploadingPdf}
             onClick={() => setShowSalarySlipForm(true)}
-            className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-semibold hover:bg-gray-800 transition disabled:opacity-50"
-          >
+            className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-semibold hover:bg-gray-800 transition disabled:opacity-50">
             <Plus size={18} />
 
             {isUploadingPdf ? 'Uploading...' : 'Create Salary Slip'}
@@ -576,8 +573,7 @@ export function PayrollPage() {
           transition={{
             duration: 0.5,
           }}
-          className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden"
-        >
+          className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden">
           <Table
             columns={columns}
             dataSource={payroll}
@@ -622,8 +618,7 @@ export function PayrollPage() {
                   type="button"
                   disabled={!selectedSlip.salarySlipUrl}
                   onClick={() => downloadSalarySlip(selectedSlip)}
-                  className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 disabled:opacity-50"
-                >
+                  className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 disabled:opacity-50">
                   <Download size={16} />
                   Download PDF
                 </button>
@@ -631,8 +626,7 @@ export function PayrollPage() {
                 <button
                   type="button"
                   onClick={() => setShowSlip(false)}
-                  className="border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
-                >
+                  className="border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
                   Close
                 </button>
               </div>

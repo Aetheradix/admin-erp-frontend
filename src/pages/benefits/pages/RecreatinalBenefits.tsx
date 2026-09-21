@@ -105,8 +105,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
           type="button"
           onClick={() => openPerkForm(null)}
           disabled={isMutating || perkTypesLoading}
-          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
           + Add New Perk
         </button>
       </div>
@@ -136,8 +135,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
             value={activePerkType}
             onChange={(event) => setActivePerkType(event.target.value)}
             disabled={perkTypesLoading}
-            className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
-          >
+            className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100">
             <option value="All">{perkTypesLoading ? 'Loading Types...' : 'All Types'}</option>
             {!perkTypesLoading &&
               perkTypes.map((type) => (
@@ -150,8 +148,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
           <select
             value={activeStatus}
             onChange={(event) => setActiveStatus(event.target.value)}
-            className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
-          >
+            className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-blue-500">
             <option value="All">All Status</option>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
@@ -245,8 +242,7 @@ export default function RecreationalBenefits(): React.JSX.Element {
                       <button
                         type="button"
                         onClick={() => openAssignModal(perk)}
-                        className="text-sm font-medium text-blue-600 hover:underline"
-                      >
+                        className="text-sm font-medium text-blue-600 hover:underline">
                         {getNumericValue(perk.assigned)} employees
                       </button>
                     </td>
@@ -260,16 +256,14 @@ export default function RecreationalBenefits(): React.JSX.Element {
                       <button
                         type="button"
                         onClick={() => openPerkForm(perk)}
-                        className="rounded-lg px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50"
-                      >
+                        className="rounded-lg px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50">
                         Edit
                       </button>
                       <button
                         type="button"
                         disabled={isMutating}
                         onClick={() => toggleStatus(perk)}
-                        className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50"
-                      >
+                        className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50">
                         {perk.status === 'Active' ? 'Deactivate' : 'Activate'}
                       </button>
                     </td>
@@ -335,8 +329,7 @@ function Status({ status }: { status: PerkStatus }): React.JSX.Element {
     <span
       className={`rounded-full px-3 py-1 text-xs font-medium ${
         active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
-      }`}
-    >
+      }`}>
       {status}
     </span>
   );
@@ -419,8 +412,7 @@ function PerkForm({
               value={form.perk_type_id}
               onChange={(e) => update('perk_type_id', Number(e.target.value))}
               disabled={perkTypesLoading}
-              className="input disabled:cursor-not-allowed disabled:bg-gray-100"
-            >
+              className="input disabled:cursor-not-allowed disabled:bg-gray-100">
               <option value={0}>
                 {perkTypesLoading ? 'Loading perk types...' : 'Select perk type'}
               </option>
@@ -472,8 +464,7 @@ function PerkForm({
             <select
               value={form.value_type}
               onChange={(e) => update('value_type', e.target.value)}
-              className="input"
-            >
+              className="input">
               <option value="fixed">Fixed Amount</option>
               <option value="percentage">Percentage</option>
               <option value="freebie">Freebie / Item</option>
@@ -496,8 +487,7 @@ function PerkForm({
             <select
               value={form.usage_period}
               onChange={(e) => update('usage_period', e.target.value)}
-              className="input"
-            >
+              className="input">
               <option value="once">Once</option>
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -542,8 +532,7 @@ function PerkForm({
           <select
             value={form.status}
             onChange={(e) => update('status', e.target.value as PerkStatus)}
-            className="input"
-          >
+            className="input">
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
@@ -554,16 +543,14 @@ function PerkForm({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border px-4 py-2.5 text-sm font-medium"
-        >
+          className="rounded-lg border px-4 py-2.5 text-sm font-medium">
           Cancel
         </button>
         <button
           type="button"
           onClick={submit}
           disabled={isDisabled(perkTypesLoading, perkTypes.length)}
-          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
           {perk ? 'Update Perk' : 'Create Perk'}
         </button>
       </div>
@@ -615,8 +602,7 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
             {employees.map((employee) => (
               <label
                 key={employee.id}
-                className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-gray-50"
-              >
+                className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-gray-50">
                 <input
                   type="checkbox"
                   checked={selectedEmployees.includes(employee.id)}
@@ -654,16 +640,14 @@ function AssignModal({ perk, onClose, onAssign }: AssignModalProps): React.JSX.E
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border px-4 py-2.5 text-sm font-medium"
-        >
+          className="rounded-lg border px-4 py-2.5 text-sm font-medium">
           Cancel
         </button>
         <button
           type="button"
           onClick={submit}
           disabled={selectedEmployees.length === 0}
-          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
+          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
           Assign Perk
         </button>
       </div>
@@ -691,8 +675,7 @@ function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="text-xl text-gray-400 hover:text-gray-700"
-          >
+            className="text-xl text-gray-400 hover:text-gray-700">
             ×
           </button>
         </div>

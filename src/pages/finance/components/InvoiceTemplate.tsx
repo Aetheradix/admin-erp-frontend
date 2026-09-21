@@ -111,8 +111,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
         padding: '0',
         margin: '0',
         fontFamily: 'Arial, Helvetica, sans-serif',
-      }}
-    >
+      }}>
       <div
         ref={ref}
         style={{
@@ -124,8 +123,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           backgroundColor: '#FFFFFF',
           padding: '53px',
           color: colors.black,
-        }}
-      >
+        }}>
         {/* =====================================================
               WATERMARK
           ===================================================== */}
@@ -143,8 +141,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             opacity: 0.6,
             pointerEvents: 'none',
             zIndex: 0,
-          }}
-        >
+          }}>
           ARX
         </div>
 
@@ -159,8 +156,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-          }}
-        >
+          }}>
           {/* Logo */}
 
           <div>
@@ -174,8 +170,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 letterSpacing: '-2px',
                 padding: '0 8px',
                 display: 'inline-block',
-              }}
-            >
+              }}>
               ARX
             </div>
 
@@ -186,8 +181,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 lineHeight: '1.1',
                 fontWeight: 700,
                 color: '#BAE6FD',
-              }}
-            >
+              }}>
               AETHERADIX
             </h2>
           </div>
@@ -197,8 +191,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           <div
             style={{
               textAlign: 'right',
-            }}
-          >
+            }}>
             <h1
               style={{
                 margin: 0,
@@ -208,8 +201,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 fontWeight: 700,
                 color: '#111827',
                 whiteSpace: 'nowrap',
-              }}
-            >
+              }}>
               TAX INVOICE
             </h1>
 
@@ -220,8 +212,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 fontSize: '20px',
                 fontWeight: 700,
                 color: '#111827',
-              }}
-            >
+              }}>
               INVOICE# {invoice.invoiceNumber}
             </p>
           </div>
@@ -238,15 +229,13 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             marginTop: '40px',
             fontSize: '18px',
             lineHeight: '28px',
-          }}
-        >
+          }}>
           {invoice.companyName && (
             <p
               style={{
                 margin: 0,
                 fontWeight: 700,
-              }}
-            >
+              }}>
               {invoice.companyName}
             </p>
           )}
@@ -279,14 +268,12 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             marginTop: '40px',
             fontSize: '18px',
             lineHeight: '28px',
-          }}
-        >
+          }}>
           <h3
             style={{
               margin: 0,
               fontWeight: 700,
-            }}
-          >
+            }}>
             Bill To:
           </h3>
 
@@ -320,8 +307,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             justifyContent: 'space-between',
             fontSize: '18px',
             lineHeight: '28px',
-          }}
-        >
+          }}>
           <div>
             <p style={{ margin: 0 }}>
               Invoice Date:{' '}
@@ -340,8 +326,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
               style={{
                 margin: 0,
                 fontWeight: 700,
-              }}
-            >
+              }}>
               {invoice.placeOfSupply}
             </p>
           </div>
@@ -359,22 +344,19 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             width: '100%',
             borderCollapse: 'collapse',
             fontSize: '18px',
-          }}
-        >
+          }}>
           <thead>
             <tr
               style={{
                 borderTop: '2px solid #D1D5DB',
                 borderBottom: '2px solid #D1D5DB',
-              }}
-            >
+              }}>
               <th
                 style={{
                   padding: '12px',
                   textAlign: 'left',
                   fontWeight: 700,
-                }}
-              >
+                }}>
                 Description
               </th>
 
@@ -383,8 +365,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                   padding: '12px',
                   textAlign: 'center',
                   fontWeight: 700,
-                }}
-              >
+                }}>
                 Qty
               </th>
 
@@ -393,8 +374,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                   padding: '12px',
                   textAlign: 'right',
                   fontWeight: 700,
-                }}
-              >
+                }}>
                 Rate
               </th>
 
@@ -403,8 +383,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                   padding: '12px',
                   textAlign: 'right',
                   fontWeight: 700,
-                }}
-              >
+                }}>
                 Amount
               </th>
             </tr>
@@ -419,13 +398,11 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                   key={index}
                   style={{
                     borderBottom: '1px solid #E5E7EB',
-                  }}
-                >
+                  }}>
                   <td
                     style={{
                       padding: '12px',
-                    }}
-                  >
+                    }}>
                     {item.description}
                   </td>
 
@@ -433,8 +410,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                     style={{
                       padding: '12px',
                       textAlign: 'center',
-                    }}
-                  >
+                    }}>
                     {item.quantity}
                   </td>
 
@@ -442,8 +418,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                     style={{
                       padding: '12px',
                       textAlign: 'right',
-                    }}
-                  >
+                    }}>
                     {formatCurrency(item.rate)}
                   </td>
 
@@ -451,8 +426,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                     style={{
                       padding: '12px',
                       textAlign: 'right',
-                    }}
-                  >
+                    }}>
                     {formatCurrency(amount)}
                   </td>
                 </tr>
@@ -467,8 +441,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                     padding: '24px',
                     textAlign: 'center',
                     color: '#9CA3AF',
-                  }}
-                >
+                  }}>
                   No invoice items
                 </td>
               </tr>
@@ -487,20 +460,17 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             marginTop: '32px',
             display: 'flex',
             justifyContent: 'flex-end',
-          }}
-        >
+          }}>
           <div
             style={{
               width: '320px',
               fontSize: '18px',
-            }}
-          >
+            }}>
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-              }}
-            >
+              }}>
               <span>Sub Total</span>
 
               <span>{formatCurrency(subTotal)}</span>
@@ -511,8 +481,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 display: 'flex',
                 justifyContent: 'space-between',
                 marginTop: '8px',
-              }}
-            >
+              }}>
               <span>GST ({invoice.gstRate}%)</span>
 
               <span>{formatCurrency(gstAmount)}</span>
@@ -532,8 +501,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 justifyContent: 'space-between',
                 fontSize: '24px',
                 fontWeight: 700,
-              }}
-            >
+              }}>
               <span>Total</span>
 
               <span>{formatCurrency(total)}</span>
@@ -553,14 +521,12 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
               marginTop: '64px',
               paddingTop: '20px',
               borderTop: '1px solid #D1D5DB',
-            }}
-          >
+            }}>
             <p
               style={{
                 margin: 0,
                 fontWeight: 700,
-              }}
-            >
+              }}>
               Notes
             </p>
 
@@ -568,8 +534,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
               style={{
                 margin: '8px 0 0 0',
                 color: '#6B7280',
-              }}
-            >
+              }}>
               {invoice.notes}
             </p>
           </div>
@@ -588,8 +553,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             borderTop: '1px solid #D1D5DB',
             textAlign: 'center',
             color: '#6B7280',
-          }}
-        >
+          }}>
           {invoice.notes || 'Thank you for your business'}
         </div>
       </div>

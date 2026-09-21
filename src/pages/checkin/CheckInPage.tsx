@@ -75,8 +75,7 @@ export const CheckInPage: React.FC = () => {
               activeTab === 'today'
                 ? 'bg-primary text-white shadow-md'
                 : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-            }`}
-          >
+            }`}>
             <Clock size={15} />
             <span>Today's Punch</span>
           </button>
@@ -87,8 +86,7 @@ export const CheckInPage: React.FC = () => {
               activeTab === 'calendar'
                 ? 'bg-primary text-white shadow-md'
                 : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-            }`}
-          >
+            }`}>
             <CalendarIcon size={15} />
             <span>Calendar</span>
           </button>
@@ -99,8 +97,7 @@ export const CheckInPage: React.FC = () => {
               activeTab === 'history'
                 ? 'bg-primary text-white shadow-md'
                 : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-            }`}
-          >
+            }`}>
             <BarChart3 size={15} />
             <span>History & Stats</span>
           </button>

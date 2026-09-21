@@ -126,14 +126,12 @@ export function AttendanceCalendar({
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrevMonth}
-            className="w-12 h-12 rounded-2xl bg-surface-subtle hover:bg-surface-elevated flex items-center justify-center transition-all"
-          >
+            className="w-12 h-12 rounded-2xl bg-surface-subtle hover:bg-surface-elevated flex items-center justify-center transition-all">
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={handleNextMonth}
-            className="w-12 h-12 rounded-2xl bg-surface-subtle hover:bg-surface-elevated flex items-center justify-center transition-all"
-          >
+            className="w-12 h-12 rounded-2xl bg-surface-subtle hover:bg-surface-elevated flex items-center justify-center transition-all">
             <ChevronRight size={20} />
           </button>
         </div>
@@ -144,8 +142,7 @@ export function AttendanceCalendar({
         {weekDays.map((day) => (
           <div
             key={day}
-            className="py-4 text-center text-[10px] font-black text-muted uppercase tracking-widest bg-surface-subtle/30"
-          >
+            className="py-4 text-center text-[10px] font-black text-muted uppercase tracking-widest bg-surface-subtle/30">
             {day}
           </div>
         ))}
@@ -171,8 +168,7 @@ export function AttendanceCalendar({
               onClick={() =>
                 onDateSelect(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day))
               }
-              className="h-32 border-r border-b border-border-subtle/20 p-4 transition-all duration-300 hover:bg-primary/5 cursor-pointer relative group"
-            >
+              className="h-32 border-r border-b border-border-subtle/20 p-4 transition-all duration-300 hover:bg-primary/5 cursor-pointer relative group">
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-black text-foreground group-hover:text-primary transition-colors">
                   {day}
@@ -182,8 +178,7 @@ export function AttendanceCalendar({
                     className={cn(
                       'flex flex-col gap-1 text-[8px] font-black uppercase tracking-tighter p-2 rounded-xl border transition-transform duration-500 group-hover:scale-105',
                       getDayTypeStyles(displayItem.type, displayItem.status)
-                    )}
-                  >
+                    )}>
                     <div className="flex items-center gap-1">
                       {getDayTypeIcon(displayItem.type)}
                       <span className="truncate">{displayItem.type}</span>

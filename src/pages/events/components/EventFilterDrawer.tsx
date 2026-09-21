@@ -78,8 +78,7 @@ export const EventFilterDrawer = ({
       pt={{
         root: { className: 'rounded-[40px] overflow-hidden border-none shadow-2xl bg-white' },
         mask: { className: 'backdrop-blur-md bg-black/40' },
-      }}
-    >
+      }}>
       <div className="flex flex-col gap-6">
         {/* Subtitle & Active Filters Bar */}
         <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
@@ -91,8 +90,7 @@ export const EventFilterDrawer = ({
             <Button
               variant="ghost"
               onClick={onResetFilters}
-              className="text-xs font-black text-red-500 hover:text-red-600 gap-1.5 p-0! h-auto!"
-            >
+              className="text-xs font-black text-red-500 hover:text-red-600 gap-1.5 p-0! h-auto!">
               <RotateCcw size={14} />
               Reset All ({activeCount})
             </Button>
@@ -114,8 +112,7 @@ export const EventFilterDrawer = ({
                     ? 'bg-primary text-white border-primary'
                     : 'bg-surface-subtle text-foreground border-border-subtle hover:border-primary/40'
                 }`}
-                onClick={() => onFilterChange({ ...filters, category: 'All' })}
-              >
+                onClick={() => onFilterChange({ ...filters, category: 'All' })}>
                 All Categories
               </button>
               {categories.map((cat) => (
@@ -127,8 +124,7 @@ export const EventFilterDrawer = ({
                       ? 'bg-primary text-white border-primary font-black'
                       : 'bg-surface-subtle text-foreground border-border-subtle hover:border-primary/40'
                   }`}
-                  onClick={() => onFilterChange({ ...filters, category: cat })}
-                >
+                  onClick={() => onFilterChange({ ...filters, category: cat })}>
                   {cat}
                 </button>
               ))}
@@ -158,8 +154,7 @@ export const EventFilterDrawer = ({
                       isSelected
                         ? 'bg-primary text-white border-primary shadow-sm'
                         : 'bg-surface-subtle text-foreground border-border-subtle hover:border-primary/30'
-                    }`}
-                  >
+                    }`}>
                     {st}
                   </button>
                 );
@@ -187,8 +182,7 @@ export const EventFilterDrawer = ({
                       isSelected
                         ? 'bg-primary/10 text-primary border-primary font-black'
                         : 'bg-white text-muted border-border-subtle hover:text-foreground'
-                    }`}
-                  >
+                    }`}>
                     #{t}
                   </button>
                 );
@@ -216,8 +210,7 @@ export const EventFilterDrawer = ({
                       isSelected
                         ? 'bg-foreground text-white border-foreground font-black'
                         : 'bg-surface-subtle text-muted border-border-subtle hover:text-foreground'
-                    }`}
-                  >
+                    }`}>
                     {dept}
                   </button>
                 );
@@ -259,14 +252,12 @@ export const EventFilterDrawer = ({
           <Button
             variant="secondary"
             onClick={onHide}
-            className="h-11 rounded-2xl! px-6 font-bold text-xs border-border-subtle!"
-          >
+            className="h-11 rounded-2xl! px-6 font-bold text-xs border-border-subtle!">
             Close
           </Button>
           <Button
             onClick={onHide}
-            className="h-11 rounded-2xl! px-8 font-black text-xs uppercase tracking-wider bg-primary text-white"
-          >
+            className="h-11 rounded-2xl! px-8 font-black text-xs uppercase tracking-wider bg-primary text-white">
             Apply Filters {activeCount > 0 ? `(${activeCount})` : ''}
           </Button>
         </div>

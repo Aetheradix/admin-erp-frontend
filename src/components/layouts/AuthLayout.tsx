@@ -35,8 +35,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+            transition={{ duration: 0.8 }}>
             <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-8 backdrop-blur-md">
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map((i) => (
@@ -92,8 +91,7 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+            transition={{ duration: 0.5 }}>
             <h2 className="text-3xl sm:text-4xl font-black text-foreground mb-2 tracking-tight">
               {title}
             </h2>

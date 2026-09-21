@@ -184,8 +184,7 @@ export function AuditLogPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden"
-      >
+        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
         <div className="p-8 pb-4 border-b border-border-subtle flex items-center gap-3">
           <Terminal size={18} className="text-primary" />
           <span className="text-sm font-black text-foreground uppercase tracking-wider">

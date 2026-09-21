@@ -51,8 +51,7 @@ export const ProjectList = ({ projects }: ProjectListProps) => {
           role="button"
           tabIndex={0}
           aria-label="Create new project"
-          className="relative min-h-[200px] rounded-[2rem] border-2 border-dashed border-border-strong/50 flex flex-col items-center justify-center cursor-pointer group hover:border-primary/50 hover:bg-primary/[0.02] transition-all duration-500"
-        >
+          className="relative min-h-[200px] rounded-[2rem] border-2 border-dashed border-border-strong/50 flex flex-col items-center justify-center cursor-pointer group hover:border-primary/50 hover:bg-primary/[0.02] transition-all duration-500">
           <div className="w-14 h-14 rounded-3xl bg-surface-subtle flex items-center justify-center mb-4 group-hover:bg-primary group-hover:rotate-90 transition-all duration-500 border border-border-subtle shadow-sm group-hover:shadow-primary/30">
             <Plus size={24} className="text-muted group-hover:text-white transition-colors" />
           </div>
@@ -69,8 +68,7 @@ export const ProjectList = ({ projects }: ProjectListProps) => {
             key={project.title}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 + idx * 0.1 }}
-          >
+            transition={{ duration: 0.5, delay: 0.1 + idx * 0.1 }}>
             <ProjectCard {...project} />
           </motion.div>
         ))}

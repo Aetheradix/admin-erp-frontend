@@ -85,8 +85,7 @@ export default function ProfitChartCard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-white rounded-3xl p-8 border border-border-subtle shadow-soft h-full flex flex-col group hover:shadow-lg transition-all duration-300"
-    >
+      className="bg-white rounded-3xl p-8 border border-border-subtle shadow-soft h-full flex flex-col group hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-10">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -103,15 +102,13 @@ export default function ProfitChartCard() {
           <button
             type="button"
             aria-label="Expand chart"
-            className="w-9 h-9 rounded-2xl bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-all"
-          >
+            className="w-9 h-9 rounded-2xl bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-all">
             <Maximize2 size={14} className="text-muted" />
           </button>
           <button
             type="button"
             aria-label="View report"
-            className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer hover:bg-primary-hover transition-all group/btn"
-          >
+            className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer hover:bg-primary-hover transition-all group/btn">
             <ArrowUpRight
               size={14}
               className="text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"

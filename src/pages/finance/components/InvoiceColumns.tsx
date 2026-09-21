@@ -95,12 +95,10 @@ export function getInvoiceColumns({ onDownloadPdf }: GetInvoiceColumnsProps): Co
               },
             }}
             trigger={['click']}
-            placement="bottomRight"
-          >
+            placement="bottomRight">
             <button
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-surface-subtle text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-            >
+              className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-surface-subtle text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
               <MoreVertical size={18} />
             </button>
           </Dropdown>

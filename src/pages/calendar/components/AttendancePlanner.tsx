@@ -47,8 +47,7 @@ export function AttendancePlanner({ selectedDate }: AttendancePlannerProps) {
           {dailyEvents.map((event) => (
             <div
               key={event.id}
-              className="group relative pl-6 border-l-2 border-primary/30 hover:border-primary transition-all duration-300"
-            >
+              className="group relative pl-6 border-l-2 border-primary/30 hover:border-primary transition-all duration-300">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black text-primary uppercase tracking-widest">

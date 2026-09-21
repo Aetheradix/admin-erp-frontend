@@ -66,8 +66,7 @@ function ApprovalPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
+      className="space-y-6">
       {/* SECTION 1: INVITATION EMAIL DISPATCH */}
       <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-6">
         <h2 className="text-lg font-black text-foreground">Invite New User</h2>
@@ -89,8 +88,7 @@ function ApprovalPage() {
           <select
             value={inviteRole}
             onChange={(e) => setInviteRole(e.target.value as UserRole)}
-            className="text-xs border border-border-subtle rounded-lg px-3 py-2 outline-none"
-          >
+            className="text-xs border border-border-subtle rounded-lg px-3 py-2 outline-none">
             {userroles.map((role) => (
               <option key={role} value={role}>
                 {role}
@@ -101,8 +99,7 @@ function ApprovalPage() {
           <button
             type="submit"
             disabled={isSendingInvite}
-            className="px-4 py-2 rounded-lg text-xs font-bold bg-foreground text-background hover:opacity-90 transition-all disabled:opacity-50"
-          >
+            className="px-4 py-2 rounded-lg text-xs font-bold bg-foreground text-background hover:opacity-90 transition-all disabled:opacity-50">
             {isSendingInvite ? 'Sending Email...' : 'Send Invitation'}
           </button>
         </form>
@@ -113,8 +110,7 @@ function ApprovalPage() {
               inviteStatus.type === 'success'
                 ? 'bg-green-500/10 text-green-700 border-green-500/20'
                 : 'bg-red-500/10 text-red-700 border-red-500/20'
-            }`}
-          >
+            }`}>
             {inviteStatus.message}
           </div>
         )}
@@ -134,8 +130,7 @@ function ApprovalPage() {
             pendingUsers.map((user: User) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-4 rounded-xl border border-border-subtle hover:bg-surface-subtle/50 transition-all"
-              >
+                className="flex items-center justify-between p-4 rounded-xl border border-border-subtle hover:bg-surface-subtle/50 transition-all">
                 <div className="flex items-center gap-4">
                   <img
                     src={user.image_url || '/avatar.png'}
@@ -155,8 +150,7 @@ function ApprovalPage() {
                   <select
                     value={selectedRoles[user.id] ?? ''}
                     onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                    className="text-xs border rounded-lg px-3 py-2"
-                  >
+                    className="text-xs border rounded-lg px-3 py-2">
                     <option value="">Select Role</option>
                     {userroles.map((role) => (
                       <option key={role} value={role}>
@@ -176,16 +170,14 @@ function ApprovalPage() {
                         }
                         handleApproveUser(user.id, role);
                       }}
-                      className="px-4 py-2 rounded-lg text-xs font-bold bg-green-500/10 text-green-600 border border-green-500/20 hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
-                    >
+                      className="px-4 py-2 rounded-lg text-xs font-bold bg-green-500/10 text-green-600 border border-green-500/20 hover:bg-green-500 hover:text-white transition-all disabled:opacity-50">
                       Approve
                     </button>
 
                     <button
                       disabled={isRejecting}
                       onClick={() => handleRejectUser(user.id)}
-                      className="px-4 py-2 rounded-lg text-xs font-bold bg-red-500/10 text-red-600 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
-                    >
+                      className="px-4 py-2 rounded-lg text-xs font-bold bg-red-500/10 text-red-600 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50">
                       Reject
                     </button>
                   </div>
@@ -241,8 +233,7 @@ function ApprovalPage() {
                           log.action === 'APPROVED'
                             ? 'bg-green-500/10 text-green-600 border border-green-500/20'
                             : 'bg-red-500/10 text-red-600 border border-red-500/20'
-                        }`}
-                      >
+                        }`}>
                         {log.action}
                       </span>
                     </td>

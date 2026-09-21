@@ -97,8 +97,7 @@ const ResourceBooking = () => {
           <button
             type="button"
             onClick={() => setAddResourceOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-          >
+            className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
             <Plus className="h-4 w-4" />
             Add Resource
           </button>
@@ -108,8 +107,7 @@ const ResourceBooking = () => {
           <button
             type="button"
             onClick={() => openBooking()}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
             <Plus className="h-4 w-4" />
             Book Resource
           </button>

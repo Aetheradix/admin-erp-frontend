@@ -296,8 +296,7 @@ export function InvoicesPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-surface-elevated rounded-[32px] border border-border-subtle shadow-soft overflow-hidden"
-      >
+        className="bg-surface-elevated rounded-[32px] border border-border-subtle shadow-soft overflow-hidden">
         <Table
           columns={columns}
           dataSource={invoices}
@@ -331,8 +330,7 @@ export function InvoicesPage() {
             top: 0,
             width: '794px',
             background: '#ffffff',
-          }}
-        >
+          }}>
           <InvoiceTemplate ref={invoicePdfRef} invoice={pdfInvoice} />
         </div>
       )}

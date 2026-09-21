@@ -29,8 +29,7 @@ export const ProfileInfoTab = ({
           {!isEditing && (
             <button
               onClick={onStartEdit}
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-            >
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
               <Edit3 size={12} /> Edit Contact Info
             </button>
           )}
@@ -44,8 +43,7 @@ export const ProfileInfoTab = ({
             </span>
             <a
               href={`mailto:${user.email}`}
-              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
+              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2">
               <Mail size={14} className="text-muted" />
               {user.email || 'Not specified'}
             </a>
@@ -58,8 +56,7 @@ export const ProfileInfoTab = ({
             </span>
             <a
               href={`tel:${user.contactNo}`}
-              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
+              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2">
               <Phone size={14} className="text-muted" />
               {user.contactNo || 'Not specified'}
             </a>
@@ -142,8 +139,7 @@ export const ProfileInfoTab = ({
 
         <button
           onClick={() => setShowMoreContact(!showMoreContact)}
-          className="text-xs font-extrabold text-primary hover:text-primary-hover self-start cursor-pointer mt-2"
-        >
+          className="text-xs font-extrabold text-primary hover:text-primary-hover self-start cursor-pointer mt-2">
           {showMoreContact ? 'Show Less Details' : 'Show 3 More Contact Details'}
         </button>
       </div>
@@ -167,8 +163,7 @@ export const ProfileInfoTab = ({
         <Button
           variant="ghost"
           onClick={onElevationClick}
-          className="text-xs font-black text-primary hover:bg-primary/10 rounded-xl px-4 py-2 border border-primary/30"
-        >
+          className="text-xs font-black text-primary hover:bg-primary/10 rounded-xl px-4 py-2 border border-primary/30">
           Request Admin Elevation
         </Button>
       </div>

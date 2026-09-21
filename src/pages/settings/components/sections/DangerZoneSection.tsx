@@ -28,8 +28,7 @@ export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({ onCacheRes
         <Button
           variant="ghost"
           onClick={onCacheReset}
-          className="w-full h-14 rounded-xl! border border-error/30! text-error! hover:bg-error/15 font-black uppercase tracking-widest shadow-lg shadow-error/5 cursor-pointer transition-all active:scale-[0.99]"
-        >
+          className="w-full h-14 rounded-xl! border border-error/30! text-error! hover:bg-error/15 font-black uppercase tracking-widest shadow-lg shadow-error/5 cursor-pointer transition-all active:scale-[0.99]">
           Reset Cache & Logout
         </Button>
       </div>
