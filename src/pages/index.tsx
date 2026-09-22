@@ -26,6 +26,7 @@ const UsersModule = lazy(() => import('@/pages/users'));
 const TasksModule = lazy(() => import('@/pages/tasks'));
 const InventoryModule = lazy(() => import('@/pages/inventory'));
 const ResourceBookingModule = lazy(() => import('@/pages/resourcebooking'));
+
 const ContentLoadingFallback = () => (
   <div className="w-full h-64 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
     <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -134,14 +135,37 @@ const AppFeature = () => {
         <Route path="/users/*" element={<UsersModule />} />
         <Route path="/tasks/*" element={<TasksModule />} />
         <Route path="/inventory/*" element={<InventoryModule />} />
+
+        {/* Social Module Routes */}
         <Route
-          path="/blogs/*"
+          path="/social/blogs/*"
           element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />}
         />
         <Route
+          path="/social/gallery/*"
+          element={allowedMap['Gallery'] ? <GalleryModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/social"
+          element={
+            allowedMap['Blogs'] ? (
+              <Navigate to="/social/blogs" replace />
+            ) : allowedMap['Gallery'] ? (
+              <Navigate to="/social/gallery" replace />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+
+        {/* Legacy route redirects for backward compatibility */}
+        <Route path="/blogs/*" element={<Navigate to="/social/blogs" replace />} />
+        <Route path="/gallery/*" element={<Navigate to="/social/gallery" replace />} />
+
+        <Route
           path="/resource-booking/*"
           element={
-            (allowedMap['Resource Booking'] ?? true) ? ( // 👈 Default to true if undefined
+            (allowedMap['Resource Booking'] ?? true) ? (
               <ResourceBookingModule />
             ) : (
               <Navigate to="/" replace />
@@ -160,10 +184,6 @@ const AppFeature = () => {
           }
         />
 
-        <Route
-          path="/gallery/*"
-          element={allowedMap['Gallery'] ? <GalleryModule /> : <Navigate to="/" replace />}
-        />
         <Route
           path="/events/*"
           element={allowedMap['Events'] ? <EventsModule /> : <Navigate to="/" replace />}

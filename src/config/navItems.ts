@@ -154,8 +154,7 @@ import {
   Settings,
   Clock,
   Gift,
-  FileText,
-  Image,
+  Share2,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -383,22 +382,28 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  {
-    label: 'Blogs',
-    path: '/blogs',
-    icon: FileText,
+   {
+    label: 'Social',
+    path: '/social',
+    icon: Share2,
     category: 'MANAGEMENT',
-    description: 'Content management',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+    description: 'Content and media management',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    children: [
+      {
+        label: 'Blogs',
+        path: '/social/blogs',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
+      {
+        label: 'Gallery',
+        path: '/social/gallery',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+      },
+    ],
   },
-  {
-    label: 'Gallery',
-    path: '/gallery',
-    icon: Image,
-    category: 'MANAGEMENT',
-    description: 'Asset library',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
-  },
+ 
+  
 
   // ─────────────────────────────────────────────
   // SYSTEM
