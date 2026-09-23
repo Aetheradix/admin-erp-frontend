@@ -382,7 +382,7 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-   {
+  {
     label: 'Social',
     path: '/social',
     icon: Share2,
@@ -402,8 +402,6 @@ export const navItems: NavItem[] = [
       },
     ],
   },
- 
-  
 
   // ─────────────────────────────────────────────
   // SYSTEM
