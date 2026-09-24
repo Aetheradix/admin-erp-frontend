@@ -16,27 +16,28 @@ export const financeApiSlice = apiSlice.injectEndpoints({
           : [];
       },
     }),
-    createReimbursement: builder.mutation<Reimbursement, Partial<Reimbursement>>({
-      query: (reimbursementData) => ({
-        url: '/reimbursements/create-claim',
+    // Allow both FormData and object payloads for creation:
+    createReimbursement: builder.mutation<
+      Reimbursement,
+      FormData | Partial<Omit<Reimbursement, 'id' | 'created_at' | 'updated_at' | 'approved_at'>>
+    >({
+      query: (data) => ({
+        url: '/reimbursements',
         method: 'POST',
-        body: {
-          title: reimbursementData.item,
-          amount: reimbursementData.amount,
-          category: reimbursementData.category,
-          description: reimbursementData.description,
-          receipt_url: reimbursementData.receiptUrl || '',
-        },
+        body: data,
       }),
-      invalidatesTags: ['Reimbursements'],
     }),
-    updateReimbursementStatus: builder.mutation<Reimbursement, { id: string; status: string }>({
+
+    // Allow 'id' to be string or number:
+    updateReimbursementStatus: builder.mutation<
+      Reimbursement,
+      { id: string | number; status: string; rejectionReason?: string }
+    >({
       query: ({ id, status }) => ({
         url: `/reimbursements/${id}/status`,
-        method: 'PUT',
+        method: 'PATCH',
         body: { status },
       }),
-      invalidatesTags: ['Reimbursements'],
     }),
   }),
 });

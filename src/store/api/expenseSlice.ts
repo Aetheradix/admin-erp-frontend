@@ -20,6 +20,7 @@ export interface ExpenseRecord {
   id: number;
   expense_number: string;
   user_id: number;
+  employee_name?: string;
   trip_id?: number | null;
   title: string;
   description?: string | null;
@@ -47,12 +48,24 @@ export interface UpdateExpenseStatusArgs {
 
 export const expenseSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // -------------------------------------------------------
+    // FETCH ALL COMPANY EXPENSES
+    // -------------------------------------------------------
+    getAllExpenses: builder.query<ExpenseRecord[], void>({
+      query: () => '/finance', // Updated from /expenses
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: ExpenseRecord[] })?.data ?? response;
+        return Array.isArray(data) ? data : [];
+      },
+      providesTags: ['Expense'],
+    }),
+
     createExpense: builder.mutation<
       { success: boolean; message: string; data: ExpenseRecord },
       FormData
     >({
       query: (formData) => ({
-        url: '/expenses',
+        url: '/finance', // Updated from /expenses
         method: 'POST',
         body: formData,
       }),
@@ -60,7 +73,7 @@ export const expenseSlice = apiSlice.injectEndpoints({
     }),
 
     getExpensesByUser: builder.query<ExpenseRecord[], number | string>({
-      query: (userId) => `/expenses/user/${userId}`,
+      query: (userId) => `/finance/user/${userId}`, // Updated from /expenses
       transformResponse: (response: unknown) => {
         const data = (response as { data?: ExpenseRecord[] })?.data ?? response;
         return Array.isArray(data) ? data : [];
@@ -69,7 +82,7 @@ export const expenseSlice = apiSlice.injectEndpoints({
     }),
 
     getExpenseDetails: builder.query<ExpenseRecord, number | string>({
-      query: (id) => `/expenses/${id}`,
+      query: (id) => `/finance/${id}`, // Updated from /expenses
       transformResponse: (response: unknown) => {
         const data = (response as { data?: ExpenseRecord })?.data ?? response;
         return (data ?? {}) as ExpenseRecord;
@@ -82,7 +95,7 @@ export const expenseSlice = apiSlice.injectEndpoints({
       UpdateExpenseStatusArgs
     >({
       query: ({ id, ...body }) => ({
-        url: `/expenses/${id}/status`,
+        url: `/finance/${id}/status`, // Updated from /expenses
         method: 'PATCH',
         body,
       }),
@@ -90,7 +103,7 @@ export const expenseSlice = apiSlice.injectEndpoints({
     }),
 
     getExpensesByTrip: builder.query<ExpenseRecord[], number | string>({
-      query: (tripId) => `/expenses/trip/${tripId}`,
+      query: (tripId) => `/finance/trip/${tripId}`, // Updated from /expenses
       transformResponse: (response: unknown) => {
         const data = (response as { data?: ExpenseRecord[] })?.data ?? response;
         return Array.isArray(data) ? data : [];
@@ -101,6 +114,7 @@ export const expenseSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useGetAllExpensesQuery,
   useCreateExpenseMutation,
   useGetExpensesByUserQuery,
   useGetExpenseDetailsQuery,

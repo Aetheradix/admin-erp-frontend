@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn';
 
 interface TabsProps {
-  items: string[];
+  items: readonly string[];
   activeItem: string;
   onItemChange: (item: string) => void;
   className?: string;
