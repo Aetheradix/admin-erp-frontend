@@ -72,6 +72,7 @@ export const apiSlice = createApi({
     'Perks',
     'PerkTypes',
     'UserPerks',
+    'Expense',
     'ApprovalLogs',
     'PendingUsers',
   ],

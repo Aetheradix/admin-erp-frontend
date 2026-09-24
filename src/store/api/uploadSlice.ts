@@ -1,5 +1,4 @@
-import { API_URL } from '@/config/env';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { apiSlice } from './apiSlice';
 
 interface UploadFileResponse {
   success: boolean;
@@ -19,30 +18,11 @@ interface UploadInvoiceResponse {
   };
 }
 
-export const uploadApi = createApi({
-  reducerPath: 'uploadApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_URL,
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-
-      return headers;
-    },
-  }),
+export const uploadApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    uploadFile: builder.mutation<
-      UploadFileResponse,
-      {
-        file: Blob;
-      }
-    >({
+    uploadFile: builder.mutation<UploadFileResponse, { file: Blob }>({
       query: ({ file }) => {
         const formData = new FormData();
-
         formData.append('file', file, 'salary-slip.pdf');
 
         return {
@@ -53,15 +33,9 @@ export const uploadApi = createApi({
       },
     }),
 
-    uploadInvoice: builder.mutation<
-      UploadInvoiceResponse,
-      {
-        file: Blob;
-      }
-    >({
+    uploadInvoice: builder.mutation<UploadInvoiceResponse, { file: Blob }>({
       query: ({ file }) => {
         const formData = new FormData();
-
         formData.append('file', file, 'invoice.pdf');
 
         return {
@@ -74,4 +48,4 @@ export const uploadApi = createApi({
   }),
 });
 
-export const { useUploadFileMutation, useUploadInvoiceMutation } = uploadApi;
+export const { useUploadFileMutation, useUploadInvoiceMutation } = uploadApiSlice;
