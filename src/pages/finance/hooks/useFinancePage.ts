@@ -180,7 +180,7 @@ export const useFinancePage = () => {
   const handleApprove = async (id: string | number) => {
     try {
       await updateReimbursementStatus({
-        id,
+        id: String(id),
         status: 'Approved',
       }).unwrap();
 
@@ -207,7 +207,7 @@ export const useFinancePage = () => {
   const handleReject = async (id: string | number, rejectionReason?: string) => {
     try {
       await updateReimbursementStatus({
-        id,
+        id: String(id),
         status: 'Rejected',
         rejectionReason,
       }).unwrap();

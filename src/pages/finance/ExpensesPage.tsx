@@ -203,29 +203,39 @@ import React, { useState } from 'react';
 import { useExpensesPage, EXPENSE_CATEGORIES, EXPENSE_STATUSES } from './hooks/useExpensesPage'; // Adjust import path as needed
 import type { ExpenseRecord } from '@/store/api/expenseSlice';
 
+export interface UserOption {
+  id: number | string;
+  name: string;
+  email?: string;
+  department?: string;
+}
+
+const MOCK_USERS: UserOption[] = [
+  { id: 1, name: 'Sarah Connor', department: 'Engineering' },
+  { id: 2, name: 'John Doe', department: 'Product' },
+  { id: 3, name: 'Alex Rivera', department: 'Marketing' },
+  { id: 4, name: 'Emily Chen', department: 'Design' },
+  { id: 5, name: 'Michael Scott', department: 'Management' },
+];
+
+const MULTI_USER_CATEGORIES = ['Travel', 'Team Outing', 'Meals & Entertainment', 'Events'];
+
 export const ExpensesPage: React.FC = () => {
   const {
-    // Data
     filteredExpenses,
     stats,
-
-    // Status Flags
     isLoading,
     isFetching,
     isSubmitting,
     isUpdatingStatus,
     isError,
     error,
-
-    // Modals
     showFormModal,
     setShowFormModal,
     showDetailModal,
     selectedExpense,
     openDetails,
     closeDetails,
-
-    // Search & Filters
     searchQuery,
     setSearchQuery,
     activeCategory,
@@ -234,7 +244,6 @@ export const ExpensesPage: React.FC = () => {
     setActiveStatus,
     resetFilters,
 
-    // Actions & Mutations
     handleCreateExpense,
     handleApprove,
     handleReject,
@@ -242,11 +251,16 @@ export const ExpensesPage: React.FC = () => {
     refetch,
   } = useExpensesPage();
 
-  // Local state for rejection modal reason input
   const [rejectionModalId, setRejectionModalId] = useState<number | string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>('');
 
-  // Helper for formatting currency
+  const [isSharedExpense, setIsSharedExpense] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    EXPENSE_CATEGORIES[1] || 'General'
+  );
+  const [selectedUserIds, setSelectedUserIds] = useState<(number | string)[]>([]);
+  const [amountInput, setAmountInput] = useState<string>('');
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -254,7 +268,6 @@ export const ExpensesPage: React.FC = () => {
     }).format(amount);
   };
 
-  // Helper for status badge styling
   const getStatusBadge = (status?: string) => {
     const s = status?.toLowerCase();
     switch (s) {
@@ -270,14 +283,49 @@ export const ExpensesPage: React.FC = () => {
     }
   };
 
-  // Form submit wrapper
+  const handleCategoryChange = (cat: string) => {
+    setSelectedCategory(cat);
+    const isMultiCategory = MULTI_USER_CATEGORIES.some((c) =>
+      cat.toLowerCase().includes(c.toLowerCase())
+    );
+    if (isMultiCategory) {
+      setIsSharedExpense(true);
+    }
+  };
+
+  const toggleUserSelection = (userId: number | string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleSelectAllUsers = () => {
+    if (selectedUserIds.length === MOCK_USERS.length) {
+      setSelectedUserIds([]);
+    } else {
+      setSelectedUserIds(MOCK_USERS.map((u) => u.id));
+    }
+  };
+
+  const handleCloseFormModal = () => {
+    setShowFormModal(false);
+    setIsSharedExpense(false);
+    setSelectedUserIds([]);
+    setAmountInput('');
+  };
+
   const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    if (isSharedExpense && selectedUserIds.length > 0) {
+      formData.append('is_shared', 'true');
+      formData.append('participant_ids', JSON.stringify(selectedUserIds));
+    }
+
     await handleCreateExpense(formData);
+    handleCloseFormModal();
   };
 
-  // Rejection submit
   const onConfirmReject = async () => {
     if (!rejectionModalId) return;
     await handleReject(rejectionModalId, rejectionReason);
@@ -285,11 +333,12 @@ export const ExpensesPage: React.FC = () => {
     setRejectionReason('');
   };
 
+  const parsedAmount = parseFloat(amountInput) || 0;
+  const participantCount = selectedUserIds.length;
+  const splitAmount = participantCount > 0 ? parsedAmount / participantCount : 0;
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* --------------------------------------------------------- */}
-      {/* HEADER SECTION */}
-      {/* --------------------------------------------------------- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Expenses Management</h1>
@@ -312,9 +361,6 @@ export const ExpensesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* --------------------------------------------------------- */}
-      {/* FINANCIAL STATS CARDS */}
-      {/* --------------------------------------------------------- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
           <p className="text-xs font-semibold text-gray-500 uppercase">Total Expenses</p>
@@ -353,10 +399,6 @@ export const ExpensesPage: React.FC = () => {
           </p>
         </div>
       </div>
-
-      {/* --------------------------------------------------------- */}
-      {/* FILTERS & SEARCH BAR */}
-      {/* --------------------------------------------------------- */}
       <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           {/* Search Input */}
@@ -370,7 +412,6 @@ export const ExpensesPage: React.FC = () => {
             />
           </div>
 
-          {/* Select Dropdowns */}
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <select
               value={activeCategory}
@@ -403,9 +444,6 @@ export const ExpensesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* --------------------------------------------------------- */}
-      {/* EXPENSES TABLE / DATA STATE */}
-      {/* --------------------------------------------------------- */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-gray-500">Loading expenses...</div>
@@ -430,7 +468,7 @@ export const ExpensesPage: React.FC = () => {
                 <tr>
                   <th className="px-4 py-3">Expense #</th>
                   <th className="px-4 py-3">Title & Vendor</th>
-                  <th className="px-4 py-3">Employee</th>
+                  <th className="px-4 py-3">Employee / Team</th>
                   <th className="px-4 py-3">Category</th>
                   <th className="px-4 py-3">Amount</th>
                   <th className="px-4 py-3">Status</th>
@@ -440,6 +478,10 @@ export const ExpensesPage: React.FC = () => {
               <tbody className="divide-y divide-gray-200 text-gray-700">
                 {filteredExpenses.map((expense: ExpenseRecord) => {
                   const status = expense.status?.toLowerCase();
+                  const participants =
+                    (expense as any).participants || (expense as any).participant_ids;
+                  const isShared = Array.isArray(participants) && participants.length > 0;
+
                   return (
                     <tr key={expense.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 font-mono text-xs text-gray-500">
@@ -449,7 +491,14 @@ export const ExpensesPage: React.FC = () => {
                         <div className="font-medium text-gray-900">{expense.title}</div>
                         <div className="text-xs text-gray-500">{expense.vendor_name || 'N/A'}</div>
                       </td>
-                      <td className="px-4 py-3">{expense.employee_name || 'N/A'}</td>
+                      <td className="px-4 py-3">
+                        <div>{expense.employee_name || 'N/A'}</div>
+                        {isShared && (
+                          <span className="inline-flex items-center text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 mt-0.5">
+                            Shared ({participants.length} people)
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">{expense.category}</td>
                       <td className="px-4 py-3 font-semibold text-gray-900">
                         {formatCurrency(Number(expense.amount || 0))}
@@ -469,7 +518,6 @@ export const ExpensesPage: React.FC = () => {
                           Details
                         </button>
 
-                        {/* Status Mutations */}
                         {status === 'pending' && (
                           <>
                             <button
@@ -505,12 +553,9 @@ export const ExpensesPage: React.FC = () => {
         )}
       </div>
 
-      {/* --------------------------------------------------------- */}
-      {/* FORM MODAL (CREATE NEW EXPENSE) */}
-      {/* --------------------------------------------------------- */}
       {showFormModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl relative">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold mb-4">Record New Expense</h2>
             <form onSubmit={onFormSubmit} className="space-y-4">
               <div>
@@ -519,28 +564,32 @@ export const ExpensesPage: React.FC = () => {
                   name="title"
                   required
                   type="text"
-                  placeholder="e.g. Client Dinner"
-                  className="mt-1 w-full border border-gray-300 rounded p-2 text-sm"
+                  placeholder="e.g. Flight tickets or Team Dinner"
+                  className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700">Amount</label>
+                  <label className="block text-xs font-medium text-gray-700">Total Amount</label>
                   <input
                     name="amount"
                     required
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm"
+                    value={amountInput}
+                    onChange={(e) => setAmountInput(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700">Category</label>
                   <select
                     name="category"
-                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm bg-white">
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {EXPENSE_CATEGORIES.filter((c) => c !== 'All').map((cat) => (
                       <option key={cat} value={cat}>
                         {cat}
@@ -550,14 +599,91 @@ export const ExpensesPage: React.FC = () => {
                 </div>
               </div>
 
+              <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-md space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-semibold text-blue-900 block">
+                      Shared / Multi-User Expense
+                    </label>
+                    <p className="text-[11px] text-gray-600">
+                      Include involved team members (e.g. Travel, Outings, Group Meals)
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={isSharedExpense}
+                    onChange={(e) => setIsSharedExpense(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                </div>
+
+                {isSharedExpense && (
+                  <div className="space-y-2 pt-2 border-t border-blue-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        Select Participants ({selectedUserIds.length} selected)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSelectAllUsers}
+                        className="text-xs text-blue-700 hover:text-blue-900 font-medium underline">
+                        {selectedUserIds.length === MOCK_USERS.length
+                          ? 'Deselect All'
+                          : 'Select All'}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
+                      {MOCK_USERS.map((user) => {
+                        const isChecked = selectedUserIds.includes(user.id);
+                        return (
+                          <div
+                            key={user.id}
+                            onClick={() => toggleUserSelection(user.id)}
+                            className={`flex items-center gap-2 p-2 rounded border text-xs cursor-pointer select-none transition-colors ${
+                              isChecked
+                                ? 'bg-blue-100/80 border-blue-400 text-blue-900 font-medium'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                            }`}>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              readOnly
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 pointer-events-none"
+                            />
+                            <div className="truncate">
+                              <p className="truncate font-medium">{user.name}</p>
+                              {user.department && (
+                                <p className="text-[10px] text-gray-500 truncate">
+                                  {user.department}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {parsedAmount > 0 && participantCount > 0 && (
+                      <div className="flex items-center justify-between text-xs bg-white p-2.5 rounded border border-blue-300 text-blue-900 mt-2 font-medium">
+                        <span>Cost per person ({participantCount} participants):</span>
+                        <span className="font-bold text-sm text-blue-700">
+                          {formatCurrency(splitAmount)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700">Vendor</label>
                   <input
                     name="vendor_name"
                     type="text"
-                    placeholder="e.g. Uber / Amazon"
-                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm"
+                    placeholder="e.g. Delta Airlines / Marriott"
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -566,7 +692,7 @@ export const ExpensesPage: React.FC = () => {
                     name="payment_mode"
                     type="text"
                     placeholder="e.g. Corporate Card"
-                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm"
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -578,21 +704,21 @@ export const ExpensesPage: React.FC = () => {
                 <input
                   name="receipt"
                   type="file"
-                  className="mt-1 w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="mt-1 w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2 pt-4 border-t">
                 <button
                   type="button"
-                  onClick={() => setShowFormModal(false)}
+                  onClick={handleCloseFormModal}
                   className="px-4 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50">
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50">
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 font-medium">
                   {isSubmitting ? 'Submitting...' : 'Save Expense'}
                 </button>
               </div>
@@ -601,9 +727,6 @@ export const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-      {/* --------------------------------------------------------- */}
-      {/* EXPENSE DETAILS MODAL */}
-      {/* --------------------------------------------------------- */}
       {showDetailModal && selectedExpense && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl space-y-4">
@@ -645,6 +768,24 @@ export const ExpensesPage: React.FC = () => {
                 <p className="text-xs text-gray-500">Payment Mode</p>
                 <p className="font-medium text-gray-800">{selectedExpense.payment_mode || 'N/A'}</p>
               </div>
+
+              {((selectedExpense as any).participants ||
+                (selectedExpense as any).participant_ids) && (
+                <div className="col-span-2 pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1 font-medium">Involved Team Members</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {MOCK_USERS.filter((u) =>
+                      ((selectedExpense as any).participant_ids || []).includes(u.id)
+                    ).map((user) => (
+                      <span
+                        key={user.id}
+                        className="px-2 py-0.5 text-xs bg-blue-50 text-blue-800 rounded border border-blue-200">
+                        {user.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end pt-4 border-t">
