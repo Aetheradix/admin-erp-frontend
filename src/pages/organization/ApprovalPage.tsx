@@ -1,11 +1,19 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { usePendingUsers } from '../settings/hooks/usePendingUsers';
+import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import type { User } from '@/types/auth';
 import type { UserRole } from '@/config/navItems';
 
 function ApprovalPage() {
-  const userroles: UserRole[] = ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'];
+  const { data: backendRolesData } = useGetRolesQuery();
+
+  const userroles = useMemo(() => {
+    if (backendRolesData?.data && backendRolesData.data.length > 0) {
+      return backendRolesData.data.map((r) => r.name);
+    }
+    return ['SuperAdmin', 'Admin', 'HrAdmin', 'Manager', 'Employee'];
+  }, [backendRolesData]);
 
   const {
     pendingUsers,
