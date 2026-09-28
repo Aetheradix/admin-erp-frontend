@@ -75,6 +75,7 @@ export const apiSlice = createApi({
     'Expense',
     'ApprovalLogs',
     'PendingUsers',
+    'PerkExpenses'
   ],
   endpoints: () => ({}),
 });

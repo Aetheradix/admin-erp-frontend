@@ -7,23 +7,76 @@ import type {
   UpdatePerkRequest,
   CreatePerkTypeRequest,
   UpdatePerkTypeRequest,
-  AssignPerkRequest,
+  AssignPerkRequest as BaseAssignPerkRequest,
   UpdateUserPerkRequest,
   PerkMutationResponse,
   PerkTypeMutationResponse,
   UserPerkMutationResponse,
 } from '../../pages/benefits/types/perks.types';
 
+
+export interface AssignPerkRequest extends BaseAssignPerkRequest {
+  createExpense?: boolean;
+}
+
+export interface RecordPerkUsageRequest {
+  userPerkId: number;
+  user_id?: number;
+  amount?: number;
+  currency?: string;
+  title?: string;
+  description?: string;
+  vendor_name?: string;
+}
+
+export interface RecordPerkUsageResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user_perk_id: number;
+    expense_id: number;
+    amount: number;
+    currency: string;
+  };
+}
+
+export interface PerkExpense {
+  expense_id: number;
+  user_id: number;
+  employee_name: string;
+  title: string;
+  category: string;
+  amount: number;
+  currency: string;
+  status: string;
+  vendor_name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface GetPerkExpensesParams {
+  user_id?: number;
+  category?: string;
+  status?: string;
+}
+
+export interface LinkPerkToExpenseRequest {
+  expenseId: number;
+  perkTitle?: string;
+  categoryName?: string;
+}
+
+export interface LinkPerkToExpenseResponse {
+  success: boolean;
+  message: string;
+  data: {
+    expense_id: number;
+  };
+}
+
 export const benefitsSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // =========================================================
-    // PERKS
-    // =========================================================
-
-    /**
-     * Get all perks
-     * GET /perks
-     */
+    
     getPerks: builder.query<Perk[], void>({
       query: () => '/perks',
 
@@ -36,10 +89,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       providesTags: ['Perks'],
     }),
 
-    /**
-     * Get perk by ID
-     * GET /perks/:id
-     */
     getPerkById: builder.query<Perk, number>({
       query: (id) => `/perks/${id}`,
 
@@ -50,10 +99,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: 'Perks', id }],
     }),
 
-    /**
-     * Create perk
-     * POST /perks
-     */
     createPerk: builder.mutation<PerkMutationResponse, CreatePerkRequest>({
       query: (body) => ({
         url: '/perks',
@@ -64,10 +109,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Perks'],
     }),
 
-    /**
-     * Update perk
-     * PUT /perks/:id
-     */
+    
     updatePerk: builder.mutation<PerkMutationResponse, UpdatePerkRequest>({
       query: ({ id, data }) => ({
         url: `/perks/${id}`,
@@ -78,10 +120,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => ['Perks', { type: 'Perks', id }],
     }),
 
-    /**
-     * Deactivate perk
-     * DELETE /perks/:id
-     */
     deletePerk: builder.mutation<PerkMutationResponse, number>({
       query: (id) => ({
         url: `/perks/${id}`,
@@ -90,15 +128,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['Perks'],
     }),
-
-    // =========================================================
-    // PERK TYPES
-    // =========================================================
-
-    /**
-     * Get all perk types
-     * GET /perk-types
-     */
+ 
     getPerkTypes: builder.query<PerkType[], void>({
       query: () => '/perk-types',
 
@@ -111,10 +141,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       providesTags: ['PerkTypes'],
     }),
 
-    /**
-     * Create perk type
-     * POST /perk-types
-     */
     createPerkType: builder.mutation<PerkTypeMutationResponse, CreatePerkTypeRequest>({
       query: (body) => ({
         url: '/perk-types',
@@ -125,10 +151,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['PerkTypes'],
     }),
 
-    /**
-     * Update perk type
-     * PUT /perk-types/:id
-     */
+    
     updatePerkType: builder.mutation<PerkTypeMutationResponse, UpdatePerkTypeRequest>({
       query: ({ id, data }) => ({
         url: `/perk-types/${id}`,
@@ -139,10 +162,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => ['PerkTypes', { type: 'PerkTypes', id }],
     }),
 
-    /**
-     * Deactivate perk type
-     * DELETE /perk-types/:id
-     */
     deletePerkType: builder.mutation<PerkTypeMutationResponse, number>({
       query: (id) => ({
         url: `/perk-types/${id}`,
@@ -151,45 +170,33 @@ export const benefitsSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['PerkTypes'],
     }),
-
-    // =========================================================
-    // ASSIGN PERK
-    // =========================================================
-
-    /**
-     * Assign perk to user
-     * POST /perks/:perkId/assign
-     */
+ 
     assignPerk: builder.mutation<UserPerkMutationResponse, AssignPerkRequest>({
-      query: ({ perkId, user_id, valid_from, valid_until }) => ({
+      query: ({ perkId, user_id, valid_from, valid_until, createExpense }) => ({
         url: `/perks/${perkId}/assign`,
         method: 'POST',
         body: {
           user_id,
           valid_from,
           valid_until,
+          createExpense,
         },
       }),
 
-      invalidatesTags: ['Perks', 'UserPerks'],
+      invalidatesTags: ['Perks', 'UserPerks', 'PerkExpenses'],
     }),
 
-    // =========================================================
-    // USER PERKS
-    // =========================================================
+    
+    recordPerkUsage: builder.mutation<RecordPerkUsageResponse, RecordPerkUsageRequest>({
+      query: ({ userPerkId, ...data }) => ({
+        url: `/user-perks/${userPerkId}/use`,
+        method: 'POST',
+        body: data,
+      }),
 
-    /**
-     * Get user's perks
-     *
-     * If userId is supplied:
-     * GET /users/:userId/perks
-     *
-     * If omitted:
-     * GET /users/perks
-     *
-     * IMPORTANT:
-     * Adjust this URL to your actual route definition.
-     */
+      invalidatesTags: ['UserPerks', 'PerkExpenses'],
+    }),
+    
     getUserPerks: builder.query<UserPerk[], number | void>({
       query: (userId) => (userId ? `/users/${userId}/perks` : '/users/perks'),
 
@@ -202,10 +209,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       providesTags: ['UserPerks'],
     }),
 
-    /**
-     * Update user's perk
-     * PUT /user-perks/:id
-     */
     updateUserPerk: builder.mutation<UserPerkMutationResponse, UpdateUserPerkRequest>({
       query: ({ id, data }) => ({
         url: `/user-perks/${id}`,
@@ -214,6 +217,30 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       }),
 
       invalidatesTags: ['UserPerks', 'Perks'],
+    }),
+    getPerkExpenses: builder.query<PerkExpense[], GetPerkExpensesParams | void>({
+      query: (params) => ({
+        url: '/perks/expenses',
+        params: params ?? undefined,
+      }),
+
+      transformResponse: (response: unknown) => {
+        const data = (response as { data?: PerkExpense[] })?.data ?? response;
+
+        return Array.isArray(data) ? data : [];
+      },
+
+      providesTags: ['PerkExpenses'],
+    }),
+
+    linkPerkToExpense: builder.mutation<LinkPerkToExpenseResponse, LinkPerkToExpenseRequest>({
+      query: ({ expenseId, perkTitle, categoryName }) => ({
+        url: `/expenses/${expenseId}/link-perk`,
+        method: 'PATCH',
+        body: { perkTitle, categoryName },
+      }),
+
+      invalidatesTags: ['PerkExpenses'],
     }),
   }),
 });
@@ -226,7 +253,6 @@ export type {
   UpdatePerkRequest,
   CreatePerkTypeRequest,
   UpdatePerkTypeRequest,
-  AssignPerkRequest,
   UpdateUserPerkRequest,
 } from '@/pages/benefits/types/perks.types';
 
@@ -244,8 +270,13 @@ export const {
   useUpdatePerkTypeMutation,
   useDeletePerkTypeMutation,
 
-  // User perks
+  // User perks & usage
   useAssignPerkMutation,
+  useRecordPerkUsageMutation,
   useGetUserPerksQuery,
   useUpdateUserPerkMutation,
+
+  // Perk expenses
+  useGetPerkExpensesQuery,
+  useLinkPerkToExpenseMutation,
 } = benefitsSlice;
