@@ -3,8 +3,8 @@
  */
 
 const HOST_MAPPING: Record<string, string> = {
-  'erp.aetheradix.com': '',
-  'test.aetheradix.com': '',
+  'erp.aetheradix.com': 'erp.aetheradix.com',
+  'test.aetheradix.com': 'test.aetheradix.com',
   localhost: 'http://localhost:5000',
 };
 
