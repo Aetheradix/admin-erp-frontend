@@ -27,7 +27,7 @@ export const Dialog = ({
   contentClassName,
   headerClassName,
   children,
-  footer,
+  footer = null,
   style,
   pt,
 }: DialogProps) => {

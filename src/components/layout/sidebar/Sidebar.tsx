@@ -18,6 +18,7 @@ import {
   normalizeRole,
   syncRemotePermissions,
 } from '@/utils/pagePermissions';
+import { usePermission } from '@/hooks/usePermission';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -26,8 +27,19 @@ interface SidebarProps {
 
 const NAV_CATEGORIES = ['OVERVIEW', 'MANAGEMENT', 'SYSTEM'] as const;
 
+const ROUTE_RBAC_MAP: Record<string, string> = {
+  '/settings/roles': 'role:view',
+  '/settings/audit-log': 'audit:view',
+  '/finance/payroll': 'payroll:view',
+  '/finance/invoices': 'invoice:view',
+  '/finance/expenses': 'expense:view',
+  '/tasks': 'task:view',
+  '/inventory': 'inventory:view',
+};
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
+  const { hasPermission, isSuperadmin: isRbacSuperadmin } = usePermission();
   const navigate = useNavigate();
   const { pendingUsers } = usePendingUsers();
   const pendingUsersCount = pendingUsers.length;
@@ -165,7 +177,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return null;
   };
 
-  const isSuperAdminUser = isSuperAdmin(user);
+  const isSuperAdminUser = isSuperAdmin(user) || isRbacSuperadmin;
 
   // 1. Initial filter by base roles, global sections, and dynamic role permissions
   const filteredNavItems = navItems.filter((item) => {
@@ -200,7 +212,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
 
-  // 2. Filter children and parent modules based on Page Access Permissions
+  // 2. Filter children and parent modules based on Page Access Permissions and RBAC
   const navItemsWithBadge = slicedNavItems
     .map((item) => {
       if (isSuperAdminUser) {
@@ -213,10 +225,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         };
       }
 
-      // If module has sub-pages, filter each child by canAccessPage
+      // If module has sub-pages, filter each child by canAccessPage and RBAC
       if (item.children && item.children.length > 0) {
         const allowedChildren = item.children
-          .filter((child) => canAccessPage(child.path, user, child.roles?.map(String)))
+          .filter((child) => {
+            if (ROUTE_RBAC_MAP[child.path] && !hasPermission(ROUTE_RBAC_MAP[child.path])) {
+              return false;
+            }
+            return canAccessPage(child.path, user, child.roles?.map(String));
+          })
           .map((child) => ({
             ...child,
             badge: child.path === '/org/approvals' ? pendingUsersCount : undefined,
@@ -245,10 +262,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           return true;
         }
         // If all sub-pages were restricted, check if the parent path itself is explicitly accessible
+        if (ROUTE_RBAC_MAP[item.path] && !hasPermission(ROUTE_RBAC_MAP[item.path])) {
+          return false;
+        }
         return canAccessPage(item.path, user, item.roles?.map(String));
       }
 
       // Single-page module (no sub-pages, e.g. Tasks, Blogs, Gallery):
+      if (ROUTE_RBAC_MAP[item.path] && !hasPermission(ROUTE_RBAC_MAP[item.path])) {
+        return false;
+      }
       return canAccessPage(item.path, user, item.roles?.map(String));
     });
 

@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermission } from '@/hooks/usePermission';
+import { Forbidden403Page } from '@/pages/error/Forbidden403Page';
 import {
   canAccessPage,
   isSuperAdmin,
@@ -15,6 +17,16 @@ interface PageAccessGuardProps {
   children: ReactNode;
 }
 
+const ROUTE_RBAC_MAP: Record<string, string> = {
+  '/settings/roles': 'role:view',
+  '/settings/audit-log': 'audit:view',
+  '/finance/payroll': 'payroll:view',
+  '/finance/invoices': 'invoice:view',
+  '/finance/expenses': 'expense:view',
+  '/tasks': 'task:view',
+  '/inventory': 'inventory:view',
+};
+
 /**
  * Wraps page routes to enforce page-level RBAC.
  * Super Admin always has full access.
@@ -22,16 +34,26 @@ interface PageAccessGuardProps {
  */
 export function PageAccessGuard({ children }: PageAccessGuardProps) {
   const { user } = useAuth();
+  const { hasPermission, isSuperadmin: isRbacSuperadmin } = usePermission();
   const location = useLocation();
   const navigate = useNavigate();
 
   // Super Admin bypasses all checks
-  if (isSuperAdmin(user)) {
+  if (isSuperAdmin(user) || isRbacSuperadmin) {
     return <>{children}</>;
   }
 
   // Find the current pathname's default roles from navItems for context
   const currentPath = location.pathname;
+
+  // RBAC permission check
+  const matchedRbacKey = Object.keys(ROUTE_RBAC_MAP).find(
+    (prefix) => currentPath === prefix || currentPath.startsWith(prefix + '/')
+  );
+
+  if (matchedRbacKey && !hasPermission(ROUTE_RBAC_MAP[matchedRbacKey])) {
+    return <Forbidden403Page />;
+  }
 
   // Get default roles from the matching navItem child or parent
   let defaultRoles: string[] | undefined;

@@ -1,9 +1,51 @@
 {
-  "/events": ["SuperAdmin", "Admin", "HrAdmin", "FinanceAdmin", "Employee"],
-  "/calendar": ["SuperAdmin", "Admin", "HrAdmin", "FinanceAdmin", "Employee"],
-  "/resource-booking": ["SuperAdmin"],
-  "/resource-booking/my-bookings": ["SuperAdmin"],
-  "/resource-booking/calendar": ["SuperAdmin"],
-  "/resource-booking/all": ["SuperAdmin"],
-  "/": ["SuperAdmin", "Admin", "HrAdmin", "FinanceAdmin", "Employee"]
+  "/events": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee"
+  ],
+  "/calendar": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee"
+  ],
+  "/resource-booking": [
+    "SuperAdmin"
+  ],
+  "/resource-booking/my-bookings": [
+    "SuperAdmin"
+  ],
+  "/resource-booking/calendar": [
+    "SuperAdmin"
+  ],
+  "/resource-booking/all": [
+    "SuperAdmin"
+  ],
+  "/": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin",
+    "FinanceAdmin",
+    "Employee"
+  ],
+  "/settings": [
+    "SuperAdmin",
+    "Admin",
+    "HrAdmin"
+  ],
+  "/settings/roles": [
+    "SuperAdmin"
+  ],
+  "/settings/integrations": [
+    "SuperAdmin",
+    "Admin"
+  ],
+  "/settings/audit-log": [
+    "SuperAdmin",
+    "FinanceAdmin"
+  ]
 }

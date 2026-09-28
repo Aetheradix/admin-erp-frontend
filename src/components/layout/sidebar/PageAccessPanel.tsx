@@ -8,7 +8,9 @@ import {
   getStoredPagePermissions,
   saveStoredPagePermissions,
   normalizeRole,
+  type RoleDefinition,
 } from '@/utils/pagePermissions';
+import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 interface PageAccessPanelProps {
@@ -23,6 +25,44 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
 
   // Target role tab – default to 'Employee' as that is what admins configure most
   const [selectedRole, setSelectedRole] = useState<string>('Employee');
+
+  const { data: rolesData, isLoading: rolesLoading } = useGetRolesQuery();
+
+  // Load roles directly from the backend API, falling back only when offline / not loaded
+  const combinedRoles: RoleDefinition[] = useMemo(() => {
+    if (rolesData?.data && rolesData.data.length > 0) {
+      return rolesData.data.map((backendRole) => {
+        const isSuper =
+          Boolean(backendRole.is_system && backendRole.name.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin')) ||
+          backendRole.name.toLowerCase().replace(/[\s_-]/g, '') === 'superadmin';
+        return {
+          id: backendRole.name,
+          label: backendRole.name,
+          isSuperAdmin: isSuper,
+        };
+      });
+    }
+    return AVAILABLE_ROLES;
+  }, [rolesData]);
+
+  // Sync selectedRole with backend roles once loaded
+  useEffect(() => {
+    if (rolesData?.data && rolesData.data.length > 0) {
+      const match = rolesData.data.some(
+        (r) => normalizeRole(r.name) === normalizeRole(selectedRole) || r.name === selectedRole
+      );
+      if (!match) {
+        const emp = rolesData.data.find((r) => normalizeRole(r.name) === 'Employee');
+        const nonSuper = rolesData.data.find(
+          (r) => !r.name.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin')
+        );
+        const fallback = emp || nonSuper || rolesData.data[0];
+        if (fallback) {
+          setSelectedRole(fallback.name);
+        }
+      }
+    }
+  }, [rolesData?.data]);
 
   // Determine the target pages to configure:
   // If module has children, configure each child page.
@@ -110,22 +150,26 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
    * Toggle a single page's access for a specific role
    */
   const togglePageForRole = (path: string, roleId: string) => {
-    if (roleId === 'SuperAdmin') return; // SuperAdmin cannot be disabled
+    const isSuper =
+      roleId === 'SuperAdmin' ||
+      normalizeRole(roleId) === 'SuperAdmin' ||
+      roleId.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin');
+    if (isSuper) return; // SuperAdmin cannot be disabled
 
     setPageRoles((prev) => {
       const current = prev[path] || ['SuperAdmin'];
       const targetNorm = normalizeRole(roleId);
-      const isCurrentlyAllowed = current.some((r) => normalizeRole(r) === targetNorm);
+      const isCurrentlyAllowed = current.some((r) => normalizeRole(r) === targetNorm || r === roleId);
 
       let updatedRoles: string[];
       if (isCurrentlyAllowed) {
-        updatedRoles = current.filter((r) => normalizeRole(r) !== targetNorm);
+        updatedRoles = current.filter((r) => normalizeRole(r) !== targetNorm && r !== roleId);
       } else {
         updatedRoles = [...current, roleId];
       }
 
       // Ensure SuperAdmin is always present
-      if (!updatedRoles.includes('SuperAdmin')) {
+      if (!updatedRoles.some((r) => normalizeRole(r) === 'SuperAdmin')) {
         updatedRoles.unshift('SuperAdmin');
       }
 
@@ -144,7 +188,11 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
    * Toggle ALL pages in this module ON / OFF for the selected role
    */
   const toggleAllForSelectedRole = (enable: boolean) => {
-    if (selectedRole === 'SuperAdmin') return;
+    const isSuper =
+      selectedRole === 'SuperAdmin' ||
+      normalizeRole(selectedRole) === 'SuperAdmin' ||
+      selectedRole.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin');
+    if (isSuper) return;
 
     setPageRoles((prev) => {
       const next: Record<string, string[]> = { ...prev };
@@ -153,14 +201,14 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
       targetPages.forEach((page) => {
         const current = next[page.path] || ['SuperAdmin'];
         if (enable) {
-          if (!current.some((r) => normalizeRole(r) === targetNorm)) {
+          if (!current.some((r) => normalizeRole(r) === targetNorm || r === selectedRole)) {
             next[page.path] = [...current, selectedRole];
           }
         } else {
-          next[page.path] = current.filter((r) => normalizeRole(r) !== targetNorm);
+          next[page.path] = current.filter((r) => normalizeRole(r) !== targetNorm && r !== selectedRole);
         }
 
-        if (!next[page.path].includes('SuperAdmin')) {
+        if (!next[page.path].some((r) => normalizeRole(r) === 'SuperAdmin')) {
           next[page.path].unshift('SuperAdmin');
         }
       });
@@ -183,13 +231,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
     const initial: Record<string, string[]> = {};
     targetPages.forEach((page) => {
       const defaultRoles = page.roles ? page.roles.map(String) : moduleItem.roles?.map(String);
-      initial[page.path] = defaultRoles || [
-        'SuperAdmin',
-        'Admin',
-        'HrAdmin',
-        'FinanceAdmin',
-        'Employee',
-      ];
+      initial[page.path] = defaultRoles || combinedRoles.map((r) => r.id);
     });
 
     setPageRoles(initial);
@@ -293,25 +335,33 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
               Configure Access For Role:
             </span>
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-              {AVAILABLE_ROLES.map((role) => {
-                const isActive = selectedRole === role.id;
-                const isSuper = role.isSuperAdmin;
+              {rolesLoading && combinedRoles.length === 0 ? (
+                <div className="flex items-center gap-2 py-1 px-2 text-xs text-white/50">
+                  <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Loading backend roles...</span>
+                </div>
+              ) : (
+                combinedRoles.map((role) => {
+                  const isActive =
+                    selectedRole === role.id || normalizeRole(selectedRole) === normalizeRole(role.id);
+                  const isSuper = role.isSuperAdmin;
 
-                return (
-                  <button
-                    key={role.id}
-                    type="button"
-                    onClick={() => setSelectedRole(role.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 border ${
-                      isActive
-                        ? 'bg-primary text-white border-primary shadow-[0_0_12px_rgba(232,88,58,0.35)]'
-                        : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'
-                    }`}>
-                    {isSuper && <Lock size={10} className="text-amber-400" />}
-                    <span>{role.label}</span>
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => setSelectedRole(role.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 border ${
+                        isActive
+                          ? 'bg-primary text-white border-primary shadow-[0_0_12px_rgba(232,88,58,0.35)]'
+                          : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'
+                      }`}>
+                      {isSuper && <Lock size={10} className="text-amber-400" />}
+                      <span>{role.label}</span>
+                    </button>
+                  );
+                })
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedRole('ALL')}
@@ -327,7 +377,9 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
         </div>
 
         {/* Master Toggle Card (for specific role view) */}
-        {selectedRole !== 'ALL' && selectedRole !== 'SuperAdmin' && (
+        {selectedRole !== 'ALL' &&
+          normalizeRole(selectedRole) !== 'SuperAdmin' &&
+          !selectedRole.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin') && (
           <div className="px-5 pt-3 pb-2 border-b border-white/5 bg-white/[0.015]">
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
               <div className="flex items-center gap-2.5">
@@ -404,9 +456,15 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
           ) : (
             filteredPages.map((page) => {
               const currentRoles = pageRoles[page.path] || ['SuperAdmin'];
-              const isAllowedForSelectedRole =
+              const isSelectedRoleSuper =
                 selectedRole === 'SuperAdmin' ||
-                currentRoles.some((r) => normalizeRole(r) === normalizeRole(selectedRole));
+                normalizeRole(selectedRole) === 'SuperAdmin' ||
+                selectedRole.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin');
+              const isAllowedForSelectedRole =
+                isSelectedRoleSuper ||
+                currentRoles.some(
+                  (r) => normalizeRole(r) === normalizeRole(selectedRole) || r === selectedRole
+                );
 
               return (
                 <div
@@ -445,7 +503,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                           {isAllowedForSelectedRole ? 'Visible' : 'Hidden'}
                         </span>
 
-                        {selectedRole === 'SuperAdmin' ? (
+                        {isSelectedRoleSuper ? (
                           <span
                             className="flex items-center gap-1 text-[10px] text-amber-400 font-bold uppercase px-2 py-0.5 rounded bg-amber-400/10 border border-amber-400/20"
                             title="Super Admin always has full access">
@@ -473,7 +531,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                     ) : (
                       /* Matrix View of all roles */
                       <div className="flex items-center gap-1 flex-wrap justify-end max-w-[220px]">
-                        {AVAILABLE_ROLES.map((role) => {
+                        {combinedRoles.map((role) => {
                           const isRoleChecked =
                             role.isSuperAdmin ||
                             currentRoles.some((r) => normalizeRole(r) === normalizeRole(role.id));
