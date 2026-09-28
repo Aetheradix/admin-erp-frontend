@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useBenefitsPage } from '../hooks/useBenefits'; // Adjust path as needed
 import type { Perk, PerkType, UserPerk } from '@/store/api/benefitsSlice';
 
@@ -25,25 +25,36 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
     activeStatus,
     setActiveStatus,
     handleAssignPerk,
+    handleRecordPerkUsage,
     isLoading,
     isAssigningPerk,
+    isRecordingUsage,
   } = useBenefitsPage(userId);
 
-  // Set of perk IDs the user has opted into
-  const optedPerkIds = useMemo<Set<number>>(() => {
-    if (!userPerks) return new Set<number>();
-    return new Set<number>(
-      userPerks.map((userPerk: UserPerk) => {
-        const id =
-          typeof userPerk.perk_id === 'object' && userPerk.perk_id !== null
-            ? (userPerk.perk_id as { value: number }).value
-            : userPerk.perk_id;
-        return Number(id);
-      })
-    );
+  // Claim modal state
+  const [claimUserPerk, setClaimUserPerk] = useState<UserPerk | null>(null);
+  const [claimAmount, setClaimAmount] = useState<string>('');
+  const [claimTitle, setClaimTitle] = useState<string>('');
+
+  // Map of perk_id -> UserPerk object for quick lookup and usage tracking
+  const userPerksMap = useMemo(() => {
+    const map = new Map<number, UserPerk>();
+    if (!userPerks) return map;
+
+    userPerks.forEach((userPerk: UserPerk) => {
+      const id =
+        typeof userPerk.perk_id === 'object' && userPerk.perk_id !== null
+          ? (userPerk.perk_id as { value: number }).value
+          : userPerk.perk_id;
+      if (id !== undefined && id !== null) {
+        map.set(Number(id), userPerk);
+      }
+    });
+
+    return map;
   }, [userPerks]);
 
-  // Helper function handling both primitive IDs and { value: number } objects
+  // Helper function handling primitive IDs and { value: number } objects
   const getPerkTypeName = (perkTypeId?: number | { value: number } | null): string => {
     if (!perkTypeId) return 'General';
     const targetId =
@@ -52,15 +63,54 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
     return match?.name ? renderValue(match.name) : 'General';
   };
 
+  /* ============================================================
+     ACTIONS
+  ============================================================ */
+
   const onOptInClick = async (perkId: number): Promise<void> => {
     try {
       await handleAssignPerk({
         perkId,
-        user_id: userId, // Guaranteed to be 'number'
+        user_id: userId,
         valid_from: new Date().toISOString(),
+        createExpense: true, // Automatically logs initial cost if applicable
       });
     } catch (error: unknown) {
       console.error('Opt-in failed:', error);
+    }
+  };
+
+  const openClaimModal = (userPerk: UserPerk, perkName: string) => {
+    setClaimUserPerk(userPerk);
+    setClaimTitle(`Claim - ${perkName}`);
+    setClaimAmount('');
+  };
+
+  const closeClaimModal = () => {
+    setClaimUserPerk(null);
+    setClaimAmount('');
+    setClaimTitle('');
+  };
+
+  const onClaimSubmit = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!claimUserPerk) return;
+
+    const rawUserPerkId =
+      typeof claimUserPerk.id === 'object' && claimUserPerk.id !== null
+        ? (claimUserPerk.id as { value: number }).value
+        : claimUserPerk.id;
+
+    try {
+      await handleRecordPerkUsage({
+        userPerkId: Number(rawUserPerkId),
+        user_id: userId,
+        amount: parseFloat(claimAmount) || 0,
+        title: claimTitle,
+      });
+      closeClaimModal();
+    } catch (error: unknown) {
+      console.error('Claim failed:', error);
     }
   };
 
@@ -86,7 +136,7 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Opt For Benefits</h1>
         <p className="text-sm text-gray-500">
-          Explore available perks and enroll directly into employee benefits.
+          Explore available perks, enroll directly into benefits, and claim allowances.
         </p>
       </div>
 
@@ -128,7 +178,10 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
               typeof perk.id === 'object' && perk.id !== null
                 ? (perk.id as { value: number }).value
                 : perk.id;
-            const isOptedIn: boolean = optedPerkIds.has(Number(rawId));
+            const numericPerkId = Number(rawId);
+            const userPerkEntry = userPerksMap.get(numericPerkId);
+            const isOptedIn = Boolean(userPerkEntry);
+            const perkNameStr = renderValue(perk.name);
 
             return (
               <div
@@ -148,33 +201,104 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
                     )}
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900">{renderValue(perk.name)}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{perkNameStr}</h3>
                   <p className="text-sm text-gray-600 line-clamp-3">
                     {renderValue(perk.description) || 'No description provided for this perk.'}
                   </p>
                 </div>
 
-                {/* CARD FOOTER / ACTION */}
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                {/* CARD FOOTER / ACTIONS */}
+                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
                   {Boolean(perk.eligibility) && (
-                    <span className="text-xs text-gray-400">{String(perk.eligibility)}</span>
+                    <span className="text-xs text-gray-400 line-clamp-1">
+                      {String(perk.eligibility)}
+                    </span>
                   )}
 
-                  <button
-                    type="button"
-                    disabled={isOptedIn || isAssigningPerk}
-                    onClick={() => void onOptInClick(Number(rawId))}
-                    className={`ml-auto px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isOptedIn
-                        ? 'bg-emerald-100 text-emerald-800 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                    } ${isAssigningPerk ? 'opacity-50 cursor-wait' : ''}`}>
-                    {isOptedIn ? '✓ Enrolled' : 'Opt In'}
-                  </button>
+                  <div className="ml-auto flex items-center gap-2">
+                    {isOptedIn ? (
+                      <>
+                        <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">
+                          ✓ Enrolled
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => userPerkEntry && openClaimModal(userPerkEntry, perkNameStr)}
+                          className="px-3 py-1.5 rounded-md text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors">
+                          Claim Perk
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isAssigningPerk}
+                        onClick={() => void onOptInClick(numericPerkId)}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors bg-blue-600 hover:bg-blue-700 text-white shadow-sm ${
+                          isAssigningPerk ? 'opacity-50 cursor-wait' : ''
+                        }`}>
+                        Opt In
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* CLAIM PERK MODAL */}
+      {claimUserPerk && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900">Claim Perk Allowance</h2>
+            <form onSubmit={onClaimSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                  Description / Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={claimTitle}
+                  onChange={(e) => setClaimTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                  Claim Amount ($)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="0.00"
+                  value={claimAmount}
+                  onChange={(e) => setClaimAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={closeClaimModal}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isRecordingUsage}
+                  className={`px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white ${
+                    isRecordingUsage ? 'opacity-50 cursor-wait' : ''
+                  }`}>
+                  {isRecordingUsage ? 'Submitting...' : 'Submit Claim'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
