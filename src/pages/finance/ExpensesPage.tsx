@@ -399,6 +399,7 @@ export const ExpensesPage: React.FC = () => {
           </p>
         </div>
       </div>
+
       <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           {/* Search Input */}
@@ -553,6 +554,7 @@ export const ExpensesPage: React.FC = () => {
         )}
       </div>
 
+      {/* CREATE EXPENSE FORM MODAL */}
       {showFormModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
@@ -569,7 +571,7 @@ export const ExpensesPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700">Total Amount</label>
                   <input
@@ -580,6 +582,16 @@ export const ExpensesPage: React.FC = () => {
                     placeholder="0.00"
                     value={amountInput}
                     onChange={(e) => setAmountInput(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Expense Date</label>
+                  <input
+                    name="expenseDate"
+                    required
+                    type="date"
+                    defaultValue={new Date().toISOString().split('T')[0]}
                     className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -727,6 +739,7 @@ export const ExpensesPage: React.FC = () => {
         </div>
       )}
 
+      {/* DETAILS MODAL */}
       {showDetailModal && selectedExpense && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl space-y-4">
@@ -799,9 +812,7 @@ export const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-      {/* --------------------------------------------------------- */}
       {/* REJECTION REASON MODAL */}
-      {/* --------------------------------------------------------- */}
       {rejectionModalId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-sm w-full p-5 shadow-xl space-y-4">
