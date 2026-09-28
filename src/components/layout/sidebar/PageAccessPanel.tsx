@@ -8,7 +8,9 @@ import {
   getStoredPagePermissions,
   saveStoredPagePermissions,
   normalizeRole,
+  type RoleDefinition,
 } from '@/utils/pagePermissions';
+import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 interface PageAccessPanelProps {
@@ -23,6 +25,28 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
 
   // Target role tab – default to 'Employee' as that is what admins configure most
   const [selectedRole, setSelectedRole] = useState<string>('Employee');
+
+  const { data: rolesData } = useGetRolesQuery();
+
+  const combinedRoles: RoleDefinition[] = useMemo(() => {
+    const list: RoleDefinition[] = [...AVAILABLE_ROLES];
+    const existingIds = new Set(list.map((r) => normalizeRole(r.id)));
+
+    if (rolesData?.data) {
+      rolesData.data.forEach((backendRole) => {
+        const norm = normalizeRole(backendRole.name);
+        if (!existingIds.has(norm)) {
+          existingIds.add(norm);
+          list.push({
+            id: backendRole.name,
+            label: backendRole.name,
+            isSuperAdmin: backendRole.name.toLowerCase().includes('superadmin'),
+          });
+        }
+      });
+    }
+    return list;
+  }, [rolesData]);
 
   // Determine the target pages to configure:
   // If module has children, configure each child page.
@@ -293,7 +317,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
               Configure Access For Role:
             </span>
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-              {AVAILABLE_ROLES.map((role) => {
+              {combinedRoles.map((role) => {
                 const isActive = selectedRole === role.id;
                 const isSuper = role.isSuperAdmin;
 
@@ -473,7 +497,7 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
                     ) : (
                       /* Matrix View of all roles */
                       <div className="flex items-center gap-1 flex-wrap justify-end max-w-[220px]">
-                        {AVAILABLE_ROLES.map((role) => {
+                        {combinedRoles.map((role) => {
                           const isRoleChecked =
                             role.isSuperAdmin ||
                             currentRoles.some((r) => normalizeRole(r) === normalizeRole(role.id));

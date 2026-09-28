@@ -151,6 +151,11 @@ export const authApiSlice = apiSlice.injectEndpoints({
       query: () => '/auth/approval-logs',
       providesTags: ['ApprovalLogs'],
     }),
+
+    getMyPermissions: builder.query<{ success: boolean; data: any }, void>({
+      query: () => '/auth/me/permissions',
+      providesTags: ['User', 'Permissions'],
+    }),
   }),
 });
 
@@ -174,4 +179,6 @@ export const {
   useGenerateInvitationMutation,
   useGetApprovalLogsQuery,
   useSendInvitationMutation,
+  useGetMyPermissionsQuery,
+  useLazyGetMyPermissionsQuery,
 } = authApiSlice;

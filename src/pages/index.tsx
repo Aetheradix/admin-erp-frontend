@@ -26,6 +26,7 @@ const UsersModule = lazy(() => import('@/pages/users'));
 const TasksModule = lazy(() => import('@/pages/tasks'));
 const InventoryModule = lazy(() => import('@/pages/inventory'));
 const ResourceBookingModule = lazy(() => import('@/pages/resourcebooking'));
+const Forbidden403Page = lazy(() => import('@/pages/error/Forbidden403Page'));
 
 const ContentLoadingFallback = () => (
   <div className="w-full h-64 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
@@ -213,6 +214,7 @@ const AppFeature = () => {
         />
         <Route path="/rulebook/*" element={<RulebookModule />} />
         <Route path="/settings/*" element={<SettingsModule />} />
+        <Route path="/403" element={<Forbidden403Page />} />
       </Routes>
     </Suspense>
   );
