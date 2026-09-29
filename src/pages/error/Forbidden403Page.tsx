@@ -14,8 +14,7 @@ export const Forbidden403Page = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="max-w-md w-full bg-card/80 backdrop-blur-xl border border-destructive/20 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden"
-      >
+        className="max-w-md w-full bg-card/80 backdrop-blur-xl border border-destructive/20 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden">
         {/* Ambient Glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-destructive/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
@@ -57,18 +56,10 @@ export const Forbidden403Page = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center justify-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => navigate(-1)}
-            className="flex-1 gap-2"
-          >
+          <Button variant="outline" onClick={() => navigate(-1)} className="flex-1 gap-2">
             <ArrowLeft className="w-4 h-4" /> Go Back
           </Button>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/')}
-            className="flex-1 gap-2"
-          >
+          <Button variant="primary" onClick={() => navigate('/')} className="flex-1 gap-2">
             <Home className="w-4 h-4" /> Dashboard
           </Button>
         </div>

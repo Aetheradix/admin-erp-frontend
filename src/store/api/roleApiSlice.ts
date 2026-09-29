@@ -70,7 +70,13 @@ export const roleApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: (_res, _err, { id }) => [{ type: 'Roles', id }, 'Roles', 'RoleAuditLogs', 'Permissions', 'User'],
+      invalidatesTags: (_res, _err, { id }) => [
+        { type: 'Roles', id },
+        'Roles',
+        'RoleAuditLogs',
+        'Permissions',
+        'User',
+      ],
     }),
 
     deleteRole: builder.mutation<{ success: boolean; message: string }, number | string>({
@@ -125,7 +131,10 @@ export const roleApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Permissions'],
     }),
 
-    getRbacAuditLogs: builder.query<{ success: boolean; data: RbacAuditLogItem[] }, { limit?: number; offset?: number } | void>({
+    getRbacAuditLogs: builder.query<
+      { success: boolean; data: RbacAuditLogItem[] },
+      { limit?: number; offset?: number } | void
+    >({
       query: (params) => ({
         url: '/roles/audit/logs',
         params: params || {},

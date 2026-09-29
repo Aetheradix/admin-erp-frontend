@@ -316,7 +316,7 @@ export const ExpensesPage: React.FC = () => {
   //   // Save File
   //   doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   // };
-  
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -455,9 +455,19 @@ export const ExpensesPage: React.FC = () => {
       return;
     }
 
-    const headers = ['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Amount', 'Status'];
+    const headers = [
+      'Expense #',
+      'Title',
+      'Date',
+      'Vendor',
+      'Employee',
+      'Category',
+      'Amount',
+      'Status',
+    ];
     const rows = dateFilteredExpenses.map((exp: ExpenseRecord) => {
-      const expDate = (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A';
+      const expDate =
+        (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A';
       return [
         `"${exp.expense_number || '#' + exp.id}"`,
         `"${(exp.title || '').replace(/"/g, '""')}"`,
@@ -482,108 +492,118 @@ export const ExpensesPage: React.FC = () => {
   };
 
   const handleExpenseReportDownloadPDF = () => {
-  if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
-    alert('No expense records available to export for the selected filters.');
-    return;
-  }
-
-  const totalExportAmount = dateFilteredExpenses.reduce(
-    (sum: number, exp: ExpenseRecord) => sum + Number(exp.amount || 0),
-    0
-  );
-
-  const getDatePresetLabel = () => {
-    switch (datePreset) {
-      case '7days': return 'Last 7 Days';
-      case '30days': return 'Last 30 Days';
-      case 'last_month': return 'Last Month';
-      case '1year': return 'Last Year';
-      case '3years': return 'Last 3 Years';
-      case 'custom': return `Custom (${customStartDate || 'Start'} to ${customEndDate || 'End'})`;
-      default: return 'All Time';
+    if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+      alert('No expense records available to export for the selected filters.');
+      return;
     }
+
+    const totalExportAmount = dateFilteredExpenses.reduce(
+      (sum: number, exp: ExpenseRecord) => sum + Number(exp.amount || 0),
+      0
+    );
+
+    const getDatePresetLabel = () => {
+      switch (datePreset) {
+        case '7days':
+          return 'Last 7 Days';
+        case '30days':
+          return 'Last 30 Days';
+        case 'last_month':
+          return 'Last Month';
+        case '1year':
+          return 'Last Year';
+        case '3years':
+          return 'Last 3 Years';
+        case 'custom':
+          return `Custom (${customStartDate || 'Start'} to ${customEndDate || 'End'})`;
+        default:
+          return 'All Time';
+      }
+    };
+
+    // Initialize PDF Document
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // 1. Title & Header Subtitle
+    doc.setFontSize(18);
+    doc.setTextColor(17, 24, 39); // #111827
+    doc.text('Expenses Management Report', 14, 18);
+
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128); // #6b7280
+    doc.text(
+      `Generated on ${new Date().toLocaleDateString()}  •  Total Items: ${dateFilteredExpenses.length}`,
+      14,
+      25
+    );
+
+    // 2. Meta Grid / Summary Box (Draw Rect & Text)
+    doc.setFillColor(249, 250, 251); // #f9fafb
+    doc.setDrawColor(229, 231, 235); // #e5e7eb
+    doc.roundedRect(14, 29, 182, 18, 1.5, 1.5, 'FD');
+
+    const col1 = 18,
+      col2 = 65,
+      col3 = 115,
+      col4 = 155;
+
+    doc.setFontSize(7);
+    doc.setTextColor(107, 114, 128);
+    doc.text('FILTERED TOTAL VALUE', col1, 34);
+    doc.text('DATE RANGE FILTER', col2, 34);
+    doc.text('CATEGORY FILTER', col3, 34);
+    doc.text('STATUS FILTER', col4, 34);
+
+    doc.setFontSize(9);
+    doc.setTextColor(17, 24, 39);
+    doc.text(formatCurrency(totalExportAmount), col1, 41);
+    doc.text(getDatePresetLabel(), col2, 41);
+    doc.text(String(activeCategory || 'All'), col3, 41);
+    doc.text(String(activeStatus || 'All'), col4, 41);
+
+    // 3. Prepare Table Headers and Data Rows
+    const tableHeaders = [
+      ['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Status', 'Amount'],
+    ];
+
+    const tableRows = dateFilteredExpenses.map((exp: ExpenseRecord) => [
+      exp.expense_number || `#${exp.id}`,
+      exp.title || '',
+      (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A',
+      exp.vendor_name || 'N/A',
+      exp.employee_name || 'N/A',
+      exp.category || '',
+      exp.status || 'Pending',
+      formatCurrency(Number(exp.amount || 0)),
+    ]);
+
+    // 4. Render Table
+    autoTable(doc, {
+      head: tableHeaders,
+      body: tableRows,
+      startY: 52,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2.5,
+        textColor: [17, 24, 39],
+      },
+      headStyles: {
+        fillColor: [243, 244, 246], // #f3f4f6
+        textColor: [55, 65, 81], // #374151
+        fontStyle: 'bold',
+        fontSize: 8,
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251], // #f9fafb
+      },
+      columnStyles: {
+        7: { halign: 'right' }, // Right align Amount column
+      },
+    });
+
+    // 5. Save & Directly Download .pdf File
+    doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
-
-  // Initialize PDF Document
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  // 1. Title & Header Subtitle
-  doc.setFontSize(18);
-  doc.setTextColor(17, 24, 39); // #111827
-  doc.text('Expenses Management Report', 14, 18);
-
-  doc.setFontSize(9);
-  doc.setTextColor(107, 114, 128); // #6b7280
-  doc.text(
-    `Generated on ${new Date().toLocaleDateString()}  •  Total Items: ${dateFilteredExpenses.length}`,
-    14,
-    25
-  );
-
-  // 2. Meta Grid / Summary Box (Draw Rect & Text)
-  doc.setFillColor(249, 250, 251); // #f9fafb
-  doc.setDrawColor(229, 231, 235); // #e5e7eb
-  doc.roundedRect(14, 29, 182, 18, 1.5, 1.5, 'FD');
-
-  const col1 = 18, col2 = 65, col3 = 115, col4 = 155;
-
-  doc.setFontSize(7);
-  doc.setTextColor(107, 114, 128);
-  doc.text('FILTERED TOTAL VALUE', col1, 34);
-  doc.text('DATE RANGE FILTER', col2, 34);
-  doc.text('CATEGORY FILTER', col3, 34);
-  doc.text('STATUS FILTER', col4, 34);
-
-  doc.setFontSize(9);
-  doc.setTextColor(17, 24, 39);
-  doc.text(formatCurrency(totalExportAmount), col1, 41);
-  doc.text(getDatePresetLabel(), col2, 41);
-  doc.text(String(activeCategory || 'All'), col3, 41);
-  doc.text(String(activeStatus || 'All'), col4, 41);
-
-  // 3. Prepare Table Headers and Data Rows
-  const tableHeaders = [
-    ['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Status', 'Amount'],
-  ];
-
-  const tableRows = dateFilteredExpenses.map((exp: ExpenseRecord) => [
-    exp.expense_number || `#${exp.id}`,
-    exp.title || '',
-    (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A',
-    exp.vendor_name || 'N/A',
-    exp.employee_name || 'N/A',
-    exp.category || '',
-    exp.status || 'Pending',
-    formatCurrency(Number(exp.amount || 0)),
-  ]);
-
-  // 4. Render Table
-  autoTable(doc, {
-    head: tableHeaders,
-    body: tableRows,
-    startY: 52,
-    styles: {
-      fontSize: 8,
-      cellPadding: 2.5,
-      textColor: [17, 24, 39],
-    },
-    headStyles: {
-      fillColor: [243, 244, 246], // #f3f4f6
-      textColor: [55, 65, 81],    // #374151
-      fontStyle: 'bold',
-      fontSize: 8,
-    },
-    alternateRowStyles: {
-      fillColor: [249, 250, 251], // #f9fafb
-    },
-    columnStyles: {
-      7: { halign: 'right' }, // Right align Amount column
-    },
-  });
-
-  // 5. Save & Directly Download .pdf File
-  doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-};
 
   const resetAllFiltersWithDate = () => {
     resetFilters();
@@ -675,7 +695,8 @@ export const ExpensesPage: React.FC = () => {
               Expense Reports & Export Center
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Select date ranges and export filtered expense reports ({dateFilteredExpenses.length} record
+              Select date ranges and export filtered expense reports ({dateFilteredExpenses.length}{' '}
+              record
               {dateFilteredExpenses.length === 1 ? '' : 's'}).
             </p>
           </div>
@@ -714,8 +735,17 @@ export const ExpensesPage: React.FC = () => {
         {/* DATE PRESETS BUTTON BAR */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-gray-600 mr-1 flex items-center gap-1">
-            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="w-3.5 h-3.5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
             Period:
           </span>

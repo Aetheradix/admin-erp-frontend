@@ -40,7 +40,11 @@ export function RolesPage() {
   // RTK Query Hooks
   const { data: rolesData, isLoading: rolesLoading, refetch: refetchRoles } = useGetRolesQuery();
   const { data: permsData } = useGetPermissionsQuery();
-  const { data: auditData, isLoading: auditLoading, refetch: refetchAudit } = useGetRbacAuditLogsQuery({ limit: 100 });
+  const {
+    data: auditData,
+    isLoading: auditLoading,
+    refetch: refetchAudit,
+  } = useGetRbacAuditLogsQuery({ limit: 100 });
 
   const [createRoleApi, { isLoading: isCreating }] = useCreateRoleMutation();
   const [updateRoleApi, { isLoading: isUpdating }] = useUpdateRoleMutation();
@@ -225,8 +229,7 @@ export function RolesPage() {
               record.is_system
                 ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
                 : 'bg-primary/10 text-primary border border-primary/20'
-            }`}
-          >
+            }`}>
             {record.is_system ? <Lock className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
           </div>
           <div>
@@ -293,8 +296,7 @@ export function RolesPage() {
               setSelectedRoleForMatrix(record.id);
               setActiveTab('matrix');
             }}
-            className="text-xs gap-1.5"
-          >
+            className="text-xs gap-1.5">
             <KeyRound className="w-3.5 h-3.5" /> Matrix
           </Button>
 
@@ -303,8 +305,7 @@ export function RolesPage() {
               variant="outline"
               size="small"
               onClick={() => openEditModal(record)}
-              className="text-xs gap-1.5"
-            >
+              className="text-xs gap-1.5">
               <Edit2 className="w-3.5 h-3.5" /> Edit
             </Button>
           )}
@@ -315,10 +316,9 @@ export function RolesPage() {
                 record.is_system
                   ? 'System roles cannot be deleted'
                   : record.user_count > 0
-                  ? `Assigned to ${record.user_count} user(s). Reassign before deleting.`
-                  : 'Delete custom role'
-              }
-            >
+                    ? `Assigned to ${record.user_count} user(s). Reassign before deleting.`
+                    : 'Delete custom role'
+              }>
               <span>
                 <Button
                   variant="outline"
@@ -328,8 +328,7 @@ export function RolesPage() {
                     setTargetRole(record);
                     setDeleteModalVisible(true);
                   }}
-                  className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 disabled:opacity-40"
-                >
+                  className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 disabled:opacity-40">
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               </span>
@@ -364,7 +363,9 @@ export function RolesPage() {
       key: 'actor_name',
       render: (name: string, record) => (
         <div>
-          <span className="font-semibold text-foreground text-xs block">{name || 'System / Migration'}</span>
+          <span className="font-semibold text-foreground text-xs block">
+            {name || 'System / Migration'}
+          </span>
           <span className="text-[11px] text-muted-foreground">{record.actor_email}</span>
         </div>
       ),
@@ -398,9 +399,7 @@ export function RolesPage() {
       dataIndex: 'created_at',
       key: 'created_at',
       render: (date: string) => (
-        <span className="text-xs text-muted-foreground">
-          {new Date(date).toLocaleString()}
-        </span>
+        <span className="text-xs text-muted-foreground">{new Date(date).toLocaleString()}</span>
       ),
     },
   ];
@@ -418,7 +417,8 @@ export function RolesPage() {
               Role & Permission Management
             </h1>
             <p className="text-xs text-muted-foreground font-medium">
-              Configure granular access controls, scope-based permissions, and inspect security audit trails
+              Configure granular access controls, scope-based permissions, and inspect security
+              audit trails
             </p>
           </div>
         </div>
@@ -431,8 +431,7 @@ export function RolesPage() {
               refetchRoles();
               if (activeTab === 'audit') refetchAudit();
             }}
-            className="gap-2"
-          >
+            className="gap-2">
             <RefreshCw className="w-4 h-4" /> Refresh
           </Button>
           {can('role:create') && (
@@ -447,7 +446,9 @@ export function RolesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Roles</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Total Roles
+            </p>
             <h3 className="text-2xl font-black text-foreground mt-1">{roles.length}</h3>
           </div>
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -457,7 +458,9 @@ export function RolesPage() {
 
         <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">System Roles</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              System Roles
+            </p>
             <h3 className="text-2xl font-black text-foreground mt-1">
               {roles.filter((r) => r.is_system).length}
             </h3>
@@ -469,7 +472,9 @@ export function RolesPage() {
 
         <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Custom Roles</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Custom Roles
+            </p>
             <h3 className="text-2xl font-black text-foreground mt-1">
               {roles.filter((r) => !r.is_system).length}
             </h3>
@@ -481,7 +486,9 @@ export function RolesPage() {
 
         <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Granular Permissions</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Granular Permissions
+            </p>
             <h3 className="text-2xl font-black text-foreground mt-1">{permissions.length}</h3>
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
@@ -498,8 +505,7 @@ export function RolesPage() {
             activeTab === 'roles'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
+          }`}>
           <Shield className="w-4 h-4" /> Role Directory ({roles.length})
         </button>
 
@@ -509,8 +515,7 @@ export function RolesPage() {
             activeTab === 'matrix'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
+          }`}>
           <KeyRound className="w-4 h-4" /> Permission Matrix (Modules × Actions)
         </button>
 
@@ -520,8 +525,7 @@ export function RolesPage() {
             activeTab === 'audit'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
+          }`}>
           <History className="w-4 h-4" /> RBAC Security Audit Logs
         </button>
       </div>
@@ -532,8 +536,7 @@ export function RolesPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden"
-        >
+          className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
           <Table
             columns={roleColumns}
             dataSource={roles}
@@ -551,12 +554,13 @@ export function RolesPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="space-y-4"
-        >
+          className="space-y-4">
           {/* Role Selector Toolbar */}
           <div className="p-4 rounded-2xl bg-card border border-border/60 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-foreground">Select Role to Inspect/Edit:</span>
+              <span className="text-sm font-bold text-foreground">
+                Select Role to Inspect/Edit:
+              </span>
               <div className="flex flex-wrap gap-2">
                 {roles.map((r) => {
                   const isSelected = currentMatrixRole?.id === r.id;
@@ -568,8 +572,7 @@ export function RolesPage() {
                         isSelected
                           ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                           : 'bg-muted/50 text-foreground border-border/60 hover:bg-muted'
-                      }`}
-                    >
+                      }`}>
                       {r.is_system && <Lock className="w-3 h-3 text-amber-500" />}
                       {r.name}
                     </button>
@@ -585,7 +588,9 @@ export function RolesPage() {
                     <Lock className="w-3.5 h-3.5" /> Immutable System Role
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">Custom Role (Click checkbox to toggle)</span>
+                  <span className="text-xs text-muted-foreground">
+                    Custom Role (Click checkbox to toggle)
+                  </span>
                 )}
               </div>
             )}
@@ -615,8 +620,7 @@ export function RolesPage() {
                           <button
                             type="button"
                             onClick={() => handleToggleModulePermissions(modulePerms)}
-                            className="text-[11px] text-primary hover:underline font-semibold mt-1 block"
-                          >
+                            className="text-[11px] text-primary hover:underline font-semibold mt-1 block">
                             {allSelected ? 'Deselect all' : 'Select all'}
                           </button>
                         )}
@@ -626,7 +630,8 @@ export function RolesPage() {
                       <div className="flex-1 flex flex-wrap gap-3">
                         {modulePerms.map((perm) => {
                           const isGranted = currentPermIds.includes(perm.id);
-                          const isEditable = can('role:edit') && (!currentMatrixRole?.is_system || isSuperadmin);
+                          const isEditable =
+                            can('role:edit') && (!currentMatrixRole?.is_system || isSuperadmin);
 
                           return (
                             <Tooltip key={perm.id} title={perm.description || perm.name}>
@@ -638,15 +643,13 @@ export function RolesPage() {
                                   isGranted
                                     ? 'bg-primary/10 border-primary/30 text-primary font-bold shadow-xs'
                                     : 'bg-muted/30 border-border/40 text-muted-foreground hover:border-border'
-                                } ${!isEditable ? 'cursor-default opacity-85' : 'cursor-pointer hover:scale-[1.02]'}`}
-                              >
+                                } ${!isEditable ? 'cursor-default opacity-85' : 'cursor-pointer hover:scale-[1.02]'}`}>
                                 <span
                                   className={`w-4 h-4 rounded-md flex items-center justify-center border text-[10px] ${
                                     isGranted
                                       ? 'bg-primary border-primary text-primary-foreground'
                                       : 'border-muted-foreground/30 bg-background'
-                                  }`}
-                                >
+                                  }`}>
                                   {isGranted && <Check className="w-3 h-3 stroke-[3]" />}
                                 </span>
                                 <span>{perm.action}</span>
@@ -670,8 +673,7 @@ export function RolesPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden"
-        >
+          className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
           <Table
             columns={auditColumns}
             dataSource={auditLogs}
@@ -688,8 +690,7 @@ export function RolesPage() {
         visible={createModalVisible}
         onHide={() => setCreateModalVisible(false)}
         header="Create New Custom Role"
-        className="max-w-2xl"
-      >
+        className="max-w-2xl">
         <div className="space-y-4 pt-4">
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">Role Name *</label>
@@ -718,17 +719,17 @@ export function RolesPage() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, permissionIds: permissions.map((p) => p.id) })}
-                  className="text-xs text-primary font-semibold hover:underline"
-                >
+                  onClick={() =>
+                    setFormData({ ...formData, permissionIds: permissions.map((p) => p.id) })
+                  }
+                  className="text-xs text-primary font-semibold hover:underline">
                   Select All
                 </button>
                 <span className="text-muted-foreground">•</span>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, permissionIds: [] })}
-                  className="text-xs text-muted-foreground font-semibold hover:underline"
-                >
+                  className="text-xs text-muted-foreground font-semibold hover:underline">
                   Clear All
                 </button>
               </div>
@@ -737,7 +738,9 @@ export function RolesPage() {
             <div className="max-h-64 overflow-y-auto space-y-3 p-3 rounded-xl border border-border/60 bg-muted/20">
               {Object.entries(modules).map(([modName, modPerms]) => (
                 <div key={modName} className="space-y-1.5">
-                  <span className="text-xs font-bold text-foreground capitalize block">{modName}</span>
+                  <span className="text-xs font-bold text-foreground capitalize block">
+                    {modName}
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     {modPerms.map((p) => {
                       const selected = formData.permissionIds.includes(p.id);
@@ -755,8 +758,7 @@ export function RolesPage() {
                             selected
                               ? 'bg-primary text-primary-foreground border-primary font-bold'
                               : 'bg-background text-muted-foreground border-border/60 hover:border-border'
-                          }`}
-                        >
+                          }`}>
                           {selected && <Check className="w-3 h-3 stroke-[3]" />}
                           {p.action}
                         </button>
@@ -787,8 +789,7 @@ export function RolesPage() {
           setTargetRole(null);
         }}
         header={`Edit Role: ${targetRole?.name}`}
-        className="max-w-2xl"
-      >
+        className="max-w-2xl">
         <div className="space-y-4 pt-4">
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">
@@ -820,7 +821,9 @@ export function RolesPage() {
             <div className="max-h-64 overflow-y-auto space-y-3 p-3 rounded-xl border border-border/60 bg-muted/20">
               {Object.entries(modules).map(([modName, modPerms]) => (
                 <div key={modName} className="space-y-1.5">
-                  <span className="text-xs font-bold text-foreground capitalize block">{modName}</span>
+                  <span className="text-xs font-bold text-foreground capitalize block">
+                    {modName}
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     {modPerms.map((p) => {
                       const selected = formData.permissionIds.includes(p.id);
@@ -838,8 +841,7 @@ export function RolesPage() {
                             selected
                               ? 'bg-primary text-primary-foreground border-primary font-bold'
                               : 'bg-background text-muted-foreground border-border/60 hover:border-border'
-                          }`}
-                        >
+                          }`}>
                           {selected && <Check className="w-3 h-3 stroke-[3]" />}
                           {p.action}
                         </button>
@@ -857,8 +859,7 @@ export function RolesPage() {
               onClick={() => {
                 setEditModalVisible(false);
                 setTargetRole(null);
-              }}
-            >
+              }}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleEditSubmit} disabled={isUpdating}>
@@ -876,8 +877,7 @@ export function RolesPage() {
           setTargetRole(null);
         }}
         header="Confirm Role Deletion"
-        className="max-w-md"
-      >
+        className="max-w-md">
         <div className="space-y-4 pt-4 text-center">
           <div className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
@@ -888,7 +888,8 @@ export function RolesPage() {
               Delete custom role "{targetRole?.name}"?
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              This action cannot be undone. All role permission associations will be permanently removed.
+              This action cannot be undone. All role permission associations will be permanently
+              removed.
             </p>
           </div>
 
@@ -898,15 +899,10 @@ export function RolesPage() {
               onClick={() => {
                 setDeleteModalVisible(false);
                 setTargetRole(null);
-              }}
-            >
+              }}>
               Cancel
             </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteSubmit}
-              disabled={isDeleting}
-            >
+            <Button variant="danger" onClick={handleDeleteSubmit} disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : 'Delete Role'}
             </Button>
           </div>

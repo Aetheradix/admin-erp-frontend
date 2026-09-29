@@ -755,7 +755,6 @@
 //   return loading || typeCount === 0;
 // }
 
-
 import React, { useState } from 'react';
 
 import { useBenefitsPage } from '../hooks/useBenefits';

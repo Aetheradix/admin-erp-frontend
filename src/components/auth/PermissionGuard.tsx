@@ -24,9 +24,7 @@ export const PermissionGuard = ({
   }
 
   if (Array.isArray(permission)) {
-    const isAllowed = requireAll
-      ? hasAllPermissions(permission)
-      : hasAnyPermission(permission);
+    const isAllowed = requireAll ? hasAllPermissions(permission) : hasAnyPermission(permission);
     return isAllowed ? <>{children}</> : <>{fallback}</>;
   }
 

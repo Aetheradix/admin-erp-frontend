@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import { useLoginMutation, useLogoutMutation, useLazyGetMyPermissionsQuery } from '../store/api/authApiSlice';
+import {
+  useLoginMutation,
+  useLogoutMutation,
+  useLazyGetMyPermissionsQuery,
+} from '../store/api/authApiSlice';
 import type { User, LoginCredentials, TeamScope } from '../types/auth';
 
 import { AuthContext } from './AuthContext.base';
@@ -165,10 +169,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         isLoading,
-      }}
-    >
+      }}>
       {children}
     </AuthContext.Provider>
   );
 };
-

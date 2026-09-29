@@ -14,7 +14,6 @@ import type {
   UserPerkMutationResponse,
 } from '../../pages/benefits/types/perks.types';
 
-
 export interface AssignPerkRequest extends BaseAssignPerkRequest {
   createExpense?: boolean;
 }
@@ -76,7 +75,6 @@ export interface LinkPerkToExpenseResponse {
 
 export const benefitsSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    
     getPerks: builder.query<Perk[], void>({
       query: () => '/perks',
 
@@ -109,7 +107,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Perks'],
     }),
 
-    
     updatePerk: builder.mutation<PerkMutationResponse, UpdatePerkRequest>({
       query: ({ id, data }) => ({
         url: `/perks/${id}`,
@@ -128,7 +125,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['Perks'],
     }),
- 
+
     getPerkTypes: builder.query<PerkType[], void>({
       query: () => '/perk-types',
 
@@ -151,7 +148,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['PerkTypes'],
     }),
 
-    
     updatePerkType: builder.mutation<PerkTypeMutationResponse, UpdatePerkTypeRequest>({
       query: ({ id, data }) => ({
         url: `/perk-types/${id}`,
@@ -170,7 +166,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['PerkTypes'],
     }),
- 
+
     assignPerk: builder.mutation<UserPerkMutationResponse, AssignPerkRequest>({
       query: ({ perkId, user_id, valid_from, valid_until, createExpense }) => ({
         url: `/perks/${perkId}/assign`,
@@ -186,7 +182,6 @@ export const benefitsSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Perks', 'UserPerks', 'PerkExpenses'],
     }),
 
-    
     recordPerkUsage: builder.mutation<RecordPerkUsageResponse, RecordPerkUsageRequest>({
       query: ({ userPerkId, ...data }) => ({
         url: `/user-perks/${userPerkId}/use`,
@@ -196,7 +191,7 @@ export const benefitsSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: ['UserPerks', 'PerkExpenses'],
     }),
-    
+
     getUserPerks: builder.query<UserPerk[], number | void>({
       query: (userId) => (userId ? `/users/${userId}/perks` : '/users/perks'),
 

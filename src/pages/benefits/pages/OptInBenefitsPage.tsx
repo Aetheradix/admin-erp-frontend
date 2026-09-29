@@ -223,7 +223,9 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
                         </span>
                         <button
                           type="button"
-                          onClick={() => userPerkEntry && openClaimModal(userPerkEntry, perkNameStr)}
+                          onClick={() =>
+                            userPerkEntry && openClaimModal(userPerkEntry, perkNameStr)
+                          }
                           className="px-3 py-1.5 rounded-md text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors">
                           Claim Perk
                         </button>

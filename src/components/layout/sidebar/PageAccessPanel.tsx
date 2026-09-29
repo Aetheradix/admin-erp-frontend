@@ -33,8 +33,13 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
     if (rolesData?.data && rolesData.data.length > 0) {
       return rolesData.data.map((backendRole) => {
         const isSuper =
-          Boolean(backendRole.is_system && backendRole.name.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin')) ||
-          backendRole.name.toLowerCase().replace(/[\s_-]/g, '') === 'superadmin';
+          Boolean(
+            backendRole.is_system &&
+            backendRole.name
+              .toLowerCase()
+              .replace(/[\s_-]/g, '')
+              .includes('superadmin')
+          ) || backendRole.name.toLowerCase().replace(/[\s_-]/g, '') === 'superadmin';
         return {
           id: backendRole.name,
           label: backendRole.name,
@@ -54,7 +59,11 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
       if (!match) {
         const emp = rolesData.data.find((r) => normalizeRole(r.name) === 'Employee');
         const nonSuper = rolesData.data.find(
-          (r) => !r.name.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin')
+          (r) =>
+            !r.name
+              .toLowerCase()
+              .replace(/[\s_-]/g, '')
+              .includes('superadmin')
         );
         const fallback = emp || nonSuper || rolesData.data[0];
         if (fallback) {
@@ -153,13 +162,18 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
     const isSuper =
       roleId === 'SuperAdmin' ||
       normalizeRole(roleId) === 'SuperAdmin' ||
-      roleId.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin');
+      roleId
+        .toLowerCase()
+        .replace(/[\s_-]/g, '')
+        .includes('superadmin');
     if (isSuper) return; // SuperAdmin cannot be disabled
 
     setPageRoles((prev) => {
       const current = prev[path] || ['SuperAdmin'];
       const targetNorm = normalizeRole(roleId);
-      const isCurrentlyAllowed = current.some((r) => normalizeRole(r) === targetNorm || r === roleId);
+      const isCurrentlyAllowed = current.some(
+        (r) => normalizeRole(r) === targetNorm || r === roleId
+      );
 
       let updatedRoles: string[];
       if (isCurrentlyAllowed) {
@@ -191,7 +205,10 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
     const isSuper =
       selectedRole === 'SuperAdmin' ||
       normalizeRole(selectedRole) === 'SuperAdmin' ||
-      selectedRole.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin');
+      selectedRole
+        .toLowerCase()
+        .replace(/[\s_-]/g, '')
+        .includes('superadmin');
     if (isSuper) return;
 
     setPageRoles((prev) => {
@@ -205,7 +222,9 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
             next[page.path] = [...current, selectedRole];
           }
         } else {
-          next[page.path] = current.filter((r) => normalizeRole(r) !== targetNorm && r !== selectedRole);
+          next[page.path] = current.filter(
+            (r) => normalizeRole(r) !== targetNorm && r !== selectedRole
+          );
         }
 
         if (!next[page.path].some((r) => normalizeRole(r) === 'SuperAdmin')) {
@@ -343,7 +362,8 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
               ) : (
                 combinedRoles.map((role) => {
                   const isActive =
-                    selectedRole === role.id || normalizeRole(selectedRole) === normalizeRole(role.id);
+                    selectedRole === role.id ||
+                    normalizeRole(selectedRole) === normalizeRole(role.id);
                   const isSuper = role.isSuperAdmin;
 
                   return (
@@ -379,47 +399,50 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
         {/* Master Toggle Card (for specific role view) */}
         {selectedRole !== 'ALL' &&
           normalizeRole(selectedRole) !== 'SuperAdmin' &&
-          !selectedRole.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin') && (
-          <div className="px-5 pt-3 pb-2 border-b border-white/5 bg-white/[0.015]">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-              <div className="flex items-center gap-2.5">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    isMasterRoleAllEnabled
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                  }`}>
-                  {isMasterRoleAllEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
+          !selectedRole
+            .toLowerCase()
+            .replace(/[\s_-]/g, '')
+            .includes('superadmin') && (
+            <div className="px-5 pt-3 pb-2 border-b border-white/5 bg-white/[0.015]">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      isMasterRoleAllEnabled
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-red-500/15 text-red-400 border border-red-500/30'
+                    }`}>
+                    {isMasterRoleAllEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">
+                      {isMasterRoleAllEnabled ? 'Module Visible' : 'Module Hidden'} for{' '}
+                      <span className="text-primary">{selectedRole}</span>
+                    </h4>
+                    <p className="text-[11px] text-white/50">
+                      {isMasterRoleAllEnabled
+                        ? 'Pages appear in sidebar for this role'
+                        : 'Entire module hidden from sidebar for this role'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white">
-                    {isMasterRoleAllEnabled ? 'Module Visible' : 'Module Hidden'} for{' '}
-                    <span className="text-primary">{selectedRole}</span>
-                  </h4>
-                  <p className="text-[11px] text-white/50">
-                    {isMasterRoleAllEnabled
-                      ? 'Pages appear in sidebar for this role'
-                      : 'Entire module hidden from sidebar for this role'}
-                  </p>
-                </div>
-              </div>
 
-              {/* Master Toggle Switch */}
-              <button
-                type="button"
-                onClick={() => toggleAllForSelectedRole(!isMasterRoleAllEnabled)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  isMasterRoleAllEnabled ? 'bg-primary' : 'bg-white/20'
-                }`}>
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                    isMasterRoleAllEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
+                {/* Master Toggle Switch */}
+                <button
+                  type="button"
+                  onClick={() => toggleAllForSelectedRole(!isMasterRoleAllEnabled)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    isMasterRoleAllEnabled ? 'bg-primary' : 'bg-white/20'
+                  }`}>
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      isMasterRoleAllEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Search bar if multiple pages */}
         {targetPages.length > 3 && (
@@ -459,7 +482,10 @@ export function PageAccessPanel({ moduleItem, triggerRect, onClose }: PageAccess
               const isSelectedRoleSuper =
                 selectedRole === 'SuperAdmin' ||
                 normalizeRole(selectedRole) === 'SuperAdmin' ||
-                selectedRole.toLowerCase().replace(/[\s_-]/g, '').includes('superadmin');
+                selectedRole
+                  .toLowerCase()
+                  .replace(/[\s_-]/g, '')
+                  .includes('superadmin');
               const isAllowedForSelectedRole =
                 isSelectedRoleSuper ||
                 currentRoles.some(
