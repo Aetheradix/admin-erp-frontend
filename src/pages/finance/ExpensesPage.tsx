@@ -199,10 +199,12 @@
 //   );
 // }
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useExpensesPage, EXPENSE_CATEGORIES, EXPENSE_STATUSES } from './hooks/useExpensesPage'; // Adjust import path as needed
 import type { ExpenseRecord } from '@/store/api/expenseSlice';
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 export interface UserOption {
   id: number | string;
   name: string;
@@ -219,6 +221,8 @@ const MOCK_USERS: UserOption[] = [
 ];
 
 const MULTI_USER_CATEGORIES = ['Travel', 'Team Outing', 'Meals & Entertainment', 'Events'];
+
+type DateRangePreset = 'all' | '7days' | '30days' | 'last_month' | '1year' | '3years' | 'custom';
 
 export const ExpensesPage: React.FC = () => {
   const {
@@ -261,6 +265,58 @@ export const ExpensesPage: React.FC = () => {
   const [selectedUserIds, setSelectedUserIds] = useState<(number | string)[]>([]);
   const [amountInput, setAmountInput] = useState<string>('');
 
+  /* ================= DATE RANGE STATE ================= */
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+
+  // const handleDownloadPDF = () => {
+  //   if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+  //     alert('No expense records available to export for the selected filters.');
+  //     return;
+  //   }
+
+  //   const doc = new jsPDF();
+
+  //   // Document Title & Metadata
+  //   doc.setFontSize(16);
+  //   doc.setTextColor(17, 24, 39);
+  //   doc.text('Expenses Management Report', 14, 15);
+
+  //   doc.setFontSize(9);
+  //   doc.setTextColor(107, 114, 128);
+  //   doc.text(`Generated on: ${new Date().toLocaleDateString()} | Total Records: ${dateFilteredExpenses.length}`, 14, 22);
+
+  //   // Build Table Columns and Rows
+  //   const tableHeaders = [['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Status', 'Amount']];
+  //   const tableRows = dateFilteredExpenses.map((exp: ExpenseRecord) => [
+  //     exp.expense_number || `#${exp.id}`,
+  //     exp.title || '',
+  //     (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A',
+  //     exp.vendor_name || 'N/A',
+  //     exp.employee_name || 'N/A',
+  //     exp.category || '',
+  //     exp.status || 'Pending',
+  //     formatCurrency(Number(exp.amount || 0)),
+  //   ]);
+
+  //   // Render Table in PDF
+  //   autoTable(doc, {
+  //     head: tableHeaders,
+  //     body: tableRows,
+  //     startY: 28,
+  //     theme: 'striped',
+  //     headStyles: { fillColor: [37, 99, 235], fontSize: 8, fontStyle: 'bold' }, // Blue header
+  //     styles: { fontSize: 8, cellPadding: 2.5 },
+  //     columnStyles: {
+  //       7: { halign: 'right' }, // Right-align Amount column
+  //     },
+  //   });
+
+  //   // Save File
+  //   doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+  // };
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -282,6 +338,61 @@ export const ExpensesPage: React.FC = () => {
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     }
   };
+
+  /* ================= DATE FILTERING LOGIC ================= */
+  const dateFilteredExpenses = useMemo(() => {
+    if (!filteredExpenses) return [];
+    if (datePreset === 'all') return filteredExpenses;
+
+    const now = new Date();
+
+    return filteredExpenses.filter((exp: ExpenseRecord) => {
+      // Safely fall back to expenseDate, created_at, or date properties
+      const rawDate = (exp as any).expenseDate || (exp as any).created_at || (exp as any).date;
+      if (!rawDate) return true;
+
+      const expDate = new Date(rawDate);
+      if (isNaN(expDate.getTime())) return true;
+
+      switch (datePreset) {
+        case '7days': {
+          const sevenDaysAgo = new Date(now);
+          sevenDaysAgo.setDate(now.getDate() - 7);
+          return expDate >= sevenDaysAgo && expDate <= now;
+        }
+        case '30days': {
+          const thirtyDaysAgo = new Date(now);
+          thirtyDaysAgo.setDate(now.getDate() - 30);
+          return expDate >= thirtyDaysAgo && expDate <= now;
+        }
+        case 'last_month': {
+          const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+          return expDate >= startOfLastMonth && expDate <= endOfLastMonth;
+        }
+        case '1year': {
+          const oneYearAgo = new Date(now);
+          oneYearAgo.setFullYear(now.getFullYear() - 1);
+          return expDate >= oneYearAgo && expDate <= now;
+        }
+        case '3years': {
+          const threeYearsAgo = new Date(now);
+          threeYearsAgo.setFullYear(now.getFullYear() - 3);
+          return expDate >= threeYearsAgo && expDate <= now;
+        }
+        case 'custom': {
+          const start = customStartDate ? new Date(customStartDate) : null;
+          const end = customEndDate ? new Date(`${customEndDate}T23:59:59`) : null;
+
+          if (start && expDate < start) return false;
+          if (end && expDate > end) return false;
+          return true;
+        }
+        default:
+          return true;
+      }
+    });
+  }, [filteredExpenses, datePreset, customStartDate, customEndDate]);
 
   const handleCategoryChange = (cat: string) => {
     setSelectedCategory(cat);
@@ -336,6 +447,150 @@ export const ExpensesPage: React.FC = () => {
   const parsedAmount = parseFloat(amountInput) || 0;
   const participantCount = selectedUserIds.length;
   const splitAmount = participantCount > 0 ? parsedAmount / participantCount : 0;
+
+  /* ================= REPORTS EXPORT HANDLERS ================= */
+  const handleDownloadCSV = () => {
+    if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+      alert('No expense records available to export for the selected filters.');
+      return;
+    }
+
+    const headers = ['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Amount', 'Status'];
+    const rows = dateFilteredExpenses.map((exp: ExpenseRecord) => {
+      const expDate = (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A';
+      return [
+        `"${exp.expense_number || '#' + exp.id}"`,
+        `"${(exp.title || '').replace(/"/g, '""')}"`,
+        `"${expDate}"`,
+        `"${(exp.vendor_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(exp.employee_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(exp.category || '').replace(/"/g, '""')}"`,
+        exp.amount || 0,
+        `"${exp.status || 'Pending'}"`,
+      ];
+    });
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Expenses_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExpenseReportDownloadPDF = () => {
+  if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+    alert('No expense records available to export for the selected filters.');
+    return;
+  }
+
+  const totalExportAmount = dateFilteredExpenses.reduce(
+    (sum: number, exp: ExpenseRecord) => sum + Number(exp.amount || 0),
+    0
+  );
+
+  const getDatePresetLabel = () => {
+    switch (datePreset) {
+      case '7days': return 'Last 7 Days';
+      case '30days': return 'Last 30 Days';
+      case 'last_month': return 'Last Month';
+      case '1year': return 'Last Year';
+      case '3years': return 'Last 3 Years';
+      case 'custom': return `Custom (${customStartDate || 'Start'} to ${customEndDate || 'End'})`;
+      default: return 'All Time';
+    }
+  };
+
+  // Initialize PDF Document
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // 1. Title & Header Subtitle
+  doc.setFontSize(18);
+  doc.setTextColor(17, 24, 39); // #111827
+  doc.text('Expenses Management Report', 14, 18);
+
+  doc.setFontSize(9);
+  doc.setTextColor(107, 114, 128); // #6b7280
+  doc.text(
+    `Generated on ${new Date().toLocaleDateString()}  •  Total Items: ${dateFilteredExpenses.length}`,
+    14,
+    25
+  );
+
+  // 2. Meta Grid / Summary Box (Draw Rect & Text)
+  doc.setFillColor(249, 250, 251); // #f9fafb
+  doc.setDrawColor(229, 231, 235); // #e5e7eb
+  doc.roundedRect(14, 29, 182, 18, 1.5, 1.5, 'FD');
+
+  const col1 = 18, col2 = 65, col3 = 115, col4 = 155;
+
+  doc.setFontSize(7);
+  doc.setTextColor(107, 114, 128);
+  doc.text('FILTERED TOTAL VALUE', col1, 34);
+  doc.text('DATE RANGE FILTER', col2, 34);
+  doc.text('CATEGORY FILTER', col3, 34);
+  doc.text('STATUS FILTER', col4, 34);
+
+  doc.setFontSize(9);
+  doc.setTextColor(17, 24, 39);
+  doc.text(formatCurrency(totalExportAmount), col1, 41);
+  doc.text(getDatePresetLabel(), col2, 41);
+  doc.text(String(activeCategory || 'All'), col3, 41);
+  doc.text(String(activeStatus || 'All'), col4, 41);
+
+  // 3. Prepare Table Headers and Data Rows
+  const tableHeaders = [
+    ['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Status', 'Amount'],
+  ];
+
+  const tableRows = dateFilteredExpenses.map((exp: ExpenseRecord) => [
+    exp.expense_number || `#${exp.id}`,
+    exp.title || '',
+    (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A',
+    exp.vendor_name || 'N/A',
+    exp.employee_name || 'N/A',
+    exp.category || '',
+    exp.status || 'Pending',
+    formatCurrency(Number(exp.amount || 0)),
+  ]);
+
+  // 4. Render Table
+  autoTable(doc, {
+    head: tableHeaders,
+    body: tableRows,
+    startY: 52,
+    styles: {
+      fontSize: 8,
+      cellPadding: 2.5,
+      textColor: [17, 24, 39],
+    },
+    headStyles: {
+      fillColor: [243, 244, 246], // #f3f4f6
+      textColor: [55, 65, 81],    // #374151
+      fontStyle: 'bold',
+      fontSize: 8,
+    },
+    alternateRowStyles: {
+      fillColor: [249, 250, 251], // #f9fafb
+    },
+    columnStyles: {
+      7: { halign: 'right' }, // Right align Amount column
+    },
+  });
+
+  // 5. Save & Directly Download .pdf File
+  doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+  const resetAllFiltersWithDate = () => {
+    resetFilters();
+    setDatePreset('all');
+    setCustomStartDate('');
+    setCustomEndDate('');
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -400,6 +655,133 @@ export const ExpensesPage: React.FC = () => {
         </div>
       </div>
 
+      {/* REPORTS & DATE RANGE SECTION */}
+      <div className="p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-gray-100">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <svg
+                className="w-4 h-4 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Expense Reports & Export Center
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Select date ranges and export filtered expense reports ({dateFilteredExpenses.length} record
+              {dateFilteredExpenses.length === 1 ? '' : 's'}).
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDownloadCSV}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Export CSV (.csv)
+            </button>
+            <button
+              type="button"
+              onClick={handleExpenseReportDownloadPDF}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-800 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Download PDF (.pdf)
+            </button>
+          </div>
+        </div>
+
+        {/* DATE PRESETS BUTTON BAR */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-gray-600 mr-1 flex items-center gap-1">
+            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Period:
+          </span>
+
+          {[
+            { id: 'all', label: 'All Time' },
+            { id: '7days', label: 'Last 7 Days' },
+            { id: '30days', label: 'Last 30 Days' },
+            { id: 'last_month', label: 'Last Month' },
+            { id: '1year', label: 'Last Year' },
+            { id: '3years', label: 'Last 3 Years' },
+            { id: 'custom', label: 'Custom Range...' },
+          ].map((preset) => {
+            const isActive = datePreset === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => setDatePreset(preset.id as DateRangePreset)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* CUSTOM DATE INPUTS (Shown when 'custom' preset selected) */}
+        {datePreset === 'custom' && (
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-dashed border-gray-200">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-600 font-medium">From:</label>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-2.5 py-1.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-600 font-medium">To:</label>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-2.5 py-1.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            {(customStartDate || customEndDate) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+                className="text-xs text-red-600 hover:underline">
+                Clear Dates
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           {/* Search Input */}
@@ -437,7 +819,7 @@ export const ExpensesPage: React.FC = () => {
             </select>
 
             <button
-              onClick={resetFilters}
+              onClick={resetAllFiltersWithDate}
               className="text-sm text-gray-500 hover:text-gray-800 underline px-2 py-1">
               Reset Filters
             </button>
@@ -458,9 +840,9 @@ export const ExpensesPage: React.FC = () => {
               Try Again
             </button>
           </div>
-        ) : filteredExpenses.length === 0 ? (
+        ) : dateFilteredExpenses.length === 0 ? (
           <div className="p-12 text-center text-gray-500">
-            No expenses found matching the selected criteria.
+            No expenses found matching the selected criteria or date range.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -477,7 +859,7 @@ export const ExpensesPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 text-gray-700">
-                {filteredExpenses.map((expense: ExpenseRecord) => {
+                {dateFilteredExpenses.map((expense: ExpenseRecord) => {
                   const status = expense.status?.toLowerCase();
                   const participants =
                     (expense as any).participants || (expense as any).participant_ids;
