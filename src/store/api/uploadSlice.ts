@@ -1,11 +1,13 @@
 import { apiSlice } from './apiSlice';
 
-interface UploadFileResponse {
+interface UploadSalarySlipResponse {
   success: boolean;
   message: string;
   data: {
     id: number;
+    userId: number;
     salarySlipUrl: string;
+    createdBy: number;
   };
 }
 
@@ -18,12 +20,31 @@ interface UploadInvoiceResponse {
   };
 }
 
+export interface SalarySlipItem {
+  id: number;
+  user_id: number;
+  salary_slip_url: string;
+  created_by: number | null;
+  created_at: string;
+}
+
+interface GetSalarySlipsResponse {
+  success: boolean;
+  data: SalarySlipItem[];
+}
+
 export const uploadApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    uploadFile: builder.mutation<UploadFileResponse, { file: Blob }>({
-      query: ({ file }) => {
+    uploadSalarySlip: builder.mutation<
+      UploadSalarySlipResponse,
+      { file: Blob; userId?: number }
+    >({
+      query: ({ file, userId }) => {
         const formData = new FormData();
         formData.append('file', file, 'salary-slip.pdf');
+        if (userId) {
+          formData.append('userId', String(userId));
+        }
 
         return {
           url: '/upload/salary-slip',
@@ -45,7 +66,15 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
         };
       },
     }),
+
+    getSalarySlips: builder.query<GetSalarySlipsResponse, number>({
+      query: (userId) => `/salary-slips/${userId}`,
+    }),
   }),
 });
 
-export const { useUploadFileMutation, useUploadInvoiceMutation } = uploadApiSlice;
+export const {
+  useUploadSalarySlipMutation,
+  useUploadInvoiceMutation,
+  useGetSalarySlipsQuery,
+} = uploadApiSlice;

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useUploadFileMutation } from '@/store/api/uploadSlice';
+import {useUploadInvoiceMutation as  useUploadFileMutation } from '@/store/api/uploadSlice';
 
 import { Table, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -40,9 +40,6 @@ export function PayrollPage() {
 
   const slipRef = useRef<HTMLDivElement>(null);
 
-  // =========================================================
-  // GENERATE SALARY SLIP PDF
-  // =========================================================
 
   const generateSalarySlipPdf = async (record: PayrollRecord): Promise<Blob> => {
     setSelectedSlip(record);
@@ -114,10 +111,6 @@ export function PayrollPage() {
     return blob;
   };
 
-  // =========================================================
-  // CREATE SALARY SLIP
-  // =========================================================
-
   const handleCreateSalarySlip = async (data: SalarySlipData) => {
     try {
       message.loading({
@@ -166,11 +159,16 @@ export function PayrollPage() {
         const uploadResponse = await uploadFile({ file: pdfBlob }).unwrap();
         console.log('Salary slip uploaded:', uploadResponse);
 
-        if (uploadResponse?.data?.salarySlipUrl) {
-          salarySlipUrl = uploadResponse.data.salarySlipUrl;
+        // Safely type-cast response data to allow both salarySlipUrl and invoiceUrl without TS errors
+        const responseData = uploadResponse?.data as
+          | { id?: number; salarySlipUrl?: string; invoiceUrl?: string }
+          | undefined;
+
+        if (responseData?.salarySlipUrl || responseData?.invoiceUrl) {
+          salarySlipUrl = responseData.salarySlipUrl || responseData.invoiceUrl || '';
         }
-        if (uploadResponse?.data?.id) {
-          recordId = uploadResponse.data.id;
+        if (responseData?.id) {
+          recordId = responseData.id;
         }
       } catch (uploadError) {
         console.warn('Cloud upload failed, keeping client-generated record:', uploadError);
@@ -199,10 +197,6 @@ export function PayrollPage() {
       });
     }
   };
-
-  // =========================================================
-  // DOWNLOAD SALARY SLIP (DIRECT CLIENT-SIDE GENERATION)
-  // =========================================================
 
   const downloadSalarySlip = async (record: PayrollRecord) => {
     try {
@@ -243,9 +237,6 @@ export function PayrollPage() {
     }
   };
 
-  // =========================================================
-  // TABLE COLUMNS
-  // =========================================================
 
   const columns: ColumnsType<PayrollRecord> = [
     {
@@ -351,9 +342,6 @@ export function PayrollPage() {
     },
   ];
 
-  // =========================================================
-  // RENDER
-  // =========================================================
 
   return (
     <>
