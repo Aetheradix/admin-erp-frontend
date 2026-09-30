@@ -12,7 +12,7 @@ const FinanceModule = () => {
       <Route path="/invoices" element={<InvoicesPage />} />
       <Route path="/expenses" element={<ExpensesPage />} />
       <Route path="/payroll" element={<PayrollPage />} />
-      <Route path="/my-payslip" element={<MyPaySlipPage/>}/>
+      <Route path="/my-payslip" element={<MyPaySlipPage />} />
     </Routes>
   );
 };

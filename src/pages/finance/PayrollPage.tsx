@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import {useUploadInvoiceMutation as  useUploadFileMutation } from '@/store/api/uploadSlice';
+import { useUploadInvoiceMutation as useUploadFileMutation } from '@/store/api/uploadSlice';
 
 import { Table, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -39,7 +39,6 @@ export function PayrollPage() {
   const [showSlip, setShowSlip] = useState(false);
 
   const slipRef = useRef<HTMLDivElement>(null);
-
 
   const generateSalarySlipPdf = async (record: PayrollRecord): Promise<Blob> => {
     setSelectedSlip(record);
@@ -161,8 +160,7 @@ export function PayrollPage() {
 
         // Safely type-cast response data to allow both salarySlipUrl and invoiceUrl without TS errors
         const responseData = uploadResponse?.data as
-          | { id?: number; salarySlipUrl?: string; invoiceUrl?: string }
-          | undefined;
+          { id?: number; salarySlipUrl?: string; invoiceUrl?: string } | undefined;
 
         if (responseData?.salarySlipUrl || responseData?.invoiceUrl) {
           salarySlipUrl = responseData.salarySlipUrl || responseData.invoiceUrl || '';
@@ -236,7 +234,6 @@ export function PayrollPage() {
       });
     }
   };
-
 
   const columns: ColumnsType<PayrollRecord> = [
     {
@@ -341,7 +338,6 @@ export function PayrollPage() {
       ),
     },
   ];
-
 
   return (
     <>

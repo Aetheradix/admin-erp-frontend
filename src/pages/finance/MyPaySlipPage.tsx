@@ -147,7 +147,8 @@ export default function MyPaySlipPage() {
           <div>
             <h1 className="text-xl font-bold text-gray-900">{currentUser.employeeName}</h1>
             <p className="text-sm text-gray-500">
-              {currentUser.position} • ID: <span className="font-semibold text-gray-800">{currentUser.employeeId}</span>
+              {currentUser.position} • ID:{' '}
+              <span className="font-semibold text-gray-800">{currentUser.employeeId}</span>
             </p>
           </div>
         </div>
@@ -235,7 +236,9 @@ export default function MyPaySlipPage() {
                   return (
                     <tr key={slip.id} className="hover:bg-gray-50/70 transition">
                       <td className="px-6 py-4 font-bold text-gray-900">{slip.monthYear}</td>
-                      <td className="px-6 py-4 text-gray-500 font-mono text-xs">{slip.paySlipNo}</td>
+                      <td className="px-6 py-4 text-gray-500 font-mono text-xs">
+                        {slip.paySlipNo}
+                      </td>
                       <td className="px-6 py-4 text-gray-600">{slip.payPeriod}</td>
                       <td className="px-6 py-4 font-semibold text-gray-900">
                         ₹{net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -258,9 +261,7 @@ export default function MyPaySlipPage() {
       </div>
 
       {/* Payslip Detail Modal */}
-      {selectedSlip && (
-        <PayslipModal slip={selectedSlip} onClose={() => setSelectedSlip(null)} />
-      )}
+      {selectedSlip && <PayslipModal slip={selectedSlip} onClose={() => setSelectedSlip(null)} />}
     </div>
   );
 }
@@ -321,7 +322,9 @@ function PayslipModal({ slip, onClose }: { slip: Payslip; onClose: () => void })
             </div>
             <div>
               <p className="text-gray-400">Paid / LOP Days</p>
-              <p className="font-semibold text-gray-800">{slip.paidDays} / {slip.lopDays}</p>
+              <p className="font-semibold text-gray-800">
+                {slip.paidDays} / {slip.lopDays}
+              </p>
             </div>
             <div>
               <p className="text-gray-400">Generated On</p>
@@ -353,7 +356,9 @@ function PayslipModal({ slip, onClose }: { slip: Payslip; onClose: () => void })
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             {/* Earnings Table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden">
-              <div className="bg-gray-100 px-3 py-2 font-bold uppercase text-gray-700">Earnings</div>
+              <div className="bg-gray-100 px-3 py-2 font-bold uppercase text-gray-700">
+                Earnings
+              </div>
               <div className="divide-y divide-gray-100">
                 {slip.earnings.map((e, i) => (
                   <div key={i} className="flex justify-between px-3 py-2">
@@ -372,7 +377,9 @@ function PayslipModal({ slip, onClose }: { slip: Payslip; onClose: () => void })
 
             {/* Deductions Table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden">
-              <div className="bg-gray-100 px-3 py-2 font-bold uppercase text-gray-700">Deductions</div>
+              <div className="bg-gray-100 px-3 py-2 font-bold uppercase text-gray-700">
+                Deductions
+              </div>
               <div className="divide-y divide-gray-100">
                 {slip.deductions.map((d, i) => (
                   <div key={i} className="flex justify-between px-3 py-2">

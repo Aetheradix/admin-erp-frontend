@@ -35,10 +35,7 @@ interface GetSalarySlipsResponse {
 
 export const uploadApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    uploadSalarySlip: builder.mutation<
-      UploadSalarySlipResponse,
-      { file: Blob; userId?: number }
-    >({
+    uploadSalarySlip: builder.mutation<UploadSalarySlipResponse, { file: Blob; userId?: number }>({
       query: ({ file, userId }) => {
         const formData = new FormData();
         formData.append('file', file, 'salary-slip.pdf');
@@ -73,8 +70,5 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const {
-  useUploadSalarySlipMutation,
-  useUploadInvoiceMutation,
-  useGetSalarySlipsQuery,
-} = uploadApiSlice;
+export const { useUploadSalarySlipMutation, useUploadInvoiceMutation, useGetSalarySlipsQuery } =
+  uploadApiSlice;

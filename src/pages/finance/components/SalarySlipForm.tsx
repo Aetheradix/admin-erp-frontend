@@ -167,9 +167,11 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 
       return {
         ...prev,
-        employeeId: selectedUser.employeeId || selectedUser.id || selectedUser._id || prev.employeeId,
+        employeeId:
+          selectedUser.employeeId || selectedUser.id || selectedUser._id || prev.employeeId,
         employeeName: name || prev.employeeName,
-        position: selectedUser.position || selectedUser.designation || selectedUser.role || prev.position,
+        position:
+          selectedUser.position || selectedUser.designation || selectedUser.role || prev.position,
         accountNumber: selectedUser.accountNumber || selectedUser.bankAccount || prev.accountNumber,
         earnings: updatedEarnings,
       };
@@ -212,7 +214,8 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
       let hasPositiveEarning = false;
       data.earnings.forEach((item, index) => {
         if (!item.name.trim()) errs[`earning_${index}_name`] = 'Name is required.';
-        if (isNaN(item.amount) || item.amount < 0) errs[`earning_${index}_amount`] = 'Amount must be ≥ 0.';
+        if (isNaN(item.amount) || item.amount < 0)
+          errs[`earning_${index}_amount`] = 'Amount must be ≥ 0.';
         if (item.amount > 0) hasPositiveEarning = true;
       });
       if (!hasPositiveEarning) errs.earnings = 'Total earnings must be greater than zero.';
@@ -224,7 +227,8 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
       errs.netPay = 'Total deductions cannot exceed total earnings.';
     }
 
-    if (!data.authorizedSignatory.trim()) errs.authorizedSignatory = 'Authorized Signatory is required.';
+    if (!data.authorizedSignatory.trim())
+      errs.authorizedSignatory = 'Authorized Signatory is required.';
     if (!data.signatoryRole.trim()) errs.signatoryRole = 'Signatory Role is required.';
 
     return errs;
@@ -245,7 +249,9 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     const updatedValue = field === 'amount' ? (value === '' ? 0 : Number(value)) : value;
     setFormData((prev) => ({
       ...prev,
-      earnings: prev.earnings.map((item, i) => (i === index ? { ...item, [field]: updatedValue } : item)),
+      earnings: prev.earnings.map((item, i) =>
+        i === index ? { ...item, [field]: updatedValue } : item
+      ),
     }));
   };
 
@@ -253,7 +259,9 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     const updatedValue = field === 'amount' ? (value === '' ? 0 : Number(value)) : value;
     setFormData((prev) => ({
       ...prev,
-      deductions: prev.deductions.map((item, i) => (i === index ? { ...item, [field]: updatedValue } : item)),
+      deductions: prev.deductions.map((item, i) =>
+        i === index ? { ...item, [field]: updatedValue } : item
+      ),
     }));
   };
 
@@ -274,7 +282,10 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   };
 
   const totalEarnings = formData.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const totalDeductions = formData.deductions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const totalDeductions = formData.deductions.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  );
   const netSalary = totalEarnings - totalDeductions;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -293,8 +304,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
-    >
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white w-full max-w-6xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
@@ -310,8 +320,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
           <button
             type="button"
             onClick={onClose}
-            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition"
-          >
+            className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition">
             <X size={20} />
           </button>
         </div>
@@ -328,26 +337,68 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 
             {/* Slip Details */}
             <section>
-              <SectionTitle icon={<FileText size={18} />} title="Salary Slip Details" description="General period details." />
+              <SectionTitle
+                icon={<FileText size={18} />}
+                title="Salary Slip Details"
+                description="General period details."
+              />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <Input label="Month & Year" value={formData.monthYear} onChange={(e) => updateField('monthYear', e.target.value)} error={errors.monthYear} required />
-                <Input label="Pay Slip Number" value={formData.paySlipNo} onChange={(e) => updateField('paySlipNo', e.target.value)} error={errors.paySlipNo} required />
-                <Input label="Pay Period" value={formData.payPeriod} onChange={(e) => updateField('payPeriod', e.target.value)} error={errors.payPeriod} required />
+                <Input
+                  label="Month & Year"
+                  value={formData.monthYear}
+                  onChange={(e) => updateField('monthYear', e.target.value)}
+                  error={errors.monthYear}
+                  required
+                />
+                <Input
+                  label="Pay Slip Number"
+                  value={formData.paySlipNo}
+                  onChange={(e) => updateField('paySlipNo', e.target.value)}
+                  error={errors.paySlipNo}
+                  required
+                />
+                <Input
+                  label="Pay Period"
+                  value={formData.payPeriod}
+                  onChange={(e) => updateField('payPeriod', e.target.value)}
+                  error={errors.payPeriod}
+                  required
+                />
               </div>
             </section>
 
             {/* Company Details */}
             <section>
-              <SectionTitle icon={<Building2 size={18} />} title="Company Details" description="Organization information." />
+              <SectionTitle
+                icon={<Building2 size={18} />}
+                title="Company Details"
+                description="Organization information."
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <Input label="Company Name" value={formData.companyName} onChange={(e) => updateField('companyName', e.target.value)} error={errors.companyName} required />
-                <Input label="Company Address" value={formData.companyAddress} onChange={(e) => updateField('companyAddress', e.target.value)} error={errors.companyAddress} required />
+                <Input
+                  label="Company Name"
+                  value={formData.companyName}
+                  onChange={(e) => updateField('companyName', e.target.value)}
+                  error={errors.companyName}
+                  required
+                />
+                <Input
+                  label="Company Address"
+                  value={formData.companyAddress}
+                  onChange={(e) => updateField('companyAddress', e.target.value)}
+                  error={errors.companyAddress}
+                  required
+                />
               </div>
             </section>
 
             {/* Employee Details with SINGLE Searchable Select */}
             <section>
-              <SectionTitle icon={<User size={18} />} title="Employee Details" description="Select employee to auto-fill details." />
+              <SectionTitle
+                icon={<User size={18} />}
+                title="Employee Details"
+                description="Select employee to auto-fill details."
+              />
 
               {/* SINGLE Searchable Dropdown */}
               <div className="mt-4 relative" ref={dropdownRef}>
@@ -387,9 +438,13 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                 {isDropdownOpen && (
                   <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                     {isLoadingUsers ? (
-                      <div className="p-3 text-center text-xs text-gray-500">Loading employees...</div>
+                      <div className="p-3 text-center text-xs text-gray-500">
+                        Loading employees...
+                      </div>
                     ) : usersList.length === 0 ? (
-                      <div className="p-3 text-center text-xs text-gray-500">No matching employees found</div>
+                      <div className="p-3 text-center text-xs text-gray-500">
+                        No matching employees found
+                      </div>
                     ) : (
                       usersList.map((user) => {
                         const id = user.id || user._id;
@@ -401,8 +456,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                           <div
                             key={id}
                             onClick={() => handleSelectEmployee(user)}
-                            className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-none transition"
-                          >
+                            className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-none transition">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">{name}</p>
                               <p className="text-xs text-gray-500">{role || 'Employee'}</p>
@@ -420,42 +474,117 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 
               {/* Editable Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <Input label="Employee ID" value={formData.employeeId} onChange={(e) => updateField('employeeId', e.target.value)} error={errors.employeeId} required />
-                <Input label="Employee Name" value={formData.employeeName} onChange={(e) => updateField('employeeName', e.target.value)} error={errors.employeeName} required />
-                <Input label="Position" value={formData.position} onChange={(e) => updateField('position', e.target.value)} error={errors.position} required />
-                <Input label="Account Number" value={formData.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} error={errors.accountNumber} required />
+                <Input
+                  label="Employee ID"
+                  value={formData.employeeId}
+                  onChange={(e) => updateField('employeeId', e.target.value)}
+                  error={errors.employeeId}
+                  required
+                />
+                <Input
+                  label="Employee Name"
+                  value={formData.employeeName}
+                  onChange={(e) => updateField('employeeName', e.target.value)}
+                  error={errors.employeeName}
+                  required
+                />
+                <Input
+                  label="Position"
+                  value={formData.position}
+                  onChange={(e) => updateField('position', e.target.value)}
+                  error={errors.position}
+                  required
+                />
+                <Input
+                  label="Account Number"
+                  value={formData.accountNumber}
+                  onChange={(e) => updateField('accountNumber', e.target.value)}
+                  error={errors.accountNumber}
+                  required
+                />
               </div>
             </section>
 
             {/* Attendance & Payment */}
             <section>
-              <SectionTitle icon={<Calendar size={18} />} title="Attendance & Payment" description="Working days calculation." />
+              <SectionTitle
+                icon={<Calendar size={18} />}
+                title="Attendance & Payment"
+                description="Working days calculation."
+              />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <Input label="Generated On" type="date" value={formData.generatedOn} onChange={(e) => updateField('generatedOn', e.target.value)} error={errors.generatedOn} required />
-                <Input label="Paid Days" type="number" min="0" max="31" value={formData.paidDays} onChange={(e) => updateField('paidDays', Number(e.target.value))} error={errors.paidDays} required />
-                <Input label="LOP Days" type="number" min="0" max="31" value={formData.lopDays} onChange={(e) => updateField('lopDays', Number(e.target.value))} error={errors.lopDays} />
+                <Input
+                  label="Generated On"
+                  type="date"
+                  value={formData.generatedOn}
+                  onChange={(e) => updateField('generatedOn', e.target.value)}
+                  error={errors.generatedOn}
+                  required
+                />
+                <Input
+                  label="Paid Days"
+                  type="number"
+                  min="0"
+                  max="31"
+                  value={formData.paidDays}
+                  onChange={(e) => updateField('paidDays', Number(e.target.value))}
+                  error={errors.paidDays}
+                  required
+                />
+                <Input
+                  label="LOP Days"
+                  type="number"
+                  min="0"
+                  max="31"
+                  value={formData.lopDays}
+                  onChange={(e) => updateField('lopDays', Number(e.target.value))}
+                  error={errors.lopDays}
+                />
               </div>
             </section>
 
             {/* Earnings & Deductions */}
             <section>
-              <SectionTitle icon={<IndianRupee size={18} />} title="Earnings & Deductions" description="Itemized compensation and withholdings." />
+              <SectionTitle
+                icon={<IndianRupee size={18} />}
+                title="Earnings & Deductions"
+                description="Itemized compensation and withholdings."
+              />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                 {/* Earnings */}
                 <div className="border border-gray-200 rounded-2xl overflow-hidden flex flex-col justify-between">
                   <div>
                     <div className="bg-gray-900 text-white px-5 py-4 flex justify-between items-center">
                       <h3 className="font-bold">Earnings</h3>
-                      <button type="button" onClick={addEarning} className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition">
+                      <button
+                        type="button"
+                        onClick={addEarning}
+                        className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition">
                         <Plus size={15} /> Add
                       </button>
                     </div>
                     <div className="p-4 space-y-3">
                       {formData.earnings.map((item, index) => (
                         <div key={index} className="flex gap-2 items-center">
-                          <input type="text" value={item.name} onChange={(e) => updateEarning(index, 'name', e.target.value)} placeholder="Earning name" className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black" />
-                          <input type="number" min="0" value={item.amount} onChange={(e) => updateEarning(index, 'amount', e.target.value)} className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black" />
-                          <button type="button" onClick={() => removeEarning(index)} disabled={formData.earnings.length === 1} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl disabled:opacity-30">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => updateEarning(index, 'name', e.target.value)}
+                            placeholder="Earning name"
+                            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black"
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.amount}
+                            onChange={(e) => updateEarning(index, 'amount', e.target.value)}
+                            className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeEarning(index)}
+                            disabled={formData.earnings.length === 1}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl disabled:opacity-30">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -464,7 +593,9 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                   </div>
                   <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center font-bold text-gray-900">
                     <span>Total Earnings</span>
-                    <span>₹{totalEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    <span>
+                      ₹{totalEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
                 </div>
 
@@ -473,16 +604,34 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                   <div>
                     <div className="bg-gray-900 text-white px-5 py-4 flex justify-between items-center">
                       <h3 className="font-bold">Deductions</h3>
-                      <button type="button" onClick={addDeduction} className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition">
+                      <button
+                        type="button"
+                        onClick={addDeduction}
+                        className="flex items-center gap-1 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition">
                         <Plus size={15} /> Add
                       </button>
                     </div>
                     <div className="p-4 space-y-3">
                       {formData.deductions.map((item, index) => (
                         <div key={index} className="flex gap-2 items-center">
-                          <input type="text" value={item.name} onChange={(e) => updateDeduction(index, 'name', e.target.value)} placeholder="Deduction name" className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black" />
-                          <input type="number" min="0" value={item.amount} onChange={(e) => updateDeduction(index, 'amount', e.target.value)} className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black" />
-                          <button type="button" onClick={() => removeDeduction(index)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => updateDeduction(index, 'name', e.target.value)}
+                            placeholder="Deduction name"
+                            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black"
+                          />
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.amount}
+                            onChange={(e) => updateDeduction(index, 'amount', e.target.value)}
+                            className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-black"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeDeduction(index)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -491,7 +640,9 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                   </div>
                   <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center font-bold text-gray-900">
                     <span>Total Deductions</span>
-                    <span>₹{totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    <span>
+                      ₹{totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -501,26 +652,55 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                 <div>
                   <p className="text-sm text-gray-400 font-medium">Net Payable Salary</p>
                   <p className="text-3xl font-bold">
-                    ₹{netSalary < 0 ? '0.00' : netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹
+                    {netSalary < 0
+                      ? '0.00'
+                      : netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="text-left md:text-right text-sm text-gray-300">
-                  <p>Earnings: ₹{totalEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                  <p>Deductions: ₹{totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                  <p>
+                    Earnings: ₹{totalEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p>
+                    Deductions: ₹
+                    {totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
               </div>
             </section>
 
             {/* Authorization & HR */}
             <section>
-              <SectionTitle icon={<ShieldCheck size={18} />} title="Authorization & HR" description="Signatory details." />
+              <SectionTitle
+                icon={<ShieldCheck size={18} />}
+                title="Authorization & HR"
+                description="Signatory details."
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <Input label="Authorized Signatory" value={formData.authorizedSignatory} onChange={(e) => updateField('authorizedSignatory', e.target.value)} error={errors.authorizedSignatory} required />
-                <Input label="Signatory Role" value={formData.signatoryRole} onChange={(e) => updateField('signatoryRole', e.target.value)} error={errors.signatoryRole} required />
+                <Input
+                  label="Authorized Signatory"
+                  value={formData.authorizedSignatory}
+                  onChange={(e) => updateField('authorizedSignatory', e.target.value)}
+                  error={errors.authorizedSignatory}
+                  required
+                />
+                <Input
+                  label="Signatory Role"
+                  value={formData.signatoryRole}
+                  onChange={(e) => updateField('signatoryRole', e.target.value)}
+                  error={errors.signatoryRole}
+                  required
+                />
               </div>
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">HR Note</label>
-                <textarea rows={3} value={formData.hrNote} onChange={(e) => updateField('hrNote', e.target.value)} className="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-black transition resize-none" />
+                <textarea
+                  rows={3}
+                  value={formData.hrNote}
+                  onChange={(e) => updateField('hrNote', e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-black transition resize-none"
+                />
               </div>
             </section>
           </div>
@@ -530,14 +710,22 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
             <div className="hidden sm:block">
               <span className="text-sm text-gray-500">Net Pay</span>
               <span className="ml-3 text-lg font-bold">
-                ₹{netSalary < 0 ? '0.00' : netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                ₹
+                {netSalary < 0
+                  ? '0.00'
+                  : netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex items-center gap-3 ml-auto">
-              <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:bg-gray-50 transition">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold hover:bg-gray-50 transition">
                 Cancel
               </button>
-              <button type="submit" className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2">
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2">
                 <FileText size={17} /> Create Salary Slip
               </button>
             </div>
@@ -549,7 +737,13 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 };
 
 // Reusable Input Field
-function Input({ label, error, className = '', required, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string }) {
+function Input({
+  label,
+  error,
+  className = '',
+  required,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string }) {
   return (
     <div className={className}>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -567,10 +761,20 @@ function Input({ label, error, className = '', required, ...props }: React.Input
 }
 
 // Section Header Component
-function SectionTitle({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function SectionTitle({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700">{icon}</div>
+      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700">
+        {icon}
+      </div>
       <div>
         <h3 className="font-bold text-gray-900">{title}</h3>
         <p className="text-sm text-gray-500">{description}</p>
