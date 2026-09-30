@@ -355,6 +355,11 @@ export const navItems: NavItem[] = [
         path: '/finance/payroll',
         roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
       },
+      {
+        label: 'My PaySlip',
+        path: '/finance/my-payslip',
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
+      },
     ],
   },
   {
