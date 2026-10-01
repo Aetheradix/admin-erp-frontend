@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import { RoutePermissionGuard } from '@/components/auth/RoutePermissionGuard';
 
 import ResourceBookingPage from './ResourceBooking';
 import MyBookingsPage from './MyBookingsPage';
@@ -19,7 +20,14 @@ const ResourceBookingModule = () => {
       <Route path="calendar" element={<ResourceCalendarPage />} />
 
       {/* Matches /resource-booking/all */}
-      <Route path="all" element={<AllBookingsPage />} />
+      <Route
+        path="all"
+        element={
+          <RoutePermissionGuard permission="resource:manage">
+            <AllBookingsPage />
+          </RoutePermissionGuard>
+        }
+      />
     </Routes>
   );
 };

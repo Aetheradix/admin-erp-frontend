@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { usePermission } from '@/hooks/usePermission';
 import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
@@ -34,6 +35,9 @@ import { EventPassModal } from './components/EventPassModal';
 
 const Events = () => {
   const { user } = useAuth();
+  const { can, isSuperadmin } = usePermission();
+  const canCreate = isSuperadmin || can('event:create') || can('event:manage');
+
   const [registeringEventId, setRegisteringEventId] = useState<string | number | null>(null);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [filters, setFilters] = useState<EventFilters>({
@@ -86,6 +90,15 @@ const Events = () => {
   }, [filters]);
 
   const handleCreate = () => {
+    if (!canCreate) {
+      showToast({
+        severity: 'warn',
+        summary: 'Access Denied',
+        detail: 'You do not have permission to schedule events.',
+        life: 3000,
+      });
+      return;
+    }
     setEditingEvent(null);
     setShowForm(true);
   };
@@ -201,11 +214,15 @@ const Events = () => {
       <PageHeader
         title="Event Planner"
         description="Streamline hostings, manage attendance, and create memorable experiences for the entire team."
-        primaryAction={{
-          label: 'Schedule New Event',
-          onClick: handleCreate,
-          icon: 'pi pi-calendar-plus',
-        }}
+        primaryAction={
+          canCreate
+            ? {
+                label: 'Schedule New Event',
+                onClick: handleCreate,
+                icon: 'pi pi-calendar-plus',
+              }
+            : undefined
+        }
       />
 
       {/* Toolbar */}

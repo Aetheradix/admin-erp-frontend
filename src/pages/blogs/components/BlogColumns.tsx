@@ -3,6 +3,7 @@ import { Edit2, Trash2, Calendar, User, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Avatar } from '@/components/ui/primitives/Avatar';
 import { Button } from '@/components/ui/primitives/Button';
+import { usePermission } from '@/hooks/usePermission';
 import type { Blog } from '../hooks/mockBlogs';
 
 // ─── Status ───────────────────────────────────────────────────────────────────
@@ -129,6 +130,12 @@ interface ActionsCellProps {
 
 export function ActionsCell({ id, onDelete }: ActionsCellProps) {
   const navigate = useNavigate();
+  const { can, isSuperadmin } = usePermission();
+  const canManage = isSuperadmin || can('blog:manage');
+
+  if (!canManage) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-3 justify-end pr-6">

@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { Column, DataTable } from '@/components/ui/composed/DataTable';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
+import { usePermission } from '@/hooks/usePermission';
 import type { Blog } from '@/types/models';
 
 import { useBlogFilters } from './hooks/useBlogFilters';
@@ -12,10 +14,17 @@ import { BlogFeatured } from './components/BlogFeatured';
 const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name'];
 
 const BlogList = () => {
+  const { can, isSuperadmin } = usePermission();
+  const canManage = isSuperadmin || can('blog:manage');
+
   const { searchValue, activeCategory, filters, handleSearchChange, handleCategoryChange } =
     useBlogFilters();
 
   const { blogs, isLoading, isError, handleDelete, navigate } = useBlogs();
+
+  const visibleColumns = useMemo(() => {
+    return canManage ? BLOG_COLUMNS : BLOG_COLUMNS.filter((col) => col.key !== 'actions');
+  }, [canManage]);
 
   if (isLoading) {
     return (
@@ -38,13 +47,17 @@ const BlogList = () => {
       <PageHeader
         title="Digital Narratives"
         description="Curate and command your brand's voice with a premium, high-velocity workspace."
-        primaryAction={{
-          label: 'Craft New Story',
-          onClick: () => navigate('/blogs/create'),
-          icon: 'pi pi-plus',
-          className:
-            'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
-        }}
+        primaryAction={
+          canManage
+            ? {
+                label: 'Craft New Story',
+                onClick: () => navigate('/blogs/create'),
+                icon: 'pi pi-plus',
+                className:
+                  'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
+              }
+            : undefined
+        }
       />
 
       <BlogFeatured blogs={blogs} />
@@ -68,7 +81,7 @@ const BlogList = () => {
           breakpoint="960px"
           rowHover
           dataKey="id">
-          {BLOG_COLUMNS.map((col) => (
+          {visibleColumns.map((col) => (
             <Column
               key={col.key}
               header={col.header}

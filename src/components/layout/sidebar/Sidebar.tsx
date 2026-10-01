@@ -35,6 +35,15 @@ const ROUTE_RBAC_MAP: Record<string, string> = {
   '/finance/expenses': 'expense:view',
   '/tasks': 'task:view',
   '/inventory': 'inventory:view',
+  '/social/blogs': 'blog:view',
+  '/social/gallery': 'gallery:view',
+  '/events': 'event:view',
+  '/calendar': 'checkin:view',
+  '/resource-booking': 'resource:view',
+  '/resource-booking/all': 'resource:manage',
+  '/benefits-perks': 'perk:view',
+  '/benefits-perks/perk-types': 'perk:manage',
+  '/benefits-perks/opt-in-benefits': 'perk:manage',
 };
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {

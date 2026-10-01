@@ -6,6 +6,7 @@ import {
 } from '@/store/api/gallerySlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useState } from 'react';
+import { usePermission } from '@/hooks/usePermission';
 import { GalleryGrid } from './components/GalleryGrid';
 import type { GalleryItem } from '@/types/models';
 import { motion } from 'framer-motion';
@@ -50,6 +51,9 @@ const GalleryStats = ({ total }: { total: number }) => (
 );
 
 const Gallery = () => {
+  const { can, isSuperadmin } = usePermission();
+  const canManage = isSuperadmin || can('gallery:manage');
+
   const { data: items = [], isLoading } = useGetGalleryQuery();
   const [uploadGalleryItem] = useUploadGalleryItemMutation();
   const [deleteGalleryItem] = useDeleteGalleryItemMutation();
@@ -69,6 +73,15 @@ const Gallery = () => {
   });
 
   const handleCreate = () => {
+    if (!canManage) {
+      showToast({
+        severity: 'warn',
+        summary: 'Access Denied',
+        detail: 'You do not have permission to upload assets.',
+        life: 3000,
+      });
+      return;
+    }
     setEditingItem(null);
     setShowForm(true);
   };
@@ -147,13 +160,17 @@ const Gallery = () => {
       <PageHeader
         title="Visual Assets"
         description="A premium repository for high-tech workspaces, team moments, and product visuals."
-        primaryAction={{
-          label: 'Upload New Media',
-          onClick: handleCreate,
-          icon: 'pi pi-cloud-upload',
-          className:
-            'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
-        }}
+        primaryAction={
+          canManage
+            ? {
+                label: 'Upload New Media',
+                onClick: handleCreate,
+                icon: 'pi pi-cloud-upload',
+                className:
+                  'px-8! py-4! rounded-2xl! font-black! tracking-[0.1em] shadow-xl! shadow-primary/25! text-xs!',
+              }
+            : undefined
+        }
       />
 
       <GalleryStats total={items.length} />

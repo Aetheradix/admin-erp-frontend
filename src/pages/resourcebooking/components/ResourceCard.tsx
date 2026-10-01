@@ -1,5 +1,5 @@
 import { Building2, Car, Package, MapPin } from 'lucide-react';
-
+import { usePermission } from '@/hooks/usePermission';
 import type { Resource } from '../types/index.types';
 
 interface ResourceCardProps {
@@ -8,6 +8,8 @@ interface ResourceCardProps {
 }
 
 const ResourceCard = ({ resource, onBook }: ResourceCardProps) => {
+  const { can, isSuperadmin } = usePermission();
+  const canBook = isSuperadmin || can('resource:book') || can('resource:manage');
   const getIcon = () => {
     switch (resource.type.toLowerCase()) {
       case 'room':
@@ -54,12 +56,14 @@ const ResourceCard = ({ resource, onBook }: ResourceCardProps) => {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={onBook}
-        className="mt-5 w-full rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">
-        Book Now
-      </button>
+      {canBook && (
+        <button
+          type="button"
+          onClick={onBook}
+          className="mt-5 w-full rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted">
+          Book Now
+        </button>
+      )}
     </div>
   );
 };

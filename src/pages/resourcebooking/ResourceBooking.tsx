@@ -7,10 +7,14 @@ import AddResourceModal from './components/AddResourceModal';
 import BookingStats from './components/BookingStats';
 
 import { useResourceBookingPage } from './hooks/useResouceBookingPage';
+import { usePermission } from '@/hooks/usePermission';
 
 import type { Resource } from './types/index.types';
 
 const ResourceBooking = () => {
+  const { can, isSuperadmin } = usePermission();
+  const canManage = isSuperadmin || can('resource:manage');
+  const canBook = isSuperadmin || can('resource:book') || can('resource:manage');
   /* ============================================================
      UI STATE
   ============================================================ */
@@ -93,24 +97,26 @@ const ResourceBooking = () => {
 
         <div className="flex items-center gap-3">
           {/* ADD RESOURCE */}
-
-          <button
-            type="button"
-            onClick={() => setAddResourceOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
-            <Plus className="h-4 w-4" />
-            Add Resource
-          </button>
+          {canManage && (
+            <button
+              type="button"
+              onClick={() => setAddResourceOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
+              <Plus className="h-4 w-4" />
+              Add Resource
+            </button>
+          )}
 
           {/* BOOK RESOURCE */}
-
-          <button
-            type="button"
-            onClick={() => openBooking()}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            <Plus className="h-4 w-4" />
-            Book Resource
-          </button>
+          {canBook && (
+            <button
+              type="button"
+              onClick={() => openBooking()}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              <Plus className="h-4 w-4" />
+              Book Resource
+            </button>
+          )}
         </div>
       </div>
 

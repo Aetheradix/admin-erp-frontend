@@ -1,6 +1,7 @@
 import { Edit2, Maximize2, Trash2 } from 'lucide-react';
-import type { GalleryItem } from '../hooks/mockGallery';
 import { motion } from 'framer-motion';
+import { usePermission } from '@/hooks/usePermission';
+import type { GalleryItem } from '../hooks/mockGallery';
 
 interface GalleryCardProps {
   item: GalleryItem;
@@ -10,6 +11,8 @@ interface GalleryCardProps {
 }
 
 export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps) => {
+  const { can, isSuperadmin } = usePermission();
+  const canManage = isSuperadmin || can('gallery:manage');
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -61,21 +64,23 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
             </div>
           </div>
 
-          <div className="flex gap-3 pt-6 border-t border-white/10">
-            <button
-              className="flex-1 h-12 rounded-2xl bg-white text-primary hover:bg-primary-hover hover:text-white font-black text-[10px] uppercase tracking-widest gap-2 flex items-center justify-center transition-all active:scale-95 shadow-lg"
-              onClick={() => onEdit(String(item.id))}
-              aria-label={`Edit details for ${item.title}`}>
-              <Edit2 size={14} />
-              Customize
-            </button>
-            <button
-              className="w-12 h-12 rounded-2xl bg-white/10 text-white hover:bg-red-500 hover:text-white border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center active:scale-95"
-              onClick={() => onDelete(String(item.id))}
-              aria-label={`Delete ${item.title} from gallery`}>
-              <Trash2 size={18} />
-            </button>
-          </div>
+          {canManage && (
+            <div className="flex gap-3 pt-6 border-t border-white/10">
+              <button
+                className="flex-1 h-12 rounded-2xl bg-white text-primary hover:bg-primary-hover hover:text-white font-black text-[10px] uppercase tracking-widest gap-2 flex items-center justify-center transition-all active:scale-95 shadow-lg"
+                onClick={() => onEdit(String(item.id))}
+                aria-label={`Edit details for ${item.title}`}>
+                <Edit2 size={14} />
+                Customize
+              </button>
+              <button
+                className="w-12 h-12 rounded-2xl bg-white/10 text-white hover:bg-red-500 hover:text-white border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center active:scale-95"
+                onClick={() => onDelete(String(item.id))}
+                aria-label={`Delete ${item.title} from gallery`}>
+                <Trash2 size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
