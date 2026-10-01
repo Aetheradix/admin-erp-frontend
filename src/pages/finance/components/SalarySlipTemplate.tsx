@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 // import arxLogoFromAssets from '../../assets/ARX_Logo_White_v3.webp';
-import arxLogoFromAssets from '@/assets/ARX_Logo_White_v3.webp';
+import arxLogoFromAssets from '@/assets/ARX_Logo_Black_v9_PlainSVG.svg';
 
 export interface EarningsItem {
   id?: string;
