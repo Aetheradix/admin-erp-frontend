@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   X,
   Plus,
@@ -15,9 +15,7 @@ import {
   ChevronDown,
   Search,
 } from 'lucide-react';
-
-// Adjust this import path to point to your actual getUsers query/API module
-import { useGetUsersQuery as getUsers } from '@/store/api/userSlice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
 
 export interface EarningsItem {
   name: string;
@@ -63,7 +61,56 @@ interface SalarySlipFormProps {
   fetchUsers?: (query?: string) => Promise<any[]>;
 }
 
-const initialForm: SalarySlipData = {
+// Safely extract employee full name across common API formats
+const getEmployeeName = (user: any): string => {
+  if (!user) return '';
+  if (typeof user === 'string') return user;
+
+  if (user.name) return String(user.name);
+  if (user.employeeName) return String(user.employeeName);
+  if (user.fullName) return String(user.fullName);
+  if (user.displayName) return String(user.displayName);
+
+  if (user.firstName || user.lastName) {
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  }
+
+  if (user.user && typeof user.user === 'object') {
+    const nestedName = getEmployeeName(user.user);
+    if (nestedName) return nestedName;
+  }
+  if (user.profile && typeof user.profile === 'object') {
+    const nestedName = getEmployeeName(user.profile);
+    if (nestedName) return nestedName;
+  }
+
+  if (user.username) return String(user.username);
+  if (user.email) return String(user.email).split('@')[0];
+
+  const fallbackId = user.employeeId ?? user.id ?? user._id;
+  return fallbackId !== undefined && fallbackId !== null ? String(fallbackId) : 'Employee';
+};
+
+// Safely extract user list if backend wraps array in response objects
+const extractUserArray = (data: any): any[] => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.users)) return data.users;
+  if (data && Array.isArray(data.data)) return data.data;
+  if (data && Array.isArray(data.results)) return data.results;
+  if (data && Array.isArray(data.employees)) return data.employees;
+  return [];
+};
+
+// Get system current date in local YYYY-MM-DD format
+const getLocalSystemDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getInitialForm = (): SalarySlipData => ({
   monthYear: 'JUNE 2026',
   paySlipNo: '0626001',
   payPeriod: '01 June - 30 June',
@@ -79,7 +126,7 @@ const initialForm: SalarySlipData = {
   paidDays: 22,
   lopDays: 0,
 
-  generatedOn: new Date().toISOString().split('T')[0],
+  generatedOn: getLocalSystemDate(),
 
   earnings: [
     { name: 'Basic Pay', amount: 0 },
@@ -98,20 +145,72 @@ const initialForm: SalarySlipData = {
   signatoryRole: '(Director)',
 
   hrNote: 'For any discrepancies, please contact the HR department within 3 working days.',
-};
+});
 
 const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) => {
-  const [formData, setFormData] = useState<SalarySlipData>(initialForm);
+  const [formData, setFormData] = useState<SalarySlipData>(getInitialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Employee Dropdown States
-  const [usersList, setUsersList] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
+  // 1. Fetch via RTK Query Hook when fetchUsers prop is NOT passed
+  const { data: rtkUsersData, isLoading: isRtkLoading } = useGetUsersQuery(undefined, {
+    skip: !!fetchUsers,
+  });
+
+  // 2. Fetch via custom fetchUsers prop when provided
+  const [customUsersList, setCustomUsersList] = useState<any[]>([]);
+  const [isCustomLoading, setIsCustomLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!fetchUsers) return;
+    let isMounted = true;
+    setIsCustomLoading(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const data = await fetchUsers(searchTerm);
+        if (isMounted) {
+          setCustomUsersList(extractUserArray(data));
+        }
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+      } finally {
+        if (isMounted) setIsCustomLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [searchTerm, fetchUsers]);
+
+  // Normalize user array from either source
+  const rawUsersList = useMemo(() => {
+    return fetchUsers ? customUsersList : extractUserArray(rtkUsersData);
+  }, [fetchUsers, customUsersList, rtkUsersData]);
+
+  const isLoadingUsers = fetchUsers ? isCustomLoading : isRtkLoading;
+
+  // Filter users based on calculated name, employee ID, or role
+  const displayedUsers = useMemo(() => {
+    if (!Array.isArray(rawUsersList)) return [];
+    if (!searchTerm.trim()) return rawUsersList;
+
+    const term = searchTerm.toLowerCase();
+    return rawUsersList.filter((user) => {
+      const name = getEmployeeName(user).toLowerCase();
+      const empId = String(user.employeeId ?? user.id ?? user._id ?? '').toLowerCase();
+      const position = String(user.position ?? user.designation ?? user.role ?? '').toLowerCase();
+      return name.includes(term) || empId.includes(term) || position.includes(term);
+    });
+  }, [rawUsersList, searchTerm]);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -122,44 +221,22 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch Users using getUsers query
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadUsers = async () => {
-      try {
-        setIsLoadingUsers(true);
-        const queryFn = (fetchUsers || getUsers) as (query?: string) => Promise<any[]>;
-        const data = await queryFn(searchTerm);
-        if (isMounted) {
-          setUsersList(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error('Failed to execute getUsers query:', err);
-      } finally {
-        if (isMounted) setIsLoadingUsers(false);
-      }
-    };
-
-    const timer = setTimeout(() => {
-      loadUsers(); // <-- Ensure loadUsers() is actually invoked here
-    }, 300);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-    };
-  }, [searchTerm, fetchUsers]);
-
-  // Single function to handle employee selection & auto-fill
+  // Handle employee selection & auto-fill with explicit String conversions
   const handleSelectEmployee = (selectedUser: any) => {
-    const name = selectedUser.name || selectedUser.employeeName || selectedUser.fullName || '';
+    const name = getEmployeeName(selectedUser);
     setSearchTerm(name);
     setIsDropdownOpen(false);
 
+    const empId = selectedUser.employeeId ?? selectedUser.id ?? selectedUser._id;
+    const pos = selectedUser.position ?? selectedUser.designation ?? selectedUser.role;
+    const acc = selectedUser.accountNumber ?? selectedUser.bankAccount;
+
     setFormData((prev) => {
       const updatedEarnings = prev.earnings.map((earning) => {
-        if (earning.name.toLowerCase().includes('basic') && selectedUser.basicSalary) {
+        if (
+          earning.name.toLowerCase().includes('basic') &&
+          selectedUser.basicSalary !== undefined
+        ) {
           return { ...earning, amount: Number(selectedUser.basicSalary) || earning.amount };
         }
         return earning;
@@ -167,12 +244,10 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 
       return {
         ...prev,
-        employeeId:
-          selectedUser.employeeId || selectedUser.id || selectedUser._id || prev.employeeId,
+        employeeId: empId !== undefined && empId !== null ? String(empId) : prev.employeeId,
         employeeName: name || prev.employeeName,
-        position:
-          selectedUser.position || selectedUser.designation || selectedUser.role || prev.position,
-        accountNumber: selectedUser.accountNumber || selectedUser.bankAccount || prev.accountNumber,
+        position: pos !== undefined && pos !== null ? String(pos) : prev.position,
+        accountNumber: acc !== undefined && acc !== null ? String(acc) : prev.accountNumber,
         earnings: updatedEarnings,
       };
     });
@@ -187,23 +262,31 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     });
   };
 
-  // Form Validation
+  const clearEmployeeSearch = () => {
+    setSearchTerm('');
+    setIsDropdownOpen(true);
+  };
+
+  // Safe helper to trim values regardless of primitive type (string/number)
+  const safeTrim = (val: any): string => String(val ?? '').trim();
+
+  // Crash-proof Form Validation
   const validate = (data: SalarySlipData): Record<string, string> => {
     const errs: Record<string, string> = {};
 
-    if (!data.monthYear.trim()) errs.monthYear = 'Month & Year is required.';
-    if (!data.paySlipNo.trim()) errs.paySlipNo = 'Pay Slip Number is required.';
-    if (!data.payPeriod.trim()) errs.payPeriod = 'Pay Period is required.';
+    if (!safeTrim(data.monthYear)) errs.monthYear = 'Month & Year is required.';
+    if (!safeTrim(data.paySlipNo)) errs.paySlipNo = 'Pay Slip Number is required.';
+    if (!safeTrim(data.payPeriod)) errs.payPeriod = 'Pay Period is required.';
 
-    if (!data.companyName.trim()) errs.companyName = 'Company Name is required.';
-    if (!data.companyAddress.trim()) errs.companyAddress = 'Company Address is required.';
+    if (!safeTrim(data.companyName)) errs.companyName = 'Company Name is required.';
+    if (!safeTrim(data.companyAddress)) errs.companyAddress = 'Company Address is required.';
 
-    if (!data.employeeId.trim()) errs.employeeId = 'Employee ID is required.';
-    if (!data.employeeName.trim()) errs.employeeName = 'Employee Name is required.';
-    if (!data.position.trim()) errs.position = 'Position / Title is required.';
-    if (!data.accountNumber.trim()) errs.accountNumber = 'Bank Account Number is required.';
+    if (!safeTrim(data.employeeId)) errs.employeeId = 'Employee ID is required.';
+    if (!safeTrim(data.employeeName)) errs.employeeName = 'Employee Name is required.';
+    if (!safeTrim(data.position)) errs.position = 'Position / Title is required.';
+    if (!safeTrim(data.accountNumber)) errs.accountNumber = 'Bank Account Number is required.';
 
-    if (!data.generatedOn) errs.generatedOn = 'Generated On date is required.';
+    if (!safeTrim(data.generatedOn)) errs.generatedOn = 'Generated On date is required.';
     if (isNaN(data.paidDays) || data.paidDays < 0 || data.paidDays > 31) {
       errs.paidDays = 'Paid days must be between 0 and 31.';
     }
@@ -213,7 +296,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     } else {
       let hasPositiveEarning = false;
       data.earnings.forEach((item, index) => {
-        if (!item.name.trim()) errs[`earning_${index}_name`] = 'Name is required.';
+        if (!safeTrim(item.name)) errs[`earning_${index}_name`] = 'Name is required.';
         if (isNaN(item.amount) || item.amount < 0)
           errs[`earning_${index}_amount`] = 'Amount must be ≥ 0.';
         if (item.amount > 0) hasPositiveEarning = true;
@@ -227,9 +310,9 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
       errs.netPay = 'Total deductions cannot exceed total earnings.';
     }
 
-    if (!data.authorizedSignatory.trim())
+    if (!safeTrim(data.authorizedSignatory))
       errs.authorizedSignatory = 'Authorized Signatory is required.';
-    if (!data.signatoryRole.trim()) errs.signatoryRole = 'Signatory Role is required.';
+    if (!safeTrim(data.signatoryRole)) errs.signatoryRole = 'Signatory Role is required.';
 
     return errs;
   };
@@ -392,7 +475,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
               </div>
             </section>
 
-            {/* Employee Details with SINGLE Searchable Select */}
+            {/* Employee Details with Searchable Select */}
             <section>
               <SectionTitle
                 icon={<User size={18} />}
@@ -400,7 +483,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                 description="Select employee to auto-fill details."
               />
 
-              {/* SINGLE Searchable Dropdown */}
+              {/* Searchable Dropdown */}
               <div className="mt-4 relative" ref={dropdownRef}>
                 <label className="block text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-2">
                   <UserCheck size={18} className="text-black" />
@@ -418,10 +501,19 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                       setIsDropdownOpen(true);
                     }}
                     placeholder="Type name or ID to search employee..."
-                    className="w-full border border-gray-200 rounded-xl pl-9 pr-10 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition"
+                    className="w-full border border-gray-200 rounded-xl pl-9 pr-16 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition"
                   />
 
                   <div className="absolute right-3 top-2.5 flex items-center gap-1 text-gray-400">
+                    {searchTerm && (
+                      <button
+                        type="button"
+                        onClick={clearEmployeeSearch}
+                        className="p-0.5 hover:text-black hover:bg-gray-100 rounded-md transition"
+                        title="Clear search">
+                        <X size={15} />
+                      </button>
+                    )}
                     {isLoadingUsers ? (
                       <Loader2 size={16} className="animate-spin text-black" />
                     ) : (
@@ -441,28 +533,31 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                       <div className="p-3 text-center text-xs text-gray-500">
                         Loading employees...
                       </div>
-                    ) : usersList.length === 0 ? (
+                    ) : displayedUsers.length === 0 ? (
                       <div className="p-3 text-center text-xs text-gray-500">
                         No matching employees found
                       </div>
                     ) : (
-                      usersList.map((user) => {
-                        const id = user.id || user._id;
-                        const name = user.name || user.employeeName || user.fullName;
-                        const empId = user.employeeId || id;
+                      displayedUsers.map((user, idx) => {
+                        const id = user.id || user._id || user.employeeId || `emp-${idx}`;
+                        const name = getEmployeeName(user);
+                        const empId = user.employeeId ?? user.id ?? user._id ?? 'N/A';
                         const role = user.position || user.designation || user.role || '';
+                        const account = user.accountNumber || user.bankAccount || '';
 
                         return (
                           <div
                             key={id}
                             onClick={() => handleSelectEmployee(user)}
-                            className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-none transition">
+                            className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-none transition">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">{name}</p>
-                              <p className="text-xs text-gray-500">{role || 'Employee'}</p>
+                              <p className="text-xs text-gray-500">
+                                {role || 'Employee'} {account ? `• Acc: ${account}` : ''}
+                              </p>
                             </div>
-                            <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 font-mono">
-                              {empId}
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 font-mono font-medium">
+                              {String(empId)}
                             </span>
                           </div>
                         );
