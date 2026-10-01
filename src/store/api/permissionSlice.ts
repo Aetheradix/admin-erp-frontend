@@ -1,15 +1,37 @@
 import { apiSlice } from './apiSlice';
 
+interface MyPermissionsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    userId: number;
+    username: string;
+    email: string;
+    department: string;
+    status: string;
+    roles: string[];
+    isSuperadmin: boolean;
+    permissions: string[];
+    teamScopes: {
+      roleId: number;
+      roleName: string;
+      teamId: number | null;
+      teamName: string | null;
+    }[];
+  };
+}
+
 export const permissionSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getFeaturePermissions: builder.query<any[], void>({
       query: () => '/feature-permissions',
       providesTags: ['Permissions'],
     }),
-    getMyPermissions: builder.query<Record<string, boolean>, void>({
-      query: () => '/feature-permissions/my',
-      providesTags: ['Permissions'],
-    }),
+    getMyPermissions: builder.query<MyPermissionsResponse, void>({
+  query: () => '/feature-permissions/my',
+  providesTags: ['Permissions'],
+}),
+
     toggleFeature: builder.mutation<
       any,
       { feature_name: string; department: string; is_enabled: boolean }

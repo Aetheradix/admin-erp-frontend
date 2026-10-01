@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { useUploadInvoiceMutation as useUploadFileMutation } from '@/store/api/uploadSlice';
 
 import { Table, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -15,7 +14,7 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 
 import SalarySlipForm from './components/SalarySlipForm';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
-
+import { useUploadSalarySlipMutation } from '@/store/api/uploadSlice';
 import type { SalarySlipData } from './components/SalarySlipForm';
 
 interface PayrollRecord extends SalarySlipData {
@@ -30,8 +29,8 @@ interface PayrollRecord extends SalarySlipData {
 export function PayrollPage() {
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
 
-  const [uploadFile, { isLoading: isUploadingPdf }] = useUploadFileMutation();
-
+  const isUploadingPdf = false; 
+   const [createSalarySlip] = useUploadSalarySlipMutation();
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
 
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
@@ -109,92 +108,102 @@ export function PayrollPage() {
 
     return blob;
   };
-
+  
   const handleCreateSalarySlip = async (data: SalarySlipData) => {
+  try {
+    message.loading({
+      content: 'Generating salary slip...',
+      key: 'salary-pdf',
+    });
+
+    // 1. Calculate totals
+    const totalEarnings = data.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const totalDeductions = data.deductions.reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    );
+
+    const base =
+      data.earnings.find((item) => item.name.trim().toLowerCase() === 'basic pay')?.amount || 0;
+    const bonus =
+      data.earnings.find((item) => item.name.trim().toLowerCase() === 'bonus')?.amount || 0;
+
+    const netSalary = totalEarnings - totalDeductions;
+
+    const newRecord: PayrollRecord = {
+      ...data,
+      id: Date.now(),
+      base: Number(base),
+      bonus: Number(bonus),
+      total: Number(netSalary),
+      date: data.monthYear,
+    };
+
+    setSelectedSlip(newRecord);
+    setShowSlip(true);
+
+    // 2. Generate PDF blob in browser memory
+    const pdfBlob = await generateSalarySlipPdf(newRecord);
+
+    let salarySlipUrl = '';
+    let recordId = newRecord.id;
+
+    // 3. Trigger RTK Query Mutation with FormData
     try {
       message.loading({
-        content: 'Generating salary slip...',
+        content: 'Uploading salary slip to database...',
         key: 'salary-pdf',
-      });
+      });  
 
-      const totalEarnings = data.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const totalDeductions = data.deductions.reduce(
-        (sum, item) => sum + Number(item.amount || 0),
-        0
-      );
+      // Execute RTK Query mutation and unwrap the response
+      const uploadResponse = await createSalarySlip({
+  file: pdfBlob,
+  employeeId:  Number(data.employeeId),
+  employeeName: data.employeeName,
+  monthYear: data.monthYear,
+  netSalary,
+  paidDays: data.paidDays,
+}).unwrap();
 
-      const base =
-        data.earnings.find((item) => item.name.trim().toLowerCase() === 'basic pay')?.amount || 0;
-      const bonus =
-        data.earnings.find((item) => item.name.trim().toLowerCase() === 'bonus')?.amount || 0;
+      console.log('Salary slip saved successfully:', uploadResponse);
 
-      const netSalary = totalEarnings - totalDeductions;
+      const responseData = uploadResponse?.data;
 
-      const newRecord: PayrollRecord = {
-        ...data,
-        id: Date.now(),
-        base: Number(base),
-        bonus: Number(bonus),
-        total: Number(netSalary),
-        date: data.monthYear,
-      };
-
-      setSelectedSlip(newRecord);
-      setShowSlip(true);
-
-      // Generate PDF in client memory
-      const pdfBlob = await generateSalarySlipPdf(newRecord);
-
-      let salarySlipUrl = '';
-      let recordId = newRecord.id;
-
-      // Try uploading to cloud (background attempt, non-blocking for downloads)
-      try {
-        message.loading({
-          content: 'Uploading salary slip to cloud...',
-          key: 'salary-pdf',
-        });
-
-        const uploadResponse = await uploadFile({ file: pdfBlob }).unwrap();
-        console.log('Salary slip uploaded:', uploadResponse);
-
-        // Safely type-cast response data to allow both salarySlipUrl and invoiceUrl without TS errors
-        const responseData = uploadResponse?.data as
-          { id?: number; salarySlipUrl?: string; invoiceUrl?: string } | undefined;
-
-        if (responseData?.salarySlipUrl || responseData?.invoiceUrl) {
-          salarySlipUrl = responseData.salarySlipUrl || responseData.invoiceUrl || '';
-        }
-        if (responseData?.id) {
-          recordId = responseData.id;
-        }
-      } catch (uploadError) {
-        console.warn('Cloud upload failed, keeping client-generated record:', uploadError);
+      // Extract generated DB record ID and Cloud URL
+      if (responseData?.salarySlipUrl) {
+        salarySlipUrl = responseData.salarySlipUrl;
       }
-
-      const savedRecord: PayrollRecord = {
-        ...newRecord,
-        id: recordId,
-        salarySlipUrl,
-      };
-
-      setPayroll((previous) => [savedRecord, ...previous]);
-      setSelectedSlip(savedRecord);
-      setShowSalarySlipForm(false);
-
-      message.success({
-        content: 'Salary slip created successfully.',
-        key: 'salary-pdf',
-      });
-    } catch (error) {
-      console.error('Salary slip creation failed:', error);
-
-      message.error({
-        content: error instanceof Error ? error.message : 'Unable to create salary slip.',
-        key: 'salary-pdf',
-      });
+      if (responseData?.id) {
+        recordId = responseData.id;
+      }
+    } catch (uploadError) {
+      console.warn('Backend API upload failed, preserving local record:', uploadError);
     }
-  };
+
+    // 4. Update UI state with finalized record
+    const savedRecord: PayrollRecord = {
+      ...newRecord,
+      id: recordId,
+      salarySlipUrl,
+    };
+
+    setPayroll((previous) => [savedRecord, ...previous]);
+    setSelectedSlip(savedRecord);
+    setShowSalarySlipForm(false);
+
+    message.success({
+      content: 'Salary slip created successfully.',
+      key: 'salary-pdf',
+    });
+  } catch (error) {
+    console.error('Salary slip process failed:', error);
+
+    message.error({
+      content: error instanceof Error ? error.message : 'Unable to create salary slip.',
+      key: 'salary-pdf',
+    });
+  }
+};
 
   const downloadSalarySlip = async (record: PayrollRecord) => {
     try {
