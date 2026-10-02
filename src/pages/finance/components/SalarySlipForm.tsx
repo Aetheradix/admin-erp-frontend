@@ -39,6 +39,8 @@ export interface SalarySlipData {
   employeeName: string;
   position: string;
   accountNumber: string;
+  total?: number;       // Added optional total
+  netSalary?: number;
 
   paidDays: number;
   lopDays: number;

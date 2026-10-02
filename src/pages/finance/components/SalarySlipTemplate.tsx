@@ -18,7 +18,6 @@ export interface SalarySlipData {
   monthYear: string;
   paySlipNo: string;
   payPeriod: string;
-
   companyName: string;
   companyAddress: string;
 
@@ -46,10 +45,11 @@ export interface SalarySlipData {
   currencySymbol?: string;
   watermarkText?: string;
   netPayInWords?: string;
+  total?: number; // ADD THIS LINE TO RESOLVE TS2339
 }
 
-interface SalarySlipTemplateProps {
-  data: SalarySlipData;
+export interface SalarySlipTemplateProps {
+  data: Partial<SalarySlipData>; // Change from SalarySlipData to Partial<SalarySlipData>
 }
 
 /* =========================================================
@@ -164,39 +164,33 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
   const currencySymbol = data.currencySymbol || '₹';
   const watermarkText = data.watermarkText || 'ARX';
 
-  const totalEarnings = data.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  // Inside SalarySlipTemplate.tsx
 
-  const totalDeductions = data.deductions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+// Safe fallback references
+const earnings = data.earnings || [];
+const deductions = data.deductions || [];
 
-  const netPay = totalEarnings - totalDeductions;
+// 1. Calculate totals safely
+const totalEarnings = earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+const totalDeductions = deductions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
-  const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
+// 2. Calculate row count safely
+const maxRows = Math.max(4, earnings.length, deductions.length);
 
-  /*
-   * Keep both tables the same height.
-   * Minimum of 4 rows as in the new design.
-   */
-  const maxRows = Math.max(4, data.earnings.length, data.deductions.length);
+// 3. Create padded copies safely using spread operator
+const paddedEarnings = [...earnings];
+while (paddedEarnings.length < maxRows) {
+  paddedEarnings.push({ name: '', amount: 0 });
+}
 
-  const paddedEarnings = [...data.earnings];
+const paddedDeductions = [...deductions];
+while (paddedDeductions.length < maxRows) {
+  paddedDeductions.push({ name: '', amount: 0 });
+}
 
-  while (paddedEarnings.length < maxRows) {
-    paddedEarnings.push({
-      id: `padding-earning-${paddedEarnings.length}`,
-      name: '',
-      amount: 0,
-    });
-  }
+const netPay = data.total ?? (totalEarnings - totalDeductions);
+const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
 
-  const paddedDeductions = [...data.deductions];
-
-  while (paddedDeductions.length < maxRows) {
-    paddedDeductions.push({
-      id: `padding-deduction-${paddedDeductions.length}`,
-      name: '',
-      amount: 0,
-    });
-  }
 
   return (
     <div

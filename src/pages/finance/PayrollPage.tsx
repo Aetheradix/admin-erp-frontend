@@ -1,63 +1,131 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 import { Table, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 import { MoreHorizontal, User, Calendar, Download, Eye, Plus } from 'lucide-react';
-
 import { motion } from 'framer-motion';
 
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-
 import SalarySlipForm from './components/SalarySlipForm';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
-import { useUploadSalarySlipMutation } from '@/store/api/uploadSlice';
+
+import { useGetAllSalarySlipsQuery, useUploadSalarySlipMutation } from '@/store/api/uploadSlice';
+import type { SalarySlipItem } from '@/store/api/uploadSlice';
 import type { SalarySlipData } from './components/SalarySlipForm';
 
-interface PayrollRecord extends SalarySlipData {
+export interface PayrollRecord extends Partial<SalarySlipData> {
   id: number;
+  employeeId: string;
+  employeeName: string;
+  position: string;
+  monthYear: string;
+  paidDays: number;
   base: number;
   bonus: number;
   total: number;
   date: string;
   salarySlipUrl?: string;
+  earnings: { name: string; amount: number }[];
+  deductions: { name: string; amount: number }[];
 }
 
 export function PayrollPage() {
+  // 1. Query ALL salary slips
+  const { data: rawData, isLoading: isFetching, isError } = useGetAllSalarySlipsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  const [createSalarySlip, { isLoading: isUploadingPdf }] = useUploadSalarySlipMutation();
+
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
-
-  const isUploadingPdf = false; 
-   const [createSalarySlip] = useUploadSalarySlipMutation();
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
-
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
-
   const [showSlip, setShowSlip] = useState(false);
 
   const slipRef = useRef<HTMLDivElement>(null);
+  
+  // Inside src/pages/finance/PayrollPage.tsx
 
+useEffect(() => {
+  if (rawData) {
+    const itemsList: SalarySlipItem[] = rawData.data || (Array.isArray(rawData) ? rawData : []);
+    
+    const formattedRecords: PayrollRecord[] = itemsList.map((item) => {
+      const rawItem = item as Record<string, any>;
+
+      const basePay = Number(rawItem.base_amount || rawItem.base_pay || 0);
+      const bonusPay = Number(rawItem.bonus_amount || rawItem.bonus || 0);
+      const netSalary = Number(rawItem.total_amount || rawItem.net_salary || basePay + bonusPay);
+      const formattedDate = String(rawItem.month_year || rawItem.created_at || 'N/A');
+      const position = String(rawItem.employee_position || rawItem.position || 'Employee');
+
+      return {
+        // 1. PayrollRecord specific properties
+        id: Number(rawItem.id || Date.now()),
+        base: basePay,
+        bonus: bonusPay,
+        total: netSalary,
+        date: formattedDate,
+        salarySlipUrl: String(rawItem.salary_slip_url || ''),
+
+        // 2. Inherited SalarySlipData properties
+        employeeId: rawItem.user_id ? String(rawItem.user_id) : '0',
+        employeeName: String(rawItem.employee_name || 'Unnamed Employee'),
+        position: position,
+        monthYear: formattedDate,
+        paidDays: Number(rawItem.paid_days || 30),
+
+        // Template Header & Details
+        paySlipNo: `SLIP-${rawItem.id || Date.now()}`,
+        payPeriod: formattedDate,
+        companyName: 'Company Name',
+        companyAddress: 'Company Address',
+        department: 'General',
+        bankName: 'N/A',
+        accountNo: 'N/A',
+        panNo: 'N/A',
+        pfNo: 'N/A',
+        designation: position,
+
+        // 3. FIX: MISSING PROPERTIES REQUIRED BY YOUR INTERFACE
+        accountNumber: 'N/A',
+        lopDays: 0,
+        generatedOn: new Date().toLocaleDateString(),
+        authorizedSignatory: 'Authorized Signatory',
+        netPayable: netSalary,
+        netPayableInWords: '',
+
+        // Explicitly typed arrays
+        earnings: [
+          { name: 'Basic Pay', amount: basePay },
+          ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+        ] as { name: string; amount: number }[],
+
+        deductions: [] as { name: string; amount: number }[],
+      };
+    });
+
+    setPayroll(formattedRecords);
+  }
+}, [rawData]);
+   
+
+
+  // PDF Generation Logic
   const generateSalarySlipPdf = async (record: PayrollRecord): Promise<Blob> => {
     setSelectedSlip(record);
     setShowSlip(true);
 
-    // Wait for SalarySlipTemplate to render in DOM
     await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          resolve();
-        });
-      });
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     });
-
-    // Small additional delay to ensure fonts/layout/images finish rendering
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    if (!slipRef.current) {
-      throw new Error('Salary slip template could not be found.');
-    }
+    if (!slipRef.current) throw new Error('Salary slip template not rendered.');
 
     const canvas = await html2canvas(slipRef.current, {
       scale: 2,
@@ -65,182 +133,88 @@ export function PayrollPage() {
       allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
-      imageTimeout: 15000,
     });
 
     const imgData = canvas.toDataURL('image/png', 1);
-
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-      compress: true,
-    });
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
 
     const pdfWidth = 210;
     const pdfHeight = 297;
-
-    const imageWidth = pdfWidth;
-    const imageHeight = (canvas.height * imageWidth) / canvas.width;
+    const imageHeight = (canvas.height * pdfWidth) / canvas.width;
 
     if (imageHeight <= pdfHeight) {
-      pdf.addImage(imgData, 'PNG', 0, 0, imageWidth, imageHeight);
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
     } else {
       let remainingHeight = imageHeight;
       let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imageWidth, imageHeight);
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imageHeight);
       remainingHeight -= pdfHeight;
 
       while (remainingHeight > 0) {
         position -= pdfHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imageWidth, imageHeight);
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imageHeight);
         remainingHeight -= pdfHeight;
       }
     }
 
-    const blob = pdf.output('blob');
-
-    if (!(blob instanceof Blob)) {
-      throw new Error('Generated PDF is not a valid Blob.');
-    }
-
-    return blob;
+    return pdf.output('blob');
   };
-  
+
   const handleCreateSalarySlip = async (data: SalarySlipData) => {
-  try {
-    message.loading({
-      content: 'Generating salary slip...',
-      key: 'salary-pdf',
-    });
-
-    // 1. Calculate totals
-    const totalEarnings = data.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    const totalDeductions = data.deductions.reduce(
-      (sum, item) => sum + Number(item.amount || 0),
-      0
-    );
-
-    const base =
-      data.earnings.find((item) => item.name.trim().toLowerCase() === 'basic pay')?.amount || 0;
-    const bonus =
-      data.earnings.find((item) => item.name.trim().toLowerCase() === 'bonus')?.amount || 0;
-
-    const netSalary = totalEarnings - totalDeductions;
-
-    const newRecord: PayrollRecord = {
-      ...data,
-      id: Date.now(),
-      base: Number(base),
-      bonus: Number(bonus),
-      total: Number(netSalary),
-      date: data.monthYear,
-    };
-
-    setSelectedSlip(newRecord);
-    setShowSlip(true);
-
-    // 2. Generate PDF blob in browser memory
-    const pdfBlob = await generateSalarySlipPdf(newRecord);
-
-    let salarySlipUrl = '';
-    let recordId = newRecord.id;
-
-    // 3. Trigger RTK Query Mutation with FormData
     try {
-      message.loading({
-        content: 'Uploading salary slip to database...',
-        key: 'salary-pdf',
-      });  
+      message.loading({ content: 'Generating salary slip...', key: 'salary-pdf' });
 
-      // Execute RTK Query mutation and unwrap the response
-      const uploadResponse = await createSalarySlip({
-  file: pdfBlob,
-  employeeId:  Number(data.employeeId),
-  employeeName: data.employeeName,
-  monthYear: data.monthYear,
-  netSalary,
-  paidDays: data.paidDays,
-}).unwrap();
+      const totalEarnings = data.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const totalDeductions = data.deductions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
-      console.log('Salary slip saved successfully:', uploadResponse);
+      const base = data.earnings.find((i) => i.name.trim().toLowerCase() === 'basic pay')?.amount || 0;
+      const bonus = data.earnings.find((i) => i.name.trim().toLowerCase() === 'bonus')?.amount || 0;
+      const netSalary = totalEarnings - totalDeductions;
 
-      const responseData = uploadResponse?.data;
+      const newRecord: PayrollRecord = {
+        ...data,
+        id: Date.now(),
+        base: Number(base),
+        bonus: Number(bonus),
+        total: Number(netSalary),
+        date: data.monthYear,
+      };
 
-      // Extract generated DB record ID and Cloud URL
-      if (responseData?.salarySlipUrl) {
-        salarySlipUrl = responseData.salarySlipUrl;
-      }
-      if (responseData?.id) {
-        recordId = responseData.id;
-      }
-    } catch (uploadError) {
-      console.warn('Backend API upload failed, preserving local record:', uploadError);
+      const pdfBlob = await generateSalarySlipPdf(newRecord);
+
+      message.loading({ content: 'Uploading to server...', key: 'salary-pdf' });
+      await createSalarySlip({
+        file: pdfBlob,
+        userId: Number(data.employeeId),
+        employeeId: Number(data.employeeId),
+        employeeName: data.employeeName,
+        monthYear: data.monthYear,
+        netSalary,
+        paidDays: Number(data.paidDays),
+      }).unwrap();
+
+      setShowSalarySlipForm(false);
+      message.success({ content: 'Salary slip created successfully.', key: 'salary-pdf' });
+    } catch (error) {
+      console.error(error);
+      message.error({ content: 'Failed to create salary slip.', key: 'salary-pdf' });
     }
-
-    // 4. Update UI state with finalized record
-    const savedRecord: PayrollRecord = {
-      ...newRecord,
-      id: recordId,
-      salarySlipUrl,
-    };
-
-    setPayroll((previous) => [savedRecord, ...previous]);
-    setSelectedSlip(savedRecord);
-    setShowSalarySlipForm(false);
-
-    message.success({
-      content: 'Salary slip created successfully.',
-      key: 'salary-pdf',
-    });
-  } catch (error) {
-    console.error('Salary slip process failed:', error);
-
-    message.error({
-      content: error instanceof Error ? error.message : 'Unable to create salary slip.',
-      key: 'salary-pdf',
-    });
-  }
-};
+  };
 
   const downloadSalarySlip = async (record: PayrollRecord) => {
     try {
-      message.loading({
-        content: 'Generating and downloading salary slip...',
-        key: 'salary-download',
-      });
-
-      // Generate PDF directly from template in DOM (no cloud fetch)
+      message.loading({ content: 'Downloading...', key: 'dl' });
       const pdfBlob = await generateSalarySlipPdf(record);
-
       const url = window.URL.createObjectURL(pdfBlob);
-
-      const employeeName = record.employeeName?.trim().replace(/[^a-zA-Z0-9]/g, '-') || 'Employee';
-      const month = record.monthYear?.trim().replace(/[^a-zA-Z0-9]/g, '-') || 'Salary';
-
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `Salary-Slip-${employeeName}-${month}.pdf`;
-
-      document.body.appendChild(anchor);
+      anchor.download = `Salary-Slip-${record.employeeName}-${record.monthYear}.pdf`;
       anchor.click();
-      anchor.remove();
-
       window.URL.revokeObjectURL(url);
-
-      message.success({
-        content: 'Salary slip downloaded successfully.',
-        key: 'salary-download',
-      });
-    } catch (error) {
-      console.error('Salary slip download failed:', error);
-
-      message.error({
-        content: error instanceof Error ? error.message : 'Unable to download salary slip.',
-        key: 'salary-download',
-      });
+      message.success({ content: 'Downloaded!', key: 'dl' });
+    } catch {
+      message.error({ content: 'Download failed.', key: 'dl' });
     }
   };
 
@@ -253,14 +227,9 @@ export function PayrollPage() {
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
             <User size={18} />
           </div>
-
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground">
-              {record.employeeName || 'Unnamed Employee'}
-            </span>
-            <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
-              {record.position || 'Employee'}
-            </span>
+            <span className="text-sm font-bold text-foreground">{record.employeeName}</span>
+            <span className="text-[10px] font-bold text-muted uppercase">{record.position || 'Employee'}</span>
           </div>
         </div>
       ),
@@ -269,31 +238,19 @@ export function PayrollPage() {
       title: 'Base Pay',
       dataIndex: 'base',
       key: 'base',
-      render: (value: number) => (
-        <span className="text-sm font-medium text-muted">
-          ₹{Number(value || 0).toLocaleString('en-IN')}
-        </span>
-      ),
+      render: (val: number) => `₹${Number(val || 0).toLocaleString('en-IN')}`,
     },
     {
       title: 'Bonus',
       dataIndex: 'bonus',
       key: 'bonus',
-      render: (value: number) => (
-        <span className="text-sm font-medium text-success">
-          +₹{Number(value || 0).toLocaleString('en-IN')}
-        </span>
-      ),
+      render: (val: number) => `+₹${Number(val || 0).toLocaleString('en-IN')}`,
     },
     {
       title: 'Total Salary',
       dataIndex: 'total',
       key: 'total',
-      render: (value: number) => (
-        <span className="text-sm font-black text-foreground">
-          ₹{Number(value || 0).toLocaleString('en-IN')}
-        </span>
-      ),
+      render: (val: number) => <span className="font-black">₹{Number(val || 0).toLocaleString('en-IN')}</span>,
     },
     {
       title: 'Pay Date',
@@ -315,32 +272,19 @@ export function PayrollPage() {
           trigger={['click']}
           menu={{
             items: [
-              {
-                key: 'view',
-                label: 'View Salary Slip',
-                icon: <Eye size={15} />,
-              },
-              {
-                key: 'download',
-                label: 'Download Salary Slip',
-                icon: <Download size={15} />,
-              },
+              { key: 'view', label: 'View Salary Slip', icon: <Eye size={15} /> },
+              { key: 'download', label: 'Download Salary Slip', icon: <Download size={15} /> },
             ],
             onClick: ({ key }) => {
               if (key === 'view') {
                 setSelectedSlip(record);
                 setShowSlip(true);
               }
-
-              if (key === 'download') {
-                downloadSalarySlip(record);
-              }
+              if (key === 'download') downloadSalarySlip(record);
             },
-          }}>
-          <button
-            type="button"
-            onClick={(e) => e.stopPropagation()}
-            className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors">
+          }}
+        >
+          <button type="button" className="p-2 rounded-lg hover:bg-surface-subtle">
             <MoreHorizontal size={18} />
           </button>
         </Dropdown>
@@ -349,96 +293,63 @@ export function PayrollPage() {
   ];
 
   return (
-    <>
-      <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <PageHeader
-          title="Payroll"
-          description="Employee compensation and distribution history."
-          breadcrumbs={[
-            { label: 'Home', url: '/' },
-            { label: 'Finance', url: '/finance' },
-            { label: 'Payroll' },
-          ]}
-        />
+    <div className="flex flex-col gap-10 pb-20">
+      <PageHeader
+        title="All Payrolls"
+        description="Company-wide employee compensation distribution history."
+      />
 
-        {/* Create Salary Slip button */}
-        <div className="flex justify-end -mt-6">
-          <button
-            type="button"
-            disabled={isUploadingPdf}
-            onClick={() => setShowSalarySlipForm(true)}
-            className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-semibold hover:bg-gray-800 transition disabled:opacity-50">
-            <Plus size={18} />
-            {isUploadingPdf ? 'Uploading...' : 'Create Salary Slip'}
-          </button>
-        </div>
-
-        {/* Payroll table */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden">
-          <Table
-            columns={columns}
-            dataSource={payroll}
-            rowKey="id"
-            pagination={{ pageSize: 10 }}
-            className="premium-table"
-            locale={{ emptyText: 'No salary slips created yet.' }}
-          />
-        </motion.div>
+      <div className="flex justify-end -mt-6">
+        <button
+          type="button"
+          disabled={isUploadingPdf}
+          onClick={() => setShowSalarySlipForm(true)}
+          className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-semibold hover:bg-gray-800 transition disabled:opacity-50"
+        >
+          <Plus size={18} />
+          {isUploadingPdf ? 'Uploading...' : 'Create Salary Slip'}
+        </button>
       </div>
 
-      {/* Salary Slip Form */}
-      {showSalarySlipForm && (
-        <SalarySlipForm
-          onClose={() => setShowSalarySlipForm(false)}
-          onCreate={handleCreateSalarySlip}
+      <motion.div className="bg-white rounded-[40px] border border-border-subtle shadow-soft overflow-hidden">
+        <Table
+          columns={columns}
+          dataSource={payroll}
+          loading={isFetching}
+          rowKey="id"
+          locale={{ emptyText: isError ? 'Error loading records.' : 'No records found.' }}
         />
+      </motion.div>
+
+      {showSalarySlipForm && (
+        <SalarySlipForm onClose={() => setShowSalarySlipForm(false)} onCreate={handleCreateSalarySlip} />
       )}
 
-      {/* Salary Slip Preview */}
       {showSlip && selectedSlip && (
         <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[900px] max-h-[95vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between">
-              <div>
-                <h2 className="font-bold text-lg text-gray-900">Salary Slip</h2>
-                <p className="text-sm text-gray-500">
-                  {selectedSlip.employeeName}
-                  {' · '}
-                  {selectedSlip.monthYear}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
+            <div className="sticky top-0 bg-white border-b px-5 py-4 flex justify-between items-center">
+              <h2 className="font-bold text-lg">Salary Slip ({selectedSlip.monthYear})</h2>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => downloadSalarySlip(selectedSlip)}
-                  className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition">
-                  <Download size={16} />
-                  Download PDF
+                  className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                >
+                  <Download size={16} /> Download
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowSlip(false)}
-                  className="border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                <button type="button" onClick={() => setShowSlip(false)} className="border px-4 py-2 rounded-lg">
                   Close
                 </button>
               </div>
             </div>
-
-            {/* Salary slip view */}
             <div className="overflow-auto bg-gray-200 p-6">
               <SalarySlipTemplate ref={slipRef} data={selectedSlip} />
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

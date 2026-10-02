@@ -22,7 +22,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       FormData | Partial<Omit<Reimbursement, 'id' | 'created_at' | 'updated_at' | 'approved_at'>>
     >({
       query: (data) => ({
-        url: '/reimbursements',
+        url: '/reimbursements/create-claim',
         method: 'POST',
         body: data,
       }),
