@@ -21,7 +21,7 @@ export interface SalarySlipData {
   companyName: string;
   companyAddress: string;
 
-  employeeId: string;
+  employeeId: string | number;
   employeeName: string;
   position: string;
   accountNumber: string;
@@ -166,31 +166,30 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
 
   // Inside SalarySlipTemplate.tsx
 
-// Safe fallback references
-const earnings = data.earnings || [];
-const deductions = data.deductions || [];
+  // Safe fallback references
+  const earnings = data.earnings || [];
+  const deductions = data.deductions || [];
 
-// 1. Calculate totals safely
-const totalEarnings = earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-const totalDeductions = deductions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  // 1. Calculate totals safely
+  const totalEarnings = earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const totalDeductions = deductions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
-// 2. Calculate row count safely
-const maxRows = Math.max(4, earnings.length, deductions.length);
+  // 2. Calculate row count safely
+  const maxRows = Math.max(4, earnings.length, deductions.length);
 
-// 3. Create padded copies safely using spread operator
-const paddedEarnings = [...earnings];
-while (paddedEarnings.length < maxRows) {
-  paddedEarnings.push({ name: '', amount: 0 });
-}
+  // 3. Create padded copies safely using spread operator
+  const paddedEarnings = [...earnings];
+  while (paddedEarnings.length < maxRows) {
+    paddedEarnings.push({ name: '', amount: 0 });
+  }
 
-const paddedDeductions = [...deductions];
-while (paddedDeductions.length < maxRows) {
-  paddedDeductions.push({ name: '', amount: 0 });
-}
+  const paddedDeductions = [...deductions];
+  while (paddedDeductions.length < maxRows) {
+    paddedDeductions.push({ name: '', amount: 0 });
+  }
 
-const netPay = data.total ?? (totalEarnings - totalDeductions);
-const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
-
+  const netPay = data.total ?? totalEarnings - totalDeductions;
+  const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
 
   return (
     <div
@@ -783,7 +782,7 @@ const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
 
 interface MetaItemProps {
   label: string;
-  value: string;
+  value: string | number;
   bold?: boolean;
 }
 

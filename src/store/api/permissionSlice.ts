@@ -28,9 +28,9 @@ export const permissionSlice = apiSlice.injectEndpoints({
       providesTags: ['Permissions'],
     }),
     getMyPermissions: builder.query<MyPermissionsResponse, void>({
-  query: () => '/feature-permissions/my',
-  providesTags: ['Permissions'],
-}),
+      query: () => '/feature-permissions/my',
+      providesTags: ['Permissions'],
+    }),
 
     toggleFeature: builder.mutation<
       any,

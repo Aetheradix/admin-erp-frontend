@@ -1,6 +1,5 @@
 import { apiSlice } from './apiSlice';
 
-
 export interface SalarySlipItem {
   id: number;
   user_id: number;
@@ -15,7 +14,7 @@ export interface SalarySlipItem {
   employee_name?: string;
   employee_email?: string;
   employee_position?: string;
-  
+
   // Backwards compatibility fallbacks
   net_salary?: number;
   base_pay?: number;
@@ -61,7 +60,6 @@ export interface GetSalarySlipsResponse {
   success: boolean;
   data: SalarySlipItem[];
 }
-
 
 export const uploadApiSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -137,8 +135,6 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
     }),
   }),
 });
-
-
 
 export const {
   useUploadSalarySlipMutation,

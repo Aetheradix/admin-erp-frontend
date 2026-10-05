@@ -66,8 +66,7 @@ export default function MyPaySlipPage() {
   const [selectedSlip, setSelectedSlip] = useState<SalarySlip | null>(null);
 
   // 1. Fetch authenticated user details & permissions
-  const { data: permissionResponse, isLoading: isPermissionsLoading } =
-    useGetMyPermissionsQuery();
+  const { data: permissionResponse, isLoading: isPermissionsLoading } = useGetMyPermissionsQuery();
   const userDetails = permissionResponse?.data;
   const userId = userDetails?.userId;
 
@@ -83,14 +82,11 @@ export default function MyPaySlipPage() {
 
   // Extract slips array safely
   const userPayslips: SalarySlip[] = (
-    Array.isArray(apiResponse)
-      ? apiResponse
-      : (apiResponse as SalarySlipApiResponse)?.data ?? []
+    Array.isArray(apiResponse) ? apiResponse : ((apiResponse as SalarySlipApiResponse)?.data ?? [])
   ) as SalarySlip[];
 
   // Fallback username (safe against TS errors)
-  const currentUsername =
-    userPayslips[0]?.username || userDetails?.username || 'User';
+  const currentUsername = userPayslips[0]?.username || userDetails?.username || 'User';
 
   // Date Formatting Helpers
   const formatDate = (isoString: string) => {
@@ -130,9 +126,7 @@ export default function MyPaySlipPage() {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 text-slate-500 gap-3">
         <Loader2 size={36} className="animate-spin text-slate-900" />
-        <p className="text-sm font-medium text-slate-600">
-          Loading user records & salary slips...
-        </p>
+        <p className="text-sm font-medium text-slate-600">Loading user records & salary slips...</p>
       </div>
     );
   }
@@ -145,9 +139,7 @@ export default function MyPaySlipPage() {
           <AlertCircle size={28} />
         </div>
         <div>
-          <h2 className="font-semibold text-slate-900 text-lg">
-            Unable to load salary slips
-          </h2>
+          <h2 className="font-semibold text-slate-900 text-lg">Unable to load salary slips</h2>
           <p className="text-xs text-slate-500 mt-1">
             Could not fetch salary documents for{' '}
             <strong className="text-slate-800">@{currentUsername}</strong>.
@@ -172,9 +164,7 @@ export default function MyPaySlipPage() {
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold text-slate-900">
-                @{currentUsername}
-              </h1>
+              <h1 className="text-2xl font-bold text-slate-900">@{currentUsername}</h1>
               {userDetails?.isSuperadmin && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                   <ShieldCheck size={12} /> Superadmin
@@ -203,10 +193,7 @@ export default function MyPaySlipPage() {
 
         {/* Search Field */}
         <div className="relative w-full md:w-80">
-          <Search
-            size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-          />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search by name, creator, date or ID..."
@@ -268,9 +255,7 @@ export default function MyPaySlipPage() {
                 </tr>
               ) : (
                 filteredSlips.map((slip) => (
-                  <tr
-                    key={slip.id}
-                    className="hover:bg-slate-50/80 transition-colors group">
+                  <tr key={slip.id} className="hover:bg-slate-50/80 transition-colors group">
                     {/* Slip ID */}
                     <td className="py-4 px-6 font-mono text-xs font-bold text-slate-900">
                       <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
@@ -294,9 +279,7 @@ export default function MyPaySlipPage() {
                         <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">
                           <User size={13} />
                         </div>
-                        <span className="font-semibold text-slate-800">
-                          @{slip.username}
-                        </span>
+                        <span className="font-semibold text-slate-800">@{slip.username}</span>
                       </div>
                     </td>
 
@@ -347,23 +330,14 @@ export default function MyPaySlipPage() {
 
       {/* PDF Modal */}
       {selectedSlip && (
-        <PdfPreviewModal
-          slip={selectedSlip}
-          onClose={() => setSelectedSlip(null)}
-        />
+        <PdfPreviewModal slip={selectedSlip} onClose={() => setSelectedSlip(null)} />
       )}
     </div>
   );
 }
 
 // Modal Component
-function PdfPreviewModal({
-  slip,
-  onClose,
-}: {
-  slip: SalarySlip;
-  onClose: () => void;
-}) {
+function PdfPreviewModal({ slip, onClose }: { slip: SalarySlip; onClose: () => void }) {
   const formattedMonth = new Date(slip.created_at).toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric',

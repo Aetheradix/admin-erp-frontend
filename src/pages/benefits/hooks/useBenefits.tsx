@@ -32,10 +32,6 @@ import {
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpensesParams) => {
-  /* ============================================================
-      UI STATE
-  ============================================================ */
-
   const [search, setSearch] = useState('');
 
   const [activePerkType, setActivePerkType] = useState('All');
@@ -52,17 +48,9 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
 
   const [showPerkTypeForm, setShowPerkTypeForm] = useState(false);
 
-  /* ============================================================
-      FILTERS
-  ============================================================ */
-
   const PERK_TYPES = ['All'];
 
   const STATUSES = ['All', 'Active', 'Inactive'];
-
-  /* ============================================================
-      PERKS
-  ============================================================ */
 
   const {
     data: perks = [],
@@ -72,10 +60,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     refetch: refetchPerks,
   } = useGetPerksQuery();
 
-  /* ============================================================
-      PERK TYPES
-  ============================================================ */
-
   const {
     data: perkTypes = [],
     isLoading: perkTypesLoading,
@@ -83,10 +67,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     isError: perkTypesError,
     refetch: refetchPerkTypes,
   } = useGetPerkTypesQuery();
-
-  /* ============================================================
-      USER PERKS
-  ============================================================ */
 
   const {
     data: userPerks = [],
@@ -96,10 +76,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     refetch: refetchUserPerks,
   } = useGetUserPerksQuery(userId);
 
-  /* ============================================================
-      PERK EXPENSES
-  ============================================================ */
-
   const {
     data: perkExpenses = [],
     isLoading: perkExpensesLoading,
@@ -108,19 +84,11 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     refetch: refetchPerkExpenses,
   } = useGetPerkExpensesQuery(expenseParams);
 
-  /* ============================================================
-      PERK MUTATIONS
-  ============================================================ */
-
   const [createPerk, { isLoading: isCreatingPerk }] = useCreatePerkMutation();
 
   const [updatePerk, { isLoading: isUpdatingPerk }] = useUpdatePerkMutation();
 
   const [deletePerk, { isLoading: isDeletingPerk }] = useDeletePerkMutation();
-
-  /* ============================================================
-      PERK TYPE MUTATIONS
-  ============================================================ */
 
   const [createPerkType, { isLoading: isCreatingPerkType }] = useCreatePerkTypeMutation();
 

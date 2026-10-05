@@ -34,10 +34,6 @@ export interface CreateResourceRequest {
   is_active?: boolean;
 }
 
-/* ============================================================
-   HELPER TRANSFORMERS (Backend Raw -> Strict UI Types)
-============================================================ */
-
 const mapResourceType = (type?: string | null): ResourceType => {
   if (!type) return 'Other';
   const t = type.trim().toLowerCase();
@@ -106,10 +102,6 @@ const transformBooking = (raw: any): ResourceBooking => ({
   username: raw.username,
   email: raw.email,
 });
-
-/* ============================================================
-   API SLICE
-============================================================ */
 
 export const resourceBookingSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

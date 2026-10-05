@@ -59,10 +59,6 @@ export default function PerkTypes(): React.JSX.Element {
     return perks.filter((perk) => perk.perk_type_id === perkTypeId).length;
   };
 
-  /* ============================================================
-     SAVE
-  ============================================================ */
-
   const save = async (data: PerkTypeFormData): Promise<void> => {
     try {
       if (editing) {
@@ -92,10 +88,6 @@ export default function PerkTypes(): React.JSX.Element {
       console.error('Failed to save perk type:', error);
     }
   };
-
-  /* ============================================================
-     LOADING
-  ============================================================ */
 
   if (perkTypesLoading) {
     return (
