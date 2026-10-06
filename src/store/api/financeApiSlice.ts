@@ -132,26 +132,26 @@ export const financeApiSlice = apiSlice.injectEndpoints({
 
     // Fetch single salary slip by slip ID (for on-demand PDF generation)
     getSalarySlipById: builder.query<any, string | number>({
-  query: (id) => `/finance/salary-slips/${id}`,
-  // Normalize response: if it's a single object, wrap it in an array
-  transformResponse: (response: any) => {
-    // 1. Un-wrap common backend envelopes if present
-    const payload = response?.data ?? response?.result ?? response;
+      query: (id) => `/finance/salary-slips/${id}`,
+      // Normalize response: if it's a single object, wrap it in an array
+      transformResponse: (response: any) => {
+        // 1. Un-wrap common backend envelopes if present
+        const payload = response?.data ?? response?.result ?? response;
 
-    // 2. If it's already an array, return it directly
-    if (Array.isArray(payload)) {
-      return payload;
-    }
+        // 2. If it's already an array, return it directly
+        if (Array.isArray(payload)) {
+          return payload;
+        }
 
-    // 3. If it's a single non-null object, wrap it into an array
-    if (payload && typeof payload === 'object') {
-      return [payload];
-    }
+        // 3. If it's a single non-null object, wrap it into an array
+        if (payload && typeof payload === 'object') {
+          return [payload];
+        }
 
-    return [];
-  },
-  providesTags: (_result, _error, id) => [{ type: 'SalarySlips', id }],
-}),
+        return [];
+      },
+      providesTags: (_result, _error, id) => [{ type: 'SalarySlips', id }],
+    }),
 
     // Fetch salary slips by employee ID
     getSalarySlipsByEmployeeId: builder.query<any, string | number>({

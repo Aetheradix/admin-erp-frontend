@@ -95,11 +95,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
   const [updatePerkType, { isLoading: isUpdatingPerkType }] = useUpdatePerkTypeMutation();
 
   const [deletePerkType, { isLoading: isDeletingPerkType }] = useDeletePerkTypeMutation();
-
-  /* ============================================================
-      USER PERK & USAGE MUTATIONS
-  ============================================================ */
-
   const [assignPerk, { isLoading: isAssigningPerk }] = useAssignPerkMutation();
 
   const [recordPerkUsage, { isLoading: isRecordingUsage }] = useRecordPerkUsageMutation();
@@ -107,10 +102,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
   const [updateUserPerk, { isLoading: isUpdatingUserPerk }] = useUpdateUserPerkMutation();
 
   const [linkPerkToExpense, { isLoading: isLinkingExpense }] = useLinkPerkToExpenseMutation();
-
-  /* ============================================================
-      FILTER PERKS
-  ============================================================ */
 
   const filteredPerks = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
@@ -130,10 +121,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     });
   }, [perks, search, activeStatus]);
 
-  /* ============================================================
-      FILTER USER PERKS
-  ============================================================ */
-
   const filteredUserPerks = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
 
@@ -150,10 +137,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
       return matchesSearch;
     });
   }, [userPerks, search]);
-
-  /* ============================================================
-      FILTER PERK TYPES
-  ============================================================ */
 
   const filteredPerkTypes = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
@@ -173,45 +156,25 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     });
   }, [perkTypes, search, activeStatus]);
 
-  /* ============================================================
-      OPEN PERK FORM
-  ============================================================ */
-
   const openPerkForm = (perk: Perk | null = null) => {
     setSelectedPerk(perk);
     setShowPerkForm(true);
   };
-
-  /* ============================================================
-      CLOSE PERK FORM
-  ============================================================ */
 
   const closePerkForm = () => {
     setShowPerkForm(false);
     setSelectedPerk(null);
   };
 
-  /* ============================================================
-      OPEN PERK TYPE FORM
-  ============================================================ */
-
   const openPerkTypeForm = (perkType: PerkType | null = null) => {
     setSelectedPerkType(perkType);
     setShowPerkTypeForm(true);
   };
 
-  /* ============================================================
-      CLOSE PERK TYPE FORM
-  ============================================================ */
-
   const closePerkTypeForm = () => {
     setShowPerkTypeForm(false);
     setSelectedPerkType(null);
   };
-
-  /* ============================================================
-      CREATE PERK
-  ============================================================ */
 
   const handleCreatePerk = async (data: CreatePerkRequest) => {
     try {
@@ -247,10 +210,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      UPDATE PERK
-  ============================================================ */
-
   const handleUpdatePerk = async (data: UpdatePerkRequest) => {
     try {
       const result = await updatePerk(data).unwrap();
@@ -284,10 +243,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
       throw err;
     }
   };
-
-  /* ============================================================
-      DELETE PERK
-  ============================================================ */
 
   const handleDeletePerk = async (id: number) => {
     try {
@@ -325,10 +280,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      CREATE PERK TYPE
-  ============================================================ */
-
   const handleCreatePerkType = async (data: CreatePerkTypeRequest) => {
     try {
       const result = await createPerkType(data).unwrap();
@@ -363,10 +314,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      UPDATE PERK TYPE
-  ============================================================ */
-
   const handleUpdatePerkType = async (data: UpdatePerkTypeRequest) => {
     try {
       const result = await updatePerkType(data).unwrap();
@@ -400,10 +347,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
       throw err;
     }
   };
-
-  /* ============================================================
-      DELETE PERK TYPE
-  ============================================================ */
 
   const handleDeletePerkType = async (id: number) => {
     try {
@@ -441,10 +384,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      ASSIGN PERK
-  ============================================================ */
-
   const handleAssignPerk = async (data: AssignPerkRequest) => {
     try {
       const result = await assignPerk(data).unwrap();
@@ -477,10 +416,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      RECORD PERK USAGE / CLAIM
-  ============================================================ */
-
   const handleRecordPerkUsage = async (data: RecordPerkUsageRequest) => {
     try {
       const result = await recordPerkUsage(data).unwrap();
@@ -512,10 +447,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
       throw err;
     }
   };
-
-  /* ============================================================
-      UPDATE USER PERK
-  ============================================================ */
 
   const handleUpdateUserPerk = async (data: UpdateUserPerkRequest) => {
     try {
@@ -551,10 +482,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      LINK EXISTING EXPENSE TO PERK
-  ============================================================ */
-
   const handleLinkPerkToExpense = async (data: LinkPerkToExpenseRequest) => {
     try {
       const result = await linkPerkToExpense(data).unwrap();
@@ -587,10 +514,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     }
   };
 
-  /* ============================================================
-      BOOKKEEPING / REFRESH
-  ============================================================ */
-
   const refetchAll = async () => {
     await Promise.all([
       refetchPerks(),
@@ -600,9 +523,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     ]);
   };
 
-  /* ============================================================
-      LOADING & MUTATING STATES
-  ============================================================ */
 
   const isLoading = perksLoading || perkTypesLoading || userPerksLoading || perkExpensesLoading;
 
@@ -621,9 +541,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     isUpdatingUserPerk ||
     isLinkingExpense;
 
-  /* ============================================================
-      RETURN
-  ============================================================ */
 
   return {
     /* Perks */

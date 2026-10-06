@@ -52,9 +52,6 @@ export interface SalarySlipTemplateProps {
   data: Partial<SalarySlipData>; // Change from SalarySlipData to Partial<SalarySlipData>
 }
 
-/* =========================================================
-   HELPERS
-========================================================= */
 
 const formatCurrency = (amount: number, currencySymbol = '₹'): string => {
   const value = Number(amount || 0);
@@ -156,9 +153,6 @@ const getAmountInWords = (amount: number): string => {
   return `${parts.join(' ')} Rupees Only`;
 };
 
-/* =========================================================
-   MAIN TEMPLATE
-========================================================= */
 
 const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>(({ data }, ref) => {
   const currencySymbol = data.currencySymbol || '₹';
@@ -214,9 +208,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
           padding: '38px 42px 34px',
           position: 'relative',
         }}>
-        {/* =================================================
-            HEADER
-        ================================================= */}
 
         <div
           className="preview-header-exact"
@@ -406,10 +397,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
           </div>
         </div>
 
-        {/* =================================================
-            EMPLOYEE / PAY META
-        ================================================= */}
-
         <div
           className="preview-meta-grid"
           style={{
@@ -443,10 +430,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
             <MetaItem label="Position" value={data.position || 'Director'} bold />
           </div>
         </div>
-
-        {/* =================================================
-            EARNINGS / DEDUCTIONS
-        ================================================= */}
 
         <div
           className="preview-tables-container"
@@ -501,7 +484,7 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               gridTemplateColumns: '1fr 1fr',
               gap: '18px',
             }}>
-            {/* ================= EARNINGS ================= */}
+
 
             <SalaryTable
               title="EARNINGS"
@@ -510,8 +493,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               total={totalEarnings}
               currencySymbol={currencySymbol}
             />
-
-            {/* ================= DEDUCTIONS ================= */}
 
             <div>
               <SalaryTable
@@ -557,10 +538,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
             </div>
           </div>
         </div>
-
-        {/* =================================================
-            TOTALS / NET PAY
-        ================================================= */}
 
         <div
           className="preview-totals-section"
@@ -674,9 +651,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
           </div>
         </div>
 
-        {/* =================================================
-            FOOTER
-        ================================================= */}
 
         <div
           className="preview-footer-section"
@@ -776,9 +750,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
   );
 });
 
-/* =========================================================
-   SUB COMPONENTS
-========================================================= */
 
 interface MetaItemProps {
   label: string;
@@ -819,9 +790,6 @@ function MetaItem({ label, value, bold = false }: MetaItemProps) {
   );
 }
 
-/* =========================================================
-   SALARY TABLE
-========================================================= */
 
 interface SalaryTableProps {
   title: string;
@@ -914,9 +882,6 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
   );
 }
 
-/* =========================================================
-   DETAIL ROW
-========================================================= */
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -951,9 +916,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/* =========================================================
-   DAYS ROW
-========================================================= */
+
 
 function DaysRow({ label, value }: { label: string; value: string }) {
   return (

@@ -264,8 +264,6 @@ export const ExpensesPage: React.FC = () => {
   );
   const [selectedUserIds, setSelectedUserIds] = useState<(number | string)[]>([]);
   const [amountInput, setAmountInput] = useState<string>('');
-
-  /* ================= DATE RANGE STATE ================= */
   const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
@@ -339,7 +337,6 @@ export const ExpensesPage: React.FC = () => {
     }
   };
 
-  /* ================= DATE FILTERING LOGIC ================= */
   const dateFilteredExpenses = useMemo(() => {
     if (!filteredExpenses) return [];
     if (datePreset === 'all') return filteredExpenses;
@@ -448,7 +445,6 @@ export const ExpensesPage: React.FC = () => {
   const participantCount = selectedUserIds.length;
   const splitAmount = participantCount > 0 ? parsedAmount / participantCount : 0;
 
-  /* ================= REPORTS EXPORT HANDLERS ================= */
   const handleDownloadCSV = () => {
     if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
       alert('No expense records available to export for the selected filters.');

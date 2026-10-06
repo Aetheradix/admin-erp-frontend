@@ -79,10 +79,6 @@ export interface UserPerk {
   [key: string]: unknown;
 }
 
-/* =========================================================
-   REQUEST & RESPONSE INTERFACES
-========================================================= */
-
 export interface CreatePerkRequest {
   [key: string]: unknown;
 }

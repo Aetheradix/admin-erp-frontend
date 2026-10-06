@@ -7,10 +7,6 @@ import {
 } from '@/store/api/expenseSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
-// =========================================================
-// CONSTANTS & TYPES
-// =========================================================
-
 export const EXPENSE_CATEGORIES = [
   'All',
   'Travel',
@@ -37,14 +33,10 @@ export interface CompanyExpenseStats {
   rejectedCount: number;
 }
 
-// =========================================================
-// CUSTOM HOOK
-// =========================================================
+
 
 export const useExpensesPage = () => {
-  // ---------------------------------------------------------
-  // RTK QUERY HOOKS
-  // ---------------------------------------------------------
+
   const {
     data: expenses = [],
     isLoading,
@@ -57,9 +49,6 @@ export const useExpensesPage = () => {
   const [createExpense, { isLoading: isSubmitting }] = useCreateExpenseMutation();
   const [updateExpenseStatus, { isLoading: isUpdatingStatus }] = useUpdateExpenseStatusMutation();
 
-  // ---------------------------------------------------------
-  // LOCAL UI STATE
-  // ---------------------------------------------------------
   const [showFormModal, setShowFormModal] = useState<boolean>(false);
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseRecord | null>(null);
@@ -68,9 +57,6 @@ export const useExpensesPage = () => {
   const [activeStatus, setActiveStatus] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // ---------------------------------------------------------
-  // FILTERING LOGIC
-  // ---------------------------------------------------------
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense: ExpenseRecord) => {
       // Category filter

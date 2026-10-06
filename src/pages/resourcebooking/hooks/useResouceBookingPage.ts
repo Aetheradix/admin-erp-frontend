@@ -19,9 +19,6 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 import type { Resource, ResourceBookingStatus } from '../types/index.types';
 
 export const useResourceBookingPage = () => {
-  /* ============================================================
-     UI STATE
-  ============================================================ */
 
   const [showForm, setShowForm] = useState(false);
 
@@ -35,9 +32,6 @@ export const useResourceBookingPage = () => {
 
   const [activeStatus, setActiveStatus] = useState('All');
 
-  /* ============================================================
-     FILTERS
-  ============================================================ */
 
   const RESOURCE_TYPES = ['All', 'Room', 'Equipment', 'Vehicle', 'Other'];
 
@@ -50,17 +44,11 @@ export const useResourceBookingPage = () => {
     'Completed',
   ];
 
-  /* ============================================================
-     RESOURCES
-  ============================================================ */
 
   const { data: resources = [], isLoading: resourcesLoading } = useGetResourcesQuery();
 
   const [createResource, { isLoading: isCreatingResource }] = useCreateResourceMutation();
 
-  /* ============================================================
-     BOOKINGS
-  ============================================================ */
 
   const {
     data: allBookings = [],
@@ -76,9 +64,6 @@ export const useResourceBookingPage = () => {
 
   const { data: stats, isLoading: statsLoading } = useGetResourceBookingStatsQuery();
 
-  /* ============================================================
-     BOOKING MUTATIONS
-  ============================================================ */
 
   const [createResourceBooking, { isLoading: isCreating }] = useCreateResourceBookingMutation();
 
@@ -86,9 +71,6 @@ export const useResourceBookingPage = () => {
 
   const [deleteResourceBooking, { isLoading: isDeleting }] = useDeleteResourceBookingMutation();
 
-  /* ============================================================
-     FILTER MY BOOKINGS
-  ============================================================ */
 
   const filteredMyBookings = myBookings.filter((booking) => {
     const searchValue = search.trim().toLowerCase();
@@ -104,9 +86,6 @@ export const useResourceBookingPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  /* ============================================================
-     FILTER ALL BOOKINGS
-  ============================================================ */
 
   const filteredAllBookings = allBookings.filter((booking) => {
     const searchValue = search.trim().toLowerCase();
@@ -123,27 +102,18 @@ export const useResourceBookingPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  /* ============================================================
-     OPEN BOOKING FORM
-  ============================================================ */
 
   const openBookingForm = (resource: Resource | null = null) => {
     setSelectedResource(resource);
     setShowForm(true);
   };
 
-  /* ============================================================
-     CLOSE BOOKING FORM
-  ============================================================ */
-
   const closeBookingForm = () => {
     setShowForm(false);
     setSelectedResource(null);
   };
 
-  /* ============================================================
-     CREATE RESOURCE
-  ============================================================ */
+
 
   const handleCreateResource = async (data: CreateResourceRequest) => {
     console.log('1. Resource data:', data);
@@ -170,9 +140,7 @@ export const useResourceBookingPage = () => {
     }
   };
 
-  /* ============================================================
-     CREATE BOOKING
-  ============================================================ */
+
 
   const handleBookingSubmit = async (data: CreateResourceBookingRequest) => {
     try {
@@ -206,9 +174,6 @@ export const useResourceBookingPage = () => {
     }
   };
 
-  /* ============================================================
-     CANCEL BOOKING
-  ============================================================ */
 
   const handleCancel = async (id: number) => {
     try {
@@ -238,9 +203,6 @@ export const useResourceBookingPage = () => {
     }
   };
 
-  /* ============================================================
-     DELETE BOOKING
-  ============================================================ */
 
   const handleDelete = async (id: number) => {
     try {
@@ -274,9 +236,6 @@ export const useResourceBookingPage = () => {
     }
   };
 
-  /* ============================================================
-     BOOKING DETAILS
-  ============================================================ */
 
   const openBookingDetails = (booking: ResourceBooking) => {
     setSelectedBooking(booking);
@@ -286,17 +245,11 @@ export const useResourceBookingPage = () => {
     setSelectedBooking(null);
   };
 
-  /* ============================================================
-     LOADING
-  ============================================================ */
 
   const isLoading = resourcesLoading || allBookingsLoading || myBookingsLoading || statsLoading;
 
   const isMutating = isCreating || isCreatingResource || isCancelling || isDeleting;
 
-  /* ============================================================
-     RETURN
-  ============================================================ */
 
   return {
     /* Resources */

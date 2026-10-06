@@ -10,9 +10,6 @@ import type {
   CreateResourceBookingRequest,
 } from '../../pages/resourcebooking/types/index.types';
 
-/* ============================================================
-   TYPE RE-EXPORTS (Satisfies component imports from this slice)
-============================================================ */
 
 export type {
   Resource,

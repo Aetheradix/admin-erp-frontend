@@ -27,8 +27,8 @@ import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
 import ReactDOMServer from 'react-dom/server';
 
-import SalarySlipTemplate from './components/SalarySlipTemplate'; 
-import  type { SalarySlipData } from './components/SalarySlipTemplate'; 
+import SalarySlipTemplate from './components/SalarySlipTemplate';
+import type { SalarySlipData } from './components/SalarySlipTemplate';
 // Interface for helper function payload mapping
 export interface PayrollRecord {
   id: number;
@@ -121,13 +121,10 @@ export interface ParsedSalarySlip {
   createdAt: string;
   createdBy: string;
 }
- 
 
 export const generateSalarySlipPdf = async (record: Partial<SalarySlipData>): Promise<Blob> => {
   // 1. Render React component template directly to static HTML string
-  const htmlString = ReactDOMServer.renderToString(
-    <SalarySlipTemplate data={record} />
-  );
+  const htmlString = ReactDOMServer.renderToString(<SalarySlipTemplate data={record} />);
 
   // 2. Create off-screen container with explicit A4 width dimensions
   const container = document.createElement('div');
@@ -228,9 +225,13 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
       0
   );
 
-  const netSalary = Number(item.total_amount || item.net_salary || item.netSalary || item.total || 0);
+  const netSalary = Number(
+    item.total_amount || item.net_salary || item.netSalary || item.total || 0
+  );
   const monthYear = String(item.month_year || item.monthYear || item.created_at || 'OCTOBER 2026');
-  const position = String(item.position || item.employee_position || item.designation || 'Employee');
+  const position = String(
+    item.position || item.employee_position || item.designation || 'Employee'
+  );
   const userId = Number(item.user_id || item.userId || 0);
 
   return {
@@ -319,7 +320,8 @@ export default function MyPaySlipPage() {
     skip: !shouldFetchAll,
   });
 
-  const isLoading = isPermissionsLoading || isEmpSlipsLoading || (shouldFetchAll && isAllSlipsLoading);
+  const isLoading =
+    isPermissionsLoading || isEmpSlipsLoading || (shouldFetchAll && isAllSlipsLoading);
   const isError = isEmpError && isAllError;
 
   // 3. Download helper handler
@@ -347,7 +349,9 @@ export default function MyPaySlipPage() {
       deductions: slip.deductions,
       authorizedSignatory: slip.authorizedSignatory || 'Seema Srivastava',
       signatoryRole: slip.signatoryRole || '(Director)',
-      hrNote: slip.hrNote || 'For any discrepancies, please contact the HR department within 3 working days.',
+      hrNote:
+        slip.hrNote ||
+        'For any discrepancies, please contact the HR department within 3 working days.',
     };
 
     try {
@@ -363,7 +367,10 @@ export default function MyPaySlipPage() {
           dbRecord = formatApiRecord(rawData as Record<string, unknown>);
         }
       } catch (fetchErr) {
-        console.warn('Single slip endpoint unavailable. Falling back to table record state:', fetchErr);
+        console.warn(
+          'Single slip endpoint unavailable. Falling back to table record state:',
+          fetchErr
+        );
       }
 
       message.loading({ content: 'Generating PDF...', key: 'dl' });
@@ -389,7 +396,8 @@ export default function MyPaySlipPage() {
   // 4. Process and normalize raw data
   const userPayslips: ParsedSalarySlip[] = useMemo(() => {
     const rawResponse = empSlipsData ?? allSlipsData;
-    const rawList: RawSalarySlip[] = rawResponse?.data || (Array.isArray(rawResponse) ? rawResponse : []);
+    const rawList: RawSalarySlip[] =
+      rawResponse?.data || (Array.isArray(rawResponse) ? rawResponse : []);
 
     if (!Array.isArray(rawList)) return [];
 
@@ -425,7 +433,8 @@ export default function MyPaySlipPage() {
       return {
         id: item.id || Date.now(),
         employeeId: item.employee_id ?? item.employeeId ?? item.user_id ?? userId ?? 0,
-        employeeName: item.employee_name ?? item.employeeName ?? userDetails?.username ?? 'Employee',
+        employeeName:
+          item.employee_name ?? item.employeeName ?? userDetails?.username ?? 'Employee',
         position: item.position || 'Staff',
         basePay,
         bonusPay,
@@ -614,9 +623,7 @@ export default function MyPaySlipPage() {
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <FileText size={32} className="text-slate-300" />
-                      <p className="text-sm font-medium text-slate-600">
-                        No salary slips found.
-                      </p>
+                      <p className="text-sm font-medium text-slate-600">No salary slips found.</p>
                     </div>
                   </td>
                 </tr>

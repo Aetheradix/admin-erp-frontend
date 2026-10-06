@@ -11,9 +11,6 @@ import { useResourceBookingPage } from './hooks/useResouceBookingPage';
 import type { Resource } from './types/index.types';
 
 const ResourceBooking = () => {
-  /* ============================================================
-     UI STATE
-  ============================================================ */
 
   const [bookingOpen, setBookingOpen] = useState(false);
 
@@ -22,10 +19,6 @@ const ResourceBooking = () => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
   const [search, setSearch] = useState('');
-
-  /* ============================================================
-     PAGE HOOK
-  ============================================================ */
 
   const {
     resources,
@@ -39,10 +32,6 @@ const ResourceBooking = () => {
     isCreatingResource,
   } = useResourceBookingPage();
 
-  /* ============================================================
-     BOOKING MODAL
-  ============================================================ */
-
   const openBooking = (resource: Resource | null = null) => {
     setSelectedResource(resource);
     setBookingOpen(true);
@@ -53,17 +42,11 @@ const ResourceBooking = () => {
     setSelectedResource(null);
   };
 
-  /* ============================================================
-     RESOURCE SEARCH
-  ============================================================ */
 
   const filteredResources = resources.filter((resource) =>
     resource.name.toLowerCase().includes(search.trim().toLowerCase())
   );
 
-  /* ============================================================
-     ADD RESOURCE
-  ============================================================ */
 
   const handleAddResource = async (data: Parameters<typeof handleCreateResource>[0]) => {
     await handleCreateResource(data);
@@ -72,15 +55,10 @@ const ResourceBooking = () => {
     setAddResourceOpen(false);
   };
 
-  /* ============================================================
-     RENDER
-  ============================================================ */
+
 
   return (
     <div className="space-y-6 p-6">
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
 
       <div className="flex items-center justify-between">
         <div>
@@ -114,15 +92,7 @@ const ResourceBooking = () => {
         </div>
       </div>
 
-      {/* ======================================================
-          STATISTICS
-      ====================================================== */}
-
       <BookingStats bookings={myBookings} />
-
-      {/* ======================================================
-          AVAILABLE RESOURCES
-      ====================================================== */}
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -179,10 +149,6 @@ const ResourceBooking = () => {
         )}
       </div>
 
-      {/* ======================================================
-          MY UPCOMING BOOKINGS
-      ====================================================== */}
-
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">My Upcoming Bookings</h2>
@@ -235,20 +201,12 @@ const ResourceBooking = () => {
         </div>
       </div>
 
-      {/* ======================================================
-          ADD RESOURCE MODAL
-      ====================================================== */}
-
       <AddResourceModal
         open={addResourceOpen}
         onClose={() => setAddResourceOpen(false)}
         onSubmit={handleAddResource}
         isSubmitting={isCreatingResource}
       />
-
-      {/* ======================================================
-          BOOKING MODAL
-      ====================================================== */}
 
       <ResourceBookingModal
         open={bookingOpen}

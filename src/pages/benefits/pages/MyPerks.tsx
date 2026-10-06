@@ -36,10 +36,7 @@ export default function MyPerks(): React.JSX.Element {
     refetchUserPerks,
   } = useBenefitsPage();
 
-  /* ============================================================
-     MAP DATABASE DATA TO UI DATA
-  ============================================================ */
-
+ 
   const myPerks: MyPerk[] = filteredUserPerks.map((userPerk: any) => {
     const validUntil = userPerk.valid_until ? new Date(userPerk.valid_until) : null;
 
@@ -85,10 +82,6 @@ export default function MyPerks(): React.JSX.Element {
     };
   });
 
-  /* ============================================================
-     LOADING
-  ============================================================ */
-
   if (userPerksLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -102,10 +95,6 @@ export default function MyPerks(): React.JSX.Element {
       </div>
     );
   }
-
-  /* ============================================================
-     ERROR
-  ============================================================ */
 
   if (userPerksError) {
     return (
@@ -201,10 +190,6 @@ export default function MyPerks(): React.JSX.Element {
   );
 }
 
-/* ================================
-   Perk Card
-================================ */
-
 function PerkCard({ perk, onView }: PerkCardProps): React.JSX.Element {
   const percentage =
     perk.limit !== null && perk.used !== null && perk.limit > 0
@@ -292,9 +277,6 @@ function PerkCard({ perk, onView }: PerkCardProps): React.JSX.Element {
   );
 }
 
-/* ================================
-   Details Modal
-================================ */
 
 function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): React.JSX.Element {
   return (
@@ -383,9 +365,6 @@ function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): 
   );
 }
 
-/* ================================
-   Date Formatter
-================================ */
 
 function formatDate(value?: string | null): string {
   if (!value) {

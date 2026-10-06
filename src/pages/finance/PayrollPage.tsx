@@ -72,107 +72,141 @@ export function PayrollPage() {
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
   const formatApiRecord = (item: Record<string, unknown>): PayrollRecord => {
-  // Deep search helper to find a key inside deeply nested objects/wrappers
-  const findDeepValue = (obj: any, keys: string[]): any => {
-    if (!obj || typeof obj !== 'object') return undefined;
-    for (const key of keys) {
-      if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') return obj[key];
-    }
-    for (const p in obj) {
-      if (obj[p] && typeof obj[p] === 'object' && !Array.isArray(obj[p])) {
-        const found = findDeepValue(obj[p], keys);
-        if (found !== undefined && found !== null && found !== '') return found;
+    // Deep search helper to find a key inside deeply nested objects/wrappers
+    const findDeepValue = (obj: any, keys: string[]): any => {
+      if (!obj || typeof obj !== 'object') return undefined;
+      for (const key of keys) {
+        if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') return obj[key];
       }
-    }
-    return undefined;
+      for (const p in obj) {
+        if (obj[p] && typeof obj[p] === 'object' && !Array.isArray(obj[p])) {
+          const found = findDeepValue(obj[p], keys);
+          if (found !== undefined && found !== null && found !== '') return found;
+        }
+      }
+      return undefined;
+    };
+
+    // 1. Extract Arrays
+    const rawEarnings =
+      (findDeepValue(item, ['earnings']) as Array<{ name: string; amount: number }>) || [];
+    const rawDeductions =
+      (findDeepValue(item, ['deductions']) as Array<{ name: string; amount: number }>) || [];
+
+    // 2. Extract Employee Name
+    const nameKeys = [
+      'employeeName',
+      'employee_name',
+      'employeeName',
+      'name',
+      'full_name',
+      'username',
+    ];
+    const employeeName = String(findDeepValue(item, nameKeys) || 'Unnamed Employee').trim();
+
+    // 3. Extract Base Salary
+    const baseKeys = [
+      'basePay',
+      'base_amount',
+      'base_pay',
+      'basicSalary',
+      'basic_salary',
+      'base_pay_amount',
+      'base',
+    ];
+    const baseFromEarnings = rawEarnings.find(
+      (e) => e.name?.toLowerCase().includes('basic') || e.name?.toLowerCase().includes('base')
+    )?.amount;
+    const basePay = Number(findDeepValue(item, baseKeys) ?? baseFromEarnings ?? 0);
+
+    // 4. Extract Bonus
+    const bonusKeys = ['bonusPay', 'bonus_amount', 'bonus_pay', 'bonus'];
+    const bonusFromEarnings = rawEarnings.find((e) =>
+      e.name?.toLowerCase().includes('bonus')
+    )?.amount;
+    const bonusPay = Number(findDeepValue(item, bonusKeys) ?? bonusFromEarnings ?? 0);
+
+    // 5. Extract Total / Net Salary
+    const totalKeys = [
+      'netSalary',
+      'total_amount',
+      'net_salary',
+      'totalSalary',
+      'total_salary',
+      'totalEarnings',
+      'total',
+    ];
+    const calculatedTotal = rawEarnings.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const netSalary = Number(
+      findDeepValue(item, totalKeys) ?? (calculatedTotal > 0 ? calculatedTotal : basePay + bonusPay)
+    );
+
+    // 6. Extract Pay Period / Date
+    const dateKeys = ['monthYear', 'month_year', 'payPeriod', 'pay_period', 'date', 'created_at'];
+    const monthYear = String(findDeepValue(item, dateKeys) || 'OCTOBER 2026');
+
+    // 7. Extract Position
+    const positionKeys = ['position', 'employee_position', 'designation', 'role'];
+    const position = String(findDeepValue(item, positionKeys) || 'Employee');
+
+    const userId = Number(
+      findDeepValue(item, ['userId', 'user_id', 'employeeId', 'employee_id']) || 0
+    );
+
+    return {
+      id: Number(item.id || findDeepValue(item, ['id']) || Date.now()),
+      userId: userId,
+      base: basePay,
+      bonus: bonusPay,
+      total: netSalary,
+      date: monthYear,
+
+      monthYear: monthYear,
+      paySlipNo: String(
+        findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'slip_no']) || `SLIP-${Date.now()}`
+      ),
+      payPeriod: String(findDeepValue(item, ['payPeriod', 'pay_period']) || monthYear),
+
+      companyName: String(findDeepValue(item, ['companyName', 'company_name']) || 'AETHERADIX'),
+      companyAddress: String(
+        findDeepValue(item, ['companyAddress', 'company_address']) ||
+          'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+      ),
+
+      employeeId: String(userId),
+      employeeName: employeeName,
+      position: position,
+      accountNumber: String(findDeepValue(item, ['accountNumber', 'account_number']) || 'N/A'),
+
+      paidDays: Number(findDeepValue(item, ['paidDays', 'paid_days']) || 22),
+      lopDays: Number(findDeepValue(item, ['lopDays', 'lop_days']) || 0),
+
+      generatedOn: String(
+        findDeepValue(item, ['generatedOn', 'generated_on']) ||
+          new Date().toISOString().split('T')[0]
+      ),
+
+      earnings:
+        rawEarnings.length > 0
+          ? rawEarnings
+          : [
+              { name: 'Basic Pay', amount: basePay },
+              ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+            ],
+      deductions: rawDeductions,
+
+      authorizedSignatory: String(
+        findDeepValue(item, ['authorizedSignatory', 'authorized_signatory']) || 'Seema Srivastava'
+      ),
+      signatoryRole: String(
+        findDeepValue(item, ['signatoryRole', 'signatory_role']) || '(Director)'
+      ),
+      hrNote: String(
+        findDeepValue(item, ['hrNote', 'hr_note']) ||
+          'For any discrepancies, please contact the HR department within 3 working days.'
+      ),
+    };
   };
-
-  // 1. Extract Arrays
-  const rawEarnings = (findDeepValue(item, ['earnings']) as Array<{ name: string; amount: number }>) || [];
-  const rawDeductions = (findDeepValue(item, ['deductions']) as Array<{ name: string; amount: number }>) || [];
-
-  // 2. Extract Employee Name
-  const nameKeys = ['employeeName', 'employee_name', 'employeeName', 'name', 'full_name', 'username'];
-  const employeeName = String(findDeepValue(item, nameKeys) || 'Unnamed Employee').trim();
-
-  // 3. Extract Base Salary
-  const baseKeys = ['basePay', 'base_amount', 'base_pay', 'basicSalary', 'basic_salary', 'base_pay_amount', 'base'];
-  const baseFromEarnings = rawEarnings.find((e) =>
-    e.name?.toLowerCase().includes('basic') || e.name?.toLowerCase().includes('base')
-  )?.amount;
-  const basePay = Number(findDeepValue(item, baseKeys) ?? baseFromEarnings ?? 0);
-
-  // 4. Extract Bonus
-  const bonusKeys = ['bonusPay', 'bonus_amount', 'bonus_pay', 'bonus'];
-  const bonusFromEarnings = rawEarnings.find((e) =>
-    e.name?.toLowerCase().includes('bonus')
-  )?.amount;
-  const bonusPay = Number(findDeepValue(item, bonusKeys) ?? bonusFromEarnings ?? 0);
-
-  // 5. Extract Total / Net Salary
-  const totalKeys = ['netSalary', 'total_amount', 'net_salary', 'totalSalary', 'total_salary', 'totalEarnings', 'total'];
-  const calculatedTotal = rawEarnings.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-  const netSalary = Number(findDeepValue(item, totalKeys) ?? (calculatedTotal > 0 ? calculatedTotal : basePay + bonusPay));
-
-  // 6. Extract Pay Period / Date
-  const dateKeys = ['monthYear', 'month_year', 'payPeriod', 'pay_period', 'date', 'created_at'];
-  const monthYear = String(findDeepValue(item, dateKeys) || 'OCTOBER 2026');
-
-  // 7. Extract Position
-  const positionKeys = ['position', 'employee_position', 'designation', 'role'];
-  const position = String(findDeepValue(item, positionKeys) || 'Employee');
-
-  const userId = Number(findDeepValue(item, ['userId', 'user_id', 'employeeId', 'employee_id']) || 0);
-
-  return {
-    id: Number(item.id || findDeepValue(item, ['id']) || Date.now()),
-    userId: userId,
-    base: basePay,
-    bonus: bonusPay,
-    total: netSalary,
-    date: monthYear,
-
-    monthYear: monthYear,
-    paySlipNo: String(findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'slip_no']) || `SLIP-${Date.now()}`),
-    payPeriod: String(findDeepValue(item, ['payPeriod', 'pay_period']) || monthYear),
-
-    companyName: String(findDeepValue(item, ['companyName', 'company_name']) || 'AETHERADIX'),
-    companyAddress: String(
-      findDeepValue(item, ['companyAddress', 'company_address']) ||
-      'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
-    ),
-
-    employeeId: String(userId),
-    employeeName: employeeName,
-    position: position,
-    accountNumber: String(findDeepValue(item, ['accountNumber', 'account_number']) || 'N/A'),
-
-    paidDays: Number(findDeepValue(item, ['paidDays', 'paid_days']) || 22),
-    lopDays: Number(findDeepValue(item, ['lopDays', 'lop_days']) || 0),
-
-    generatedOn: String(
-      findDeepValue(item, ['generatedOn', 'generated_on']) || new Date().toISOString().split('T')[0]
-    ),
-
-    earnings:
-      rawEarnings.length > 0
-        ? rawEarnings
-        : [
-            { name: 'Basic Pay', amount: basePay },
-            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
-          ],
-    deductions: rawDeductions,
-
-    authorizedSignatory: String(
-      findDeepValue(item, ['authorizedSignatory', 'authorized_signatory']) || 'Seema Srivastava'
-    ),
-    signatoryRole: String(findDeepValue(item, ['signatoryRole', 'signatory_role']) || '(Director)'),
-    hrNote: String(
-      findDeepValue(item, ['hrNote', 'hr_note']) ||
-      'For any discrepancies, please contact the HR department within 3 working days.'
-    ),
-  };
-};
 
   // 4. Update local state when API data changes
   useEffect(() => {
@@ -450,7 +484,9 @@ export function PayrollPage() {
           columns={columns}
           dataSource={payroll}
           loading={isFetching}
-          rowKey={(record) => String(record.paySlipNo || record.id || record.userId || Math.random())}
+          rowKey={(record) =>
+            String(record.paySlipNo || record.id || record.userId || Math.random())
+          }
           locale={{
             emptyText: isError ? 'Error loading payroll records.' : 'No payroll records found.',
           }}

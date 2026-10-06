@@ -37,10 +37,6 @@ export default function PerkTypes(): React.JSX.Element {
 
   const [editing, setEditing] = useState<PerkType | null>(null);
 
-  /* ============================================================
-     SEARCH
-  ============================================================ */
-
   const filteredTypes = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
 
@@ -51,10 +47,7 @@ export default function PerkTypes(): React.JSX.Element {
     return perkTypes.filter((item) => item.name.toLowerCase().includes(searchValue));
   }, [perkTypes, search]);
 
-  /* ============================================================
-     GET PERK COUNT FOR TYPE
-  ============================================================ */
-
+  
   const getPerkCount = (perkTypeId: number): number => {
     return perks.filter((perk) => perk.perk_type_id === perkTypeId).length;
   };
@@ -103,9 +96,6 @@ export default function PerkTypes(): React.JSX.Element {
     );
   }
 
-  /* ============================================================
-     ERROR
-  ============================================================ */
 
   if (perkTypesError) {
     return (
@@ -251,10 +241,6 @@ export default function PerkTypes(): React.JSX.Element {
   );
 }
 
-/* ============================================================
-   TYPE MODAL
-============================================================ */
-
 function TypeModal({ type, isSaving, onClose, onSave }: TypeModalProps): React.JSX.Element {
   const [name, setName] = useState(type?.name ?? '');
 
@@ -339,10 +325,6 @@ function TypeModal({ type, isSaving, onClose, onSave }: TypeModalProps): React.J
     </div>
   );
 }
-
-/* ============================================================
-   STATUS
-============================================================ */
 
 function Status({ status }: { status: PerkTypeStatus }): React.JSX.Element {
   return (

@@ -41,9 +41,6 @@ interface InvoiceTemplateProps {
 }
 
 const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invoice }, ref) => {
-  /* =========================================================
-       CALCULATIONS
-    ========================================================= */
 
   const subTotal = invoice.items.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
@@ -54,9 +51,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
 
   const total = subTotal + gstAmount;
 
-  /* =========================================================
-       FORMATTERS
-    ========================================================= */
 
   const formatCurrency = (value: number) => {
     return `₹${Number(value || 0).toLocaleString('en-IN', {
@@ -81,13 +75,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
     });
   };
 
-  /* =========================================================
-       STYLES
-       IMPORTANT:
-       Use HEX colors only.
-       Do not use Tailwind color classes here.
-    ========================================================= */
-
+  
   const colors = {
     black: '#111827',
     dark: '#1F2937',
@@ -98,10 +86,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
     blue: '#E0F2FE',
     blueDark: '#BAE6FD',
   };
-
-  /* =========================================================
-       TEMPLATE
-    ========================================================= */
 
   return (
     <div
@@ -124,10 +108,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           padding: '53px',
           color: colors.black,
         }}>
-        {/* =====================================================
-              WATERMARK
-          ===================================================== */}
-
+      
         <div
           style={{
             position: 'absolute',
@@ -145,9 +126,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           ARX
         </div>
 
-        {/* =====================================================
-              HEADER
-          ===================================================== */}
 
         <div
           style={{
@@ -218,9 +196,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           </div>
         </div>
 
-        {/* =====================================================
-              COMPANY DETAILS
-          ===================================================== */}
 
         <div
           style={{
@@ -257,10 +232,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           {invoice.companyGSTIN && <p style={{ margin: 0 }}>GSTIN: {invoice.companyGSTIN}</p>}
         </div>
 
-        {/* =====================================================
-              BILL TO
-          ===================================================== */}
-
         <div
           style={{
             position: 'relative',
@@ -293,10 +264,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
 
           {invoice.billToGSTIN && <p style={{ margin: 0 }}>GSTIN: {invoice.billToGSTIN}</p>}
         </div>
-
-        {/* =====================================================
-              INVOICE INFORMATION
-          ===================================================== */}
 
         <div
           style={{
@@ -331,10 +298,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             </p>
           </div>
         </div>
-
-        {/* =====================================================
-              ITEMS TABLE
-          ===================================================== */}
 
         <table
           style={{
@@ -449,10 +412,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           </tbody>
         </table>
 
-        {/* =====================================================
-              TOTAL
-          ===================================================== */}
-
         <div
           style={{
             position: 'relative',
@@ -509,10 +468,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           </div>
         </div>
 
-        {/* =====================================================
-              NOTES
-          ===================================================== */}
-
         {invoice.notes && (
           <div
             style={{
@@ -539,10 +494,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             </p>
           </div>
         )}
-
-        {/* =====================================================
-              FOOTER
-          ===================================================== */}
 
         <div
           style={{
