@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   FileText,
   Eye,
@@ -12,17 +12,93 @@ import {
   Calendar,
   Sparkles,
   UserCheck,
+  Printer,
+  Download,
 } from 'lucide-react';
-
-// 1. Imports from financeApiSlice & permissionSlice
+import { message } from 'antd';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import {
   useGetSalarySlipByIdQuery,
   useGetAllSalarySlipsQuery,
+  useLazyGetSalarySlipByIdQuery,
 } from '@/store/api/financeApiSlice';
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
+import ReactDOMServer from 'react-dom/server';
 
-// 2. Transformed record structure for UI rendering
+import SalarySlipTemplate from './components/SalarySlipTemplate'; 
+import  type { SalarySlipData } from './components/SalarySlipTemplate'; 
+// Interface for helper function payload mapping
+export interface PayrollRecord {
+  id: number;
+  userId: number;
+  base: number;
+  bonus: number;
+  total: number;
+  date: string;
+  monthYear: string;
+  paySlipNo: string;
+  payPeriod: string;
+  companyName: string;
+  companyAddress: string;
+  employeeId: string;
+  employeeName: string;
+  position: string;
+  accountNumber: string;
+  paidDays: number;
+  lopDays: number;
+  generatedOn: string;
+  earnings: Array<{ name: string; amount: number }>;
+  deductions: Array<{ name: string; amount: number }>;
+  authorizedSignatory: string;
+  signatoryRole: string;
+  hrNote: string;
+}
+
+interface RawSalarySlip {
+  id?: number | string;
+  employee_id?: number | string;
+  employeeId?: number | string;
+  user_id?: number | string;
+  userId?: number | string;
+  employee_name?: string;
+  employeeName?: string;
+  position?: string;
+  base_amount?: number;
+  basePay?: number;
+  bonus_amount?: number;
+  bonusPay?: number;
+  total_amount?: number;
+  net_salary?: number;
+  netSalary?: number;
+  total?: number;
+  month_year?: string;
+  monthYear?: string;
+  pay_period?: string;
+  payPeriod?: string;
+  pay_slip_no?: string;
+  paySlipNo?: string;
+  account_number?: string;
+  accountNumber?: string;
+  paid_days?: number;
+  paidDays?: number;
+  lop_days?: number;
+  lopDays?: number;
+  earnings?: SalaryBreakdownItem[];
+  deductions?: SalaryBreakdownItem[];
+  authorized_signatory?: string;
+  authorizedSignatory?: string;
+  signatory_role?: string;
+  signatoryRole?: string;
+  hr_note?: string;
+  hrNote?: string;
+  created_at?: string;
+  createdAt?: string;
+  created_by_username?: string;
+  createdBy?: string;
+}
+
 export interface ParsedSalarySlip {
   id: number | string;
   employeeId: number | string;
@@ -45,14 +121,179 @@ export interface ParsedSalarySlip {
   createdAt: string;
   createdBy: string;
 }
+ 
+
+export const generateSalarySlipPdf = async (record: Partial<SalarySlipData>): Promise<Blob> => {
+  // 1. Render React component template directly to static HTML string
+  const htmlString = ReactDOMServer.renderToString(
+    <SalarySlipTemplate data={record} />
+  );
+
+  // 2. Create off-screen container with explicit A4 width dimensions
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '-9999px';
+  container.style.width = '794px'; // Matches style width in template
+  container.style.backgroundColor = '#ffffff';
+
+  container.innerHTML = htmlString;
+  document.body.appendChild(container);
+
+  try {
+    // 3. Ensure images/SVGs inside the container are loaded before capturing
+    const images = Array.from(container.querySelectorAll('img'));
+    await Promise.all(
+      images.map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete) resolve();
+            else {
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            }
+          })
+      )
+    );
+
+    // 4. Capture container with html2canvas
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const imageHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    // 5. Build single page or multi-page PDF
+    if (imageHeight <= pdfHeight) {
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
+    } else {
+      let remainingHeight = imageHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imageHeight);
+      remainingHeight -= pdfHeight;
+
+      while (remainingHeight > 0) {
+        position -= pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imageHeight);
+        remainingHeight -= pdfHeight;
+      }
+    }
+
+    return pdf.output('blob');
+  } finally {
+    // Clean up temporary DOM element
+    if (document.body.contains(container)) {
+      document.body.removeChild(container);
+    }
+  }
+};
+
+export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord => {
+  const rawEarnings = Array.isArray(item.earnings)
+    ? (item.earnings as Array<{ name: string; amount: number }>)
+    : [];
+  const rawDeductions = Array.isArray(item.deductions)
+    ? (item.deductions as Array<{ name: string; amount: number }>)
+    : [];
+
+  const basePay = Number(
+    item.base_amount ||
+      item.basePay ||
+      item.base_pay ||
+      rawEarnings.find((e) => e.name?.toLowerCase().includes('basic'))?.amount ||
+      0
+  );
+
+  const bonusPay = Number(
+    item.bonus_amount ||
+      item.bonusPay ||
+      item.bonus ||
+      rawEarnings.find((e) => e.name?.toLowerCase().includes('bonus'))?.amount ||
+      0
+  );
+
+  const netSalary = Number(item.total_amount || item.net_salary || item.netSalary || item.total || 0);
+  const monthYear = String(item.month_year || item.monthYear || item.created_at || 'OCTOBER 2026');
+  const position = String(item.position || item.employee_position || item.designation || 'Employee');
+  const userId = Number(item.user_id || item.userId || 0);
+
+  return {
+    id: Number(item.id || Date.now()),
+    userId: userId,
+    base: basePay,
+    bonus: bonusPay,
+    total: netSalary,
+    date: monthYear,
+
+    monthYear: monthYear,
+    paySlipNo: String(item.pay_slip_no || item.paySlipNo || `SLIP-${item.id || Date.now()}`),
+    payPeriod: String(item.pay_period || item.payPeriod || monthYear),
+
+    companyName: String(item.company_name || item.companyName || 'AETHERADIX'),
+    companyAddress: String(
+      item.company_address ||
+        item.companyAddress ||
+        'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+    ),
+
+    employeeId: String(item.employee_id || item.employeeId || item.user_id || '0'),
+    employeeName: String(item.employee_name || item.employeeName || 'Unnamed Employee'),
+    position: position,
+    accountNumber: String(item.account_number || item.accountNumber || 'N/A'),
+
+    paidDays: Number(item.paid_days || item.paidDays || 22),
+    lopDays: Number(item.lop_days || item.lopDays || 0),
+
+    generatedOn: String(
+      item.generated_on || item.generatedOn || new Date().toISOString().split('T')[0]
+    ),
+
+    earnings:
+      rawEarnings.length > 0
+        ? rawEarnings
+        : [
+            { name: 'Basic Pay', amount: basePay },
+            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+          ],
+    deductions: rawDeductions,
+
+    authorizedSignatory: String(
+      item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava'
+    ),
+    signatoryRole: String(item.signatory_role || item.signatoryRole || '(Director)'),
+    hrNote: String(
+      item.hr_note ||
+        item.hrNote ||
+        'For any discrepancies, please contact the HR department within 3 working days.'
+    ),
+  };
+};
 
 export default function MyPaySlipPage() {
   const [search, setSearch] = useState('');
   const [selectedSlip, setSelectedSlip] = useState<ParsedSalarySlip | null>(null);
 
+  // Lazy trigger query for downloading latest slip
+  const [triggerGetSalarySlip] = useLazyGetSalarySlipByIdQuery();
+
   // 1. Fetch authenticated user details
-  const { data: permissionResponse, isLoading: isPermissionsLoading } =
-    useGetMyPermissionsQuery();
+  const { data: permissionResponse, isLoading: isPermissionsLoading } = useGetMyPermissionsQuery();
   const userDetails = permissionResponse?.data;
   const userId = userDetails?.userId;
 
@@ -66,36 +307,102 @@ export default function MyPaySlipPage() {
     skip: !userId,
   });
 
-  // Fallback query: If employee endpoint returns empty/unsupported, fetch all slips
+  // Fallback query: Executed if employee-specific query yields no records or fails
+  const shouldFetchAll = Boolean(!isEmpSlipsLoading && (isEmpError || !empSlipsData?.data?.length));
+
   const {
     data: allSlipsData,
     isLoading: isAllSlipsLoading,
     isError: isAllError,
     refetch: refetchAllSlips,
   } = useGetAllSalarySlipsQuery(undefined, {
-    skip: Boolean(userId && empSlipsData),
+    skip: !shouldFetchAll,
   });
 
-  const isLoading = isPermissionsLoading || isEmpSlipsLoading || isAllSlipsLoading;
+  const isLoading = isPermissionsLoading || isEmpSlipsLoading || (shouldFetchAll && isAllSlipsLoading);
   const isError = isEmpError && isAllError;
 
-  // 3. Process and normalize raw data from financeApiSlice
+  // 3. Download helper handler
+  const handleDownload = async (slip: ParsedSalarySlip) => {
+    const formattedRecord: PayrollRecord = {
+      id: Number(slip.id),
+      userId: Number(slip.employeeId),
+      base: slip.basePay,
+      bonus: slip.bonusPay,
+      total: slip.netSalary,
+      date: slip.monthYear,
+      monthYear: slip.monthYear,
+      paySlipNo: slip.paySlipNo,
+      payPeriod: slip.payPeriod,
+      companyName: 'AETHERADIX',
+      companyAddress: 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP',
+      employeeId: String(slip.employeeId),
+      employeeName: slip.employeeName,
+      position: slip.position,
+      accountNumber: slip.accountNumber,
+      paidDays: slip.paidDays,
+      lopDays: slip.lopDays,
+      generatedOn: slip.createdAt.split('T')[0],
+      earnings: slip.earnings,
+      deductions: slip.deductions,
+      authorizedSignatory: slip.authorizedSignatory || 'Seema Srivastava',
+      signatoryRole: slip.signatoryRole || '(Director)',
+      hrNote: slip.hrNote || 'For any discrepancies, please contact the HR department within 3 working days.',
+    };
+
+    try {
+      message.loading({ content: 'Fetching latest record from database...', key: 'dl' });
+
+      let dbRecord = formattedRecord;
+
+      try {
+        const result = await triggerGetSalarySlip(slip.id).unwrap();
+        const rawData = (result as { data?: unknown })?.data ?? result;
+
+        if (rawData && typeof rawData === 'object') {
+          dbRecord = formatApiRecord(rawData as Record<string, unknown>);
+        }
+      } catch (fetchErr) {
+        console.warn('Single slip endpoint unavailable. Falling back to table record state:', fetchErr);
+      }
+
+      message.loading({ content: 'Generating PDF...', key: 'dl' });
+      const pdfBlob = await generateSalarySlipPdf(dbRecord);
+
+      const url = window.URL.createObjectURL(pdfBlob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `Salary-Slip-${dbRecord.employeeName.replace(/\s+/g, '_')}-${dbRecord.monthYear}.pdf`;
+
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+
+      window.URL.revokeObjectURL(url);
+      message.success({ content: 'Salary slip downloaded!', key: 'dl' });
+    } catch (err: unknown) {
+      console.error('Download error:', err);
+      message.error({ content: 'Failed to generate and download salary slip PDF.', key: 'dl' });
+    }
+  };
+
+  // 4. Process and normalize raw data
   const userPayslips: ParsedSalarySlip[] = useMemo(() => {
     const rawResponse = empSlipsData ?? allSlipsData;
-    const rawList = rawResponse?.data || (Array.isArray(rawResponse) ? rawResponse : []);
+    const rawList: RawSalarySlip[] = rawResponse?.data || (Array.isArray(rawResponse) ? rawResponse : []);
 
     if (!Array.isArray(rawList)) return [];
 
-    // Filter strictly by user ID if querying from "all" endpoint
-    const userRecords = rawList.filter((item: any) => {
+    // Filter strictly by user ID if fallback query was used
+    const userRecords = rawList.filter((item) => {
       if (!userId) return true;
-      const empId = item.employee_id || item.employeeId || item.user_id || item.userId;
+      const empId = item.employee_id ?? item.employeeId ?? item.user_id ?? item.userId;
       return String(empId) === String(userId);
     });
 
-    return userRecords.map((item: any): ParsedSalarySlip => {
-      const earnings: SalaryBreakdownItem[] = Array.isArray(item.earnings) ? item.earnings : [];
-      const deductions: SalaryBreakdownItem[] = Array.isArray(item.deductions) ? item.deductions : [];
+    return userRecords.map((item): ParsedSalarySlip => {
+      const earnings = Array.isArray(item.earnings) ? item.earnings : [];
+      const deductions = Array.isArray(item.deductions) ? item.deductions : [];
 
       const basePay = Number(
         item.base_amount ??
@@ -117,8 +424,8 @@ export default function MyPaySlipPage() {
 
       return {
         id: item.id || Date.now(),
-        employeeId: item.employee_id || item.employeeId || item.user_id || userId || 0,
-        employeeName: item.employee_name || item.employeeName || userDetails?.username || 'Employee',
+        employeeId: item.employee_id ?? item.employeeId ?? item.user_id ?? userId ?? 0,
+        employeeName: item.employee_name ?? item.employeeName ?? userDetails?.username ?? 'Employee',
         position: item.position || 'Staff',
         basePay,
         bonusPay,
@@ -142,16 +449,14 @@ export default function MyPaySlipPage() {
 
   const currentUsername = userDetails?.username || 'User';
 
-  // Format Month & Year for Display (e.g., "October 2026")
-  const formatMonthYear = (dateStr: string) => {
+  const formatMonthYear = useCallback((dateStr: string) => {
     if (!dateStr || dateStr === 'N/A') return 'N/A';
     const parsed = new Date(dateStr);
     if (isNaN(parsed.getTime())) return dateStr;
     return parsed.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
+  }, []);
 
-  // Format Full Date (e.g., "06 Oct 2026")
-  const formatDate = (dateStr: string) => {
+  const formatDate = useCallback((dateStr: string) => {
     if (!dateStr || dateStr === 'N/A') return 'N/A';
     const parsed = new Date(dateStr);
     if (isNaN(parsed.getTime())) return dateStr;
@@ -160,9 +465,9 @@ export default function MyPaySlipPage() {
       month: 'short',
       year: 'numeric',
     });
-  };
+  }, []);
 
-  // Search Filter
+  // Filtered salary slips based on query
   const filteredSlips = useMemo(() => {
     const query = search.toLowerCase().trim();
     if (!query) return userPayslips;
@@ -180,20 +485,20 @@ export default function MyPaySlipPage() {
 
   const handleRefetch = () => {
     refetchEmpSlips();
-    refetchAllSlips();
+    if (shouldFetchAll) refetchAllSlips();
   };
 
-  // Loading View
   if (isLoading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 text-slate-500 gap-3">
         <Loader2 size={36} className="animate-spin text-slate-900" />
-        <p className="text-sm font-medium text-slate-600">Fetching salary records from finance...</p>
+        <p className="text-sm font-medium text-slate-600">
+          Fetching salary records from finance...
+        </p>
       </div>
     );
   }
 
-  // Error View
   if (isError) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 text-center max-w-md mx-auto space-y-4">
@@ -203,7 +508,8 @@ export default function MyPaySlipPage() {
         <div>
           <h2 className="font-semibold text-slate-900 text-lg">Failed to load salary slips</h2>
           <p className="text-xs text-slate-500 mt-1">
-            Could not retrieve finance records for <strong className="text-slate-800">@{currentUsername}</strong>.
+            Could not retrieve finance records for{' '}
+            <strong className="text-slate-800">@{currentUsername}</strong>.
           </p>
         </div>
         <button
@@ -243,8 +549,12 @@ export default function MyPaySlipPage() {
                 <Briefcase size={13} className="text-slate-400" />
                 {userDetails?.roles?.join(', ') || 'Employee'}
               </span>
-              <span>•</span>
-              <span className="font-mono text-slate-700">ID: #{userId}</span>
+              {userId && (
+                <>
+                  <span>•</span>
+                  <span className="font-mono text-slate-700">ID: #{userId}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -262,7 +572,8 @@ export default function MyPaySlipPage() {
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              aria-label="Clear search">
               <X size={14} />
             </button>
           )}
@@ -304,7 +615,7 @@ export default function MyPaySlipPage() {
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <FileText size={32} className="text-slate-300" />
                       <p className="text-sm font-medium text-slate-600">
-                        No salary slips found for this account.
+                        No salary slips found.
                       </p>
                     </div>
                   </td>
@@ -336,9 +647,7 @@ export default function MyPaySlipPage() {
                         <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
                           <UserCheck size={13} />
                         </div>
-                        <span className="font-medium text-slate-700">
-                          @{slip.createdBy}
-                        </span>
+                        <span className="font-medium text-slate-700">@{slip.createdBy}</span>
                       </div>
                     </td>
 
@@ -347,12 +656,21 @@ export default function MyPaySlipPage() {
                     </td>
 
                     <td className="py-4 px-6 text-right">
-                      <button
-                        onClick={() => setSelectedSlip(slip)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition active:scale-95 shadow-sm">
-                        <Eye size={13} />
-                        <span>View Statement</span>
-                      </button>
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => handleDownload(slip)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition active:scale-95"
+                          title="Download Salary Slip PDF">
+                          <Download size={13} />
+                          <span>PDF</span>
+                        </button>
+                        <button
+                          onClick={() => setSelectedSlip(slip)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition active:scale-95 shadow-sm">
+                          <Eye size={13} />
+                          <span>View Statement</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -362,25 +680,41 @@ export default function MyPaySlipPage() {
         </div>
       </div>
 
-      {/* Salary Slip Breakdown Modal */}
+      {/* Salary Slip Detail Modal */}
       {selectedSlip && (
         <SalarySlipDetailModal
           slip={selectedSlip}
           onClose={() => setSelectedSlip(null)}
+          onDownload={() => handleDownload(selectedSlip)}
         />
       )}
     </div>
   );
 }
 
-// Detailed Pay Slip View Modal
+// Detailed Pay Slip Modal Component
 function SalarySlipDetailModal({
   slip,
   onClose,
+  onDownload,
 }: {
   slip: ParsedSalarySlip;
   onClose: () => void;
+  onDownload: () => void;
 }) {
+  // Key listener to handle 'Escape' key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
@@ -389,21 +723,35 @@ function SalarySlipDetailModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Salary Statement: {slip.paySlipNo}
-            </h3>
+            <h3 className="text-lg font-bold text-slate-900">Salary Statement: {slip.paySlipNo}</h3>
             <p className="text-xs text-slate-500">
               Period: {slip.monthYear} | Employee: {slip.employeeName}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onDownload}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition active:scale-95 shadow-sm"
+              title="Download PDF">
+              <Download size={14} />
+              <span>Download PDF</span>
+            </button>
+            <button
+              onClick={handlePrint}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+              title="Print Payslip">
+              <Printer size={16} />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition"
+              aria-label="Close modal">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* Modal Content / Breakdown */}
+        {/* Modal Content */}
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-2xl text-xs">
             <div>
@@ -439,9 +787,13 @@ function SalarySlipDetailModal({
               <div className="bg-emerald-50/40 rounded-2xl p-3 space-y-2 border border-emerald-100/60">
                 {slip.earnings.length > 0 ? (
                   slip.earnings.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-xs py-1 border-b border-emerald-100/40 last:border-0">
+                    <div
+                      key={idx}
+                      className="flex justify-between text-xs py-1 border-b border-emerald-100/40 last:border-0">
                       <span className="text-slate-700">{item.name}</span>
-                      <span className="font-bold text-slate-900">₹{Number(item.amount).toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-slate-900">
+                        ₹{Number(item.amount).toLocaleString('en-IN')}
+                      </span>
                     </div>
                   ))
                 ) : (
@@ -457,9 +809,13 @@ function SalarySlipDetailModal({
               <div className="bg-red-50/40 rounded-2xl p-3 space-y-2 border border-red-100/60">
                 {slip.deductions.length > 0 ? (
                   slip.deductions.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-xs py-1 border-b border-red-100/40 last:border-0">
+                    <div
+                      key={idx}
+                      className="flex justify-between text-xs py-1 border-b border-red-100/40 last:border-0">
                       <span className="text-slate-700">{item.name}</span>
-                      <span className="font-bold text-slate-900">₹{Number(item.amount).toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-slate-900">
+                        ₹{Number(item.amount).toLocaleString('en-IN')}
+                      </span>
                     </div>
                   ))
                 ) : (
@@ -474,7 +830,8 @@ function SalarySlipDetailModal({
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-xs">
               {slip.authorizedSignatory && (
                 <p className="text-slate-600">
-                  <strong className="text-slate-800">Authorized Signatory:</strong> {slip.authorizedSignatory} ({slip.signatoryRole || 'HR'})
+                  <strong className="text-slate-800">Authorized Signatory:</strong>{' '}
+                  {slip.authorizedSignatory} ({slip.signatoryRole || 'HR'})
                 </p>
               )}
               {slip.hrNote && (

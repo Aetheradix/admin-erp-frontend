@@ -5,7 +5,6 @@ import type { ColumnsType } from 'antd/es/table';
 
 import { MoreHorizontal, User, Calendar, Download, Eye, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
-
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -16,26 +15,43 @@ import SalarySlipTemplate from './components/SalarySlipTemplate';
 // Importing from financeApiSlice
 import {
   useGetAllSalarySlipsQuery,
-  useLazyGetSalarySlipByIdQuery, // 👈 Now imports cleanly without TypeScript errors
   useCreateSalarySlipMutation,
+  useLazyGetSalarySlipByIdQuery,
 } from '@/store/api/financeApiSlice';
-// import type { CreateSalarySlipPayload } from '@/store/api/financeApiSlice';
 
 import type { SalarySlipData } from './components/SalarySlipForm';
 
-export interface PayrollRecord extends SalarySlipData {
+export interface PayrollRecord {
   id: number;
+  userId: number;
   base: number;
   bonus: number;
   total: number;
   date: string;
+  monthYear: string;
+  paySlipNo: string;
+  payPeriod: string;
+  companyName: string;
+  companyAddress: string;
+  employeeId: string;
+  employeeName: string;
+  position: string;
+  accountNumber: string;
+  paidDays: number;
+  lopDays: number;
+  generatedOn: string;
+  earnings: Array<{ name: string; amount: number }>;
+  deductions: Array<{ name: string; amount: number }>;
+  authorizedSignatory: string;
+  signatoryRole: string;
+  hrNote: string;
 }
 
 export function PayrollPage() {
-  // Fix 1: Use App.useApp() hook for message instance to resolve Ant Design context warning
+  // 1. Ant Design message instance hook
   const { message } = App.useApp();
 
-  // 1. Fetch salary slips from the database
+  // 2. Query Hooks
   const {
     data: rawData,
     isLoading: isFetching,
@@ -43,20 +59,122 @@ export function PayrollPage() {
   } = useGetAllSalarySlipsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
-  const [triggerGetSalarySlip] = useLazyGetSalarySlipByIdQuery();
 
-  // 2. Mutation to insert new salary slip record into DB
+  const [triggerGetSalarySlip] = useLazyGetSalarySlipByIdQuery();
   const [createSalarySlip, { isLoading: isSubmitting }] = useCreateSalarySlipMutation();
 
+  // 3. States
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
-
-  // States for viewing and on-demand PDF generation
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
   const [showSlipModal, setShowSlipModal] = useState(false);
 
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
+  const formatApiRecord = (item: Record<string, unknown>): PayrollRecord => {
+  // Deep search helper to find a key inside deeply nested objects/wrappers
+  const findDeepValue = (obj: any, keys: string[]): any => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (const key of keys) {
+      if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') return obj[key];
+    }
+    for (const p in obj) {
+      if (obj[p] && typeof obj[p] === 'object' && !Array.isArray(obj[p])) {
+        const found = findDeepValue(obj[p], keys);
+        if (found !== undefined && found !== null && found !== '') return found;
+      }
+    }
+    return undefined;
+  };
+
+  // 1. Extract Arrays
+  const rawEarnings = (findDeepValue(item, ['earnings']) as Array<{ name: string; amount: number }>) || [];
+  const rawDeductions = (findDeepValue(item, ['deductions']) as Array<{ name: string; amount: number }>) || [];
+
+  // 2. Extract Employee Name
+  const nameKeys = ['employeeName', 'employee_name', 'employeeName', 'name', 'full_name', 'username'];
+  const employeeName = String(findDeepValue(item, nameKeys) || 'Unnamed Employee').trim();
+
+  // 3. Extract Base Salary
+  const baseKeys = ['basePay', 'base_amount', 'base_pay', 'basicSalary', 'basic_salary', 'base_pay_amount', 'base'];
+  const baseFromEarnings = rawEarnings.find((e) =>
+    e.name?.toLowerCase().includes('basic') || e.name?.toLowerCase().includes('base')
+  )?.amount;
+  const basePay = Number(findDeepValue(item, baseKeys) ?? baseFromEarnings ?? 0);
+
+  // 4. Extract Bonus
+  const bonusKeys = ['bonusPay', 'bonus_amount', 'bonus_pay', 'bonus'];
+  const bonusFromEarnings = rawEarnings.find((e) =>
+    e.name?.toLowerCase().includes('bonus')
+  )?.amount;
+  const bonusPay = Number(findDeepValue(item, bonusKeys) ?? bonusFromEarnings ?? 0);
+
+  // 5. Extract Total / Net Salary
+  const totalKeys = ['netSalary', 'total_amount', 'net_salary', 'totalSalary', 'total_salary', 'totalEarnings', 'total'];
+  const calculatedTotal = rawEarnings.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  const netSalary = Number(findDeepValue(item, totalKeys) ?? (calculatedTotal > 0 ? calculatedTotal : basePay + bonusPay));
+
+  // 6. Extract Pay Period / Date
+  const dateKeys = ['monthYear', 'month_year', 'payPeriod', 'pay_period', 'date', 'created_at'];
+  const monthYear = String(findDeepValue(item, dateKeys) || 'OCTOBER 2026');
+
+  // 7. Extract Position
+  const positionKeys = ['position', 'employee_position', 'designation', 'role'];
+  const position = String(findDeepValue(item, positionKeys) || 'Employee');
+
+  const userId = Number(findDeepValue(item, ['userId', 'user_id', 'employeeId', 'employee_id']) || 0);
+
+  return {
+    id: Number(item.id || findDeepValue(item, ['id']) || Date.now()),
+    userId: userId,
+    base: basePay,
+    bonus: bonusPay,
+    total: netSalary,
+    date: monthYear,
+
+    monthYear: monthYear,
+    paySlipNo: String(findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'slip_no']) || `SLIP-${Date.now()}`),
+    payPeriod: String(findDeepValue(item, ['payPeriod', 'pay_period']) || monthYear),
+
+    companyName: String(findDeepValue(item, ['companyName', 'company_name']) || 'AETHERADIX'),
+    companyAddress: String(
+      findDeepValue(item, ['companyAddress', 'company_address']) ||
+      'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+    ),
+
+    employeeId: String(userId),
+    employeeName: employeeName,
+    position: position,
+    accountNumber: String(findDeepValue(item, ['accountNumber', 'account_number']) || 'N/A'),
+
+    paidDays: Number(findDeepValue(item, ['paidDays', 'paid_days']) || 22),
+    lopDays: Number(findDeepValue(item, ['lopDays', 'lop_days']) || 0),
+
+    generatedOn: String(
+      findDeepValue(item, ['generatedOn', 'generated_on']) || new Date().toISOString().split('T')[0]
+    ),
+
+    earnings:
+      rawEarnings.length > 0
+        ? rawEarnings
+        : [
+            { name: 'Basic Pay', amount: basePay },
+            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+          ],
+    deductions: rawDeductions,
+
+    authorizedSignatory: String(
+      findDeepValue(item, ['authorizedSignatory', 'authorized_signatory']) || 'Seema Srivastava'
+    ),
+    signatoryRole: String(findDeepValue(item, ['signatoryRole', 'signatory_role']) || '(Director)'),
+    hrNote: String(
+      findDeepValue(item, ['hrNote', 'hr_note']) ||
+      'For any discrepancies, please contact the HR department within 3 working days.'
+    ),
+  };
+};
+
+  // 4. Update local state when API data changes
   useEffect(() => {
     if (rawData) {
       const itemsList = Array.isArray(rawData?.data)
@@ -65,101 +183,23 @@ export function PayrollPage() {
           ? rawData
           : [];
 
-      const formattedRecords: PayrollRecord[] = itemsList.map((item: Record<string, unknown>) => {
-        const rawEarnings = Array.isArray(item.earnings)
-          ? (item.earnings as Array<{ name: string; amount: number }>)
-          : [];
-        const rawDeductions = Array.isArray(item.deductions)
-          ? (item.deductions as Array<{ name: string; amount: number }>)
-          : [];
-
-        const basePay = Number(
-          item.base_amount ||
-            item.basePay ||
-            item.base_pay ||
-            rawEarnings.find((e) => e.name?.toLowerCase().includes('basic'))?.amount ||
-            0
-        );
-
-        const bonusPay = Number(
-          item.bonus_amount ||
-            item.bonusPay ||
-            item.bonus ||
-            rawEarnings.find((e) => e.name?.toLowerCase().includes('bonus'))?.amount ||
-            0
-        );
-
-        const netSalary = Number(item.total_amount || item.net_salary || item.netSalary || 0);
-        const monthYear = String(
-          item.month_year || item.monthYear || item.created_at || 'OCTOBER 2026'
-        );
-        const position = String(
-          item.position || item.employee_position || item.designation || 'Employee'
-        );
-
-        return {
-          id: Number(item.id || Date.now()),
-          base: basePay,
-          bonus: bonusPay,
-          total: netSalary,
-          date: monthYear,
-
-          monthYear: monthYear,
-          paySlipNo: String(item.pay_slip_no || item.paySlipNo || `SLIP-${item.id || Date.now()}`),
-          payPeriod: String(item.pay_period || item.payPeriod || monthYear),
-
-          companyName: String(item.company_name || item.companyName || 'AETHERADIX'),
-          companyAddress: String(
-            item.company_address ||
-              item.companyAddress ||
-              'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
-          ),
-
-          employeeId: String(item.employee_id || item.employeeId || item.user_id || '0'),
-          employeeName: String(item.employee_name || item.employeeName || 'Unnamed Employee'),
-          position: position,
-          accountNumber: String(item.account_number || item.accountNumber || 'N/A'),
-
-          paidDays: Number(item.paid_days || item.paidDays || 22),
-          lopDays: Number(item.lop_days || item.lopDays || 0),
-
-          generatedOn: String(
-            item.generated_on || item.generatedOn || new Date().toISOString().split('T')[0]
-          ),
-
-          earnings:
-            rawEarnings.length > 0
-              ? rawEarnings
-              : [
-                  { name: 'Basic Pay', amount: basePay },
-                  ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
-                ],
-          deductions: rawDeductions,
-
-          authorizedSignatory: String(
-            item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava'
-          ),
-          signatoryRole: String(item.signatory_role || item.signatoryRole || '(Director)'),
-          hrNote: String(
-            item.hr_note ||
-              item.hrNote ||
-              'For any discrepancies, please contact the HR department within 3 working days.'
-          ),
-        };
-      });
+      const formattedRecords: PayrollRecord[] = itemsList.map((item: Record<string, unknown>) =>
+        formatApiRecord(item)
+      );
 
       setPayroll(formattedRecords);
     }
   }, [rawData]);
 
+  // PDF Generation Logic
   const generateSalarySlipPdf = async (record: PayrollRecord): Promise<Blob> => {
     setSelectedSlip(record);
 
-    // Wait for state update & off-screen DOM render
+    // Wait for state update and DOM target render
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     });
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     if (!hiddenPdfRef.current) {
       throw new Error('Salary slip template render target not found.');
@@ -200,14 +240,49 @@ export function PayrollPage() {
     return pdf.output('blob');
   };
 
+  const downloadSalarySlip = async (record: PayrollRecord) => {
+    try {
+      message.loading({ content: 'Fetching latest record from database...', key: 'dl' });
+
+      let dbRecord = record;
+
+      try {
+        const result = await triggerGetSalarySlip(record.id).unwrap();
+        const rawItem = (result as { data?: unknown })?.data ?? result;
+
+        if (rawItem && typeof rawItem === 'object') {
+          dbRecord = formatApiRecord(rawItem as Record<string, unknown>);
+        }
+      } catch (fetchErr) {
+        console.warn('Single slip endpoint warning, using table state:', fetchErr);
+      }
+
+      message.loading({ content: 'Generating PDF...', key: 'dl' });
+      const pdfBlob = await generateSalarySlipPdf(dbRecord);
+
+      const url = window.URL.createObjectURL(pdfBlob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `Salary-Slip-${dbRecord.employeeName.replace(/\s+/g, '_')}-${dbRecord.monthYear}.pdf`;
+
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+
+      window.URL.revokeObjectURL(url);
+      message.success({ content: 'Salary slip downloaded!', key: 'dl' });
+    } catch (err: unknown) {
+      console.error('Download error:', err);
+      message.error({ content: 'Failed to generate salary slip PDF.', key: 'dl' });
+    }
+  };
+
   const handleCreateSalarySlip = async (data: SalarySlipData) => {
     try {
-      // 1. Extract valid User ID
       const targetUserId = Number(
         data.employeeId || (data as any).userId || (data as any).user_id || (data as any).id
       );
 
-      // Guard Clause: Prevent API call if User ID is invalid/missing
       if (!targetUserId || isNaN(targetUserId) || targetUserId <= 0) {
         message.error('Please select a valid employee before submitting.');
         return;
@@ -230,10 +305,9 @@ export function PayrollPage() {
       const bonus =
         earningsList.find((i) => i?.name?.trim().toLowerCase().includes('bonus'))?.amount || 0;
 
-      // Construct backend payload (including both snake_case and camelCase keys for compatibility)
       const payload = {
-        user_id: targetUserId, // 👈 Required by SQL / backend validator
-        userId: targetUserId, // 👈 Dual key for ORMs
+        user_id: targetUserId,
+        userId: targetUserId,
         employee_id: targetUserId,
         employeeId: targetUserId,
         employeeName: data.employeeName || 'Unnamed Employee',
@@ -262,7 +336,6 @@ export function PayrollPage() {
         hrNote: data.hrNote || '',
       };
 
-      // Execute mutation
       await createSalarySlip(payload as any).unwrap();
 
       setShowSalarySlipForm(false);
@@ -276,132 +349,6 @@ export function PayrollPage() {
       message.error({ content: backendMessage, key: 'create-salary' });
     }
   };
-  // Helper function to convert raw API objects into structured PayrollRecord items
- const formatApiRecord = (item: Record<string, unknown>): PayrollRecord => {
-  const rawEarnings = Array.isArray(item.earnings)
-    ? (item.earnings as Array<{ name: string; amount: number }>)
-    : [];
-  const rawDeductions = Array.isArray(item.deductions)
-    ? (item.deductions as Array<{ name: string; amount: number }>)
-    : [];
-
-  const basePay = Number(
-    item.base_amount ||
-      item.basePay ||
-      item.base_pay ||
-      rawEarnings.find((e) => e.name?.toLowerCase().includes('basic'))?.amount ||
-      0
-  );
-
-  const bonusPay = Number(
-    item.bonus_amount ||
-      item.bonusPay ||
-      item.bonus ||
-      rawEarnings.find((e) => e.name?.toLowerCase().includes('bonus'))?.amount ||
-      0
-  );
-
-  const netSalary = Number(item.total_amount || item.net_salary || item.netSalary || 0);
-  const monthYear = String(
-    item.month_year || item.monthYear || item.created_at || 'OCTOBER 2026'
-  );
-  const position = String(
-    item.position || item.employee_position || item.designation || 'Employee'
-  );
-  const userId = Number(item.user_id || item.userId ||  0);
-
-  return {
-    id: Number(item.id || Date.now()),
-    userId: userId,
-    base: basePay,
-    bonus: bonusPay,
-    total: netSalary,
-    date: monthYear,
-
-    monthYear: monthYear,
-    paySlipNo: String(item.pay_slip_no || item.paySlipNo || `SLIP-${item.id || Date.now()}`),
-    payPeriod: String(item.pay_period || item.payPeriod || monthYear),
-
-    companyName: String(item.company_name || item.companyName || 'AETHERADIX'),
-    companyAddress: String(
-      item.company_address ||
-        item.companyAddress ||
-        'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
-    ),
-
-    employeeId: String(item.employee_id || item.employeeId || item.user_id || '0'),
-    employeeName: String(item.employee_name || item.employeeName || 'Unnamed Employee'),
-    position: position,
-    accountNumber: String(item.account_number || item.accountNumber || 'N/A'),
-
-    paidDays: Number(item.paid_days || item.paidDays || 22),
-    lopDays: Number(item.lop_days || item.lopDays || 0),
-
-    generatedOn: String(
-      item.generated_on || item.generatedOn || new Date().toISOString().split('T')[0]
-    ),
-
-    earnings:
-      rawEarnings.length > 0
-        ? rawEarnings
-        : [
-            { name: 'Basic Pay', amount: basePay },
-            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
-          ],
-    deductions: rawDeductions,
-
-    authorizedSignatory: String(
-      item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava'
-    ),
-    signatoryRole: String(item.signatory_role || item.signatoryRole || '(Director)'),
-    hrNote: String(
-      item.hr_note ||
-        item.hrNote ||
-        'For any discrepancies, please contact the HR department within 3 working days.'
-    ),
-  };
-};
-
-  const downloadSalarySlip = async (record: PayrollRecord) => {
-  try {
-    message.loading({ content: 'Fetching latest record from database...', key: 'dl' });
-
-    let dbRecord = record;
-
-    // Step 1: Fetch freshest record from DB using lazy query trigger
-    try {
-      const result = await triggerGetSalarySlip(record.id).unwrap();
-      const rawData = (result as { data?: unknown })?.data ?? result;
-
-      if (rawData && typeof rawData === 'object') {
-        dbRecord = formatApiRecord(rawData as Record<string, unknown>);
-      }
-    } catch (fetchErr) {
-      console.warn('Single slip endpoint unavailable. Falling back to table record state:', fetchErr);
-    }
-
-    // Step 2: Generate PDF blob from record
-    message.loading({ content: 'Generating PDF from database record...', key: 'dl' });
-    const pdfBlob = await generateSalarySlipPdf(dbRecord);
-
-    // Step 3: Trigger browser download
-    const url = window.URL.createObjectURL(pdfBlob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `Salary-Slip-${dbRecord.employeeName.replace(/\s+/g, '_')}-${dbRecord.monthYear}.pdf`;
-    
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-
-    window.URL.revokeObjectURL(url);
-    message.success({ content: 'Salary slip downloaded!', key: 'dl' });
-  } catch (err: unknown) {
-    console.error('Download error:', err);
-    message.error({ content: 'Failed to generate and download salary slip PDF.', key: 'dl' });
-  }
-};
-  
 
   const columns: ColumnsType<PayrollRecord> = [
     {
@@ -409,11 +356,13 @@ export function PayrollPage() {
       key: 'employee',
       render: (_, record) => (
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <User size={18} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-foreground">{record.employeeName}</span>
+            <span className="text-sm font-bold text-foreground">
+              {record.employeeName || 'Unnamed Employee'}
+            </span>
             <span className="text-[10px] font-bold text-muted uppercase">
               {record.position || 'Employee'}
             </span>
@@ -423,36 +372,32 @@ export function PayrollPage() {
     },
     {
       title: 'Base Pay',
-      dataIndex: 'base',
       key: 'base',
-      render: (val: number) =>
-        `₹${Number(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+      render: (_, record) =>
+        `₹${Number(record.base || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
     },
     {
       title: 'Bonus',
-      dataIndex: 'bonus',
       key: 'bonus',
-      render: (val: number) =>
-        `+₹${Number(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+      render: (_, record) =>
+        `+₹${Number(record.bonus || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
     },
     {
       title: 'Total Salary',
-      dataIndex: 'total',
       key: 'total',
-      render: (val: number) => (
+      render: (_, record) => (
         <span className="font-black text-gray-900">
-          ₹{Number(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          ₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </span>
       ),
     },
     {
       title: 'Pay Period',
-      dataIndex: 'date',
       key: 'date',
-      render: (text: string) => (
+      render: (_, record) => (
         <div className="flex items-center gap-2 text-xs font-bold text-muted">
           <Calendar size={14} />
-          {text}
+          {record.date || record.monthYear || 'N/A'}
         </div>
       ),
     },
@@ -505,7 +450,7 @@ export function PayrollPage() {
           columns={columns}
           dataSource={payroll}
           loading={isFetching}
-          rowKey="id"
+          rowKey={(record) => String(record.paySlipNo || record.id || record.userId || Math.random())}
           locale={{
             emptyText: isError ? 'Error loading payroll records.' : 'No payroll records found.',
           }}
