@@ -84,9 +84,6 @@ export const useExpensesPage = () => {
     });
   }, [expenses, activeCategory, activeStatus, searchQuery]);
 
-  // ---------------------------------------------------------
-  // COMPANY FINANCIAL METRICS & STATS
-  // ---------------------------------------------------------
   const stats: CompanyExpenseStats = useMemo(() => {
     return expenses.reduce(
       (acc, curr) => {
@@ -124,9 +121,6 @@ export const useExpensesPage = () => {
     );
   }, [expenses]);
 
-  // ---------------------------------------------------------
-  // ACTION HANDLERS
-  // ---------------------------------------------------------
   const handleCreateExpense = async (formData: FormData) => {
     try {
       await createExpense(formData).unwrap();
@@ -231,9 +225,6 @@ export const useExpensesPage = () => {
     }
   };
 
-  // ---------------------------------------------------------
-  // MODAL HELPERS
-  // ---------------------------------------------------------
   const openDetails = (expense: ExpenseRecord) => {
     setSelectedExpense(expense);
     setShowDetailModal(true);

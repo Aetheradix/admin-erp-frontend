@@ -53,9 +53,6 @@ export const STATUSES = ['All', 'Pending', 'Approved', 'Rejected'] as const;
 
 
 export const useFinancePage = () => {
-  // ---------------------------------------------------------
-  // RTK QUERY HOOKS
-  // ---------------------------------------------------------
   const {
     data: requests = [],
     isLoading,
@@ -69,9 +66,6 @@ export const useFinancePage = () => {
   const [updateReimbursementStatus, { isLoading: isUpdatingStatus }] =
     useUpdateReimbursementStatusMutation();
 
-  // ---------------------------------------------------------
-  // LOCAL UI STATE
-  // ---------------------------------------------------------
   const [showForm, setShowForm] = useState<boolean>(false);
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [activeStatus, setActiveStatus] = useState<string>('All');
@@ -79,9 +73,6 @@ export const useFinancePage = () => {
   const [selectedExpense, setSelectedExpense] = useState<Reimbursement | null>(null);
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
 
-  // ---------------------------------------------------------
-  // FILTERING LOGIC
-  // ---------------------------------------------------------
   const filteredRequests = useMemo(() => {
     return requests.filter((r: Reimbursement) => {
       // Category Filter
@@ -107,9 +98,6 @@ export const useFinancePage = () => {
     });
   }, [requests, activeCategory, activeStatus, searchQuery]);
 
-  // ---------------------------------------------------------
-  // FINANCIAL METRICS & SUMMARY
-  // ---------------------------------------------------------
   const stats: FinanceStats = useMemo(() => {
     return requests.reduce(
       (acc, curr) => {
@@ -142,9 +130,6 @@ export const useFinancePage = () => {
     );
   }, [requests]);
 
-  // ---------------------------------------------------------
-  // ACTION HANDLERS
-  // ---------------------------------------------------------
   const handleRequestSubmit = async (data: FormData | CreateReimbursementPayload) => {
     try {
       await createReimbursement(data).unwrap();
@@ -226,9 +211,6 @@ export const useFinancePage = () => {
     }
   };
 
-  // ---------------------------------------------------------
-  // UTILITY HELPERS
-  // ---------------------------------------------------------
   const resetFilters = () => {
     setActiveCategory('All');
     setActiveStatus('All');
