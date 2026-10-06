@@ -145,36 +145,59 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create salary slip record as JSON payload
-    createSalarySlip: builder.mutation<any, CreateSalarySlipPayload>({
-      query: (payload) => ({
-        url: '/finance/create-salary-slip',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          user_id: payload.userId,
-          employee_id: payload.employeeId,
-          employee_name: payload.employeeName,
-          position: payload.position,
-          month_year: payload.monthYear,
-          pay_period: payload.payPeriod,
-          pay_slip_no: payload.paySlipNo,
-          account_number: payload.accountNumber,
-          paid_days: payload.paidDays,
-          lop_days: payload.lopDays,
-          base_amount: payload.basePay,
-          bonus_amount: payload.bonusPay,
-          total_amount: payload.netSalary,
-          earnings: payload.earnings,
-          deductions: payload.deductions,
-          authorized_signatory: payload.authorizedSignatory,
-          signatory_role: payload.signatoryRole,
-          hr_note: payload.hrNote,
-        },
-      }),
-      invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }],
-    }),
+    // createSalarySlip: builder.mutation<any, CreateSalarySlipPayload>({
+    //   query: (payload) => ({
+    //     url: '/finance/create-salary-slip',
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: {
+    //       user_id: payload.userId,
+    //       employee_id: payload.employeeId,
+    //       employee_name: payload.employeeName,
+    //       position: payload.position,
+    //       month_year: payload.monthYear,
+    //       pay_period: payload.payPeriod,
+    //       pay_slip_no: payload.paySlipNo,
+    //       account_number: payload.accountNumber,
+    //       paid_days: payload.paidDays,
+    //       lop_days: payload.lopDays,
+    //       base_amount: payload.basePay,
+    //       bonus_amount: payload.bonusPay,
+    //       total_amount: payload.netSalary,
+    //       earnings: payload.earnings,
+    //       deductions: payload.deductions,
+    //       authorized_signatory: payload.authorizedSignatory,
+    //       signatory_role: payload.signatoryRole,
+    //       hr_note: payload.hrNote,
+    //     },
+    //   }),
+    //   invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }],
+    // }),
+
+
+    createSalarySlip: builder.mutation<any, any>({
+  query: (payload) => {
+    // Standardize user_id so backend destructuring gets user_id regardless of form key naming
+    const formattedPayload = {
+      ...payload,
+      user_id: payload.user_id || payload.userId,
+    };
+
+    console.log('RTK Query Sending Body to Backend:', formattedPayload);
+
+    return {
+      url: '/finance/create-salary-slip',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: formattedPayload, // 👈 Directly sends the complete payload object
+    };
+  },
+  invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }],
+}),
   }),
 });
 
@@ -189,6 +212,7 @@ export const {
   // Salary Slip Hooks
   useGetAllSalarySlipsQuery,
   useGetSalarySlipByIdQuery,
+  useLazyGetSalarySlipByIdQuery, // 👈 ADD THIS LINE HERE
   useGetSalarySlipsByEmployeeIdQuery,
   useCreateSalarySlipMutation,
 } = financeApiSlice;

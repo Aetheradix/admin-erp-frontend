@@ -16,6 +16,7 @@ import SalarySlipTemplate from './components/SalarySlipTemplate';
 // Importing from financeApiSlice
 import {
   useGetAllSalarySlipsQuery,
+  useLazyGetSalarySlipByIdQuery, // 👈 Now imports cleanly without TypeScript errors
   useCreateSalarySlipMutation,
 } from '@/store/api/financeApiSlice';
 // import type { CreateSalarySlipPayload } from '@/store/api/financeApiSlice';
@@ -42,6 +43,7 @@ export function PayrollPage() {
   } = useGetAllSalarySlipsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+  const [triggerGetSalarySlip] = useLazyGetSalarySlipByIdQuery();
 
   // 2. Mutation to insert new salary slip record into DB
   const [createSalarySlip, { isLoading: isSubmitting }] = useCreateSalarySlipMutation();
@@ -274,26 +276,132 @@ export function PayrollPage() {
       message.error({ content: backendMessage, key: 'create-salary' });
     }
   };
+  // Helper function to convert raw API objects into structured PayrollRecord items
+ const formatApiRecord = (item: Record<string, unknown>): PayrollRecord => {
+  const rawEarnings = Array.isArray(item.earnings)
+    ? (item.earnings as Array<{ name: string; amount: number }>)
+    : [];
+  const rawDeductions = Array.isArray(item.deductions)
+    ? (item.deductions as Array<{ name: string; amount: number }>)
+    : [];
 
-  /**
-   * DOWNLOAD ACTION (Generates PDF on the fly from database record)
-   */
-  const downloadSalarySlip = async (record: PayrollRecord) => {
-    try {
-      message.loading({ content: 'Generating PDF from database record...', key: 'dl' });
-      const pdfBlob = await generateSalarySlipPdf(record);
-      const url = window.URL.createObjectURL(pdfBlob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `Salary-Slip-${record.employeeName.replace(/\s+/g, '_')}-${record.monthYear}.pdf`;
-      anchor.click();
-      window.URL.revokeObjectURL(url);
-      message.success({ content: 'Salary slip downloaded!', key: 'dl' });
-    } catch (err: unknown) {
-      console.error('Download error:', err);
-      message.error({ content: 'Failed to generate and download salary slip PDF.', key: 'dl' });
-    }
+  const basePay = Number(
+    item.base_amount ||
+      item.basePay ||
+      item.base_pay ||
+      rawEarnings.find((e) => e.name?.toLowerCase().includes('basic'))?.amount ||
+      0
+  );
+
+  const bonusPay = Number(
+    item.bonus_amount ||
+      item.bonusPay ||
+      item.bonus ||
+      rawEarnings.find((e) => e.name?.toLowerCase().includes('bonus'))?.amount ||
+      0
+  );
+
+  const netSalary = Number(item.total_amount || item.net_salary || item.netSalary || 0);
+  const monthYear = String(
+    item.month_year || item.monthYear || item.created_at || 'OCTOBER 2026'
+  );
+  const position = String(
+    item.position || item.employee_position || item.designation || 'Employee'
+  );
+  const userId = Number(item.user_id || item.userId ||  0);
+
+  return {
+    id: Number(item.id || Date.now()),
+    userId: userId,
+    base: basePay,
+    bonus: bonusPay,
+    total: netSalary,
+    date: monthYear,
+
+    monthYear: monthYear,
+    paySlipNo: String(item.pay_slip_no || item.paySlipNo || `SLIP-${item.id || Date.now()}`),
+    payPeriod: String(item.pay_period || item.payPeriod || monthYear),
+
+    companyName: String(item.company_name || item.companyName || 'AETHERADIX'),
+    companyAddress: String(
+      item.company_address ||
+        item.companyAddress ||
+        'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+    ),
+
+    employeeId: String(item.employee_id || item.employeeId || item.user_id || '0'),
+    employeeName: String(item.employee_name || item.employeeName || 'Unnamed Employee'),
+    position: position,
+    accountNumber: String(item.account_number || item.accountNumber || 'N/A'),
+
+    paidDays: Number(item.paid_days || item.paidDays || 22),
+    lopDays: Number(item.lop_days || item.lopDays || 0),
+
+    generatedOn: String(
+      item.generated_on || item.generatedOn || new Date().toISOString().split('T')[0]
+    ),
+
+    earnings:
+      rawEarnings.length > 0
+        ? rawEarnings
+        : [
+            { name: 'Basic Pay', amount: basePay },
+            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+          ],
+    deductions: rawDeductions,
+
+    authorizedSignatory: String(
+      item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava'
+    ),
+    signatoryRole: String(item.signatory_role || item.signatoryRole || '(Director)'),
+    hrNote: String(
+      item.hr_note ||
+        item.hrNote ||
+        'For any discrepancies, please contact the HR department within 3 working days.'
+    ),
   };
+};
+
+  const downloadSalarySlip = async (record: PayrollRecord) => {
+  try {
+    message.loading({ content: 'Fetching latest record from database...', key: 'dl' });
+
+    let dbRecord = record;
+
+    // Step 1: Fetch freshest record from DB using lazy query trigger
+    try {
+      const result = await triggerGetSalarySlip(record.id).unwrap();
+      const rawData = (result as { data?: unknown })?.data ?? result;
+
+      if (rawData && typeof rawData === 'object') {
+        dbRecord = formatApiRecord(rawData as Record<string, unknown>);
+      }
+    } catch (fetchErr) {
+      console.warn('Single slip endpoint unavailable. Falling back to table record state:', fetchErr);
+    }
+
+    // Step 2: Generate PDF blob from record
+    message.loading({ content: 'Generating PDF from database record...', key: 'dl' });
+    const pdfBlob = await generateSalarySlipPdf(dbRecord);
+
+    // Step 3: Trigger browser download
+    const url = window.URL.createObjectURL(pdfBlob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `Salary-Slip-${dbRecord.employeeName.replace(/\s+/g, '_')}-${dbRecord.monthYear}.pdf`;
+    
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+
+    window.URL.revokeObjectURL(url);
+    message.success({ content: 'Salary slip downloaded!', key: 'dl' });
+  } catch (err: unknown) {
+    console.error('Download error:', err);
+    message.error({ content: 'Failed to generate and download salary slip PDF.', key: 'dl' });
+  }
+};
+  
 
   const columns: ColumnsType<PayrollRecord> = [
     {

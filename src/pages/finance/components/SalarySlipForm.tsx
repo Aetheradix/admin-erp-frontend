@@ -917,6 +917,7 @@ export interface SalarySlipData {
 
   companyName: string;
   companyAddress: string;
+  department?: string | null;
 
   userId: number | string; // ADDED: ID of logged-in user creating the slip
   employeeId: number | string; // ID of selected employee
@@ -1302,95 +1303,118 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     0
   );
   const netSalary = totalEarnings - totalDeductions;
+   const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const numericUserId = Number(formData.userId);
 
-    const numericUserId = Number(formData.userId);
+  if (!formData.userId || isNaN(numericUserId) || numericUserId === 0) {
+    setErrors((prev) => ({
+      ...prev,
+      userId: 'Please select a valid employee from the list.',
+    }));
+    return;
+  }
 
-    if (!formData.userId || isNaN(numericUserId) || numericUserId === 0) {
-      setErrors((prev) => ({
-        ...prev,
-        userId: 'Please select a valid employee from the list.',
-      }));
-      return;
-    }
+  try {
+    setIsSubmitting(true);
 
-    try {
-      setIsSubmitting(true);
+    // 1. Parse Month & Year safely from formData.monthYear (e.g., "OCTOBER 2026")
+    const dateParts = formData.monthYear ? formData.monthYear.trim().split(/\s+/) : [];
+    const monthNames = [
+      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
+    ];
 
-      // 1. Parse Month and Year from monthYear string (e.g., "OCTOBER 2026")
-      const dateParts = formData.monthYear.trim().split(' ');
-      const monthNames = [
-        'JANUARY',
-        'FEBRUARY',
-        'MARCH',
-        'APRIL',
-        'MAY',
-        'JUNE',
-        'JULY',
-        'AUGUST',
-        'SEPTEMBER',
-        'OCTOBER',
-        'NOVEMBER',
-        'DECEMBER',
-      ];
+    let payPeriodMonth: string = monthNames[new Date().getMonth()];
+    let payPeriodYear: number = new Date().getFullYear();
 
-      let payPeriodMonth = new Date().getMonth() + 1; // Default to current month
-      let payPeriodYear = new Date().getFullYear();
-
-      if (dateParts.length >= 2) {
-        const parsedMonth = monthNames.indexOf(dateParts[0].toUpperCase()) + 1;
-        if (parsedMonth > 0) payPeriodMonth = parsedMonth;
-        payPeriodYear = parseInt(dateParts[1], 10) || payPeriodYear;
+    if (dateParts.length >= 1) {
+      const firstPartUpper = dateParts[0].toUpperCase();
+      if (monthNames.includes(firstPartUpper)) {
+        payPeriodMonth = firstPartUpper;
       }
-
-      // 2. Extract itemized earnings
-      const getEarningAmount = (query: string) => {
-        const match = formData.earnings.find((i) => i.name.toLowerCase().includes(query));
-        return match ? Number(match.amount) || 0 : 0;
-      };
-
-      // 3. Extract itemized deductions
-      const getDeductionAmount = (query: string) => {
-        const match = formData.deductions.find((i) => i.name.toLowerCase().includes(query));
-        return match ? Number(match.amount) || 0 : 0;
-      };
-
-      // 4. Construct payload strictly matching the createSalarySlip service requirements
-      const payload = {
-        userId: numericUserId,
-        payPeriodMonth,
-        payPeriodYear,
-        employeeCode: String(formData.employeeId || `EMP-${numericUserId}`),
-        designation: formData.position || 'Employee',
-        bankAccountNumber: formData.accountNumber || null,
-
-        totalWorkingDays: Number(formData.paidDays) + Number(formData.lopDays) || 30,
-        daysWorked: Number(formData.paidDays) || 30,
-        leaveDays: Number(formData.lopDays) || 0,
-
-        basicSalary: getEarningAmount('basic'),
-        houseRentAllowance: getEarningAmount('allowance') || getEarningAmount('hra'),
-        bonus: getEarningAmount('bonus'),
-        otherEarnings: getEarningAmount('overtime'),
-
-        professionalTax: getDeductionAmount('tax') || getDeductionAmount('pt'),
-        providentFund: getDeductionAmount('contribution') || getDeductionAmount('pf'),
-        otherDeductions: getDeductionAmount('other'),
-
-        paymentStatus: 'paid',
-        paymentDate: formData.generatedOn,
-        remarks: formData.hrNote,
-      };
-
-      await onCreate(payload);
-    } catch (error) {
-      console.error('Failed to create salary slip:', error);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    if (dateParts.length >= 2) {
+      payPeriodYear = parseInt(dateParts[1], 10) || payPeriodYear;
+    }
+
+    // 2. Dynamic Earnings / Deductions helpers
+    const findAmountByKeywords = (items: typeof formData.earnings, keywords: string[]) => {
+      const match = items.find((i) =>
+        keywords.some((kw) => i.name.toLowerCase().includes(kw))
+      );
+      return match ? Number(match.amount) || 0 : 0;
+    };
+
+    const getUnmatchedSum = (items: typeof formData.earnings, matchedKeywords: string[]) => {
+      return items
+        .filter((i) => !matchedKeywords.some((kw) => i.name.toLowerCase().includes(kw)))
+        .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+    };
+
+    // 3. Extract itemized values
+    const basicSalary = findAmountByKeywords(formData.earnings, ['basic', 'base', 'salary']);
+    const houseRentAllowance = findAmountByKeywords(formData.earnings, ['hra', 'house', 'rent', 'allowance']);
+    const bonus = findAmountByKeywords(formData.earnings, ['bonus', 'incentive']);
+    const specialAllowance = findAmountByKeywords(formData.earnings, ['special', 'spl']);
+    const conveyanceAllowance = findAmountByKeywords(formData.earnings, ['conveyance', 'transport']);
+
+    const matchedEarningKeywords = ['basic', 'base', 'salary', 'hra', 'house', 'rent', 'allowance', 'bonus', 'incentive', 'special', 'spl', 'conveyance', 'transport'];
+    const otherEarnings = getUnmatchedSum(formData.earnings, matchedEarningKeywords);
+
+    const providentFund = findAmountByKeywords(formData.deductions, ['pf', 'provident', 'contribution']);
+    const professionalTax = findAmountByKeywords(formData.deductions, ['pt', 'prof', 'professional']);
+    const incomeTaxTds = findAmountByKeywords(formData.deductions, ['tax', 'tds', 'income']);
+
+    const matchedDeductionKeywords = ['pf', 'provident', 'contribution', 'pt', 'prof', 'professional', 'tax', 'tds', 'income'];
+    const otherDeductions = getUnmatchedSum(formData.deductions, matchedDeductionKeywords);
+
+    const paidDays = Number(formData.paidDays) || 30;
+    const lopDays = Number(formData.lopDays) || 0;
+
+    // 4. Construct payload matching the backend createSalarySlip function keys
+    const payload = {
+      user_id: numericUserId,
+      userId: numericUserId,
+
+      payPeriodMonth,  // "OCTOBER" -> matches backend destructured 'payPeriodMonth'
+      payPeriodYear,   // 2026 -> matches backend destructured 'payPeriodYear'
+
+      employeeCode: formData.employeeId || null,
+      designation: formData.position || null,
+      department: formData.department || null,
+      bankAccountNumber: formData.accountNumber || null,
+
+      totalWorkingDays: paidDays + lopDays,
+      daysWorked: paidDays,
+      leaveDays: lopDays,
+
+      basicSalary,
+      houseRentAllowance,
+      specialAllowance,
+      conveyanceAllowance,
+      bonus,
+      otherEarnings,
+
+      providentFund,
+      professionalTax,
+      incomeTaxTds,
+      otherDeductions,
+
+      paymentStatus: 'paid',
+      paymentDate: formData.generatedOn || null,
+      remarks: formData.hrNote || null,
+    };
+
+    await onCreate(payload);
+  } catch (error) {
+    console.error('Failed to create salary slip:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div
