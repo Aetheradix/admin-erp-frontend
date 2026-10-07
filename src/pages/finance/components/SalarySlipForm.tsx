@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
-
+import { useAuth } from '@/hooks/useAuth';
 export interface EarningsItem {
   name: string;
   amount: number;
@@ -212,20 +212,10 @@ const getInitialForm = (): SalarySlipData => {
   };
 };
 
-// const getWorkingDaysInMonth = (year: number, monthIndex: number): number => {
-//   let count = 0;
-//   const days = getDaysInMonth(year, monthIndex);
-//   for (let day = 1; day <= days; day++) {
-//     const dayOfWeek = new Date(year, monthIndex, day).getDay();
-//     if (dayOfWeek !== 0 && dayOfWeek !== 6) count++; // Exclude Sun (0) and Sat (6)
-//   }
-//   return count;
-// };
 
 const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) => {
-  // Extract currently logged in user from Redux store if available
   const loggedInUser = useSelector((state: any) => state.auth?.user || state.user?.currentUser);
-
+  const {user}  = useAuth();
   const [formData, setFormData] = useState<SalarySlipData>(() => {
     const initial = getInitialForm();
     if (loggedInUser) {
@@ -237,7 +227,6 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Search & Dropdown State
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -558,8 +547,8 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 
       // 4. Complete payload
       const payload = {
-        user_id: validUserId,
-        userId: validUserId,
+        user_id: user?.id,
+        userId: user?.id,
         employeeId: formData.employeeId || `EMP-${validUserId}`,
         employee_id: formData.employeeId || `EMP-${validUserId}`,
         employeeName: formData.employeeName || 'Employee',

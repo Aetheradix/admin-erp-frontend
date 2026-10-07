@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   FileText,
   Eye,
@@ -11,10 +11,9 @@ import {
   Briefcase,
   Calendar,
   Sparkles,
-  UserCheck,
-  Printer,
   Download,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -24,12 +23,11 @@ import {
   useLazyGetSalarySlipByIdQuery,
 } from '@/store/api/financeApiSlice';
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
-import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
 import ReactDOMServer from 'react-dom/server';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import type { SalarySlipData } from './components/SalarySlipTemplate';
-// Interface for helper function payload mapping
+
 export interface PayrollRecord {
   id: number;
   userId: number;
@@ -56,49 +54,6 @@ export interface PayrollRecord {
   hrNote: string;
 }
 
-interface RawSalarySlip {
-  id?: number | string;
-  employee_id?: number | string;
-  employeeId?: number | string;
-  user_id?: number | string;
-  userId?: number | string;
-  employee_name?: string;
-  employeeName?: string;
-  position?: string;
-  base_amount?: number;
-  basePay?: number;
-  bonus_amount?: number;
-  bonusPay?: number;
-  total_amount?: number;
-  net_salary?: number;
-  netSalary?: number;
-  total?: number;
-  month_year?: string;
-  monthYear?: string;
-  pay_period?: string;
-  payPeriod?: string;
-  pay_slip_no?: string;
-  paySlipNo?: string;
-  account_number?: string;
-  accountNumber?: string;
-  paid_days?: number;
-  paidDays?: number;
-  lop_days?: number;
-  lopDays?: number;
-  earnings?: SalaryBreakdownItem[];
-  deductions?: SalaryBreakdownItem[];
-  authorized_signatory?: string;
-  authorizedSignatory?: string;
-  signatory_role?: string;
-  signatoryRole?: string;
-  hr_note?: string;
-  hrNote?: string;
-  created_at?: string;
-  createdAt?: string;
-  created_by_username?: string;
-  createdBy?: string;
-}
-
 export interface ParsedSalarySlip {
   id: number | string;
   employeeId: number | string;
@@ -122,23 +77,50 @@ export interface ParsedSalarySlip {
   createdBy: string;
 }
 
+// Deep utility helper to find key values in deeply nested objects or wrappers
+const findDeepValue = (obj: any, keys: string[]): any => {
+  if (!obj || typeof obj !== 'object') return undefined;
+  for (const key of keys) {
+    if (
+      obj[key] !== undefined &&
+      obj[key] !== null &&
+      obj[key] !== '' &&
+      obj[key] !== 'null'
+    ) {
+      return obj[key];
+    }
+  }
+  for (const prop in obj) {
+    if (obj[prop] && typeof obj[prop] === 'object' && !Array.isArray(obj[prop])) {
+      const found = findDeepValue(obj[prop], keys);
+      if (found !== undefined && found !== null && found !== '' && found !== 'null') return found;
+    }
+  }
+  return undefined;
+};
+
+// Safe number parser handling string floats ("0.00", "22.0", null)
+const parseNum = (val: any): number => {
+  if (val === undefined || val === null) return 0;
+  const num = Number(val);
+  return isNaN(num) ? 0 : num;
+};
+
+// Helper function to render React component template directly to PDF
 export const generateSalarySlipPdf = async (record: Partial<SalarySlipData>): Promise<Blob> => {
-  // 1. Render React component template directly to static HTML string
   const htmlString = ReactDOMServer.renderToString(<SalarySlipTemplate data={record} />);
 
-  // 2. Create off-screen container with explicit A4 width dimensions
   const container = document.createElement('div');
   container.style.position = 'absolute';
   container.style.left = '-9999px';
   container.style.top = '-9999px';
-  container.style.width = '794px'; // Matches style width in template
+  container.style.width = '794px';
   container.style.backgroundColor = '#ffffff';
 
   container.innerHTML = htmlString;
   document.body.appendChild(container);
 
   try {
-    // 3. Ensure images/SVGs inside the container are loaded before capturing
     const images = Array.from(container.querySelectorAll('img'));
     await Promise.all(
       images.map(
@@ -153,7 +135,6 @@ export const generateSalarySlipPdf = async (record: Partial<SalarySlipData>): Pr
       )
     );
 
-    // 4. Capture container with html2canvas
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
@@ -174,7 +155,6 @@ export const generateSalarySlipPdf = async (record: Partial<SalarySlipData>): Pr
     const pdfHeight = 297;
     const imageHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    // 5. Build single page or multi-page PDF
     if (imageHeight <= pdfHeight) {
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
     } else {
@@ -194,93 +174,127 @@ export const generateSalarySlipPdf = async (record: Partial<SalarySlipData>): Pr
 
     return pdf.output('blob');
   } finally {
-    // Clean up temporary DOM element
     if (document.body.contains(container)) {
       document.body.removeChild(container);
     }
   }
 };
 
+// Converts raw API payload into a clean, normalized PayrollRecord object
 export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord => {
-  const rawEarnings = Array.isArray(item.earnings)
-    ? (item.earnings as Array<{ name: string; amount: number }>)
-    : [];
-  const rawDeductions = Array.isArray(item.deductions)
-    ? (item.deductions as Array<{ name: string; amount: number }>)
-    : [];
+  const employeeName = String(
+    findDeepValue(item, ['username', 'employeeName', 'employee_name', 'name', 'full_name']) ||
+      'Unnamed Employee'
+  ).trim();
 
-  const basePay = Number(
-    item.base_amount ||
-      item.basePay ||
-      item.base_pay ||
-      rawEarnings.find((e) => e.name?.toLowerCase().includes('basic'))?.amount ||
-      0
-  );
-
-  const bonusPay = Number(
-    item.bonus_amount ||
-      item.bonusPay ||
-      item.bonus ||
-      rawEarnings.find((e) => e.name?.toLowerCase().includes('bonus'))?.amount ||
-      0
-  );
-
-  const netSalary = Number(
-    item.total_amount || item.net_salary || item.netSalary || item.total || 0
-  );
-  const monthYear = String(item.month_year || item.monthYear || item.created_at || 'OCTOBER 2026');
   const position = String(
-    item.position || item.employee_position || item.designation || 'Employee'
+    findDeepValue(item, ['designation', 'position', 'employee_position', 'role']) || 'Employee'
   );
-  const userId = Number(item.user_id || item.userId || 0);
+
+  const userId = Number(findDeepValue(item, ['user_id', 'userId', 'employeeId', 'employee_code']) || 0);
+
+  const paidDays = parseNum(
+    findDeepValue(item, ['days_worked', 'paidDays', 'paid_days', 'total_working_days']) || 22
+  );
+  const lopDays = parseNum(findDeepValue(item, ['leave_days', 'lopDays', 'lop_days']) || 0);
+
+  // Parse pay period month and year into "OCTOBER 2026" format
+  const rawMonth = findDeepValue(item, ['pay_period_month', 'month']);
+  const rawYear = findDeepValue(item, ['pay_period_year', 'year']);
+  let monthYear = 'OCTOBER 2026';
+
+  if (rawMonth && rawYear) {
+    const monthNames = [
+      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    ];
+    const mIdx = parseNum(rawMonth) - 1;
+    if (mIdx >= 0 && mIdx < 12) {
+      monthYear = `${monthNames[mIdx]} ${rawYear}`;
+    }
+  } else {
+    monthYear = String(
+      findDeepValue(item, ['monthYear', 'month_year', 'payPeriod', 'pay_period', 'created_at']) ||
+        'OCTOBER 2026'
+    );
+  }
+
+  // Parse monetary fields
+  const basicSalary = parseNum(findDeepValue(item, ['basic_salary', 'basePay', 'base_amount', 'base_pay', 'base']));
+  const hra = parseNum(findDeepValue(item, ['house_rent_allowance', 'hra']));
+  const specialAllowance = parseNum(findDeepValue(item, ['special_allowance']));
+  const conveyance = parseNum(findDeepValue(item, ['conveyance_allowance']));
+  const bonus = parseNum(findDeepValue(item, ['bonus', 'bonusPay', 'bonus_amount']));
+  const otherEarnings = parseNum(findDeepValue(item, ['other_earnings']));
+  const grossSalary = parseNum(findDeepValue(item, ['gross_salary', 'total_amount', 'totalSalary']));
+
+  const pf = parseNum(findDeepValue(item, ['provident_fund']));
+  const profTax = parseNum(findDeepValue(item, ['professional_tax']));
+  const tds = parseNum(findDeepValue(item, ['income_tax_tds']));
+  const otherDeductions = parseNum(findDeepValue(item, ['other_deductions']));
+  const netSalary = parseNum(findDeepValue(item, ['net_salary', 'netSalary', 'total']));
+
+  // Build itemized earnings list
+  const rawEarnings = (findDeepValue(item, ['earnings']) as Array<{ name: string; amount: number }>) || [];
+  let constructedEarnings = rawEarnings;
+
+  if (constructedEarnings.length === 0) {
+    constructedEarnings = [
+      { name: 'Basic Salary', amount: basicSalary },
+      ...(hra > 0 ? [{ name: 'House Rent Allowance (HRA)', amount: hra }] : []),
+      ...(specialAllowance > 0 ? [{ name: 'Special Allowance', amount: specialAllowance }] : []),
+      ...(conveyance > 0 ? [{ name: 'Conveyance Allowance', amount: conveyance }] : []),
+      ...(bonus > 0 ? [{ name: 'Bonus', amount: bonus }] : []),
+      ...(otherEarnings > 0 ? [{ name: 'Other Earnings', amount: otherEarnings }] : []),
+    ];
+  }
+
+  // Build itemized deductions list
+  const rawDeductions = (findDeepValue(item, ['deductions']) as Array<{ name: string; amount: number }>) || [];
+  let constructedDeductions = rawDeductions;
+
+  if (constructedDeductions.length === 0) {
+    constructedDeductions = [
+      ...(pf > 0 ? [{ name: 'Provident Fund (PF)', amount: pf }] : []),
+      ...(profTax > 0 ? [{ name: 'Professional Tax (PT)', amount: profTax }] : []),
+      ...(tds > 0 ? [{ name: 'Income Tax (TDS)', amount: tds }] : []),
+      ...(otherDeductions > 0 ? [{ name: 'Other Deductions', amount: otherDeductions }] : []),
+    ];
+  }
 
   return {
-    id: Number(item.id || Date.now()),
+    id: Number(findDeepValue(item, ['id']) || Date.now()),
     userId: userId,
-    base: basePay,
-    bonus: bonusPay,
-    total: netSalary,
+    base: basicSalary,
+    bonus: bonus,
+    total: netSalary || grossSalary || basicSalary + bonus,
     date: monthYear,
-
     monthYear: monthYear,
-    paySlipNo: String(item.pay_slip_no || item.paySlipNo || `SLIP-${item.id || Date.now()}`),
-    payPeriod: String(item.pay_period || item.payPeriod || monthYear),
-
-    companyName: String(item.company_name || item.companyName || 'AETHERADIX'),
+    paySlipNo: String(
+      findDeepValue(item, ['pay_slip_no', 'paySlipNo', 'employee_code']) || `SLIP-${findDeepValue(item, ['id']) || Date.now()}`
+    ),
+    payPeriod: monthYear,
+    companyName: String(findDeepValue(item, ['company_name', 'companyAddress']) || 'AETHERADIX'),
     companyAddress: String(
-      item.company_address ||
-        item.companyAddress ||
+      findDeepValue(item, ['company_address', 'companyAddress']) ||
         'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
     ),
-
-    employeeId: String(item.employee_id || item.employeeId || item.user_id || '0'),
-    employeeName: String(item.employee_name || item.employeeName || 'Unnamed Employee'),
+    employeeId: String(findDeepValue(item, ['employee_code', 'employee_id', 'employeeId', 'user_id']) || userId),
+    employeeName: employeeName,
     position: position,
-    accountNumber: String(item.account_number || item.accountNumber || 'N/A'),
-
-    paidDays: Number(item.paid_days || item.paidDays || 22),
-    lopDays: Number(item.lop_days || item.lopDays || 0),
-
+    accountNumber: String(findDeepValue(item, ['bank_account_number', 'account_number', 'accountNumber']) || 'N/A'),
+    paidDays: paidDays,
+    lopDays: lopDays,
     generatedOn: String(
-      item.generated_on || item.generatedOn || new Date().toISOString().split('T')[0]
+      findDeepValue(item, ['payment_date', 'created_at', 'generated_on', 'generatedOn']) ||
+        new Date().toISOString().split('T')[0]
     ),
-
-    earnings:
-      rawEarnings.length > 0
-        ? rawEarnings
-        : [
-            { name: 'Basic Pay', amount: basePay },
-            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
-          ],
-    deductions: rawDeductions,
-
-    authorizedSignatory: String(
-      item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava'
-    ),
-    signatoryRole: String(item.signatory_role || item.signatoryRole || '(Director)'),
+    earnings: constructedEarnings,
+    deductions: constructedDeductions,
+    authorizedSignatory: String(findDeepValue(item, ['authorized_signatory', 'authorizedSignatory']) || 'Seema Srivastava'),
+    signatoryRole: String(findDeepValue(item, ['signatory_role', 'signatoryRole']) || '(Director)'),
     hrNote: String(
-      item.hr_note ||
-        item.hrNote ||
+      findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) ||
         'For any discrepancies, please contact the HR department within 3 working days.'
     ),
   };
@@ -289,16 +303,13 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
 export default function MyPaySlipPage() {
   const [search, setSearch] = useState('');
   const [selectedSlip, setSelectedSlip] = useState<ParsedSalarySlip | null>(null);
+  
+  // Extract user details directly from useAuth hook
+  const { user } = useAuth();
+  const userId = user?.id;
 
-  // Lazy trigger query for downloading latest slip
   const [triggerGetSalarySlip] = useLazyGetSalarySlipByIdQuery();
 
-  // 1. Fetch authenticated user details
-  const { data: permissionResponse, isLoading: isPermissionsLoading } = useGetMyPermissionsQuery();
-  const userDetails = permissionResponse?.data;
-  const userId = userDetails?.userId;
-
-  // 2. Primary query: Fetch salary slips specifically for this employee ID
   const {
     data: empSlipsData,
     isLoading: isEmpSlipsLoading,
@@ -308,7 +319,6 @@ export default function MyPaySlipPage() {
     skip: !userId,
   });
 
-  // Fallback query: Executed if employee-specific query yields no records or fails
   const shouldFetchAll = Boolean(!isEmpSlipsLoading && (isEmpError || !empSlipsData?.data?.length));
 
   const {
@@ -320,11 +330,9 @@ export default function MyPaySlipPage() {
     skip: !shouldFetchAll,
   });
 
-  const isLoading =
-    isPermissionsLoading || isEmpSlipsLoading || (shouldFetchAll && isAllSlipsLoading);
+  const isLoading = isEmpSlipsLoading || (shouldFetchAll && isAllSlipsLoading);
   const isError = isEmpError && isAllError;
 
-  // 3. Download helper handler
   const handleDownload = async (slip: ParsedSalarySlip) => {
     const formattedRecord: PayrollRecord = {
       id: Number(slip.id),
@@ -367,10 +375,7 @@ export default function MyPaySlipPage() {
           dbRecord = formatApiRecord(rawData as Record<string, unknown>);
         }
       } catch (fetchErr) {
-        console.warn(
-          'Single slip endpoint unavailable. Falling back to table record state:',
-          fetchErr
-        );
+        console.warn('Single slip endpoint unavailable. Falling back to table record state:', fetchErr);
       }
 
       message.loading({ content: 'Generating PDF...', key: 'dl' });
@@ -393,70 +398,54 @@ export default function MyPaySlipPage() {
     }
   };
 
-  // 4. Process and normalize raw data
   const userPayslips: ParsedSalarySlip[] = useMemo(() => {
     const rawResponse = empSlipsData ?? allSlipsData;
-    const rawList: RawSalarySlip[] =
-      rawResponse?.data || (Array.isArray(rawResponse) ? rawResponse : []);
+    const rawList: Record<string, unknown>[] =
+      rawResponse?.data
+        ? Array.isArray(rawResponse.data)
+          ? rawResponse.data
+          : [rawResponse.data]
+        : Array.isArray(rawResponse)
+        ? rawResponse
+        : [];
 
     if (!Array.isArray(rawList)) return [];
 
-    // Filter strictly by user ID if fallback query was used
     const userRecords = rawList.filter((item) => {
       if (!userId) return true;
-      const empId = item.employee_id ?? item.employeeId ?? item.user_id ?? item.userId;
-      return String(empId) === String(userId);
+      const empId = findDeepValue(item, ['user_id', 'userId', 'employee_id', 'employeeId', 'employee_code']);
+      return !empId || String(empId) === String(userId);
     });
 
     return userRecords.map((item): ParsedSalarySlip => {
-      const earnings = Array.isArray(item.earnings) ? item.earnings : [];
-      const deductions = Array.isArray(item.deductions) ? item.deductions : [];
-
-      const basePay = Number(
-        item.base_amount ??
-          item.basePay ??
-          earnings.find((e) => e.name?.toLowerCase().includes('basic'))?.amount ??
-          0
-      );
-
-      const bonusPay = Number(
-        item.bonus_amount ??
-          item.bonusPay ??
-          earnings.find((e) => e.name?.toLowerCase().includes('bonus'))?.amount ??
-          0
-      );
-
-      const netSalary = Number(
-        item.total_amount ?? item.net_salary ?? item.netSalary ?? item.total ?? 0
-      );
+      const formatted = formatApiRecord(item);
 
       return {
-        id: item.id || Date.now(),
-        employeeId: item.employee_id ?? item.employeeId ?? item.user_id ?? userId ?? 0,
-        employeeName:
-          item.employee_name ?? item.employeeName ?? userDetails?.username ?? 'Employee',
-        position: item.position || 'Staff',
-        basePay,
-        bonusPay,
-        netSalary,
-        monthYear: String(item.month_year || item.monthYear || 'N/A'),
-        payPeriod: String(item.pay_period || item.payPeriod || item.month_year || 'N/A'),
-        paySlipNo: String(item.pay_slip_no || item.paySlipNo || `SLIP-${item.id}`),
-        accountNumber: String(item.account_number || item.accountNumber || 'N/A'),
-        paidDays: Number(item.paid_days || item.paidDays || 30),
-        lopDays: Number(item.lop_days || item.lopDays || 0),
-        earnings,
-        deductions,
-        authorizedSignatory: item.authorized_signatory || item.authorizedSignatory,
-        signatoryRole: item.signatory_role || item.signatoryRole,
-        hrNote: item.hr_note || item.hrNote,
-        createdAt: item.created_at || item.createdAt || new Date().toISOString(),
-        createdBy: item.created_by_username || item.createdBy || 'HR Dept',
+        id: formatted.id,
+        employeeId: formatted.employeeId,
+        employeeName: formatted.employeeName,
+        position: formatted.position,
+        basePay: formatted.base,
+        bonusPay: formatted.bonus,
+        netSalary: formatted.total,
+        monthYear: formatted.monthYear,
+        payPeriod: formatted.payPeriod,
+        paySlipNo: formatted.paySlipNo,
+        accountNumber: formatted.accountNumber,
+        paidDays: formatted.paidDays,
+        lopDays: formatted.lopDays,
+        earnings: formatted.earnings,
+        deductions: formatted.deductions,
+        authorizedSignatory: formatted.authorizedSignatory,
+        signatoryRole: formatted.signatoryRole,
+        hrNote: formatted.hrNote,
+        createdAt: formatted.generatedOn,
+        createdBy: String(findDeepValue(item, ['created_by_username', 'createdBy']) || 'HR Dept'),
       };
     });
-  }, [empSlipsData, allSlipsData, userId, userDetails]);
+  }, [empSlipsData, allSlipsData, userId]);
 
-  const currentUsername = userDetails?.username || 'User';
+  const currentUsername = user?.username || 'User';
 
   const formatMonthYear = useCallback((dateStr: string) => {
     if (!dateStr || dateStr === 'N/A') return 'N/A';
@@ -476,7 +465,6 @@ export default function MyPaySlipPage() {
     });
   }, []);
 
-  // Filtered salary slips based on query
   const filteredSlips = useMemo(() => {
     const query = search.toLowerCase().trim();
     if (!query) return userPayslips;
@@ -523,7 +511,8 @@ export default function MyPaySlipPage() {
         </div>
         <button
           onClick={handleRefetch}
-          className="px-5 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-all shadow-sm active:scale-95">
+          className="px-5 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-all shadow-sm active:scale-95"
+        >
           Retry Connection
         </button>
       </div>
@@ -541,7 +530,7 @@ export default function MyPaySlipPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold text-slate-900">@{currentUsername}</h1>
-              {userDetails?.isSuperadmin && (
+              {user?.role === 'SuperAdmin' && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                   <ShieldCheck size={12} /> Superadmin
                 </span>
@@ -551,12 +540,12 @@ export default function MyPaySlipPage() {
             <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
               <span className="flex items-center gap-1">
                 <Building2 size={13} className="text-slate-400" />
-                {userDetails?.department || 'Finance'}
+                {user?.department || 'Finance'}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Briefcase size={13} className="text-slate-400" />
-                {userDetails?.roles?.join(', ') || 'Employee'}
+                {user?.role || 'Employee'}
               </span>
               {userId && (
                 <>
@@ -582,7 +571,8 @@ export default function MyPaySlipPage() {
             <button
               onClick={() => setSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              aria-label="Clear search">
+              aria-label="Clear search"
+            >
               <X size={14} />
             </button>
           )}
@@ -611,8 +601,9 @@ export default function MyPaySlipPage() {
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <th className="py-3.5 px-6">Slip No</th>
                 <th className="py-3.5 px-6">Pay Period</th>
+                <th className="py-3.5 px-6">Base Salary</th>
                 <th className="py-3.5 px-6">Net Salary</th>
-                <th className="py-3.5 px-6">Issued By</th>
+                <th className="py-3.5 px-6">Days Worked</th>
                 <th className="py-3.5 px-6">Created Date</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
@@ -620,7 +611,7 @@ export default function MyPaySlipPage() {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredSlips.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <FileText size={32} className="text-slate-300" />
                       <p className="text-sm font-medium text-slate-600">No salary slips found.</p>
@@ -645,17 +636,16 @@ export default function MyPaySlipPage() {
                       </div>
                     </td>
 
-                    <td className="py-4 px-6 font-bold text-slate-900">
-                      ₹{slip.netSalary.toLocaleString('en-IN')}
+                    <td className="py-4 px-6 font-semibold text-slate-700">
+                      ₹{slip.basePay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
 
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
-                          <UserCheck size={13} />
-                        </div>
-                        <span className="font-medium text-slate-700">@{slip.createdBy}</span>
-                      </div>
+                    <td className="py-4 px-6 font-bold text-emerald-600">
+                      ₹{slip.netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+
+                    <td className="py-4 px-6 text-xs text-slate-600">
+                      <span className="font-medium text-slate-800">{slip.paidDays}</span> Days
                     </td>
 
                     <td className="py-4 px-6 text-xs text-slate-500">
@@ -665,17 +655,20 @@ export default function MyPaySlipPage() {
                     <td className="py-4 px-6 text-right">
                       <div className="inline-flex items-center gap-2">
                         <button
-                          onClick={() => handleDownload(slip)}
+                          onClick={() => setSelectedSlip(slip)}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition active:scale-95"
-                          title="Download Salary Slip PDF">
-                          <Download size={13} />
-                          <span>PDF</span>
+                          title="View Details"
+                        >
+                          <Eye size={13} />
+                          <span>View</span>
                         </button>
                         <button
-                          onClick={() => setSelectedSlip(slip)}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition active:scale-95 shadow-sm">
-                          <Eye size={13} />
-                          <span>View Statement</span>
+                          onClick={() => handleDownload(slip)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition active:scale-95 shadow-sm"
+                          title="Download Salary Slip PDF"
+                        >
+                          <Download size={13} />
+                          <span>PDF</span>
                         </button>
                       </div>
                     </td>
@@ -687,169 +680,58 @@ export default function MyPaySlipPage() {
         </div>
       </div>
 
-      {/* Salary Slip Detail Modal */}
+      {/* Detail Modal Preview */}
       {selectedSlip && (
-        <SalarySlipDetailModal
-          slip={selectedSlip}
-          onClose={() => setSelectedSlip(null)}
-          onDownload={() => handleDownload(selectedSlip)}
-        />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b pb-4">
+              <h3 className="font-bold text-lg text-slate-900">
+                Salary Slip ({selectedSlip.monthYear})
+              </h3>
+              <button
+                onClick={() => setSelectedSlip(null)}
+                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="bg-slate-50 p-3 rounded-xl">
+                <span className="text-slate-400 block">Employee Name</span>
+                <span className="font-bold text-slate-800">{selectedSlip.employeeName}</span>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-xl">
+                <span className="text-slate-400 block">Designation</span>
+                <span className="font-bold text-slate-800">{selectedSlip.position}</span>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-xl">
+                <span className="text-slate-400 block">Base Pay</span>
+                <span className="font-bold text-slate-800">₹{selectedSlip.basePay.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-xl">
+                <span className="text-slate-400 block">Net Salary</span>
+                <span className="font-bold text-emerald-600">₹{selectedSlip.netSalary.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button
+                onClick={() => setSelectedSlip(null)}
+                className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-200"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => handleDownload(selectedSlip)}
+                className="px-4 py-2 bg-slate-900 rounded-xl text-xs font-semibold text-white hover:bg-slate-800 flex items-center gap-1.5"
+              >
+                <Download size={14} /> Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
-  );
-}
-
-// Detailed Pay Slip Modal Component
-function SalarySlipDetailModal({
-  slip,
-  onClose,
-  onDownload,
-}: {
-  slip: ParsedSalarySlip;
-  onClose: () => void;
-  onDownload: () => void;
-}) {
-  // Key listener to handle 'Escape' key press
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto border border-slate-200 p-6 space-y-6">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Salary Statement: {slip.paySlipNo}</h3>
-            <p className="text-xs text-slate-500">
-              Period: {slip.monthYear} | Employee: {slip.employeeName}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onDownload}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition active:scale-95 shadow-sm"
-              title="Download PDF">
-              <Download size={14} />
-              <span>Download PDF</span>
-            </button>
-            <button
-              onClick={handlePrint}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
-              title="Print Payslip">
-              <Printer size={16} />
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition"
-              aria-label="Close modal">
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Modal Content */}
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-2xl text-xs">
-            <div>
-              <span className="text-slate-400 block">Base Pay</span>
-              <span className="font-bold text-slate-800 text-sm">
-                ₹{slip.basePay.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400 block">Bonus</span>
-              <span className="font-bold text-slate-800 text-sm">
-                ₹{slip.bonusPay.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400 block">Net Salary</span>
-              <span className="font-bold text-emerald-600 text-sm">
-                ₹{slip.netSalary.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400 block">Account No</span>
-              <span className="font-mono text-slate-800">{slip.accountNumber}</span>
-            </div>
-          </div>
-
-          {/* Earnings & Deductions Tables */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">
-                Earnings
-              </h4>
-              <div className="bg-emerald-50/40 rounded-2xl p-3 space-y-2 border border-emerald-100/60">
-                {slip.earnings.length > 0 ? (
-                  slip.earnings.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between text-xs py-1 border-b border-emerald-100/40 last:border-0">
-                      <span className="text-slate-700">{item.name}</span>
-                      <span className="font-bold text-slate-900">
-                        ₹{Number(item.amount).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400">No additional earnings</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold text-red-700 uppercase tracking-wider mb-2">
-                Deductions
-              </h4>
-              <div className="bg-red-50/40 rounded-2xl p-3 space-y-2 border border-red-100/60">
-                {slip.deductions.length > 0 ? (
-                  slip.deductions.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between text-xs py-1 border-b border-red-100/40 last:border-0">
-                      <span className="text-slate-700">{item.name}</span>
-                      <span className="font-bold text-slate-900">
-                        ₹{Number(item.amount).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400">No deductions applied</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Signatory & Notes */}
-          {(slip.authorizedSignatory || slip.hrNote) && (
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-xs">
-              {slip.authorizedSignatory && (
-                <p className="text-slate-600">
-                  <strong className="text-slate-800">Authorized Signatory:</strong>{' '}
-                  {slip.authorizedSignatory} ({slip.signatoryRole || 'HR'})
-                </p>
-              )}
-              {slip.hrNote && (
-                <p className="text-slate-600">
-                  <strong className="text-slate-800">HR Note:</strong> {slip.hrNote}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
