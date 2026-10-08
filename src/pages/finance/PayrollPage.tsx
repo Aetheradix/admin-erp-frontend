@@ -13,6 +13,7 @@ import {
   UserCheck,
   Clock,
   Briefcase,
+  Edit3,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
@@ -26,7 +27,7 @@ import SalarySlipTemplate from './components/SalarySlipTemplate';
 import {
   useGetAllSalarySlipsQuery,
   useCreateSalarySlipMutation,
-  // useLazyGetSalarySlipByIdQuery,
+  useUpdateSalarySlipMutation,
 } from '@/store/api/financeApiSlice';
 
 import type { SalarySlipData } from './components/SalarySlipForm';
@@ -54,11 +55,13 @@ export interface PayrollRecord {
   lopDays: number;
   generatedOn: string;
   createdBy: string;
+  created_by_username?: string; // 👈 Add property
   earnings: Array<{ name: string; amount: number }>;
   deductions: Array<{ name: string; amount: number }>;
   authorizedSignatory: string;
   signatoryRole: string;
   hrNote: string;
+  rawRecord?: Record<string, any>;
 }
 
 // Safe number parser for strings like "0.00", "30.0", or numbers
@@ -165,11 +168,13 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     lopDays: parseNum(item.leave_days ?? item.lopDays ?? 0),
     generatedOn: item.payment_date || item.created_at || new Date().toISOString().split('T')[0],
     createdBy: createdBy,
+    created_by_username:createdBy,
     earnings: earnings,
     deductions: deductions,
     authorizedSignatory: item.authorizedSignatory || 'Seema Srivastava',
     signatoryRole: item.signatoryRole || '(Director)',
     hrNote: item.hrNote || 'For any discrepancies, please contact the HR department within 3 working days.',
+    rawRecord: item,
   };
 };
 
@@ -184,11 +189,12 @@ export function PayrollPage() {
     refetchOnMountOrArgChange: true,
   });
 
-  // const [triggerGetSalarySlip] = useLazyGetSalarySlipByIdQuery();
-  const [createSalarySlip, { isLoading: isSubmitting }] = useCreateSalarySlipMutation();
+  const [createSalarySlip, { isLoading: isCreating }] = useCreateSalarySlipMutation();
+  const [updateSalarySlip, { isLoading: isUpdating }] = useUpdateSalarySlipMutation();
 
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
   const [showSlipModal, setShowSlipModal] = useState(false);
 
@@ -243,15 +249,37 @@ export function PayrollPage() {
     }
   };
 
-  const handleCreateSalarySlip = async (data: SalarySlipData) => {
+  const handleFormSubmit = async (data: SalarySlipData) => {
+    const key = 'salary-slip-action';
     try {
-      message.loading({ content: 'Saving salary slip...', key: 'create-salary' });
-      await createSalarySlip(data as any).unwrap();
+      if (editingRecord) {
+        message.loading({ content: 'Updating salary slip...', key });
+        await updateSalarySlip({ id: editingRecord.id, ...data }).unwrap();
+        message.success({ content: 'Salary slip updated successfully!', key });
+      } else {
+        message.loading({ content: 'Saving salary slip...', key });
+        await createSalarySlip(data as any).unwrap();
+        message.success({ content: 'Salary slip recorded successfully!', key });
+      }
+
       setShowSalarySlipForm(false);
-      message.success({ content: 'Salary slip recorded!', key: 'create-salary' });
+      setEditingRecord(null);
     } catch (error: any) {
-      message.error({ content: error?.data?.message || 'Failed to save salary slip.', key: 'create-salary' });
+      message.error({
+        content: error?.data?.message || 'Failed to save salary slip.',
+        key,
+      });
     }
+  };
+
+  const handleEdit = (record: PayrollRecord) => {
+    setEditingRecord(record);
+    setShowSalarySlipForm(true);
+  };
+
+  const handleCreateNew = () => {
+    setEditingRecord(null);
+    setShowSalarySlipForm(true);
   };
 
   // Table Columns Setup
@@ -341,7 +369,7 @@ export function PayrollPage() {
       render: (_, record) => (
         <div className="flex items-center gap-1.5 text-xs text-slate-600">
           <UserCheck size={14} className="text-slate-400" />
-          <span className="font-medium text-slate-800">{record.createdBy}</span>
+          <span className="font-medium text-slate-800">{record.created_by_username}</span>
         </div>
       ),
     },
@@ -365,12 +393,20 @@ export function PayrollPage() {
           menu={{
             items: [
               { key: 'view', label: 'View Salary Slip', icon: <Eye size={15} /> },
+              { key: 'edit', label: 'Edit Salary Slip', icon: <Edit3 size={15} /> },
               { key: 'download', label: 'Download PDF', icon: <Download size={15} /> },
             ],
             onClick: ({ key }) => {
-              setSelectedSlip(record);
-              if (key === 'view') setShowSlipModal(true);
-              if (key === 'download') downloadSalarySlip(record);
+              if (key === 'view') {
+                setSelectedSlip(record);
+                setShowSlipModal(true);
+              }
+              if (key === 'edit') {
+                handleEdit(record);
+              }
+              if (key === 'download') {
+                downloadSalarySlip(record);
+              }
             },
           }}
         >
@@ -381,6 +417,8 @@ export function PayrollPage() {
       ),
     },
   ];
+
+  const isSubmitting = isCreating || isUpdating;
 
   return (
     <div className="flex flex-col gap-8 pb-20 max-w-7xl mx-auto p-4 sm:p-6">
@@ -393,7 +431,7 @@ export function PayrollPage() {
         <button
           type="button"
           disabled={isSubmitting}
-          onClick={() => setShowSalarySlipForm(true)}
+          onClick={handleCreateNew}
           className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-sm active:scale-95"
         >
           <Plus size={16} />
@@ -411,11 +449,16 @@ export function PayrollPage() {
         />
       </motion.div>
 
-      {/* Salary Slip Form Modal */}
+      {/* Salary Slip Form Modal (Create or Edit) */}
       {showSalarySlipForm && (
         <SalarySlipForm
-          onClose={() => setShowSalarySlipForm(false)}
-          onCreate={handleCreateSalarySlip}
+          initialValues={editingRecord?.rawRecord || editingRecord || undefined}
+          isEditing={Boolean(editingRecord)}
+          onClose={() => {
+            setShowSalarySlipForm(false);
+            setEditingRecord(null);
+          }}
+          onCreate={handleFormSubmit}
         />
       )}
 

@@ -167,10 +167,6 @@ export const usePayrollPage = () => {
       const safeEarnings = Array.isArray(formData.earnings) ? formData.earnings : [];
       const safeDeductions = Array.isArray(formData.deductions) ? formData.deductions : [];
 
-      const totalEarnings = safeEarnings.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-      const totalDeductions = safeDeductions.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-      const netSalary = Math.max(0, totalEarnings - totalDeductions);
-
       const basePay =
         formData.basePay ??
         Number(safeEarnings.find((i) => i.name?.toLowerCase().includes('basic'))?.amount || 0);
@@ -178,28 +174,40 @@ export const usePayrollPage = () => {
         formData.bonusPay ??
         Number(safeEarnings.find((i) => i.name?.toLowerCase().includes('bonus'))?.amount || 0);
 
-      // Prevent NaN values by ensuring fallback to 0
       const parsedEmpId = Number(formData.employeeId) || 0;
 
       const payload: CreateSalarySlipPayload = {
-        userId: parsedEmpId,
-        employeeId: parsedEmpId,
-        employeeName: formData.employeeName,
-        position: formData.position || 'Employee',
-        monthYear: formData.monthYear,
-        payPeriod: formData.payPeriod || formData.monthYear,
-        paySlipNo: formData.paySlipNo || `SLIP-${Date.now()}`,
-        accountNumber: formData.accountNumber || 'N/A',
-        paidDays: Number(formData.paidDays) || 0,
-        lopDays: Number(formData.lopDays) || 0,
-        basePay: basePay,
-        bonusPay: bonusPay,
-        netSalary: netSalary,
+        // Target Employee & Creator
+        user_id: parsedEmpId,
+        created_by: null,
+
+        // Pay Period & Schedule
+        month_year: formData.monthYear || 'OCTOBER 2026',
+        pay_frequency: 'monthly',
+        cycle_number: 1,
+
+        // Attendance
+        paid_days: Number(formData.paidDays) || 0,
+        lop_days: Number(formData.lopDays) || 0,
+        totalWorkingDays: Number(formData.paidDays || 0) + Number(formData.lopDays || 0) || 30,
+
+        // Employee Profile Details
+        employee_code: String(parsedEmpId),
+        designation: formData.position || 'Employee',
+        bank_account_number: formData.accountNumber || null,
+
+        // Financial Breakdown Arrays
         earnings: safeEarnings,
         deductions: safeDeductions,
-        authorizedSignatory: formData.authorizedSignatory,
-        signatoryRole: formData.signatoryRole,
-        hrNote: formData.hrNote,
+
+        // Numerical Totals
+        basicSalary: basePay,
+        bonus: bonusPay,
+
+        // Metadata & Status
+        paymentStatus: 'paid',
+        paymentDate: new Date().toISOString().split('T')[0],
+        remarks: formData.hrNote || null,
       };
 
       // Direct RTK Query Mutation Call
