@@ -352,21 +352,22 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   };
 
   const handleBiWeeklyPartChange = (part: 1 | 2) => {
-    setBiWeeklyPeriod(part);
-    const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
-    currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
-    const monthIndex = months.indexOf(currentMonthVal.toUpperCase());
-    const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
+  setBiWeeklyPeriod(part);
+  const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
+  // Added 'const' declaration here to prevent ReferenceError
+  const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
+  const monthIndex = months.indexOf(currentMonthVal.toUpperCase());
+  const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
 
-    const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, 'Bi-Weekly', part);
-    const defaultPaidDays = part === 1 ? 15 : totalDays - 15;
+  const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, 'Bi-Weekly', part);
+  const defaultPaidDays = part === 1 ? 15 : totalDays - 15;
 
-    setFormData((prev) => ({
-      ...prev,
-      payPeriod: newPayPeriod,
-      paidDays: defaultPaidDays,
-    }));
-  };
+  setFormData((prev) => ({
+    ...prev,
+    payPeriod: newPayPeriod,
+    paidDays: defaultPaidDays,
+  }));
+};
 
   // Extracted current month/year for select values
   const selectedMonth = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
@@ -771,6 +772,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
 
   // 2. Creator ID (Logged-in HR/Admin)
   created_by: creatorId,
+  pay_slip_no: formData.paySlipNo || null, // Added pay_slip_no to payload
 
   // 3. Dates & Cycle
   month_year: formData.monthYear,

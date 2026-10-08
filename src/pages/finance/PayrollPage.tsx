@@ -55,7 +55,7 @@ export interface PayrollRecord {
   lopDays: number;
   generatedOn: string;
   createdBy: string;
-  created_by_username?: string; // 👈 Add property
+  created_by_username?: string;
   earnings: Array<{ name: string; amount: number }>;
   deductions: Array<{ name: string; amount: number }>;
   authorizedSignatory: string;
@@ -168,7 +168,7 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     lopDays: parseNum(item.leave_days ?? item.lopDays ?? 0),
     generatedOn: item.payment_date || item.created_at || new Date().toISOString().split('T')[0],
     createdBy: createdBy,
-    created_by_username:createdBy,
+    created_by_username: createdBy,
     earnings: earnings,
     deductions: deductions,
     authorizedSignatory: item.authorizedSignatory || 'Seema Srivastava',
@@ -282,7 +282,6 @@ export function PayrollPage() {
     setShowSalarySlipForm(true);
   };
 
-  // Table Columns Setup
   const columns: ColumnsType<PayrollRecord> = [
     {
       title: 'Employee Details',
