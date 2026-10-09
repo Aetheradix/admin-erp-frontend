@@ -6,11 +6,12 @@ const BlogCreate = () => {
   const { handleSave, isLoading } = useBlogs();
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-16">
       <PageHeader
-        title="Create New Post"
-        description="Share your insights with the world."
-        breadcrumbs={[{ label: 'Blogs', url: '/blogs' }, { label: 'Create' }]}
+        title="Create New Story"
+        description="Craft, design, and broadcast high-impact editorial content across the enterprise."
+        breadcrumbs={[{ label: 'Blogs', url: '/social/blogs' }, { label: 'Create' }]}
+        back
       />
 
       <BlogForm onSubmit={handleSave} isLoading={isLoading} />

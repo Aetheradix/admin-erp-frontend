@@ -4,9 +4,11 @@ import { FilterMatchMode, type DataTableFilterMeta } from '@/components/ui/compo
 export function useBlogFilters() {
   const [searchValue, setSearchValue] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [filters, setFilters] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     category: { value: null, matchMode: FilterMatchMode.EQUALS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS },
   });
 
   const handleSearchChange = (value: string) => {
@@ -25,11 +27,21 @@ export function useBlogFilters() {
     }));
   };
 
+  const handleStatusChange = (status: string) => {
+    setStatusFilter(status);
+    setFilters((prev) => ({
+      ...prev,
+      status: { ...prev.status, value: status === 'All' ? null : status },
+    }));
+  };
+
   return {
     searchValue,
     activeCategory,
+    statusFilter,
     filters,
     handleSearchChange,
     handleCategoryChange,
+    handleStatusChange,
   };
 }

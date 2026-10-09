@@ -1,6 +1,8 @@
-import { Edit2, Maximize2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Edit2, Maximize2, Trash2, Sparkles, Download } from 'lucide-react';
 import type { GalleryItem } from '../hooks/mockGallery';
 import { motion } from 'framer-motion';
+import { resolveImageUrl, downloadImageFile } from '@/utils/imageUrl';
 
 interface GalleryCardProps {
   item: GalleryItem;
@@ -10,6 +12,9 @@ interface GalleryCardProps {
 }
 
 export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps) => {
+  const [hasError, setHasError] = useState(false);
+  const resolvedImg = resolveImageUrl(item.image_url);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -17,14 +22,21 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
       transition={{ duration: 0.5 }}
       className="group relative break-inside-avoid mb-8 rounded-[2rem] overflow-hidden border border-white/20 shadow-soft hover:shadow-2xl transition-all duration-500 bg-white">
       {/* Image with Zoom */}
-      <div className="relative overflow-hidden aspect-auto">
-        <img
-          src={item.image_url || ''}
-          alt={item.title}
-          width={400}
-          height={500}
-          className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
-        />
+      <div className="relative overflow-hidden aspect-auto min-h-[160px] bg-slate-900">
+        {resolvedImg && !hasError ? (
+          <img
+            src={resolvedImg}
+            alt={item.title}
+            width={400}
+            height={500}
+            onError={() => setHasError(true)}
+            className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
+          />
+        ) : (
+          <div className="w-full h-48 bg-gradient-to-br from-primary/20 via-primary/5 to-surface-subtle flex items-center justify-center text-primary/40">
+            <Sparkles size={32} />
+          </div>
+        )}
 
         {/* Subtle Gradient Overlay (Always visible) */}
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-0 transition-opacity duration-500" />
@@ -35,7 +47,17 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
         {/* Top Actions */}
         <div className="flex justify-end gap-3 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
           <button
-            className="w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-white hover:text-primary border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center group/view active:scale-95"
+            className="w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-emerald-500 hover:text-white border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center active:scale-95 shadow-md cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadImageFile(item.image_url, `${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`);
+            }}
+            title="Download Asset"
+            aria-label={`Download ${item.title}`}>
+            <Download size={18} />
+          </button>
+          <button
+            className="w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-white hover:text-primary border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center group/view active:scale-95 cursor-pointer"
             onClick={() => onView(String(item.id))}
             aria-label={`View ${item.title} in full screen`}>
             <Maximize2 size={18} className="group-hover/view:scale-110 transition-transform" />

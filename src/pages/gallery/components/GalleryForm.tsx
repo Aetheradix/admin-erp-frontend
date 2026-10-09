@@ -1,3 +1,5 @@
+import { useUploadImageMutation } from '@/store/api/uploadSlice';
+import { resolveImageUrl, cleanUploadPath, downloadImageFile } from '@/utils/imageUrl';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
@@ -15,6 +17,8 @@ interface GalleryFormProps {
 import { Calendar } from '@/components/ui/primitives/Calendar';
 
 export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProps) => {
+  const [uploadImage, { isLoading: isUploadingImage }] = useUploadImageMutation();
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState<Partial<GalleryItem>>({
     title: '',
     category: 'Workplace',
@@ -50,21 +54,32 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
             Media Asset
           </label>
           <div className="aspect-square w-full rounded-4xl border-2 border-dashed border-border-subtle bg-surface-subtle flex flex-col items-center justify-center gap-4 group hover:border-primary/50 hover:bg-primary/5 transition-all overflow-hidden relative shadow-inner">
-            {formData.image_url ? (
+            {(previewUrl || formData.image_url) ? (
               <>
                 <img
-                  src={formData.image_url}
+                  src={resolveImageUrl(formData.image_url)}
                   alt="Preview"
                   width={400}
                   height={400}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 hover:opacity-100 transition-all flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 hover:opacity-100 transition-all flex items-center justify-center gap-3">
                   <Button
                     variant="primary"
                     className="rounded-full! p-4!"
                     aria-label="Change image">
                     <i className="pi pi-pencil text-xl"></i>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="rounded-full! p-4! bg-emerald-500! text-white! hover:bg-emerald-600! border-none!"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      downloadImageFile(previewUrl || formData.image_url, `${(formData.title || 'gallery-asset').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`);
+                    }}
+                    aria-label="Download image">
+                    <i className="pi pi-download text-xl"></i>
                   </Button>
                 </div>
               </>
@@ -85,9 +100,32 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
               mode="basic"
               auto
               className="absolute inset-0 opacity-0 cursor-pointer"
-              onUpload={(e) => setFormData({ ...formData, image_url: e.base64 })}
-              aria-label="Upload media asset"
-            />
+              onUpload={async (e) => {
+                if (e.files && e.files[0]) {
+                  const file = e.files[0];
+                  const objectUrl = URL.createObjectURL(file);
+                  setPreviewUrl(objectUrl);
+                  try {
+                    const res = await uploadImage({ file, category: 'gallery' }).unwrap();
+                    const serverUrl = res.data?.url ? cleanUploadPath(res.data.url) : '';
+                    if (serverUrl) {
+                      setFormData((prev) => ({ ...prev, image_url: serverUrl }));
+                    }
+                  } catch (err) {
+                    console.error('[GalleryForm] Upload failed:', err);
+                    setPreviewUrl('');
+                  }
+                }
+              }}
+              aria-label="Upload media asset" />
+            {isUploadingImage && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center z-10">
+                <span className="text-xs font-black text-primary animate-pulse uppercase tracking-widest">
+                  Uploading Image...
+                </span>
+              </div>
+            )}
+
           </div>
           <div className="pt-2">
             <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-3">
@@ -96,7 +134,7 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
             <Input
               id="gallery-source"
               value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              onChange={(e) => { setFormData({ ...formData, image_url: e.target.value }); setPreviewUrl(e.target.value); }}
               placeholder="Paste image URL if not uploading..."
               className="text-[11px]! py-3!"
               aria-label="Image URL"

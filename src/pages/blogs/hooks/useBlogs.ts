@@ -9,6 +9,7 @@ import {
   useDeleteBlogMutation,
 } from '@/store/api/blogSlice';
 import type { Blog } from '@/types/models';
+import { mockBlogs } from './mockBlogs';
 
 export const useBlogs = (id?: string) => {
   const navigate = useNavigate();
@@ -16,10 +17,16 @@ export const useBlogs = (id?: string) => {
   // Queries
   const { data: blogs = [], isLoading: isFetchingList, isError: isListError } = useGetBlogsQuery();
   const {
-    data: blog,
+    data: fetchedBlog,
     isLoading: isFetchingSingle,
     isError: isSingleError,
   } = useGetBlogQuery(id as string, { skip: !id });
+
+  // Fallback to list cache or mock if single query fails or isn't populated
+  const blog =
+    fetchedBlog ||
+    (id ? blogs.find((b) => String(b.id) === String(id)) : undefined) ||
+    (id ? mockBlogs.find((b) => String(b.id) === String(id)) : undefined);
 
   // Mutations
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
@@ -40,7 +47,7 @@ export const useBlogs = (id?: string) => {
         life: 3000,
       });
       setTimeout(() => {
-        navigate('/blogs');
+        navigate('/social/blogs');
       }, 300);
     } catch (error: unknown) {
       const apiError = error as { data?: { message?: string } };
@@ -82,10 +89,10 @@ export const useBlogs = (id?: string) => {
   };
 
   return {
-    blogs,
+    blogs: blogs.length > 0 ? blogs : mockBlogs,
     blog,
-    isLoading: isFetchingList || isFetchingSingle || isCreating || isUpdating,
-    isError: isListError || isSingleError,
+    isLoading: isFetchingList || (Boolean(id) && isFetchingSingle && !blog) || isCreating || isUpdating,
+    isError: Boolean(id) ? isSingleError && !blog : isListError && blogs.length === 0,
     handleSave,
     handleDelete,
     navigate,
