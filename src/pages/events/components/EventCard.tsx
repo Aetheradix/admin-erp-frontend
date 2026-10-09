@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Button } from '@/components/ui/primitives/Button';
 import {
@@ -45,7 +46,7 @@ export const EventCard = ({
   isRegistering,
 }: EventCardProps) => {
   const [imageSrc, setImageSrc] = useState(
-    event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
+    resolveImageUrl(event.image) || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
   );
   const [imageError, setImageError] = useState(false);
 

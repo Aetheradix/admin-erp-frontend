@@ -61,9 +61,84 @@ export interface GetSalarySlipsResponse {
   data: SalarySlipItem[];
 }
 
+
+export interface UploadImageArgs {
+  file: File | Blob;
+  category?: 'blogs' | 'events' | 'gallery' | 'users' | 'general' | string;
+  entityType?: string;
+  entityId?: number;
+}
+
+export interface UploadImageResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    url: string;
+    filename: string;
+    originalName: string;
+    category: string;
+    sizeBytes: number;
+    mimetype: string;
+    createdAt: string;
+  };
+}
+
+export interface UploadMultipleImagesArgs {
+  files: (File | Blob)[];
+  category?: 'blogs' | 'events' | 'gallery' | 'users' | 'general' | string;
+}
+
+export interface UploadMultipleImagesResponse {
+  success: boolean;
+  message: string;
+  count: number;
+  data: Array<{
+    id: number;
+    url: string;
+    filename: string;
+    originalName: string;
+    category: string;
+  }>;
+}
+
 export const uploadApiSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
+
+    /** Upload single image (Blogs, Events, Gallery, Profiles, General) */
+    uploadImage: builder.mutation<UploadImageResponse, UploadImageArgs>({
+      query: (args) => {
+        const formData = new FormData();
+        formData.append('image', args.file);
+        if (args.category) formData.append('category', args.category);
+        if (args.entityType) formData.append('entityType', args.entityType);
+        if (args.entityId !== undefined) formData.append('entityId', String(args.entityId));
+
+        return {
+          url: '/uploads/image',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+
+    /** Upload multiple images (Gallery albums / bulk upload) */
+    uploadImages: builder.mutation<UploadMultipleImagesResponse, UploadMultipleImagesArgs>({
+      query: (args) => {
+        const formData = new FormData();
+        args.files.forEach((file) => formData.append('images', file));
+        if (args.category) formData.append('category', args.category);
+
+        return {
+          url: '/uploads/images',
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: ['Gallery'],
+    }),
+
     /** Upload new salary slip PDF + metadata */
     uploadSalarySlip: builder.mutation<UploadSalarySlipResponse, UploadSalarySlipArgs>({
       query: (args) => {
@@ -137,6 +212,8 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useUploadImageMutation,
+  useUploadImagesMutation,
   useUploadSalarySlipMutation,
   useUploadInvoiceMutation,
   useGetSalarySlipsQuery,

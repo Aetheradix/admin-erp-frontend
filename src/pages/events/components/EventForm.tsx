@@ -1,3 +1,6 @@
+import { useUploadImageMutation } from '@/store/api/uploadSlice';
+import { resolveImageUrl, cleanUploadPath } from '@/utils/imageUrl';
+import { FileUpload } from '@/components/ui/composed/FileUpload';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Button } from '@/components/ui/primitives/Button';
 import { Calendar } from '@/components/ui/primitives/Calendar';
@@ -68,6 +71,7 @@ const TEMPLATE_PRESETS = [
 ];
 
 export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) => {
+  const [uploadImage, { isLoading: isUploadingImage }] = useUploadImageMutation();
   const [formData, setFormData] = useState<Partial<ERPEvent>>({
     title: '',
     description: '',
@@ -215,6 +219,60 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                 placeholder="Executive Suite"
               />
             </FormField>
+          </div>
+
+          
+          {/* Banner Upload */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+              Event Banner
+            </label>
+            <div className="relative aspect-video w-full rounded-2xl border-2 border-dashed border-border-subtle bg-surface-subtle overflow-hidden flex items-center justify-center group hover:border-primary/50 transition-all">
+              {formData.image ? (
+                <>
+                  <img src={resolveImageUrl(formData.image)} alt="Cover" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-lg">Change Banner</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-center p-4">
+                  <span className="text-xs font-bold text-foreground">Click to upload banner</span>
+                  <span className="text-[10px] text-muted uppercase">JPG, PNG, WebP (Max 10MB)</span>
+                </div>
+              )}
+              <FileUpload
+                mode="basic"
+                auto
+                accept="image/*"
+                maxFileSize={10485760}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onUpload={async (e) => {
+                  if (e.files && e.files[0]) {
+                    try {
+                      const res = await uploadImage({ file: e.files[0], category: 'events' }).unwrap();
+                      const serverUrl = res.data?.url ? cleanUploadPath(res.data.url) : '';
+                      if (serverUrl) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          image: serverUrl,
+                          image_url: serverUrl,
+                        }));
+                      }
+                    } catch (err) {
+                      console.error('Event banner upload failed:', err);
+                    }
+                  }
+                }}
+              />
+              {isUploadingImage && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center z-10">
+                  <span className="text-xs font-black text-primary animate-pulse uppercase tracking-widest">
+                    Uploading image...
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           <FormField label="Organizer" id="event-organizer">

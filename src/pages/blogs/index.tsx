@@ -9,6 +9,7 @@ const BlogsModule = () => {
       <Route path="/" element={<BlogList />} />
       <Route path="/create" element={<BlogCreate />} />
       <Route path="/:id/edit" element={<BlogEdit />} />
+      <Route path="/edit/:id" element={<BlogEdit />} />
     </Routes>
   );
 };

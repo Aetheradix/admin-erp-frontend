@@ -160,7 +160,7 @@ const AppFeature = () => {
         />
 
         {/* Legacy route redirects for backward compatibility */}
-        <Route path="/blogs/*" element={<Navigate to="/social/blogs" replace />} />
+        <Route path="/blogs/*" element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />} />
         <Route path="/gallery/*" element={<Navigate to="/social/gallery" replace />} />
 
         <Route

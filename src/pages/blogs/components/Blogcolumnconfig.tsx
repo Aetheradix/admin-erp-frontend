@@ -26,40 +26,60 @@ export interface ColumnConfig {
 export const BLOG_COLUMNS: ColumnConfig[] = [
   {
     key: 'image',
-    header: 'Post',
-    width: '120px',
+    header: 'Cover',
+    width: '100px',
     className: 'pl-6',
     headerClassName: 'pl-6',
-    body: (row) => <ImageCell src={row.image_url || ''} alt={row.title} />,
+    body: (row) => (
+      <ImageCell
+        id={String(row.id)}
+        src={row.featuredImage || row.image_url || ''}
+        alt={row.title}
+      />
+    ),
   },
   {
     key: 'title',
-    header: 'Title',
-    body: (row) => <TitleCell title={row.title} excerpt={row.excerpt} content={row.content} />,
+    header: 'Story Details',
+    body: (row) => (
+      <TitleCell
+        id={String(row.id)}
+        title={row.title}
+        excerpt={row.excerpt}
+        content={row.content}
+      />
+    ),
   },
   {
     key: 'category',
     header: 'Category',
-    width: '180px',
-    body: (row) => <CategoryCell category={row.category} />,
+    width: '160px',
+    body: (row) => (
+      <CategoryCell
+        category={row.category}
+        date={row.created_at || row.publishDate || row.updated_at}
+      />
+    ),
   },
   {
     key: 'author',
     header: 'Author',
-    width: '220px',
+    width: '200px',
     body: (row) => <AuthorCell author={row.author} />,
   },
   {
     key: 'status',
     header: 'Status',
-    width: '150px',
+    width: '140px',
+    align: 'center',
     body: (row) => <StatusCell status={row.status} />,
   },
   {
     key: 'actions',
     header: '',
     align: 'right',
-    headerClassName: 'pr-8',
+    width: '110px',
+    headerClassName: 'pr-6',
     body: (row, { onDelete }) => <ActionsCell id={String(row.id)} onDelete={onDelete} />,
   },
 ];
