@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/primitives/Textarea';
 import { Input } from '@/components/ui/primitives/Input';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import { resolveImageUrl, cleanUploadPath, downloadImageFile } from '@/utils/imageUrl';
+import { resolveImageUrl, downloadImageFile } from '@/utils/imageUrl';
 import type { Blog } from '@/types/models';
 
 interface BlogFormProps {
@@ -130,7 +130,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
       const res = await uploadImage({ file, category: 'blogs' }).unwrap();
       const rawUrl = res.data?.url;
       if (rawUrl) {
-        const serverUrl = cleanUploadPath(rawUrl);
+        const serverUrl = rawUrl;
         setFormData((prev) => ({
           ...prev,
           featuredImage: serverUrl,
@@ -175,7 +175,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
 
   const handleApplyUrl = () => {
     if (!imageUrlInput.trim()) return;
-    const clean = cleanUploadPath(imageUrlInput.trim());
+    const clean = imageUrlInput.trim();
     setPreviewUrl(clean);
     setImgError(false);
     setFormData((prev) => ({
