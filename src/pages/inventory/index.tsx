@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
-import { ItemsPage } from './ItemsPage';
-import { StockLevelsPage } from './StockLevelsPage';
-import { MovementsPage } from './MovementsPage';
+import ItemsPage from './ItemsPage';
+import StockLevelsPage from './StockLevelsPage';
+import MovementsPage from './MovementsPage';
 
 const InventoryModule = () => {
   return (

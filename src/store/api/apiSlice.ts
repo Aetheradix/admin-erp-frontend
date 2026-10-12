@@ -79,6 +79,7 @@ export const apiSlice = createApi({
     'SalarySlips',
     'Roles',
     'RoleAuditLogs',
+    'Inventory',
   ],
   endpoints: () => ({}),
 });
