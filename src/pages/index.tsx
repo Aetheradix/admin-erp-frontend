@@ -109,6 +109,7 @@ const AppFeature = () => {
       'Grievances',
       'Guest Pass',
       'Resource Booking',
+      'Inventory',
     ];
     for (const f of features) {
       map[f] = check(f);
@@ -135,7 +136,7 @@ const AppFeature = () => {
         <Route path="/teams/*" element={<TeamsModule />} />
         <Route path="/users/*" element={<UsersModule />} />
         <Route path="/tasks/*" element={<TasksModule />} />
-        <Route path="/inventory/*" element={<InventoryModule />} />
+        <Route path="/inventory/*" element={(allowedMap['Inventory'] ?? true) ? <InventoryModule /> : <Navigate to="/" replace />} />
 
         {/* Social Module Routes */}
         <Route

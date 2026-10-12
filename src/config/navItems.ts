@@ -158,7 +158,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-export type UserRole = 'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee';
+export type UserRole = 'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee' | 'Inventory operator';
 
 export interface NavChild {
   label: string;
@@ -188,7 +188,7 @@ export const navItems: NavItem[] = [
     icon: LayoutDashboard,
     category: 'OVERVIEW',
     description: 'Overview of operations',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator', 'Employee'],
   },
   {
     label: 'Check-In',
@@ -373,17 +373,17 @@ export const navItems: NavItem[] = [
       {
         label: 'Items',
         path: '/inventory',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator', 'Employee'],
       },
       {
         label: 'Stock Levels',
         path: '/inventory/stock-levels',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator'],
       },
       {
         label: 'Movements',
         path: '/inventory/movements',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator'],
       },
     ],
   },
