@@ -71,7 +71,11 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
               <button
                 onClick={() => {
                   const curr = items[activeIndex];
-                  if (curr) downloadImageFile(curr.image_url, `${curr.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`);
+                  if (curr)
+                    downloadImageFile(
+                      curr.image_url,
+                      `${curr.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`
+                    );
                 }}
                 className="w-12 h-12 rounded-2xl bg-white/5 text-white hover:bg-emerald-500 hover:text-white flex items-center justify-center border border-white/10 transition-all backdrop-blur-md cursor-pointer"
                 title="Download High-Res Asset"

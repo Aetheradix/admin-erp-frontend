@@ -48,7 +48,6 @@ export interface UpdateExpenseStatusArgs {
 
 export const expenseSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-
     getAllExpenses: builder.query<ExpenseRecord[], void>({
       query: () => '/finance', // Updated from /expenses
       transformResponse: (response: unknown) => {

@@ -107,12 +107,12 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
 
   const handleGenerateAssetId = () => {
     const prefixMap: Record<string, string> = {
-      'Laptops': 'AST-LAP',
-      'Monitors': 'AST-MON',
+      Laptops: 'AST-LAP',
+      Monitors: 'AST-MON',
       'Meeting Rooms': 'AST-ROM',
-      'Vehicles': 'AST-VEH',
+      Vehicles: 'AST-VEH',
       'Office Furniture': 'AST-FRN',
-      'Equipment': 'AST-EQP',
+      Equipment: 'AST-EQP',
     };
     const prefix = prefixMap[formData.category || ''] || 'AST-ITM';
     const num = Math.floor(1000 + Math.random() * 9000);
@@ -200,8 +200,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
           </div>
         </div>
       }
-      className="w-full max-w-3xl"
-    >
+      className="w-full max-w-3xl">
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 pt-2">
         {/* Top 2 Columns: Identity & Classification */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -229,8 +228,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                 variant="secondary"
                 onClick={handleGenerateAssetId}
                 title="Generate Unique Asset ID"
-                className="px-3! h-11! text-xs font-bold shrink-0"
-              >
+                className="px-3! h-11! text-xs font-bold shrink-0">
                 <RefreshCw size={14} className="mr-1" /> Auto
               </Button>
             </div>
@@ -255,7 +253,9 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
               id="inv-condition"
               options={CONDITION_OPTIONS}
               value={formData.condition_status}
-              onChange={(e) => setFormData({ ...formData, condition_status: e.value as InventoryCondition })}
+              onChange={(e) =>
+                setFormData({ ...formData, condition_status: e.value as InventoryCondition })
+              }
             />
           </FormField>
 
@@ -280,17 +280,17 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                 <span className="text-sm font-black text-foreground">
                   Available as a Bookable Resource
                 </span>
-                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                  formData.is_bookable 
-                    ? 'bg-amber-500 text-white' 
-                    : 'bg-muted/20 text-muted'
-                }`}>
+                <span
+                  className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    formData.is_bookable ? 'bg-amber-500 text-white' : 'bg-muted/20 text-muted'
+                  }`}>
                   {formData.is_bookable ? 'BOOKABLE (ON)' : 'INVENTORY ONLY (OFF)'}
                 </span>
               </div>
               <p className="text-xs text-muted font-medium mt-1 leading-relaxed">
-                When enabled, authorized employees can discover, reserve, and schedule this resource via the 
-                Resource Booking system. Overlapping bookings will be prevented automatically.
+                When enabled, authorized employees can discover, reserve, and schedule this resource
+                via the Resource Booking system. Overlapping bookings will be prevented
+                automatically.
               </p>
             </div>
           </div>
@@ -331,7 +331,9 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
               type="number"
               min="1"
               value={String(formData.quantity || 1)}
-              onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 1 })}
+              onChange={(e) =>
+                setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 1 })
+              }
               className="h-11"
             />
           </FormField>
@@ -366,7 +368,9 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
               step="0.01"
               min="0"
               value={String(formData.purchase_cost || 0)}
-              onChange={(e) => setFormData({ ...formData, purchase_cost: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                setFormData({ ...formData, purchase_cost: parseFloat(e.target.value) || 0 })
+              }
               placeholder="0.00"
               className="h-11"
             />
@@ -392,8 +396,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                     setPreviewUrl('');
                     setFormData({ ...formData, image_url: '' });
                   }}
-                  className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs font-bold"
-                >
+                  className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs font-bold">
                   Remove
                 </button>
               </div>
@@ -460,16 +463,14 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="px-6 rounded-2xl font-bold"
-          >
+            className="px-6 rounded-2xl font-bold">
             Cancel
           </Button>
           <Button
             type="submit"
             variant="primary"
             disabled={isLoading || isUploading}
-            className="px-8 rounded-2xl font-black shadow-lg shadow-primary/20"
-          >
+            className="px-8 rounded-2xl font-black shadow-lg shadow-primary/20">
             {isLoading ? 'Saving...' : initialData ? 'Update Asset' : 'Save to Inventory'}
           </Button>
         </div>

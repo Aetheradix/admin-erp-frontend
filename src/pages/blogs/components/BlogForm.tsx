@@ -242,9 +242,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
   // Determine active cover to render
   // previewUrl (blob:) is highest priority â€” it is always local and never 404s
   // Only fall back to stored URLs if no local preview exists
-  const rawCover = previewUrl
-    ? previewUrl
-    : (formData.featuredImage || formData.image_url || '');
+  const rawCover = previewUrl ? previewUrl : formData.featuredImage || formData.image_url || '';
   const currentCover = resolveImageUrl(rawCover);
 
   return (
@@ -551,7 +549,10 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                       </button>
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); downloadImage(); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadImage();
+                        }}
                         className="px-3 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg hover:scale-105 active:scale-95 transition-all"
                         title="Download Image">
                         <Download size={13} />
@@ -596,9 +597,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                   <p className="text-xs font-black text-foreground uppercase tracking-wider group-hover:text-primary transition-colors">
                     Upload Cover Image
                   </p>
-                  <p className="text-[10px] text-muted font-bold mt-1">
-                    PNG, JPG, WebP up to 10MB
-                  </p>
+                  <p className="text-[10px] text-muted font-bold mt-1">PNG, JPG, WebP up to 10MB</p>
                   <span className="mt-3 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full">
                     Click or Drag File Here
                   </span>

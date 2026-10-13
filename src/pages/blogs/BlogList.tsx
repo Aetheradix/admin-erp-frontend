@@ -38,9 +38,7 @@ function MagazineCard({ story, navigate, handleDelete }: MagazineCardProps) {
   const cover = resolveImageUrl(story.featuredImage || story.image_url);
 
   const authorName =
-    typeof story.author === 'string'
-      ? story.author
-      : story.author?.name || 'Aether Editorial';
+    typeof story.author === 'string' ? story.author : story.author?.name || 'Aether Editorial';
   const authorImg =
     typeof story.author === 'string'
       ? `https://api.dicebear.com/7.x/notionists/svg?seed=${story.author}`
@@ -80,9 +78,7 @@ function MagazineCard({ story, navigate, handleDelete }: MagazineCardProps) {
         <div className="absolute top-4 right-4 z-10">
           <Badge
             className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border-none ${
-              story.status === 'Published'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-amber-500 text-white'
+              story.status === 'Published' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
             }`}>
             {story.status}
           </Badge>
@@ -112,9 +108,7 @@ function MagazineCard({ story, navigate, handleDelete }: MagazineCardProps) {
               height={28}
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-foreground truncate">
-                {authorName}
-              </span>
+              <span className="text-xs font-bold text-foreground truncate">{authorName}</span>
               <span className="text-[9px] text-muted font-medium flex items-center gap-1">
                 <Clock size={10} />
                 {story.readTime || '4 min'}
@@ -301,7 +295,8 @@ export const BlogList = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: idx * 0.08 }}
             className="bg-white/70 backdrop-blur-xl p-5 rounded-[2rem] border border-border-subtle/80 shadow-soft flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shrink-0`}>
+            <div
+              className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shrink-0`}>
               <item.icon size={22} />
             </div>
             <div className="min-w-0">

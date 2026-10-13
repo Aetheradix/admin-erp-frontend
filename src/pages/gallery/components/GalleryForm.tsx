@@ -54,7 +54,7 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
             Media Asset
           </label>
           <div className="aspect-square w-full rounded-4xl border-2 border-dashed border-border-subtle bg-surface-subtle flex flex-col items-center justify-center gap-4 group hover:border-primary/50 hover:bg-primary/5 transition-all overflow-hidden relative shadow-inner">
-            {(previewUrl || formData.image_url) ? (
+            {previewUrl || formData.image_url ? (
               <>
                 <img
                   src={resolveImageUrl(formData.image_url)}
@@ -76,7 +76,10 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
                     className="rounded-full! p-4! bg-emerald-500! text-white! hover:bg-emerald-600! border-none!"
                     onClick={(e) => {
                       e.stopPropagation();
-                      downloadImageFile(previewUrl || formData.image_url, `${(formData.title || 'gallery-asset').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`);
+                      downloadImageFile(
+                        previewUrl || formData.image_url,
+                        `${(formData.title || 'gallery-asset').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`
+                      );
                     }}
                     aria-label="Download image">
                     <i className="pi pi-download text-xl"></i>
@@ -117,7 +120,8 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
                   }
                 }
               }}
-              aria-label="Upload media asset" />
+              aria-label="Upload media asset"
+            />
             {isUploadingImage && (
               <div className="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center z-10">
                 <span className="text-xs font-black text-primary animate-pulse uppercase tracking-widest">
@@ -125,7 +129,6 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
                 </span>
               </div>
             )}
-
           </div>
           <div className="pt-2">
             <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-3">
@@ -134,7 +137,10 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
             <Input
               id="gallery-source"
               value={formData.image_url}
-              onChange={(e) => { setFormData({ ...formData, image_url: e.target.value }); setPreviewUrl(e.target.value); }}
+              onChange={(e) => {
+                setFormData({ ...formData, image_url: e.target.value });
+                setPreviewUrl(e.target.value);
+              }}
               placeholder="Paste image URL if not uploading..."
               className="text-[11px]! py-3!"
               aria-label="Image URL"

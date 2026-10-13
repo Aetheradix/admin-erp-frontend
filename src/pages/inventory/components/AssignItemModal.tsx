@@ -66,8 +66,7 @@ export const AssignItemModal: React.FC<AssignItemModalProps> = ({
           </div>
         </div>
       }
-      className="w-full max-w-lg"
-    >
+      className="w-full max-w-lg">
       <div className="flex flex-col gap-4 pt-2">
         <FormField label="Select Team Member" required id="assign-emp">
           <Select
@@ -97,8 +96,7 @@ export const AssignItemModal: React.FC<AssignItemModalProps> = ({
             variant="primary"
             onClick={handleConfirm}
             disabled={isLoading || !selectedUserId}
-            className="px-6 rounded-2xl font-black bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-500/20"
-          >
+            className="px-6 rounded-2xl font-black bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-500/20">
             {isLoading ? 'Assigning...' : 'Confirm Handover'}
           </Button>
         </div>

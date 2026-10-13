@@ -74,7 +74,6 @@ export const BlogFeatured = ({ blogs }: BlogFeaturedProps) => {
   if (featured.length === 0) return null;
 
   const getAuthorName = (author: Blog['author']) =>
-
     typeof author === 'string' ? author : author?.name || 'Aether Editorial';
 
   const getAuthorImage = (author: Blog['author']) =>
@@ -176,7 +175,6 @@ export const BlogFeatured = ({ blogs }: BlogFeaturedProps) => {
           ))}
         </div>
       )}
-
     </div>
   );
 };

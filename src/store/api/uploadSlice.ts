@@ -61,7 +61,6 @@ export interface GetSalarySlipsResponse {
   data: SalarySlipItem[];
 }
 
-
 export interface UploadImageArgs {
   file: File | Blob;
   category?: 'blogs' | 'events' | 'gallery' | 'users' | 'general' | string;
@@ -105,7 +104,6 @@ export interface UploadMultipleImagesResponse {
 export const uploadApiSlice = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-
     /** Upload single image (Blogs, Events, Gallery, Profiles, General) */
     uploadImage: builder.mutation<UploadImageResponse, UploadImageArgs>({
       query: (args) => {

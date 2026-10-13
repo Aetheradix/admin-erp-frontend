@@ -1,4 +1,3 @@
-
 export type ResourceType = 'Room' | 'Equipment' | 'Vehicle' | 'Other';
 
 export type ResourceStatus = 'Active' | 'Inactive';
@@ -66,7 +65,6 @@ export interface ResourceBooking {
   email?: string;
 }
 
-
 export interface CreateResourceBookingRequest {
   resource_id: number;
 
@@ -78,7 +76,6 @@ export interface CreateResourceBookingRequest {
 
   notes?: string;
 }
-
 
 export interface UpdateResourceBookingStatusRequest {
   id: number;
@@ -95,7 +92,6 @@ export interface CheckResourceAvailabilityRequest {
 
   end_datetime: string;
 }
-
 
 export interface ResourceAvailability {
   available: boolean;
@@ -119,7 +115,6 @@ export interface ResourceBookingResponse {
   data?: ResourceBooking;
 }
 
-
 export interface ResourcesResponse {
   success: boolean;
 
@@ -128,7 +123,6 @@ export interface ResourcesResponse {
   data: Resource[];
 }
 
-
 export interface ResourceBookingsResponse {
   success: boolean;
 
@@ -136,7 +130,6 @@ export interface ResourceBookingsResponse {
 
   data: ResourceBooking[];
 }
-
 
 export interface ResourceBookingStats {
   total: number;

@@ -22,7 +22,9 @@ export const StockLevelsPage: React.FC = () => {
 
   // Items needing attention (under maintenance, poor or fair condition)
   const maintenanceItems = items.filter((i) => i.status === 'Under Maintenance');
-  const degradedItems = items.filter((i) => i.condition_status === 'Poor' || i.condition_status === 'Fair');
+  const degradedItems = items.filter(
+    (i) => i.condition_status === 'Poor' || i.condition_status === 'Fair'
+  );
 
   return (
     <div className="flex flex-col gap-8 pb-16">
@@ -36,22 +38,19 @@ export const StockLevelsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/inventory')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
           <Package size={15} /> Assets & Resources Dashboard
         </button>
         <button
           type="button"
           onClick={() => navigate('/inventory/stock-levels')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2">
           <Layers size={15} /> Stock Health & Categories
         </button>
         <button
           type="button"
           onClick={() => navigate('/inventory/movements')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
           <Clock size={15} /> Asset Movements & Audits
         </button>
       </div>
@@ -122,8 +121,7 @@ export const StockLevelsPage: React.FC = () => {
             return (
               <div
                 key={cat.category}
-                className="p-6 rounded-3xl bg-white backdrop-blur-xl border border-border-subtle shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between"
-              >
+                className="p-6 rounded-3xl bg-white backdrop-blur-xl border border-border-subtle shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-black text-foreground">{cat.category}</span>
@@ -142,7 +140,9 @@ export const StockLevelsPage: React.FC = () => {
 
                   <div className="flex items-center justify-between text-xs font-bold text-muted">
                     <span>Capital Invested</span>
-                    <span className="text-foreground">$${Number(cat.value || 0).toLocaleString()}</span>
+                    <span className="text-foreground">
+                      $${Number(cat.value || 0).toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
@@ -150,8 +150,7 @@ export const StockLevelsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/inventory')}
-                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
                     View in table <ArrowRight size={12} />
                   </button>
                 </div>
@@ -170,8 +169,7 @@ export const StockLevelsPage: React.FC = () => {
             {stats?.conditionBreakdown?.map((c) => (
               <div
                 key={c.condition_status}
-                className="p-4 rounded-2xl bg-surface-subtle/50 border border-border-subtle"
-              >
+                className="p-4 rounded-2xl bg-surface-subtle/50 border border-border-subtle">
                 <span className="text-xs font-black uppercase text-muted block">
                   {c.condition_status} Condition
                 </span>
@@ -194,7 +192,9 @@ export const StockLevelsPage: React.FC = () => {
                 <div key={item.id} className="py-3 flex items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-black text-foreground block">{item.name}</span>
-                    <span className="text-[11px] text-muted font-bold font-mono">{item.asset_id} &bull; {item.location}</span>
+                    <span className="text-[11px] text-muted font-bold font-mono">
+                      {item.asset_id} &bull; {item.location}
+                    </span>
                   </div>
                   <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 border border-amber-500/20">
                     In Service

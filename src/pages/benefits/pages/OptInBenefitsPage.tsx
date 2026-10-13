@@ -63,7 +63,6 @@ const OptInBenefitsPage: React.FC<OptInBenefitsPageProps> = ({ userId }) => {
     return match?.name ? renderValue(match.name) : 'General';
   };
 
-
   const onOptInClick = async (perkId: number): Promise<void> => {
     try {
       await handleAssignPerk({

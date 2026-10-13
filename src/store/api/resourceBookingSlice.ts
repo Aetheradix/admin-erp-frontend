@@ -10,7 +10,6 @@ import type {
   CreateResourceBookingRequest,
 } from '../../pages/resourcebooking/types/index.types';
 
-
 export type {
   Resource,
   ResourceType,

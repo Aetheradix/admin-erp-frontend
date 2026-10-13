@@ -15,9 +15,7 @@ export function StatusCell({ status }: { status: Blog['status'] }) {
     <div className="flex justify-center">
       <Badge
         className={`px-3.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border-none shadow-xs flex items-center gap-1.5 ${
-          isPublished
-            ? 'bg-emerald-500/10 text-emerald-600'
-            : 'bg-amber-500/10 text-amber-600'
+          isPublished ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'
         }`}>
         <div
           className={`w-1.5 h-1.5 rounded-full ${
@@ -101,13 +99,7 @@ export function TitleCell({
 
 // ─── Category ─────────────────────────────────────────────────────────────────
 
-export function CategoryCell({
-  category,
-  date,
-}: {
-  category: string | null;
-  date?: string;
-}) {
+export function CategoryCell({ category, date }: { category: string | null; date?: string }) {
   const formattedDate = date
     ? new Date(date).toLocaleDateString('en-US', {
         month: 'short',
@@ -131,15 +123,7 @@ export function CategoryCell({
 
 // ─── Image ────────────────────────────────────────────────────────────────────
 
-export function ImageCell({
-  id,
-  src,
-  alt,
-}: {
-  id: string;
-  src?: string;
-  alt: string;
-}) {
+export function ImageCell({ id, src, alt }: { id: string; src?: string; alt: string }) {
   const navigate = useNavigate();
   const [hasError, setHasError] = useState(false);
   const resolved = resolveImageUrl(src);

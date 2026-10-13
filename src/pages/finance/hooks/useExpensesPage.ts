@@ -33,10 +33,7 @@ export interface CompanyExpenseStats {
   rejectedCount: number;
 }
 
-
-
 export const useExpensesPage = () => {
-
   const {
     data: expenses = [],
     isLoading,

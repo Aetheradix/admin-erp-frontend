@@ -73,8 +73,18 @@ const parseNum = (val: any): number => {
 
 // Month conversion map
 const MONTH_NAMES = [
-  'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-  'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
+  'JANUARY',
+  'FEBRUARY',
+  'MARCH',
+  'APRIL',
+  'MAY',
+  'JUNE',
+  'JULY',
+  'AUGUST',
+  'SEPTEMBER',
+  'OCTOBER',
+  'NOVEMBER',
+  'DECEMBER',
 ];
 
 const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
@@ -142,7 +152,10 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     monthYear = String(item.monthYear || item.payPeriod);
   }
 
-  const calculatedTotal = earnings.reduce((acc: number, curr: any) => acc + parseNum(curr.amount), 0);
+  const calculatedTotal = earnings.reduce(
+    (acc: number, curr: any) => acc + parseNum(curr.amount),
+    0
+  );
   const finalNet = netSalary || grossSalary || calculatedTotal;
 
   return {
@@ -173,7 +186,9 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     deductions: deductions,
     authorizedSignatory: item.authorizedSignatory || 'Seema Srivastava',
     signatoryRole: item.signatoryRole || '(Director)',
-    hrNote: item.hrNote || 'For any discrepancies, please contact the HR department within 3 working days.',
+    hrNote:
+      item.hrNote ||
+      'For any discrepancies, please contact the HR department within 3 working days.',
     rawRecord: item,
   };
 };
@@ -205,8 +220,8 @@ export function PayrollPage() {
       const itemsList = Array.isArray(rawData?.data)
         ? rawData.data
         : Array.isArray(rawData)
-        ? rawData
-        : [];
+          ? rawData
+          : [];
 
       const formattedRecords: PayrollRecord[] = itemsList.map((item: Record<string, any>) =>
         formatApiRecord(item)
@@ -298,9 +313,7 @@ export function PayrollPage() {
                 ID: #{record.employeeCode}
               </span>
             </div>
-            <span className="text-[11px] text-slate-500 font-medium">
-              {record.position}
-            </span>
+            <span className="text-[11px] text-slate-500 font-medium">{record.position}</span>
           </div>
         </div>
       ),
@@ -330,13 +343,9 @@ export function PayrollPage() {
       key: 'paidDays',
       render: (_, record) => (
         <div className="flex flex-col">
-          <span className="text-xs font-semibold text-slate-800">
-            {record.paidDays} Days
-          </span>
+          <span className="text-xs font-semibold text-slate-800">{record.paidDays} Days</span>
           {record.lopDays > 0 && (
-            <span className="text-[10px] font-semibold text-rose-500">
-              {record.lopDays} LOP
-            </span>
+            <span className="text-[10px] font-semibold text-rose-500">{record.lopDays} LOP</span>
           )}
         </div>
       ),
@@ -347,8 +356,7 @@ export function PayrollPage() {
       render: (_, record) => (
         <Tag
           color={record.paymentStatus.toLowerCase() === 'paid' ? 'success' : 'warning'}
-          className="uppercase font-bold text-[10px] rounded-md px-2 py-0.5"
-        >
+          className="uppercase font-bold text-[10px] rounded-md px-2 py-0.5">
           {record.paymentStatus}
         </Tag>
       ),
@@ -407,9 +415,10 @@ export function PayrollPage() {
                 downloadSalarySlip(record);
               }
             },
-          }}
-        >
-          <button type="button" className="p-2 rounded-lg hover:bg-slate-100 transition text-slate-500">
+          }}>
+          <button
+            type="button"
+            className="p-2 rounded-lg hover:bg-slate-100 transition text-slate-500">
             <MoreHorizontal size={18} />
           </button>
         </Dropdown>
@@ -431,8 +440,7 @@ export function PayrollPage() {
           type="button"
           disabled={isSubmitting}
           onClick={handleCreateNew}
-          className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-sm active:scale-95"
-        >
+          className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-sm active:scale-95">
           <Plus size={16} />
           {isSubmitting ? 'Saving...' : 'Create Salary Slip'}
         </button>
@@ -444,7 +452,9 @@ export function PayrollPage() {
           dataSource={payroll}
           loading={isFetching}
           rowKey={(record) => String(record.id || record.paySlipNo)}
-          locale={{ emptyText: isError ? 'Error fetching payroll data.' : 'No payroll records found.' }}
+          locale={{
+            emptyText: isError ? 'Error fetching payroll data.' : 'No payroll records found.',
+          }}
         />
       </motion.div>
 
@@ -473,15 +483,13 @@ export function PayrollPage() {
                 <button
                   type="button"
                   onClick={() => downloadSalarySlip(selectedSlip)}
-                  className="bg-black text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-gray-800 transition"
-                >
+                  className="bg-black text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-gray-800 transition">
                   <Download size={16} /> Download PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowSlipModal(false)}
-                  className="border border-gray-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-100 transition"
-                >
+                  className="border border-gray-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-100 transition">
                   Close
                 </button>
               </div>

@@ -10,8 +10,6 @@ import type {
   AssignPerkRequest,
 } from '../types/perks.types';
 
-
-
 type PerkStatus = 'Active' | 'Inactive';
 
 type PerkFormProps = {
@@ -36,7 +34,6 @@ type FieldProps = {
 
 const INPUT_CLASSES =
   'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed';
-
 
 export default function RecreationalBenefits(): React.JSX.Element {
   const {
@@ -293,7 +290,6 @@ export default function RecreationalBenefits(): React.JSX.Element {
   );
 }
 
-
 function Stat({
   title,
   value,
@@ -329,7 +325,6 @@ function Status({ status }: { status: PerkStatus }): React.JSX.Element {
     </span>
   );
 }
-
 
 function PerkForm({
   perk,
@@ -717,7 +712,6 @@ function Field({ label, children }: FieldProps): React.JSX.Element {
     </div>
   );
 }
-
 
 function parseEligibility(eligibility: unknown): string {
   if (!eligibility) return 'All Employees';

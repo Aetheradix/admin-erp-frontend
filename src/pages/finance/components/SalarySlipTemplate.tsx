@@ -52,7 +52,6 @@ export interface SalarySlipTemplateProps {
   data: Partial<SalarySlipData>; // Change from SalarySlipData to Partial<SalarySlipData>
 }
 
-
 const formatCurrency = (amount: number, currencySymbol = '₹'): string => {
   const value = Number(amount || 0);
 
@@ -153,7 +152,6 @@ const getAmountInWords = (amount: number): string => {
   return `${parts.join(' ')} Rupees Only`;
 };
 
-
 const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>(({ data }, ref) => {
   const currencySymbol = data.currencySymbol || '₹';
   const watermarkText = data.watermarkText || 'ARX';
@@ -208,7 +206,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
           padding: '38px 42px 34px',
           position: 'relative',
         }}>
-
         <div
           className="preview-header-exact"
           style={{
@@ -484,8 +481,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               gridTemplateColumns: '1fr 1fr',
               gap: '18px',
             }}>
-
-
             <SalaryTable
               title="EARNINGS"
               rows={paddedEarnings}
@@ -651,7 +646,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
           </div>
         </div>
 
-
         <div
           className="preview-footer-section"
           style={{
@@ -750,7 +744,6 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
   );
 });
 
-
 interface MetaItemProps {
   label: string;
   value: string | number;
@@ -789,7 +782,6 @@ function MetaItem({ label, value, bold = false }: MetaItemProps) {
     </div>
   );
 }
-
 
 interface SalaryTableProps {
   title: string;
@@ -882,7 +874,6 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
   );
 }
 
-
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div
@@ -915,8 +906,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-
 
 function DaysRow({ label, value }: { label: string; value: string }) {
   return (

@@ -41,7 +41,6 @@ interface InvoiceTemplateProps {
 }
 
 const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invoice }, ref) => {
-
   const subTotal = invoice.items.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
     0
@@ -50,7 +49,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
   const gstAmount = (subTotal * Number(invoice.gstRate || 0)) / 100;
 
   const total = subTotal + gstAmount;
-
 
   const formatCurrency = (value: number) => {
     return `₹${Number(value || 0).toLocaleString('en-IN', {
@@ -75,7 +73,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
     });
   };
 
-  
   const colors = {
     black: '#111827',
     dark: '#1F2937',
@@ -108,7 +105,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           padding: '53px',
           color: colors.black,
         }}>
-      
         <div
           style={{
             position: 'absolute',
@@ -125,7 +121,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           }}>
           ARX
         </div>
-
 
         <div
           style={{
@@ -195,7 +190,6 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
             </p>
           </div>
         </div>
-
 
         <div
           style={{

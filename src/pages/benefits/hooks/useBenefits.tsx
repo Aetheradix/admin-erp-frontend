@@ -523,7 +523,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     ]);
   };
 
-
   const isLoading = perksLoading || perkTypesLoading || userPerksLoading || perkExpensesLoading;
 
   const isFetching =
@@ -540,7 +539,6 @@ export const useBenefitsPage = (userId?: number, expenseParams?: GetPerkExpenses
     isRecordingUsage ||
     isUpdatingUserPerk ||
     isLinkingExpense;
-
 
   return {
     /* Perks */

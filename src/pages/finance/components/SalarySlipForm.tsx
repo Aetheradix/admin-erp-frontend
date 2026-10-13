@@ -17,7 +17,7 @@ import {
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
 import { useAuth } from '@/hooks/useAuth';
-import type { PayrollRecord  } from '../PayrollPage';
+import type { PayrollRecord } from '../PayrollPage';
 export interface EarningsItem {
   name: string;
   amount: number;
@@ -61,7 +61,7 @@ export interface SalarySlipData {
 }
 
 interface SalarySlipFormProps {
-  initialValues?: Record<string, any> | PayrollRecord; 
+  initialValues?: Record<string, any> | PayrollRecord;
   isEditing?: boolean;
   onClose: () => void;
   onCreate: (data: any) => Promise<void>;
@@ -166,8 +166,18 @@ const calculatePayPeriod = (
   periodPart: 1 | 2 = 1
 ): string => {
   const months = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    'JANUARY',
+    'FEBRUARY',
+    'MARCH',
+    'APRIL',
+    'MAY',
+    'JUNE',
+    'JULY',
+    'AUGUST',
+    'SEPTEMBER',
+    'OCTOBER',
+    'NOVEMBER',
+    'DECEMBER',
   ];
   const monthIndex = months.indexOf(monthName.toUpperCase());
   if (monthIndex === -1) return '';
@@ -300,8 +310,18 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   }, [searchTerm, fetchUsers]);
 
   const months: string[] = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    'JANUARY',
+    'FEBRUARY',
+    'MARCH',
+    'APRIL',
+    'MAY',
+    'JUNE',
+    'JULY',
+    'AUGUST',
+    'SEPTEMBER',
+    'OCTOBER',
+    'NOVEMBER',
+    'DECEMBER',
   ];
 
   // Generate years (e.g., current year ± 5 years)
@@ -323,14 +343,24 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   const handleMonthChange = (selectedMonth: string) => {
     const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
     const updatedMonthYear = `${selectedMonth} ${currentYearVal}`;
-    const newPayPeriod = calculatePayPeriod(selectedMonth, currentYearVal, formData.payCycle, biWeeklyPeriod);
+    const newPayPeriod = calculatePayPeriod(
+      selectedMonth,
+      currentYearVal,
+      formData.payCycle,
+      biWeeklyPeriod
+    );
     setFormData((prev) => ({ ...prev, monthYear: updatedMonthYear, payPeriod: newPayPeriod }));
   };
 
   const handleYearChange = (selectedYear: string) => {
     const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
     const updatedMonthYear = `${currentMonthVal} ${selectedYear}`;
-    const newPayPeriod = calculatePayPeriod(currentMonthVal, selectedYear, formData.payCycle, biWeeklyPeriod);
+    const newPayPeriod = calculatePayPeriod(
+      currentMonthVal,
+      selectedYear,
+      formData.payCycle,
+      biWeeklyPeriod
+    );
     setFormData((prev) => ({ ...prev, monthYear: updatedMonthYear, payPeriod: newPayPeriod }));
   };
 
@@ -341,7 +371,8 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
     const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
 
     const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, cycle, biWeeklyPeriod);
-    const defaultPaidDays = cycle === 'Bi-Weekly' ? (biWeeklyPeriod === 1 ? 15 : totalDays - 15) : totalDays;
+    const defaultPaidDays =
+      cycle === 'Bi-Weekly' ? (biWeeklyPeriod === 1 ? 15 : totalDays - 15) : totalDays;
 
     setFormData((prev) => ({
       ...prev,
@@ -352,22 +383,22 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   };
 
   const handleBiWeeklyPartChange = (part: 1 | 2) => {
-  setBiWeeklyPeriod(part);
-  const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
-  // Added 'const' declaration here to prevent ReferenceError
-  const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
-  const monthIndex = months.indexOf(currentMonthVal.toUpperCase());
-  const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
+    setBiWeeklyPeriod(part);
+    const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
+    // Added 'const' declaration here to prevent ReferenceError
+    const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
+    const monthIndex = months.indexOf(currentMonthVal.toUpperCase());
+    const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
 
-  const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, 'Bi-Weekly', part);
-  const defaultPaidDays = part === 1 ? 15 : totalDays - 15;
+    const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, 'Bi-Weekly', part);
+    const defaultPaidDays = part === 1 ? 15 : totalDays - 15;
 
-  setFormData((prev) => ({
-    ...prev,
-    payPeriod: newPayPeriod,
-    paidDays: defaultPaidDays,
-  }));
-};
+    setFormData((prev) => ({
+      ...prev,
+      payPeriod: newPayPeriod,
+      paidDays: defaultPaidDays,
+    }));
+  };
 
   // Extracted current month/year for select values
   const selectedMonth = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
@@ -705,121 +736,134 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   //   }
   // };
 
-
-
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // 1. Target Employee ID (Selected from dropdown - recipient of slip)
-  const recipientUserId = formData.userId || formData.employeeId;
-  const numericRecipientId = Number(recipientUserId);
+    // 1. Target Employee ID (Selected from dropdown - recipient of slip)
+    const recipientUserId = formData.userId || formData.employeeId;
+    const numericRecipientId = Number(recipientUserId);
 
-  if (!recipientUserId || isNaN(numericRecipientId) || numericRecipientId <= 0) {
-    setErrors((prev) => ({
-      ...prev,
-      userId: 'Please select a valid employee from the list.',
-      employeeId: 'Employee selection is required.',
-    }));
-    return;
-  }
+    if (!recipientUserId || isNaN(numericRecipientId) || numericRecipientId <= 0) {
+      setErrors((prev) => ({
+        ...prev,
+        userId: 'Please select a valid employee from the list.',
+        employeeId: 'Employee selection is required.',
+      }));
+      return;
+    }
 
-  // 2. Creator ID (Logged-in HR/Admin creating the slip)
-  const loggedInUserId = user?.id || loggedInUser?.id;
-  const creatorId = loggedInUserId ? Number(loggedInUserId) : null;
+    // 2. Creator ID (Logged-in HR/Admin creating the slip)
+    const loggedInUserId = user?.id || loggedInUser?.id;
+    const creatorId = loggedInUserId ? Number(loggedInUserId) : null;
 
-  try {
-    setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    // 3. Keyword matching helpers for Earnings & Deductions
-    const findAmount = (items: typeof formData.earnings, keywords: string[]) => {
-      const match = items.find((i) =>
-        keywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
-      );
-      return match ? Number(match.amount) || 0 : 0;
-    };
+      // 3. Keyword matching helpers for Earnings & Deductions
+      const findAmount = (items: typeof formData.earnings, keywords: string[]) => {
+        const match = items.find((i) =>
+          keywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
+        );
+        return match ? Number(match.amount) || 0 : 0;
+      };
 
-    const getUnmatchedSum = (items: typeof formData.earnings, matchedKeywords: string[]) => {
-      return items
-        .filter(
-          (i) => !matchedKeywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
-        )
-        .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-    };
+      const getUnmatchedSum = (items: typeof formData.earnings, matchedKeywords: string[]) => {
+        return items
+          .filter(
+            (i) =>
+              !matchedKeywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
+          )
+          .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+      };
 
-    // Earnings Breakdown
-    const earningMatches = ['basic', 'hra', 'house rent', 'bonus', 'incentive', 'special', 'conveyance', 'transport'];
-    const basicSalary = findAmount(formData.earnings, ['basic']);
-    const houseRentAllowance = findAmount(formData.earnings, ['hra', 'house rent']);
-    const bonus = findAmount(formData.earnings, ['bonus', 'incentive']);
-    const specialAllowance = findAmount(formData.earnings, ['special']);
-    const conveyanceAllowance = findAmount(formData.earnings, ['conveyance', 'transport']);
-    const otherEarnings = getUnmatchedSum(formData.earnings, earningMatches);
+      // Earnings Breakdown
+      const earningMatches = [
+        'basic',
+        'hra',
+        'house rent',
+        'bonus',
+        'incentive',
+        'special',
+        'conveyance',
+        'transport',
+      ];
+      const basicSalary = findAmount(formData.earnings, ['basic']);
+      const houseRentAllowance = findAmount(formData.earnings, ['hra', 'house rent']);
+      const bonus = findAmount(formData.earnings, ['bonus', 'incentive']);
+      const specialAllowance = findAmount(formData.earnings, ['special']);
+      const conveyanceAllowance = findAmount(formData.earnings, ['conveyance', 'transport']);
+      const otherEarnings = getUnmatchedSum(formData.earnings, earningMatches);
 
-    // Deductions Breakdown
-    const deductionMatches = ['pf', 'provident', 'pt', 'professional tax', 'tds', 'income tax', 'tax'];
-    const providentFund = findAmount(formData.deductions, ['pf', 'provident']);
-    const professionalTax = findAmount(formData.deductions, ['pt', 'professional tax']);
-    const incomeTaxTds = findAmount(formData.deductions, ['tds', 'income tax', 'tax']);
-    const otherDeductions = getUnmatchedSum(formData.deductions, deductionMatches);
+      // Deductions Breakdown
+      const deductionMatches = [
+        'pf',
+        'provident',
+        'pt',
+        'professional tax',
+        'tds',
+        'income tax',
+        'tax',
+      ];
+      const providentFund = findAmount(formData.deductions, ['pf', 'provident']);
+      const professionalTax = findAmount(formData.deductions, ['pt', 'professional tax']);
+      const incomeTaxTds = findAmount(formData.deductions, ['tds', 'income tax', 'tax']);
+      const otherDeductions = getUnmatchedSum(formData.deductions, deductionMatches);
 
-    // Attendance
-    const paidDays = Number(formData.paidDays) || 15;
-    const lopDays = Number(formData.lopDays) || 0;
+      // Attendance
+      const paidDays = Number(formData.paidDays) || 15;
+      const lopDays = Number(formData.lopDays) || 0;
 
-    const payload = {
-  // 1. Recipient ID
-  user_id: numericRecipientId,
+      const payload = {
+        // 1. Recipient ID
+        user_id: numericRecipientId,
 
-  // 2. Creator ID (Logged-in HR/Admin)
-  created_by: creatorId,
-  pay_slip_no: formData.paySlipNo || null, // Added pay_slip_no to payload
+        // 2. Creator ID (Logged-in HR/Admin)
+        created_by: creatorId,
+        pay_slip_no: formData.paySlipNo || null, // Added pay_slip_no to payload
 
-  // 3. Dates & Cycle
-  month_year: formData.monthYear,
-  pay_frequency: (formData.payCycle || 'biweekly').toLowerCase(),
-  cycle_number: biWeeklyPeriod || 1,
+        // 3. Dates & Cycle
+        month_year: formData.monthYear,
+        pay_frequency: (formData.payCycle || 'biweekly').toLowerCase(),
+        cycle_number: biWeeklyPeriod || 1,
 
-  // 4. Attendance
-  paid_days: paidDays,
-  lop_days: lopDays,
-  totalWorkingDays: paidDays + lopDays,
+        // 4. Attendance
+        paid_days: paidDays,
+        lop_days: lopDays,
+        totalWorkingDays: paidDays + lopDays,
 
-  // 5. Employee Details
-  employee_code: formData.employeeId ? String(formData.employeeId) : null,
-  designation: formData.position || null,
-  department: formData.department || null,
-  bank_account_number: formData.accountNumber || null,
+        // 5. Employee Details
+        employee_code: formData.employeeId ? String(formData.employeeId) : null,
+        designation: formData.position || null,
+        department: formData.department || null,
+        bank_account_number: formData.accountNumber || null,
 
-  // 6. Breakdown Arrays & Calculated Figures
-  earnings: formData.earnings.filter((e) => e.name.trim() !== ''),
-  deductions: formData.deductions.filter((d) => d.name.trim() !== ''),
-  basicSalary,
-  houseRentAllowance,
-  specialAllowance,
-  conveyanceAllowance,
-  bonus,
-  otherEarnings,
-  providentFund,
-  professionalTax,
-  incomeTaxTds,
-  otherDeductions,
+        // 6. Breakdown Arrays & Calculated Figures
+        earnings: formData.earnings.filter((e) => e.name.trim() !== ''),
+        deductions: formData.deductions.filter((d) => d.name.trim() !== ''),
+        basicSalary,
+        houseRentAllowance,
+        specialAllowance,
+        conveyanceAllowance,
+        bonus,
+        otherEarnings,
+        providentFund,
+        professionalTax,
+        incomeTaxTds,
+        otherDeductions,
 
-  // 7. Status & Remarks
-  paymentStatus: 'paid',
-  paymentDate: formData.generatedOn || new Date().toISOString().split('T')[0],
-  remarks: formData.hrNote || null,
-};
+        // 7. Status & Remarks
+        paymentStatus: 'paid',
+        paymentDate: formData.generatedOn || new Date().toISOString().split('T')[0],
+        remarks: formData.hrNote || null,
+      };
 
-  await onCreate(payload);
-
-    
-  } catch (error) {
-    console.error('Failed to create salary slip:', error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+      await onCreate(payload);
+    } catch (error) {
+      console.error('Failed to create salary slip:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -901,8 +945,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                     onChange={(e) => handleMonthChange(e.target.value)}
                     className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
                       errors.monthYear ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
+                    }`}>
                     {months.map((month: string) => (
                       <option key={month} value={month}>
                         {month}
@@ -921,8 +964,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                     onChange={(e) => handleYearChange(e.target.value)}
                     className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
                       errors.monthYear ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
+                    }`}>
                     {years.map((year) => (
                       <option key={year} value={year}>
                         {year}
@@ -945,7 +987,15 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
                 {/* Auto-Calculated Pay Period */}
                 <Input
                   label="Pay Period Range"
-                  value={formData.payPeriod || calculatePayPeriod(selectedMonth, selectedYear, formData.payCycle, biWeeklyPeriod)}
+                  value={
+                    formData.payPeriod ||
+                    calculatePayPeriod(
+                      selectedMonth,
+                      selectedYear,
+                      formData.payCycle,
+                      biWeeklyPeriod
+                    )
+                  }
                   onChange={(e) => updateField('payPeriod', e.target.value)}
                   error={errors.payPeriod}
                   required
@@ -953,9 +1003,7 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
               </div>
             </section>
           </div>
-          {errors.monthYear && (
-            <p className="mt-1 text-xs text-red-500 px-6">{errors.monthYear}</p>
-          )}
+          {errors.monthYear && <p className="mt-1 text-xs text-red-500 px-6">{errors.monthYear}</p>}
 
           {/* Company Details */}
           <section className="px-6 pb-6">
@@ -1227,7 +1275,9 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
             <div className="mt-4 p-4 rounded-2xl bg-black text-white flex justify-between items-center">
               <div>
                 <p className="text-xs text-gray-400 font-medium">Net Payable Salary</p>
-                <p className="text-xl font-bold font-mono mt-0.5">₹{netSalary.toLocaleString('en-IN')}</p>
+                <p className="text-xl font-bold font-mono mt-0.5">
+                  ₹{netSalary.toLocaleString('en-IN')}
+                </p>
               </div>
             </div>
           </section>

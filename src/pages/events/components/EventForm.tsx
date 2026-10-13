@@ -221,7 +221,6 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
             </FormField>
           </div>
 
-          
           {/* Banner Upload */}
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted">
@@ -230,15 +229,23 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
             <div className="relative aspect-video w-full rounded-2xl border-2 border-dashed border-border-subtle bg-surface-subtle overflow-hidden flex items-center justify-center group hover:border-primary/50 transition-all">
               {formData.image ? (
                 <>
-                  <img src={resolveImageUrl(formData.image)} alt="Cover" className="w-full h-full object-cover" />
+                  <img
+                    src={resolveImageUrl(formData.image)}
+                    alt="Cover"
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-lg">Change Banner</span>
+                    <span className="text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-lg">
+                      Change Banner
+                    </span>
                   </div>
                 </>
               ) : (
                 <div className="flex flex-col items-center gap-1 text-center p-4">
                   <span className="text-xs font-bold text-foreground">Click to upload banner</span>
-                  <span className="text-[10px] text-muted uppercase">JPG, PNG, WebP (Max 10MB)</span>
+                  <span className="text-[10px] text-muted uppercase">
+                    JPG, PNG, WebP (Max 10MB)
+                  </span>
                 </div>
               )}
               <FileUpload
@@ -250,7 +257,10 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                 onUpload={async (e) => {
                   if (e.files && e.files[0]) {
                     try {
-                      const res = await uploadImage({ file: e.files[0], category: 'events' }).unwrap();
+                      const res = await uploadImage({
+                        file: e.files[0],
+                        category: 'events',
+                      }).unwrap();
                       const serverUrl = res.data?.url ? cleanUploadPath(res.data.url) : '';
                       if (serverUrl) {
                         setFormData((prev) => ({

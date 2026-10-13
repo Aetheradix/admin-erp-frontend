@@ -36,7 +36,6 @@ export default function MyPerks(): React.JSX.Element {
     refetchUserPerks,
   } = useBenefitsPage();
 
- 
   const myPerks: MyPerk[] = filteredUserPerks.map((userPerk: any) => {
     const validUntil = userPerk.valid_until ? new Date(userPerk.valid_until) : null;
 
@@ -277,7 +276,6 @@ function PerkCard({ perk, onView }: PerkCardProps): React.JSX.Element {
   );
 }
 
-
 function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): React.JSX.Element {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -364,7 +362,6 @@ function PerkDetails({ perk, onClose }: { perk: MyPerk; onClose: () => void }): 
     </div>
   );
 }
-
 
 function formatDate(value?: string | null): string {
   if (!value) {

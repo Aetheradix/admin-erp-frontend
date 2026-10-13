@@ -47,7 +47,6 @@ export default function PerkTypes(): React.JSX.Element {
     return perkTypes.filter((item) => item.name.toLowerCase().includes(searchValue));
   }, [perkTypes, search]);
 
-  
   const getPerkCount = (perkTypeId: number): number => {
     return perks.filter((perk) => perk.perk_type_id === perkTypeId).length;
   };
@@ -95,7 +94,6 @@ export default function PerkTypes(): React.JSX.Element {
       </div>
     );
   }
-
 
   if (perkTypesError) {
     return (

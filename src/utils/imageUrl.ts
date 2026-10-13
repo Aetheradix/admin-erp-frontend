@@ -59,7 +59,10 @@ export const resolveImageUrl = (url?: string | null): string => {
  * Downloads an image cleanly to the client machine.
  * Supports data URLs, blob URLs, relative backend /uploads, and remote URLs.
  */
-export const downloadImageFile = async (url?: string | null, customFilename?: string): Promise<void> => {
+export const downloadImageFile = async (
+  url?: string | null,
+  customFilename?: string
+): Promise<void> => {
   if (!url) return;
   const resolved = resolveImageUrl(url);
   if (!resolved) return;

@@ -12,7 +12,10 @@ interface BookResourceModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: InventoryItem | null;
-  onBook: (itemId: number, bookingData: { start_datetime: string; end_datetime: string; purpose?: string; notes?: string }) => Promise<void>;
+  onBook: (
+    itemId: number,
+    bookingData: { start_datetime: string; end_datetime: string; purpose?: string; notes?: string }
+  ) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -30,12 +33,8 @@ export const BookResourceModal: React.FC<BookResourceModalProps> = ({
   const tomorrowEnd = new Date(tomorrow);
   tomorrowEnd.setHours(12, 0, 0, 0);
 
-  const [startDateTime, setStartDateTime] = useState<string>(
-    tomorrow.toISOString().slice(0, 16)
-  );
-  const [endDateTime, setEndDateTime] = useState<string>(
-    tomorrowEnd.toISOString().slice(0, 16)
-  );
+  const [startDateTime, setStartDateTime] = useState<string>(tomorrow.toISOString().slice(0, 16));
+  const [endDateTime, setEndDateTime] = useState<string>(tomorrowEnd.toISOString().slice(0, 16));
   const [purpose, setPurpose] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
 
@@ -86,8 +85,7 @@ export const BookResourceModal: React.FC<BookResourceModalProps> = ({
           </div>
         </div>
       }
-      className="w-full max-w-lg"
-    >
+      className="w-full max-w-lg">
       <div className="flex flex-col gap-4 pt-2">
         <div className="p-3 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center gap-3 text-xs text-muted font-medium">
           <Clock size={16} className="text-primary shrink-0" />
@@ -146,8 +144,7 @@ export const BookResourceModal: React.FC<BookResourceModalProps> = ({
             variant="primary"
             onClick={handleConfirm}
             disabled={isLoading}
-            className="px-6 rounded-2xl font-black shadow-md shadow-primary/20"
-          >
+            className="px-6 rounded-2xl font-black shadow-md shadow-primary/20">
             {isLoading ? 'Verifying & Booking...' : 'Confirm Reservation'}
           </Button>
         </div>

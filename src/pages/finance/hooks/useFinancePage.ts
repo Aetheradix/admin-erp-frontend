@@ -6,7 +6,6 @@ import {
 } from '@/store/api/financeApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
-
 export interface Reimbursement {
   id: string | number;
   item: string;
@@ -50,7 +49,6 @@ export const CATEGORIES = [
 ] as const;
 
 export const STATUSES = ['All', 'Pending', 'Approved', 'Rejected'] as const;
-
 
 export const useFinancePage = () => {
   const {

@@ -1,5 +1,13 @@
 import React from 'react';
-import { Package, CheckCircle2, CalendarCheck, UserCheck, Wrench, Sparkles, TrendingUp } from 'lucide-react';
+import {
+  Package,
+  CheckCircle2,
+  CalendarCheck,
+  UserCheck,
+  Wrench,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react';
 import type { InventoryStats as InventoryStatsType } from '@/types/inventory';
 
 interface InventoryStatsProps {
@@ -19,7 +27,10 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-28 rounded-3xl bg-surface-subtle animate-pulse border border-border-subtle" />
+          <div
+            key={i}
+            className="h-28 rounded-3xl bg-surface-subtle animate-pulse border border-border-subtle"
+          />
         ))}
       </div>
     );
@@ -90,9 +101,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
       iconColor: 'text-rose-600 ',
       borderColor: 'border-rose-500/20',
       badge: stats.maintenanceItems > 0 ? 'Attention Needed' : 'All Functional',
-      badgeColor: stats.maintenanceItems > 0 
-        ? 'bg-rose-50 text-rose-700  ' 
-        : 'bg-slate-50 text-slate-700  ',
+      badgeColor:
+        stats.maintenanceItems > 0 ? 'bg-rose-50 text-rose-700  ' : 'bg-slate-50 text-slate-700  ',
     },
   ];
 
@@ -105,15 +115,17 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
           return (
             <div
               key={idx}
-              className={`relative overflow-hidden rounded-3xl bg-white backdrop-blur-xl p-5 border ${card.borderColor} shadow-xs hover:shadow-md transition-all duration-300 group`}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-50 group-hover:opacity-100 transition-opacity`} />
+              className={`relative overflow-hidden rounded-3xl bg-white backdrop-blur-xl p-5 border ${card.borderColor} shadow-xs hover:shadow-md transition-all duration-300 group`}>
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-50 group-hover:opacity-100 transition-opacity`}
+              />
               <div className="relative z-10 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] font-black uppercase tracking-wider text-muted truncate">
                     {card.title}
                   </span>
-                  <div className={`w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-xs ${card.iconColor}`}>
+                  <div
+                    className={`w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-xs ${card.iconColor}`}>
                     <Icon size={16} />
                   </div>
                 </div>
@@ -128,7 +140,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
                 </div>
 
                 <div className="pt-2 border-t border-border-subtle/50">
-                  <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${card.badgeColor}`}>
+                  <span
+                    className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${card.badgeColor}`}>
                     {card.badge}
                   </span>
                 </div>
@@ -149,11 +162,10 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
               Resource Utilization Rate
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-lg font-black text-foreground">
-                {stats.utilizationRate}%
-              </span>
+              <span className="text-lg font-black text-foreground">{stats.utilizationRate}%</span>
               <span className="text-xs font-bold text-muted">
-                ({stats.assignedItems + stats.bookedItems} of {stats.totalItems - stats.retiredItems} active assets in service)
+                ({stats.assignedItems + stats.bookedItems} of{' '}
+                {stats.totalItems - stats.retiredItems} active assets in service)
               </span>
             </div>
           </div>
@@ -168,21 +180,21 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
               !selectedCategory
                 ? 'bg-primary text-white shadow-xs'
                 : 'bg-surface-subtle text-foreground hover:bg-surface-subtle/80'
-            }`}
-          >
+            }`}>
             All Categories ({stats.totalItems})
           </button>
           {stats.categoryBreakdown?.map((cat) => (
             <button
               key={cat.category}
               type="button"
-              onClick={() => onSelectCategory?.(cat.category === selectedCategory ? '' : cat.category)}
+              onClick={() =>
+                onSelectCategory?.(cat.category === selectedCategory ? '' : cat.category)
+              }
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedCategory === cat.category
                   ? 'bg-primary text-white shadow-xs'
                   : 'bg-surface-subtle text-foreground hover:bg-surface-subtle/80'
-              }`}
-            >
+              }`}>
               {cat.category} <span className="opacity-70">({cat.count})</span>
             </button>
           ))}

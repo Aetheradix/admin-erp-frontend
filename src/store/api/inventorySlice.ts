@@ -50,8 +50,12 @@ export const inventorySlice = apiSlice.injectEndpoints({
       number
     >({
       query: (id) => `/inventory/${id}`,
-      transformResponse: (res: { data: InventoryItem & { auditLogs: InventoryAuditLog[]; bookings: InventoryBookingRecord[] } }) =>
-        res.data,
+      transformResponse: (res: {
+        data: InventoryItem & {
+          auditLogs: InventoryAuditLog[];
+          bookings: InventoryBookingRecord[];
+        };
+      }) => res.data,
       providesTags: (_res, _err, id) => [{ type: 'Inventory', id }],
     }),
 
@@ -187,6 +191,42 @@ export const inventorySlice = apiSlice.injectEndpoints({
       ],
     }),
 
+    bulkImportInventory: builder.mutation<
+      { success: boolean; importedCount: number; errors: string[] },
+      FormData
+    >({
+      query: (formData) => ({
+        url: '/inventory/bulk-import',
+        method: 'POST',
+        body: formData,
+        // Note: When sending FormData with RTK Query, omit headers so the browser sets multipart/form-data automatically
+      }),
+      invalidatesTags: [
+        { type: 'Inventory', id: 'LIST' },
+        { type: 'Inventory', id: 'STATS' },
+        { type: 'Inventory', id: 'OPTIONS' },
+        'Resource',
+      ],
+    }),
+
+    fulfillOrderAndDeductStock: builder.mutation<
+      { success: boolean; message: string; lowStockAlerts: any[] },
+      {
+        invoiceId: string | number;
+        items: Array<{ id?: number; asset_id?: string; quantity: number }>;
+      }
+    >({
+      query: (body) => ({
+        url: '/inventory/fulfill-order',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [
+        { type: 'Inventory', id: 'LIST' },
+        { type: 'Inventory', id: 'STATS' },
+      ],
+    }),
+
     bookInventoryResource: builder.mutation<
       any,
       { id: number; start_datetime: string; end_datetime: string; purpose?: string; notes?: string }
@@ -221,4 +261,6 @@ export const {
   useCompleteMaintenanceMutation,
   useDeleteOrRetireInventoryItemMutation,
   useBookInventoryResourceMutation,
+  useBulkImportInventoryMutation,
+  useFulfillOrderAndDeductStockMutation,
 } = inventorySlice;

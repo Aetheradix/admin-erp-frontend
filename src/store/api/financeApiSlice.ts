@@ -18,14 +18,14 @@ export interface SalaryBreakdownItem {
 export interface CreateSalarySlipPayload {
   // Target Employee (Recipient receiving slip)
   user_id: number;
-  
+
   // Creator (Admin/HR issuing the slip)
   created_by?: number | null;
 
   // Pay Period & Schedule
-  month_year: string;               // e.g., "OCTOBER 2026"
-  pay_frequency?: string;           // "monthly", "biweekly", etc.
-  cycle_number?: number;            // 1 or 2 (for biweekly)
+  month_year: string; // e.g., "OCTOBER 2026"
+  pay_frequency?: string; // "monthly", "biweekly", etc.
+  cycle_number?: number; // 1 or 2 (for biweekly)
 
   // Attendance
   paid_days: number;
@@ -34,7 +34,7 @@ export interface CreateSalarySlipPayload {
 
   // Optional Employee Profile Overrides (falls back to DB user record if omitted)
   employee_code?: string | null;
-  designation?: string | null;      // Maps to position
+  designation?: string | null; // Maps to position
   department?: string | null;
   pan_number?: string | null;
   bank_account_number?: string | null;
@@ -58,7 +58,7 @@ export interface CreateSalarySlipPayload {
   // Metadata & Status
   paymentStatus?: 'pending' | 'paid' | 'failed';
   paymentDate?: string;
-  remarks?: string | null;          // Maps to hrNote
+  remarks?: string | null; // Maps to hrNote
 }
 
 export const financeApiSlice = apiSlice.injectEndpoints({
@@ -240,34 +240,36 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }],
     }),
 
-
     updateSalarySlip: builder.mutation<any, { id: string | number; [key: string]: any }>({
-  query: ({ id, ...payload }) => {
-    // Standardize user_id in payload if present
-    const formattedPayload = {
-      ...payload,
-      ...(payload.userId || payload.user_id
-        ? { user_id: payload.user_id || payload.userId }
-        : {}),
-    };
+      query: ({ id, ...payload }) => {
+        // Standardize user_id in payload if present
+        const formattedPayload = {
+          ...payload,
+          ...(payload.userId || payload.user_id
+            ? { user_id: payload.user_id || payload.userId }
+            : {}),
+        };
 
-    console.log(`RTK Query Sending Update Body to Backend for Slip ID ${id}:`, formattedPayload);
+        console.log(
+          `RTK Query Sending Update Body to Backend for Slip ID ${id}:`,
+          formattedPayload
+        );
 
-    return {
-      url: `/finance/salary-slips/${id}`,
-      method: 'PUT', // or 'PATCH' depending on your route setup
-      headers: {
-        'Content-Type': 'application/json',
+        return {
+          url: `/finance/salary-slips/${id}`,
+          method: 'PUT', // or 'PATCH' depending on your route setup
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: formattedPayload,
+        };
       },
-      body: formattedPayload,
-    };
-  },
-  // Invalidates specific record as well as the main listing tag
-  invalidatesTags: (_result, _error, { id }) => [
-    { type: 'SalarySlips', id },
-    { type: 'SalarySlips', id: 'LIST' },
-  ],
-}),
+      // Invalidates specific record as well as the main listing tag
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'SalarySlips', id },
+        { type: 'SalarySlips', id: 'LIST' },
+      ],
+    }),
   }),
 });
 

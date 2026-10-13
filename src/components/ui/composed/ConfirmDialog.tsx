@@ -30,8 +30,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-      }}
-    >
+      }}>
       <div
         style={{
           background: 'var(--surface-card, #1e1e2e)',
@@ -40,19 +39,19 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           maxWidth: '480px',
           width: '90%',
           boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        }}
-      >
+        }}>
         {header && (
-          <h2 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>
-            {header}
-          </h2>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>{header}</h2>
         )}
         <div style={{ marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
           {message}
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           <button
-            onClick={() => { reject?.(); onHide?.(); }}
+            onClick={() => {
+              reject?.();
+              onHide?.();
+            }}
             style={{
               padding: '0.5rem 1.2rem',
               borderRadius: '8px',
@@ -60,12 +59,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               background: 'transparent',
               cursor: 'pointer',
               fontSize: '0.9rem',
-            }}
-          >
+            }}>
             Cancel
           </button>
           <button
-            onClick={() => { accept?.(); onHide?.(); }}
+            onClick={() => {
+              accept?.();
+              onHide?.();
+            }}
             style={{
               padding: '0.5rem 1.2rem',
               borderRadius: '8px',
@@ -75,8 +76,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: 600,
-            }}
-          >
+            }}>
             Confirm
           </button>
         </div>

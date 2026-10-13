@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { resolveImageUrl } from '@/utils/imageUrl';
 import { API_URL } from '@/config/env';
-
+import { useBulkImportInventoryMutation } from '@/store/api/inventorySlice';
 import {
   useGetInventoryItemsQuery,
   useGetInventoryStatsQuery,
@@ -53,6 +53,7 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  Upload,
 } from 'lucide-react';
 
 import type { InventoryItem, InventoryCondition } from '@/types/inventory';
@@ -72,20 +73,38 @@ export const ItemsPage: React.FC = () => {
   const [sortOrder] = useState<'ASC' | 'DESC'>('DESC');
 
   // RTK Query Hooks
-  const queryParams = useMemo(() => ({
-    search: search.trim() || undefined,
-    category: selectedCategory || undefined,
-    status: selectedStatus || undefined,
-    is_bookable: bookableFilter === 'bookable' ? 1 : bookableFilter === 'inventory' ? 0 : undefined,
-    condition_status: conditionFilter || undefined,
-    sortBy,
-    sortOrder,
-    page,
-    limit,
-  }), [search, selectedCategory, selectedStatus, bookableFilter, conditionFilter, sortBy, sortOrder, page, limit]);
+  const queryParams = useMemo(
+    () => ({
+      search: search.trim() || undefined,
+      category: selectedCategory || undefined,
+      status: selectedStatus || undefined,
+      is_bookable:
+        bookableFilter === 'bookable' ? 1 : bookableFilter === 'inventory' ? 0 : undefined,
+      condition_status: conditionFilter || undefined,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+    }),
+    [
+      search,
+      selectedCategory,
+      selectedStatus,
+      bookableFilter,
+      conditionFilter,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+    ]
+  );
 
   const { data: inventoryData, isLoading, isFetching } = useGetInventoryItemsQuery(queryParams);
-  const { data: stats, isLoading: isStatsLoading, refetch: refetchStats } = useGetInventoryStatsQuery();
+  const {
+    data: stats,
+    isLoading: isStatsLoading,
+    refetch: refetchStats,
+  } = useGetInventoryStatsQuery();
   const { data: filterOptions } = useGetInventoryFilterOptionsQuery();
   const { data: employees = [] } = useGetAssignableEmployeesQuery();
 
@@ -121,6 +140,34 @@ export const ItemsPage: React.FC = () => {
 
   const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
+  const [bulkImport, { isLoading: isImporting }] = useBulkImportInventoryMutation();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await bulkImport(formData).unwrap();
+      showToast({
+        severity: 'success',
+        summary: 'Bulk Import Successful',
+        detail: `Successfully imported ${res.importedCount} items.${res.errors?.length ? ` (${res.errors.length} rows skipped)` : ''}`,
+      });
+      refetchStats();
+    } catch (err: any) {
+      showToast({
+        severity: 'error',
+        summary: 'Import Failed',
+        detail: err?.data?.message || err?.message || 'Could not parse or import file.',
+      });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   // Toggle bookable resource
   const handleToggleBookable = async (item: InventoryItem, nextChecked: boolean) => {
@@ -366,21 +413,39 @@ export const ItemsPage: React.FC = () => {
         description="Centralized tracking for company assets, hardware, equipment, and bookable shared resources"
         actions={
           <div className="flex items-center gap-3">
+            {/* Hidden file input for Excel/CSV */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".xlsx, .xls, .csv"
+              className="hidden"
+            />
+
+            {/* New Import Button */}
+            <Button
+              variant="secondary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="text-xs font-bold rounded-2xl h-11 px-4 shadow-xs">
+              <Upload size={14} className="mr-1.5" />{' '}
+              {isImporting ? 'Importing...' : 'Import Stock (Excel)'}
+            </Button>
+
             <Button
               variant="secondary"
               onClick={handleExportCsv}
-              className="text-xs font-bold rounded-2xl h-11 px-4 shadow-xs"
-            >
+              className="text-xs font-bold rounded-2xl h-11 px-4 shadow-xs">
               <Download size={14} className="mr-1.5" /> Export Report (CSV)
             </Button>
+
             <Button
               variant="primary"
               onClick={() => {
                 setEditingItem(null);
                 setFormModalOpen(true);
               }}
-              className="text-xs font-black rounded-2xl h-11 px-6 shadow-md shadow-primary/20"
-            >
+              className="text-xs font-black rounded-2xl h-11 px-6 shadow-md shadow-primary/20">
               <Plus size={16} className="mr-1.5" /> Register Asset
             </Button>
           </div>
@@ -392,22 +457,19 @@ export const ItemsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/inventory')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2">
           <Package size={15} /> Assets & Resources Dashboard
         </button>
         <button
           type="button"
           onClick={() => navigate('/inventory/stock-levels')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
           <Layers size={15} /> Stock Health & Categories
         </button>
         <button
           type="button"
           onClick={() => navigate('/inventory/movements')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
           <Clock size={15} /> Asset Movements & Audits
         </button>
       </div>
@@ -433,8 +495,7 @@ export const ItemsPage: React.FC = () => {
             <button
               type="button"
               onClick={clearFilters}
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-            >
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
               <RotateCcw size={12} /> Reset All Filters
             </button>
           )}
@@ -515,8 +576,7 @@ export const ItemsPage: React.FC = () => {
                 setLimit(Number(e.target.value));
                 setPage(1);
               }}
-              className="h-9 px-3 rounded-xl border border-border-subtle bg-surface text-xs font-bold text-foreground"
-            >
+              className="h-9 px-3 rounded-xl border border-border-subtle bg-surface text-xs font-bold text-foreground">
               <option value={10}>10</option>
               <option value={15}>15</option>
               <option value={25}>25</option>
@@ -564,8 +624,7 @@ export const ItemsPage: React.FC = () => {
                         setEditingItem(null);
                         setFormModalOpen(true);
                       }}
-                      className="mt-4 text-xs font-bold rounded-2xl"
-                    >
+                      className="mt-4 text-xs font-bold rounded-2xl">
                       <Plus size={14} className="mr-1" /> Add First Asset
                     </Button>
                   </td>
@@ -575,17 +634,17 @@ export const ItemsPage: React.FC = () => {
                   const isBookable = Boolean(item.is_bookable);
 
                   const statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
-                    'Available': {
+                    Available: {
                       bg: 'bg-emerald-50 ',
                       text: 'text-emerald-700 ',
                       dot: 'bg-emerald-500',
                     },
-                    'Booked': {
+                    Booked: {
                       bg: 'bg-sky-50 ',
                       text: 'text-sky-700 ',
                       dot: 'bg-sky-500',
                     },
-                    'Assigned': {
+                    Assigned: {
                       bg: 'bg-purple-50 ',
                       text: 'text-purple-700 ',
                       dot: 'bg-purple-500',
@@ -595,7 +654,7 @@ export const ItemsPage: React.FC = () => {
                       text: 'text-amber-700 ',
                       dot: 'bg-amber-500',
                     },
-                    'Retired': {
+                    Retired: {
                       bg: 'bg-slate-100',
                       text: 'text-slate-700 ',
                       dot: 'bg-slate-500',
@@ -612,8 +671,7 @@ export const ItemsPage: React.FC = () => {
                     <tr
                       key={item.id}
                       className="hover:bg-primary/5 transition-colors group cursor-pointer"
-                      onClick={() => setDetailItemId(item.id)}
-                    >
+                      onClick={() => setDetailItemId(item.id)}>
                       {/* 1. Item / Asset */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
@@ -668,26 +726,25 @@ export const ItemsPage: React.FC = () => {
 
                       {/* 6. Status Badge */}
                       <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-black ${cfg.bg} ${cfg.text}`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-black ${cfg.bg} ${cfg.text}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                           <span>{item.status}</span>
                         </span>
                       </td>
 
                       {/* 7. Bookable Resource Secondary Toggle */}
-                      <td
-                        className="py-4 px-4 text-center"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col items-center gap-1">
                           <Switch
                             checked={isBookable}
                             onChange={(e) => handleToggleBookable(item, e.value)}
                             disabled={isToggling}
                           />
-                          <span className={`text-[9px] font-black uppercase tracking-wider ${
-                            isBookable ? 'text-amber-600 ' : 'text-muted'
-                          }`}>
+                          <span
+                            className={`text-[9px] font-black uppercase tracking-wider ${
+                              isBookable ? 'text-amber-600 ' : 'text-muted'
+                            }`}>
                             {isBookable ? 'Bookable' : 'Disabled'}
                           </span>
                         </div>
@@ -720,18 +777,14 @@ export const ItemsPage: React.FC = () => {
                       </td>
 
                       {/* 9. Actions */}
-                      <td
-                        className="py-4 px-6 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           {/* View details */}
                           <button
                             type="button"
                             title="View Asset Details"
                             onClick={() => setDetailItemId(item.id)}
-                            className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer"
-                          >
+                            className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer">
                             <Eye size={14} />
                           </button>
 
@@ -743,8 +796,7 @@ export const ItemsPage: React.FC = () => {
                               setEditingItem(item);
                               setFormModalOpen(true);
                             }}
-                            className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer"
-                          >
+                            className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer">
                             <Edit3 size={14} />
                           </button>
 
@@ -757,8 +809,7 @@ export const ItemsPage: React.FC = () => {
                                 setBookTargetItem(item);
                                 setBookModalOpen(true);
                               }}
-                              className="w-8 h-8 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/30 flex items-center justify-center transition-all cursor-pointer"
-                            >
+                              className="w-8 h-8 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/30 flex items-center justify-center transition-all cursor-pointer">
                               <CalendarCheck size={14} />
                             </button>
                           )}
@@ -769,8 +820,7 @@ export const ItemsPage: React.FC = () => {
                               type="button"
                               title="Return Asset to Inventory"
                               onClick={() => handleUnassign(item)}
-                              className="w-8 h-8 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 border border-purple-500/30 flex items-center justify-center transition-all cursor-pointer"
-                            >
+                              className="w-8 h-8 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 border border-purple-500/30 flex items-center justify-center transition-all cursor-pointer">
                               <RotateCcw size={14} />
                             </button>
                           ) : item.status === 'Available' ? (
@@ -781,8 +831,7 @@ export const ItemsPage: React.FC = () => {
                                 setAssignTargetItem(item);
                                 setAssignModalOpen(true);
                               }}
-                              className="w-8 h-8 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 border border-purple-500/30 flex items-center justify-center transition-all cursor-pointer"
-                            >
+                              className="w-8 h-8 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 border border-purple-500/30 flex items-center justify-center transition-all cursor-pointer">
                               <UserCheck size={14} />
                             </button>
                           ) : null}
@@ -797,8 +846,7 @@ export const ItemsPage: React.FC = () => {
                                 setMaintenanceMode('complete');
                                 setMaintenanceModalOpen(true);
                               }}
-                              className="w-8 h-8 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 flex items-center justify-center transition-all cursor-pointer"
-                            >
+                              className="w-8 h-8 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 flex items-center justify-center transition-all cursor-pointer">
                               <CheckCircle2 size={14} />
                             </button>
                           ) : item.status !== 'Retired' ? (
@@ -810,8 +858,7 @@ export const ItemsPage: React.FC = () => {
                                 setMaintenanceMode('start');
                                 setMaintenanceModalOpen(true);
                               }}
-                              className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted hover:text-amber-600 transition-all cursor-pointer"
-                            >
+                              className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted hover:text-amber-600 transition-all cursor-pointer">
                               <Wrench size={14} />
                             </button>
                           ) : null}
@@ -824,8 +871,7 @@ export const ItemsPage: React.FC = () => {
                               setItemToDelete(item);
                               setConfirmDialogVisible(true);
                             }}
-                            className="w-8 h-8 rounded-xl bg-surface hover:bg-rose-50 border border-border-subtle flex items-center justify-center text-muted hover:text-rose-600 transition-all cursor-pointer"
-                          >
+                            className="w-8 h-8 rounded-xl bg-surface hover:bg-rose-50 border border-border-subtle flex items-center justify-center text-muted hover:text-rose-600 transition-all cursor-pointer">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -849,16 +895,14 @@ export const ItemsPage: React.FC = () => {
                 variant="secondary"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="text-xs font-bold rounded-xl px-3 h-8"
-              >
+                className="text-xs font-bold rounded-xl px-3 h-8">
                 <ChevronLeft size={14} className="mr-1" /> Previous
               </Button>
               <Button
                 variant="secondary"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="text-xs font-bold rounded-xl px-3 h-8"
-              >
+                className="text-xs font-bold rounded-xl px-3 h-8">
                 Next <ChevronRight size={14} className="ml-1" />
               </Button>
             </div>
@@ -953,14 +997,17 @@ export const ItemsPage: React.FC = () => {
           itemToDelete ? (
             <div>
               <p className="font-bold text-foreground">
-                Are you sure you want to retire asset "{itemToDelete.name}" ({itemToDelete.asset_id})?
+                Are you sure you want to retire asset "{itemToDelete.name}" ({itemToDelete.asset_id}
+                )?
               </p>
               <p className="text-xs text-muted mt-2">
-                This will safely mark the item as Retired and disable future resource bookings, while permanently 
-                preserving all historical booking and audit records.
+                This will safely mark the item as Retired and disable future resource bookings,
+                while permanently preserving all historical booking and audit records.
               </p>
             </div>
-          ) : ''
+          ) : (
+            ''
+          )
         }
         header="Retire Inventory Asset"
         icon="pi pi-exclamation-triangle"

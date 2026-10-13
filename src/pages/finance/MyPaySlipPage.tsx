@@ -81,12 +81,7 @@ export interface ParsedSalarySlip {
 const findDeepValue = (obj: any, keys: string[]): any => {
   if (!obj || typeof obj !== 'object') return undefined;
   for (const key of keys) {
-    if (
-      obj[key] !== undefined &&
-      obj[key] !== null &&
-      obj[key] !== '' &&
-      obj[key] !== 'null'
-    ) {
+    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '' && obj[key] !== 'null') {
       return obj[key];
     }
   }
@@ -191,7 +186,9 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     findDeepValue(item, ['designation', 'position', 'employee_position', 'role']) || 'Employee'
   );
 
-  const userId = Number(findDeepValue(item, ['user_id', 'userId', 'employeeId', 'employee_code']) || 0);
+  const userId = Number(
+    findDeepValue(item, ['user_id', 'userId', 'employeeId', 'employee_code']) || 0
+  );
 
   const paidDays = parseNum(
     findDeepValue(item, ['days_worked', 'paidDays', 'paid_days', 'total_working_days']) || 22
@@ -205,8 +202,18 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
 
   if (rawMonth && rawYear) {
     const monthNames = [
-      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+      'JANUARY',
+      'FEBRUARY',
+      'MARCH',
+      'APRIL',
+      'MAY',
+      'JUNE',
+      'JULY',
+      'AUGUST',
+      'SEPTEMBER',
+      'OCTOBER',
+      'NOVEMBER',
+      'DECEMBER',
     ];
     const mIdx = parseNum(rawMonth) - 1;
     if (mIdx >= 0 && mIdx < 12) {
@@ -220,13 +227,17 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
   }
 
   // Parse monetary fields
-  const basicSalary = parseNum(findDeepValue(item, ['basic_salary', 'basePay', 'base_amount', 'base_pay', 'base']));
+  const basicSalary = parseNum(
+    findDeepValue(item, ['basic_salary', 'basePay', 'base_amount', 'base_pay', 'base'])
+  );
   const hra = parseNum(findDeepValue(item, ['house_rent_allowance', 'hra']));
   const specialAllowance = parseNum(findDeepValue(item, ['special_allowance']));
   const conveyance = parseNum(findDeepValue(item, ['conveyance_allowance']));
   const bonus = parseNum(findDeepValue(item, ['bonus', 'bonusPay', 'bonus_amount']));
   const otherEarnings = parseNum(findDeepValue(item, ['other_earnings']));
-  const grossSalary = parseNum(findDeepValue(item, ['gross_salary', 'total_amount', 'totalSalary']));
+  const grossSalary = parseNum(
+    findDeepValue(item, ['gross_salary', 'total_amount', 'totalSalary'])
+  );
 
   const pf = parseNum(findDeepValue(item, ['provident_fund']));
   const profTax = parseNum(findDeepValue(item, ['professional_tax']));
@@ -235,7 +246,8 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
   const netSalary = parseNum(findDeepValue(item, ['net_salary', 'netSalary', 'total']));
 
   // Build itemized earnings list
-  const rawEarnings = (findDeepValue(item, ['earnings']) as Array<{ name: string; amount: number }>) || [];
+  const rawEarnings =
+    (findDeepValue(item, ['earnings']) as Array<{ name: string; amount: number }>) || [];
   let constructedEarnings = rawEarnings;
 
   if (constructedEarnings.length === 0) {
@@ -250,7 +262,8 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
   }
 
   // Build itemized deductions list
-  const rawDeductions = (findDeepValue(item, ['deductions']) as Array<{ name: string; amount: number }>) || [];
+  const rawDeductions =
+    (findDeepValue(item, ['deductions']) as Array<{ name: string; amount: number }>) || [];
   let constructedDeductions = rawDeductions;
 
   if (constructedDeductions.length === 0) {
@@ -271,7 +284,8 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     date: monthYear,
     monthYear: monthYear,
     paySlipNo: String(
-      findDeepValue(item, ['pay_slip_no', 'paySlipNo', 'employee_code']) || `SLIP-${findDeepValue(item, ['id']) || Date.now()}`
+      findDeepValue(item, ['pay_slip_no', 'paySlipNo', 'employee_code']) ||
+        `SLIP-${findDeepValue(item, ['id']) || Date.now()}`
     ),
     payPeriod: monthYear,
     companyName: String(findDeepValue(item, ['company_name', 'companyAddress']) || 'AETHERADIX'),
@@ -279,10 +293,14 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
       findDeepValue(item, ['company_address', 'companyAddress']) ||
         'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
     ),
-    employeeId: String(findDeepValue(item, ['employee_code', 'employee_id', 'employeeId', 'user_id']) || userId),
+    employeeId: String(
+      findDeepValue(item, ['employee_code', 'employee_id', 'employeeId', 'user_id']) || userId
+    ),
     employeeName: employeeName,
     position: position,
-    accountNumber: String(findDeepValue(item, ['bank_account_number', 'account_number', 'accountNumber']) || 'N/A'),
+    accountNumber: String(
+      findDeepValue(item, ['bank_account_number', 'account_number', 'accountNumber']) || 'N/A'
+    ),
     paidDays: paidDays,
     lopDays: lopDays,
     generatedOn: String(
@@ -291,7 +309,9 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     ),
     earnings: constructedEarnings,
     deductions: constructedDeductions,
-    authorizedSignatory: String(findDeepValue(item, ['authorized_signatory', 'authorizedSignatory']) || 'Seema Srivastava'),
+    authorizedSignatory: String(
+      findDeepValue(item, ['authorized_signatory', 'authorizedSignatory']) || 'Seema Srivastava'
+    ),
     signatoryRole: String(findDeepValue(item, ['signatory_role', 'signatoryRole']) || '(Director)'),
     hrNote: String(
       findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) ||
@@ -303,7 +323,7 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
 export default function MyPaySlipPage() {
   const [search, setSearch] = useState('');
   const [selectedSlip, setSelectedSlip] = useState<ParsedSalarySlip | null>(null);
-  
+
   // Extract user details directly from useAuth hook
   const { user } = useAuth();
   const userId = user?.id;
@@ -375,7 +395,10 @@ export default function MyPaySlipPage() {
           dbRecord = formatApiRecord(rawData as Record<string, unknown>);
         }
       } catch (fetchErr) {
-        console.warn('Single slip endpoint unavailable. Falling back to table record state:', fetchErr);
+        console.warn(
+          'Single slip endpoint unavailable. Falling back to table record state:',
+          fetchErr
+        );
       }
 
       message.loading({ content: 'Generating PDF...', key: 'dl' });
@@ -400,12 +423,11 @@ export default function MyPaySlipPage() {
 
   const userPayslips: ParsedSalarySlip[] = useMemo(() => {
     const rawResponse = empSlipsData ?? allSlipsData;
-    const rawList: Record<string, unknown>[] =
-      rawResponse?.data
-        ? Array.isArray(rawResponse.data)
-          ? rawResponse.data
-          : [rawResponse.data]
-        : Array.isArray(rawResponse)
+    const rawList: Record<string, unknown>[] = rawResponse?.data
+      ? Array.isArray(rawResponse.data)
+        ? rawResponse.data
+        : [rawResponse.data]
+      : Array.isArray(rawResponse)
         ? rawResponse
         : [];
 
@@ -413,7 +435,13 @@ export default function MyPaySlipPage() {
 
     const userRecords = rawList.filter((item) => {
       if (!userId) return true;
-      const empId = findDeepValue(item, ['user_id', 'userId', 'employee_id', 'employeeId', 'employee_code']);
+      const empId = findDeepValue(item, [
+        'user_id',
+        'userId',
+        'employee_id',
+        'employeeId',
+        'employee_code',
+      ]);
       return !empId || String(empId) === String(userId);
     });
 
@@ -511,8 +539,7 @@ export default function MyPaySlipPage() {
         </div>
         <button
           onClick={handleRefetch}
-          className="px-5 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-all shadow-sm active:scale-95"
-        >
+          className="px-5 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl hover:bg-slate-800 transition-all shadow-sm active:scale-95">
           Retry Connection
         </button>
       </div>
@@ -571,8 +598,7 @@ export default function MyPaySlipPage() {
             <button
               onClick={() => setSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              aria-label="Clear search"
-            >
+              aria-label="Clear search">
               <X size={14} />
             </button>
           )}
@@ -657,16 +683,14 @@ export default function MyPaySlipPage() {
                         <button
                           onClick={() => setSelectedSlip(slip)}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition active:scale-95"
-                          title="View Details"
-                        >
+                          title="View Details">
                           <Eye size={13} />
                           <span>View</span>
                         </button>
                         <button
                           onClick={() => handleDownload(slip)}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition active:scale-95 shadow-sm"
-                          title="Download Salary Slip PDF"
-                        >
+                          title="Download Salary Slip PDF">
                           <Download size={13} />
                           <span>PDF</span>
                         </button>
@@ -690,8 +714,7 @@ export default function MyPaySlipPage() {
               </h3>
               <button
                 onClick={() => setSelectedSlip(null)}
-                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 transition"
-              >
+                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 transition">
                 <X size={18} />
               </button>
             </div>
@@ -707,25 +730,27 @@ export default function MyPaySlipPage() {
               </div>
               <div className="bg-slate-50 p-3 rounded-xl">
                 <span className="text-slate-400 block">Base Pay</span>
-                <span className="font-bold text-slate-800">₹{selectedSlip.basePay.toLocaleString('en-IN')}</span>
+                <span className="font-bold text-slate-800">
+                  ₹{selectedSlip.basePay.toLocaleString('en-IN')}
+                </span>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl">
                 <span className="text-slate-400 block">Net Salary</span>
-                <span className="font-bold text-emerald-600">₹{selectedSlip.netSalary.toLocaleString('en-IN')}</span>
+                <span className="font-bold text-emerald-600">
+                  ₹{selectedSlip.netSalary.toLocaleString('en-IN')}
+                </span>
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button
                 onClick={() => setSelectedSlip(null)}
-                className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-200"
-              >
+                className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-200">
                 Close
               </button>
               <button
                 onClick={() => handleDownload(selectedSlip)}
-                className="px-4 py-2 bg-slate-900 rounded-xl text-xs font-semibold text-white hover:bg-slate-800 flex items-center gap-1.5"
-              >
+                className="px-4 py-2 bg-slate-900 rounded-xl text-xs font-semibold text-white hover:bg-slate-800 flex items-center gap-1.5">
                 <Download size={14} /> Download PDF
               </button>
             </div>

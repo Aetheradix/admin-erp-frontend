@@ -12,7 +12,10 @@ interface MaintenanceModalProps {
   onClose: () => void;
   item: InventoryItem | null;
   mode: 'start' | 'complete';
-  onSubmit: (itemId: number, payload: { condition_status?: InventoryCondition; notes?: string }) => Promise<void>;
+  onSubmit: (
+    itemId: number,
+    payload: { condition_status?: InventoryCondition; notes?: string }
+  ) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -50,11 +53,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       onHide={onClose}
       header={
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-            mode === 'start'
-              ? 'bg-rose-500/10 text-rose-600'
-              : 'bg-emerald-500/10 text-emerald-600'
-          }`}>
+          <div
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+              mode === 'start'
+                ? 'bg-rose-500/10 text-rose-600'
+                : 'bg-emerald-500/10 text-emerald-600'
+            }`}>
             {mode === 'start' ? <Wrench size={20} /> : <CheckCircle2 size={20} />}
           </div>
           <div>
@@ -67,8 +71,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           </div>
         </div>
       }
-      className="w-full max-w-lg"
-    >
+      className="w-full max-w-lg">
       <div className="flex flex-col gap-4 pt-2">
         {mode === 'complete' && (
           <FormField label="Updated Condition After Service" required id="maint-condition">
@@ -82,9 +85,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         )}
 
         <FormField
-          label={mode === 'start' ? 'Reported Fault / Maintenance Reason' : 'Service Summary & Parts Replaced'}
-          id="maint-notes"
-        >
+          label={
+            mode === 'start'
+              ? 'Reported Fault / Maintenance Reason'
+              : 'Service Summary & Parts Replaced'
+          }
+          id="maint-notes">
           <Textarea
             id="maint-notes"
             rows={3}
@@ -110,9 +116,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
               mode === 'start'
                 ? 'bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-500/20'
                 : 'bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-500/20'
-            }`}
-          >
-            {isLoading ? 'Processing...' : mode === 'start' ? 'Mark for Maintenance' : 'Complete & Restore'}
+            }`}>
+            {isLoading
+              ? 'Processing...'
+              : mode === 'start'
+                ? 'Mark for Maintenance'
+                : 'Complete & Restore'}
           </Button>
         </div>
       </div>

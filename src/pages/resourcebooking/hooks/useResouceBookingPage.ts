@@ -19,7 +19,6 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 import type { Resource, ResourceBookingStatus } from '../types/index.types';
 
 export const useResourceBookingPage = () => {
-
   const [showForm, setShowForm] = useState(false);
 
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
@@ -32,7 +31,6 @@ export const useResourceBookingPage = () => {
 
   const [activeStatus, setActiveStatus] = useState('All');
 
-
   const RESOURCE_TYPES = ['All', 'Room', 'Equipment', 'Vehicle', 'Other'];
 
   const STATUSES: Array<'All' | ResourceBookingStatus> = [
@@ -44,11 +42,9 @@ export const useResourceBookingPage = () => {
     'Completed',
   ];
 
-
   const { data: resources = [], isLoading: resourcesLoading } = useGetResourcesQuery();
 
   const [createResource, { isLoading: isCreatingResource }] = useCreateResourceMutation();
-
 
   const {
     data: allBookings = [],
@@ -64,13 +60,11 @@ export const useResourceBookingPage = () => {
 
   const { data: stats, isLoading: statsLoading } = useGetResourceBookingStatsQuery();
 
-
   const [createResourceBooking, { isLoading: isCreating }] = useCreateResourceBookingMutation();
 
   const [cancelResourceBooking, { isLoading: isCancelling }] = useCancelResourceBookingMutation();
 
   const [deleteResourceBooking, { isLoading: isDeleting }] = useDeleteResourceBookingMutation();
-
 
   const filteredMyBookings = myBookings.filter((booking) => {
     const searchValue = search.trim().toLowerCase();
@@ -85,7 +79,6 @@ export const useResourceBookingPage = () => {
 
     return matchesSearch && matchesStatus;
   });
-
 
   const filteredAllBookings = allBookings.filter((booking) => {
     const searchValue = search.trim().toLowerCase();
@@ -102,7 +95,6 @@ export const useResourceBookingPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-
   const openBookingForm = (resource: Resource | null = null) => {
     setSelectedResource(resource);
     setShowForm(true);
@@ -112,8 +104,6 @@ export const useResourceBookingPage = () => {
     setShowForm(false);
     setSelectedResource(null);
   };
-
-
 
   const handleCreateResource = async (data: CreateResourceRequest) => {
     console.log('1. Resource data:', data);
@@ -139,8 +129,6 @@ export const useResourceBookingPage = () => {
       throw error;
     }
   };
-
-
 
   const handleBookingSubmit = async (data: CreateResourceBookingRequest) => {
     try {
@@ -174,7 +162,6 @@ export const useResourceBookingPage = () => {
     }
   };
 
-
   const handleCancel = async (id: number) => {
     try {
       await cancelResourceBooking(id).unwrap();
@@ -202,7 +189,6 @@ export const useResourceBookingPage = () => {
       });
     }
   };
-
 
   const handleDelete = async (id: number) => {
     try {
@@ -236,7 +222,6 @@ export const useResourceBookingPage = () => {
     }
   };
 
-
   const openBookingDetails = (booking: ResourceBooking) => {
     setSelectedBooking(booking);
   };
@@ -245,11 +230,9 @@ export const useResourceBookingPage = () => {
     setSelectedBooking(null);
   };
 
-
   const isLoading = resourcesLoading || allBookingsLoading || myBookingsLoading || statsLoading;
 
   const isMutating = isCreating || isCreatingResource || isCancelling || isDeleting;
-
 
   return {
     /* Resources */

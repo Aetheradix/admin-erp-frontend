@@ -136,7 +136,12 @@ const AppFeature = () => {
         <Route path="/teams/*" element={<TeamsModule />} />
         <Route path="/users/*" element={<UsersModule />} />
         <Route path="/tasks/*" element={<TasksModule />} />
-        <Route path="/inventory/*" element={(allowedMap['Inventory'] ?? true) ? <InventoryModule /> : <Navigate to="/" replace />} />
+        <Route
+          path="/inventory/*"
+          element={
+            (allowedMap['Inventory'] ?? true) ? <InventoryModule /> : <Navigate to="/" replace />
+          }
+        />
 
         {/* Social Module Routes */}
         <Route
@@ -161,7 +166,10 @@ const AppFeature = () => {
         />
 
         {/* Legacy route redirects for backward compatibility */}
-        <Route path="/blogs/*" element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />} />
+        <Route
+          path="/blogs/*"
+          element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />}
+        />
         <Route path="/gallery/*" element={<Navigate to="/social/gallery" replace />} />
 
         <Route

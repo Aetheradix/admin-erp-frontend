@@ -50,7 +50,10 @@ export const GalleryCard = ({ item, onView, onEdit, onDelete }: GalleryCardProps
             className="w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-emerald-500 hover:text-white border border-white/10 backdrop-blur-xl transition-all flex items-center justify-center active:scale-95 shadow-md cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              downloadImageFile(item.image_url, `${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`);
+              downloadImageFile(
+                item.image_url,
+                `${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`
+              );
             }}
             title="Download Asset"
             aria-label={`Download ${item.title}`}>

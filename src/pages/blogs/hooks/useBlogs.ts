@@ -91,7 +91,8 @@ export const useBlogs = (id?: string) => {
   return {
     blogs: blogs.length > 0 ? blogs : mockBlogs,
     blog,
-    isLoading: isFetchingList || (Boolean(id) && isFetchingSingle && !blog) || isCreating || isUpdating,
+    isLoading:
+      isFetchingList || (Boolean(id) && isFetchingSingle && !blog) || isCreating || isUpdating,
     isError: Boolean(id) ? isSingleError && !blog : isListError && blogs.length === 0,
     handleSave,
     handleDelete,

@@ -11,7 +11,6 @@ import { useResourceBookingPage } from './hooks/useResouceBookingPage';
 import type { Resource } from './types/index.types';
 
 const ResourceBooking = () => {
-
   const [bookingOpen, setBookingOpen] = useState(false);
 
   const [addResourceOpen, setAddResourceOpen] = useState(false);
@@ -42,11 +41,9 @@ const ResourceBooking = () => {
     setSelectedResource(null);
   };
 
-
   const filteredResources = resources.filter((resource) =>
     resource.name.toLowerCase().includes(search.trim().toLowerCase())
   );
-
 
   const handleAddResource = async (data: Parameters<typeof handleCreateResource>[0]) => {
     await handleCreateResource(data);
@@ -55,11 +52,8 @@ const ResourceBooking = () => {
     setAddResourceOpen(false);
   };
 
-
-
   return (
     <div className="space-y-6 p-6">
-
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Resource Booking</h1>

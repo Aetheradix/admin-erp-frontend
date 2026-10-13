@@ -158,7 +158,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-export type UserRole = 'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee' | 'Inventory operator';
+export type UserRole =
+  'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee' | 'Inventory operator';
 
 export interface NavChild {
   label: string;

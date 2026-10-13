@@ -4,14 +4,7 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { useGetInventoryStatsQuery } from '@/store/api/inventorySlice';
-import {
-  Clock,
-  Package,
-  Layers,
-  History,
-  Search,
-  FileText,
-} from 'lucide-react';
+import { Clock, Package, Layers, History, Search, FileText } from 'lucide-react';
 
 export const MovementsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,22 +49,19 @@ export const MovementsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/inventory')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
           <Package size={15} /> Assets & Resources Dashboard
         </button>
         <button
           type="button"
           onClick={() => navigate('/inventory/stock-levels')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
           <Layers size={15} /> Stock Health & Categories
         </button>
         <button
           type="button"
           onClick={() => navigate('/inventory/movements')}
-          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2"
-        >
+          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2">
           <Clock size={15} /> Asset Movements & Audits
         </button>
       </div>
@@ -119,26 +109,29 @@ export const MovementsPage: React.FC = () => {
           ) : (
             filteredAudits.map((log) => {
               const actionColors: Record<string, string> = {
-                'CREATED': 'bg-emerald-50 text-emerald-700  ',
-                'ASSIGNED': 'bg-purple-50 text-purple-700  ',
-                'UNASSIGNED': 'bg-blue-50 text-blue-700  ',
-                'TOGGLE_BOOKABLE': 'bg-amber-50 text-amber-700  ',
-                'MAINTENANCE': 'bg-rose-50 text-rose-700  ',
-                'RESOURCE_BOOKED': 'bg-sky-50 text-sky-700  ',
-                'RETIRED': 'bg-slate-100 text-slate-700  ',
+                CREATED: 'bg-emerald-50 text-emerald-700  ',
+                ASSIGNED: 'bg-purple-50 text-purple-700  ',
+                UNASSIGNED: 'bg-blue-50 text-blue-700  ',
+                TOGGLE_BOOKABLE: 'bg-amber-50 text-amber-700  ',
+                MAINTENANCE: 'bg-rose-50 text-rose-700  ',
+                RESOURCE_BOOKED: 'bg-sky-50 text-sky-700  ',
+                RETIRED: 'bg-slate-100 text-slate-700  ',
               };
 
               const actionColor = actionColors[log.action] || 'bg-slate-100 text-slate-700';
 
               return (
-                <div key={log.id} className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-surface-subtle/40 transition-colors">
+                <div
+                  key={log.id}
+                  className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-surface-subtle/40 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center justify-center text-primary shrink-0 mt-0.5">
                       <FileText size={18} />
                     </div>
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg ${actionColor}`}>
+                        <span
+                          className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg ${actionColor}`}>
                           {log.action}
                         </span>
                         <span className="font-black text-foreground text-xs">
@@ -156,7 +149,8 @@ export const MovementsPage: React.FC = () => {
                       </p>
 
                       <div className="text-[11px] font-bold text-muted mt-1">
-                        Recorded by: <span className="text-foreground">{log.user_name || 'System'}</span>
+                        Recorded by:{' '}
+                        <span className="text-foreground">{log.user_name || 'System'}</span>
                       </div>
                     </div>
                   </div>
