@@ -95,6 +95,8 @@ export interface ERPEvent {
   author_email?: string;
   author_department?: string;
   employee_status?: string;
+  button_type?: 'Register Now' | 'Mandatory' | 'View Details' | string;
+  event_link?: string;
 }
 
 export interface EventFilters {

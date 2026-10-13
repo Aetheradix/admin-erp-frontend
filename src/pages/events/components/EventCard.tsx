@@ -12,6 +12,8 @@ import {
   Building2,
   ShieldCheck,
   ArrowUpRight,
+  ExternalLink,
+  AlertCircle,
   Calendar as CalendarIcon,
 } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
@@ -21,6 +23,7 @@ interface EventCardProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onRegister?: (event: ERPEvent) => void;
+  onTagClick?: (tag: string) => void;
   isRegistering?: boolean;
 }
 
@@ -43,6 +46,7 @@ export const EventCard = ({
   onEdit,
   onDelete,
   onRegister,
+  onTagClick,
   isRegistering,
 }: EventCardProps) => {
   const [imageSrc, setImageSrc] = useState(
@@ -149,15 +153,33 @@ export const EventCard = ({
           </p>
         </div>
 
+        {/* Linkable Event Tag */}
+        {event.event_link && (
+          <a
+            href={event.event_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 dark:text-indigo-300 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors truncate">
+            <ExternalLink size={12} className="shrink-0" />
+            <span className="truncate">Resource: {event.event_link.replace(/^https?:\/\//, '')}</span>
+          </a>
+        )}
+
         {/* Tags */}
         {event.tags && event.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {event.tags.map((tag) => (
-              <span
+              <button
                 key={tag}
-                className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 px-2.5 py-0.5 rounded-lg border border-primary/15">
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTagClick?.(tag);
+                }}
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 hover:bg-primary/15 transition-colors px-2.5 py-0.5 rounded-lg border border-primary/15 cursor-pointer">
                 <Tag size={9} /> #{tag}
-              </span>
+              </button>
             ))}
           </div>
         )}
@@ -193,24 +215,53 @@ export const EventCard = ({
           </div>
         </div>
 
-        {/* CTA Button */}
-        <Button
-          variant="primary"
-          onClick={() => onRegister?.(event)}
-          disabled={isRegistering}
-          className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-          {isRegistering ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Registering...</span>
-            </>
-          ) : (
-            <div className="flex items-center gap-1">
-              <span>Register Now</span>
-              <ArrowUpRight size={14} />
+        {/* CTA Button according to button_type */}
+        {event.button_type === 'Mandatory' ? (
+          <Button
+            variant="primary"
+            onClick={() => onRegister?.(event)}
+            disabled={isRegistering}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle size={15} />
+              <span>Mandatory Attendance</span>
             </div>
-          )}
-        </Button>
+          </Button>
+        ) : event.button_type === 'View Details' ? (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (event.event_link) {
+                window.open(event.event_link, '_blank', 'noopener,noreferrer');
+              } else {
+                onRegister?.(event);
+              }
+            }}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider border border-border-subtle hover:bg-surface-subtle transition-all cursor-pointer">
+            <div className="flex items-center gap-1.5">
+              <span>View Details</span>
+              {event.event_link ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
+            </div>
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            onClick={() => onRegister?.(event)}
+            disabled={isRegistering}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+            {isRegistering ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Registering...</span>
+              </>
+            ) : (
+              <div className="flex items-center gap-1">
+                <span>Register Now</span>
+                <ArrowUpRight size={14} />
+              </div>
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
@@ -8,6 +9,7 @@ import {
   UserCheck,
   Building2,
   RotateCcw,
+  Plus,
 } from 'lucide-react';
 import type { EventFilters, FilterOptions } from '@/types/models';
 
@@ -28,10 +30,27 @@ export const EventFilterDrawer = ({
   onFilterChange,
   onResetFilters,
 }: EventFilterDrawerProps) => {
+  const [customTags, setCustomTags] = useState<string[]>([]);
+  const [customTagInput, setCustomTagInput] = useState('');
+
   const categories = filterOptions?.categories || [];
-  const tags = filterOptions?.tags || [];
+  const initialTags = filterOptions?.tags || [];
   const employeeStatuses = filterOptions?.employeeStatuses || [];
   const departments = filterOptions?.departments || [];
+
+  const allTags = useMemo(
+    () => Array.from(new Set([...initialTags, ...customTags, ...(filters.tags || [])])),
+    [initialTags, customTags, filters.tags]
+  );
+
+  const handleAddCustomTag = () => {
+    const trimmed = customTagInput.trim();
+    if (trimmed && !allTags.includes(trimmed)) {
+      setCustomTags((prev) => [...prev, trimmed]);
+      onFilterChange({ ...filters, tags: [...(filters.tags || []), trimmed] });
+    }
+    setCustomTagInput('');
+  };
 
   const handleTagToggle = (tag: string) => {
     const currentTags = filters.tags || [];
@@ -164,32 +183,60 @@ export const EventFilterDrawer = ({
         )}
 
         {/* Event Tags */}
-        {tags.length > 0 && (
-          <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
             <label className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-2">
               <Tag size={14} className="text-primary" />
-              Tags
+              Event Tags & Dynamic Filters
             </label>
-            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1 border border-border-subtle/50 rounded-2xl">
-              {tags.map((t) => {
+            <span className="text-[11px] text-muted font-medium">Click to toggle filter</span>
+          </div>
+
+          {/* Quick Add Custom Filter Tag */}
+          <div className="flex gap-2">
+            <Input
+              id="filter-custom-tag"
+              value={customTagInput}
+              onChange={(e) => setCustomTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCustomTag();
+                }
+              }}
+              placeholder="Add new filter tag (e.g. AI, Q4)..."
+              className="flex-1 text-xs"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleAddCustomTag}
+              className="rounded-xl! px-3.5! text-xs font-bold gap-1 cursor-pointer">
+              <Plus size={14} /> Add Tag
+            </Button>
+          </div>
+
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1.5 border border-border-subtle/50 rounded-2xl bg-surface-subtle/30">
+              {allTags.map((t) => {
                 const isSelected = filters.tags?.includes(t);
                 return (
                   <button
                     key={t}
                     type="button"
                     onClick={() => handleTagToggle(t)}
-                    className={`px-3 py-1 rounded-xl text-[11px] font-bold border transition-all ${
+                    className={`px-3 py-1 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-primary/10 text-primary border-primary font-black'
-                        : 'bg-white text-muted border-border-subtle hover:text-foreground'
+                        ? 'bg-primary text-white border-primary shadow-xs font-black'
+                        : 'bg-white text-muted border-border-subtle hover:text-foreground hover:border-primary/40'
                     }`}>
                     #{t}
                   </button>
                 );
               })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Department Filter */}
         {departments.length > 0 && (

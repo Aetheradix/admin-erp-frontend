@@ -1,4 +1,5 @@
-import { Mail, Phone, Edit2, Trash2, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, Edit2, Trash2, Shield, Calendar } from 'lucide-react';
 import type { StaffMember } from '@/types/models';
 
 interface StaffCardProps {
@@ -138,6 +139,15 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
             <span className="text-xs font-black uppercase tracking-wider">Call</span>
           </a>
         </div>
+
+        {/* Public Schedule Link */}
+        <Link
+          to={`/calendar?user=${encodeURIComponent(member.username || member.name || '')}`}
+          className="flex items-center justify-center gap-2 h-10 w-full rounded-2xl bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 hover:border-primary/30 text-xs font-black uppercase tracking-wider transition-all"
+          title={`View ${member.username || member.name}'s Schedule`}>
+          <Calendar size={14} />
+          <span>View Schedule</span>
+        </Link>
       </div>
     </div>
   );
