@@ -1,37 +1,33 @@
-import { useRef, useState, useEffect } from 'react';
-
-import { Table, Dropdown, App, Tag } from 'antd';
+import { useState, useEffect, useRef } from 'react';
+import { Table, Tag, Dropdown, App, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-
 import {
-  MoreHorizontal,
   User,
+  Briefcase,
   Calendar,
-  Download,
-  Eye,
-  Plus,
   UserCheck,
   Clock,
-  Briefcase,
+  MoreHorizontal,
+  Plus,
+  Eye,
   Edit3,
+  Download,
+  Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-
-import { PageHeader } from '@/components/ui/composed/PageHeader';
-import SalarySlipForm from './components/SalarySlipForm';
-import SalarySlipTemplate from './components/SalarySlipTemplate';
-
-// Importing from financeApiSlice
 import {
   useGetAllSalarySlipsQuery,
   useCreateSalarySlipMutation,
+  useDeleteSalarySlipMutation,
   useUpdateSalarySlipMutation,
 } from '@/store/api/financeApiSlice';
-
-import type { SalarySlipData } from './components/SalarySlipForm';
-
+import SalarySlipTemplate from './components/SalarySlipTemplate';
+import SalarySlipForm from './components/SalarySlipForm';
+import type { SalarySlipData } from './components/SalarySlipTemplate';
+import { PageHeader } from '@/components/ui/composed/PageHeader';
+// Keep your existing interface & helper functions
 export interface PayrollRecord {
   id: number;
   userId: number;
@@ -64,14 +60,12 @@ export interface PayrollRecord {
   rawRecord?: Record<string, any>;
 }
 
-// Safe number parser for strings like "0.00", "30.0", or numbers
 const parseNum = (val: any): number => {
   if (val === undefined || val === null) return 0;
   const num = Number(val);
   return isNaN(num) ? 0 : num;
 };
 
-// Month conversion map
 const MONTH_NAMES = [
   'JANUARY',
   'FEBRUARY',
@@ -88,7 +82,6 @@ const MONTH_NAMES = [
 ];
 
 const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
-  // 1. Employee & Department Info
   const employeeName = String(
     item.username || item.employeeName || item.employee_name || 'Unnamed Employee'
   ).trim();
@@ -98,12 +91,10 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const employeeCode = String(item.employee_code || item.user_id || item.userId || 'N/A');
   const userId = parseNum(item.user_id || item.userId || 0);
 
-  // 2. Created By / Admin Author
   const rawCreatedBy = item.created_by_username || item.created_by || item.createdBy;
   const createdBy =
     rawCreatedBy && rawCreatedBy !== 'null' ? String(rawCreatedBy).trim() : 'System / HR';
 
-  // 3. Monetary Fields
   const basicSalary = parseNum(item.basic_salary || item.basePay || item.base);
   const hra = parseNum(item.house_rent_allowance || item.hra);
   const specialAllowance = parseNum(item.special_allowance);
@@ -118,7 +109,6 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const otherDeductions = parseNum(item.other_deductions);
   const netSalary = parseNum(item.net_salary || item.total);
 
-  // 4. Construct Earnings & Deductions Arrays
   let earnings = Array.isArray(item.earnings) ? item.earnings : [];
   if (earnings.length === 0) {
     earnings = [
@@ -141,7 +131,6 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     ];
   }
 
-  // 5. Pay Period Formatting
   let monthYear = 'OCTOBER 2026';
   if (item.pay_period_month && item.pay_period_year) {
     const mIdx = parseNum(item.pay_period_month) - 1;
@@ -206,6 +195,7 @@ export function PayrollPage() {
 
   const [createSalarySlip, { isLoading: isCreating }] = useCreateSalarySlipMutation();
   const [updateSalarySlip, { isLoading: isUpdating }] = useUpdateSalarySlipMutation();
+  const [deleteSalarySlip, { isLoading: isDeleting }] = useDeleteSalarySlipMutation();
 
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
@@ -264,6 +254,7 @@ export function PayrollPage() {
     }
   };
 
+  // 1. Unified Submit for both Create and Update
   const handleFormSubmit = async (data: SalarySlipData) => {
     const key = 'salary-slip-action';
     try {
@@ -287,9 +278,35 @@ export function PayrollPage() {
     }
   };
 
+  // 2. Pre-fill Form for Editing
   const handleEdit = (record: PayrollRecord) => {
     setEditingRecord(record);
     setShowSalarySlipForm(true);
+  };
+
+  // 3. Delete Salary Slip Handler with Confirmation Modal
+  const handleDelete = (record: PayrollRecord) => {
+    Modal.confirm({
+      title: 'Delete Salary Slip',
+      content: `Are you sure you want to delete the salary slip for ${record.employeeName} (${record.monthYear})? This action cannot be undone.`,
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      maskClosable: true,
+      onOk: async () => {
+        const key = 'delete-salary-slip';
+        try {
+          message.loading({ content: 'Deleting salary slip...', key });
+          await deleteSalarySlip(record.id).unwrap();
+          message.success({ content: 'Salary slip deleted successfully!', key });
+        } catch (error: any) {
+          message.error({
+            content: error?.data?.message || error?.message || 'Failed to delete salary slip.',
+            key,
+          });
+        }
+      },
+    });
   };
 
   const handleCreateNew = () => {
@@ -402,6 +419,13 @@ export function PayrollPage() {
               { key: 'view', label: 'View Salary Slip', icon: <Eye size={15} /> },
               { key: 'edit', label: 'Edit Salary Slip', icon: <Edit3 size={15} /> },
               { key: 'download', label: 'Download PDF', icon: <Download size={15} /> },
+              { type: 'divider' },
+              {
+                key: 'delete',
+                label: 'Delete Salary Slip',
+                icon: <Trash2 size={15} className="text-rose-500" />,
+                danger: true,
+              },
             ],
             onClick: ({ key }) => {
               if (key === 'view') {
@@ -413,6 +437,9 @@ export function PayrollPage() {
               }
               if (key === 'download') {
                 downloadSalarySlip(record);
+              }
+              if (key === 'delete') {
+                handleDelete(record);
               }
             },
           }}>
@@ -426,7 +453,7 @@ export function PayrollPage() {
     },
   ];
 
-  const isSubmitting = isCreating || isUpdating;
+  const isSubmitting = isCreating || isUpdating || isDeleting;
 
   return (
     <div className="flex flex-col gap-8 pb-20 max-w-7xl mx-auto p-4 sm:p-6">
