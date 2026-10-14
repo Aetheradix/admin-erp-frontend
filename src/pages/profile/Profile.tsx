@@ -8,6 +8,7 @@ import { ProfileInfoTab } from './components/ProfileInfoTab';
 import { OrganizationTab } from './components/OrganizationTab';
 import { OverviewTab } from './components/OverviewTab';
 import { ProfileForm } from './components/ProfileForm';
+import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
 
 const Profile = () => {
   const {
@@ -25,6 +26,7 @@ const Profile = () => {
   } = useProfile();
 
   const [activeTab, setActiveTab] = useState<TabType>('profile');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   return (
     <div className="flex flex-col gap-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 mx-auto w-full">
@@ -51,6 +53,7 @@ const Profile = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onStartEdit={() => setIsEditing(true)}
+        onChangePassword={() => setShowPasswordModal(true)}
         onAddRole={addRole}
         onRemoveRole={removeRole}
       />
@@ -113,6 +116,12 @@ const Profile = () => {
 
         <span className="text-sm text-muted-foreground">{user.autoApprove ? 'True' : 'False'}</span>
       </div>
+
+      <ChangePasswordModal
+        visible={showPasswordModal}
+        onHide={() => setShowPasswordModal(false)}
+        requireCurrentPassword={true}
+      />
     </div>
   );
 };

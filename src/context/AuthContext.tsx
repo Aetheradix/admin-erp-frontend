@@ -145,6 +145,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   useEffect(() => {
+    const handleUserUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<User>;
+      if (customEvent.detail) {
+        setUser(customEvent.detail);
+      }
+    };
+    window.addEventListener('aether_user_updated', handleUserUpdate);
+    return () => window.removeEventListener('aether_user_updated', handleUserUpdate);
+  }, []);
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       fetchPermissions().finally(() => {

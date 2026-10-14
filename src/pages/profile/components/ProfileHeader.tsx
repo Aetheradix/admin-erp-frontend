@@ -1,4 +1,4 @@
-import { Camera, Edit3 } from 'lucide-react';
+import { Camera, Edit3, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProfileRoleBadges } from './ProfileRoleBadges';
 import type { ProfileUserData } from '../hooks/useProfile';
@@ -11,6 +11,7 @@ interface ProfileHeaderProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   onStartEdit: () => void;
+  onChangePassword?: () => void;
   onAddRole: (roleName: string) => void;
   onRemoveRole: (roleId: string) => void;
 }
@@ -21,6 +22,7 @@ export const ProfileHeader = ({
   activeTab,
   onTabChange,
   onStartEdit,
+  onChangePassword,
   onAddRole,
   onRemoveRole,
 }: ProfileHeaderProps) => {
@@ -83,13 +85,24 @@ export const ProfileHeader = ({
                 <Edit3 size={14} /> Editing Mode
               </span>
             ) : (
-              <Button
-                variant="secondary"
-                onClick={onStartEdit}
-                className="h-10 px-5 rounded-2xl! gap-2 border-border-subtle! hover:border-primary/40!">
-                <Edit3 size={14} />
-                <span className="font-bold text-xs">Edit Details</span>
-              </Button>
+              <>
+                {onChangePassword && (
+                  <Button
+                    variant="outline"
+                    onClick={onChangePassword}
+                    className="h-10 px-4 rounded-2xl! gap-2 border-border-subtle! hover:border-primary/40!">
+                    <KeyRound size={14} />
+                    <span className="font-bold text-xs">Password</span>
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  onClick={onStartEdit}
+                  className="h-10 px-5 rounded-2xl! gap-2 border-border-subtle! hover:border-primary/40!">
+                  <Edit3 size={14} />
+                  <span className="font-bold text-xs">Edit Details</span>
+                </Button>
+              </>
             )}
           </div>
         </div>
