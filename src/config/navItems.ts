@@ -145,17 +145,17 @@
 import {
   BarChart3,
   Building2,
-  CalendarDays,
   CalendarCheck,
+  CalendarDays,
   CheckSquare,
+  Clock,
   CreditCard,
+  Gift,
   LayoutDashboard,
   Package,
   Settings,
-  Clock,
-  Gift,
   Share2,
-  type LucideIcon,
+  type LucideIcon
 } from 'lucide-react';
 
 export type UserRole =
@@ -266,6 +266,21 @@ export const navItems: NavItem[] = [
     description: 'Task management',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
   },
+  // {
+  //   label: 'Channels',
+  //   path: '/channels',
+  //   icon: MessageSquare,
+  //   category: 'MANAGEMENT',
+  //   description: 'Team communication channels',
+  //   roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //   children: [
+  //     {
+  //       label: 'All Channels',
+  //       path: '/channels',
+  //       roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //     },
+  //   ],
+  // },
   {
     label: 'Resource Booking',
     path: '/resource-booking',
@@ -359,6 +374,16 @@ export const navItems: NavItem[] = [
       {
         label: 'My PaySlip',
         path: '/finance/my-payslip',
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'Audit Book',
+        path: '/finance/audit',
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Admin'],
+      },
+      {
+        label: 'Reimbursements',
+        path: '/finance/reimbursements',
         roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
       },
     ],

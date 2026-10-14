@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { useEffect, useState } from 'react';
-import { Sparkles, PartyPopper, Wrench, Mic, Rocket } from 'lucide-react';
+import { Sparkles, PartyPopper, Wrench, Mic, Rocket, Plus, X } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 
 interface EventFormProps {
@@ -72,6 +72,7 @@ const TEMPLATE_PRESETS = [
 
 export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) => {
   const [uploadImage, { isLoading: isUploadingImage }] = useUploadImageMutation();
+  const [newTagInput, setNewTagInput] = useState('');
   const [formData, setFormData] = useState<Partial<ERPEvent>>({
     title: '',
     description: '',
@@ -81,6 +82,9 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
     location: '',
     organizer: '',
     attendees: 0,
+    button_type: 'Register Now',
+    event_link: '',
+    tags: [],
     image:
       'https://images.unsplash.com/photo-1540575861501-7ce058a877c3?q=80&w=2070&auto=format&fit=crop',
   });
@@ -106,11 +110,34 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
     }));
   };
 
+  const handleAddTag = () => {
+    const trimmed = newTagInput.trim();
+    if (!trimmed) return;
+    const currentTags = formData.tags || [];
+    if (!currentTags.includes(trimmed)) {
+      setFormData((prev) => ({ ...prev, tags: [...currentTags, trimmed] }));
+    }
+    setNewTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: (prev.tags || []).filter((t) => t !== tagToRemove),
+    }));
+  };
+
   const categories = [
     { label: 'Conference', value: 'Conference' },
     { label: 'Workshop', value: 'Workshop' },
     { label: 'Social', value: 'Social' },
     { label: 'Meeting', value: 'Meeting' },
+  ];
+
+  const buttonTypeOptions = [
+    { label: 'Register Now (Standard RSVP)', value: 'Register Now' },
+    { label: 'Mandatory (Required Attendance)', value: 'Mandatory' },
+    { label: 'View Details (Informational / External)', value: 'View Details' },
   ];
 
   return (
@@ -182,6 +209,72 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                 }
               />
             </FormField>
+          </div>
+
+          {/* Action Button Type & External Link */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Button Action Type" id="event-button-type">
+              <Select
+                id="event-button-type"
+                options={buttonTypeOptions}
+                value={formData.button_type || 'Register Now'}
+                onChange={(e) => setFormData({ ...formData, button_type: e.value })}
+              />
+            </FormField>
+            <FormField label="Registration / External URL" id="event-link">
+              <Input
+                id="event-link"
+                value={formData.event_link || ''}
+                onChange={(e) => setFormData({ ...formData, event_link: e.target.value })}
+                placeholder="https://... (Optional)"
+              />
+            </FormField>
+          </div>
+
+          {/* Tags Management */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+              Event Tags & Dynamic Filters
+            </label>
+            <div className="flex gap-2">
+              <Input
+                id="event-new-tag"
+                value={newTagInput}
+                onChange={(e) => setNewTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                placeholder="Add tag (e.g. AI, Q4, AllHands)..."
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleAddTag}
+                className="rounded-xl! px-4! text-xs font-bold gap-1 cursor-pointer">
+                <Plus size={14} /> Add
+              </Button>
+            </div>
+            {formData.tags && formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {formData.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl border border-primary/20">
+                    <span>#{tag}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="hover:text-rose-500 cursor-pointer ml-1 p-0.5 rounded-full hover:bg-black/10">
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

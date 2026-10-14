@@ -80,6 +80,8 @@ export const apiSlice = createApi({
     'Roles',
     'RoleAuditLogs',
     'Inventory',
+    'Channels',
+    'ChatMessages',
   ],
   endpoints: () => ({}),
 });

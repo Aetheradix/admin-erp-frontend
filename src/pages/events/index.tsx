@@ -374,6 +374,12 @@ const Events = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onRegister={handleRegister}
+            onTagClick={(tag) => {
+              const currentTags = filters.tags || [];
+              if (!currentTags.includes(tag)) {
+                setFilters((prev) => ({ ...prev, tags: [...currentTags, tag] }));
+              }
+            }}
             isRegistering={registeringEventId === event.id}
           />
         ))}

@@ -18,11 +18,14 @@ interface PageAccessGuardProps {
 }
 
 const ROUTE_RBAC_MAP: Record<string, string> = {
+  '/users': 'user:view',
+  '/org/approvals': 'user:view',
   '/settings/roles': 'role:view',
   '/settings/audit-log': 'audit:view',
   '/finance/payroll': 'payroll:view',
-  '/finance/invoices': 'invoice:view',
+  '/finance/invoices': 'finance:view',
   '/finance/expenses': 'expense:view',
+  '/finance/audit': 'finance:manage',
   '/tasks': 'task:view',
   '/inventory': 'inventory:view',
 };
@@ -70,6 +73,22 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
         defaultRoles = child.roles?.map(String);
         break;
       }
+    }
+    if (item.path && item.path !== '/' && currentPath.startsWith(item.path)) {
+      defaultRoles = item.roles?.map(String);
+    }
+  }
+
+  // Explicit route fallbacks if not directly in navItems
+  if (!defaultRoles) {
+    if (currentPath.startsWith('/users')) {
+      defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin'];
+    } else if (currentPath.startsWith('/org')) {
+      defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin'];
+    } else if (currentPath.startsWith('/settings')) {
+      defaultRoles = ['SuperAdmin', 'Admin'];
+    } else if (currentPath.startsWith('/analytics')) {
+      defaultRoles = ['SuperAdmin', 'Admin'];
     }
   }
 

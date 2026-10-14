@@ -202,6 +202,7 @@
 import React, { useState, useMemo } from 'react';
 import { useExpensesPage, EXPENSE_CATEGORIES, EXPENSE_STATUSES } from './hooks/useExpensesPage'; // Adjust import path as needed
 import type { ExpenseRecord } from '@/store/api/expenseSlice';
+import { Download, FileText } from 'lucide-react';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -601,6 +602,55 @@ export const ExpensesPage: React.FC = () => {
     doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
+  const handleDownloadSingleVoucherPDF = (expense: ExpenseRecord) => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+
+    // Header
+    doc.setFontSize(16);
+    doc.setTextColor(17, 24, 39);
+    doc.text('EXPENSE PAYMENT VOUCHER', 14, 16);
+
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128);
+    doc.text(`Voucher Ref: ${expense.expense_number || '#' + expense.id}`, 14, 23);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
+
+    // Box
+    doc.setFillColor(249, 250, 251);
+    doc.setDrawColor(229, 231, 235);
+    doc.roundedRect(14, 33, 120, 20, 2, 2, 'FD');
+
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('APPROVED AMOUNT', 18, 40);
+    doc.text('STATUS', 75, 40);
+
+    doc.setFontSize(13);
+    doc.setTextColor(17, 24, 39);
+    doc.text(formatCurrency(Number(expense.amount || 0)), 18, 48);
+    doc.text(String(expense.status || 'Pending'), 75, 48);
+
+    const voucherDetails = [
+      ['Expense Title', String(expense.title || 'N/A')],
+      ['Expense Category', String(expense.category || 'N/A')],
+      ['Claimed By', String(expense.employee_name || 'N/A')],
+      ['Vendor / Payee', String(expense.vendor_name || 'N/A')],
+      ['Payment Mode', String(expense.payment_mode || 'Corporate / Direct')],
+      ['Description', String(expense.description || 'No additional notes provided.')],
+    ];
+
+    autoTable(doc, {
+      head: [['Field', 'Details']],
+      body: voucherDetails,
+      startY: 58,
+      styles: { fontSize: 8.5, cellPadding: 3 },
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
+    });
+
+    doc.save(`Voucher_${expense.expense_number || expense.id}.pdf`);
+  };
+
   const resetAllFiltersWithDate = () => {
     resetFilters();
     setDatePreset('all');
@@ -614,15 +664,25 @@ export const ExpensesPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Expenses Management</h1>
           <p className="text-sm text-gray-500">
-            Track, approve, and process employee company expenses.
+            Track, approve, and process employee company expenses with verifiable audit trails.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => refetch()}
             disabled={isFetching}
             className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
             {isFetching ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button
+            onClick={handleExpenseReportDownloadPDF}
+            className="px-3.5 py-2 text-sm font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 shadow-xs flex items-center gap-1.5 transition-colors">
+            <Download size={15} /> Export PDF Report
+          </button>
+          <button
+            onClick={handleDownloadCSV}
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 shadow-xs flex items-center gap-1.5">
+            Export CSV
           </button>
           <button
             onClick={() => setShowFormModal(true)}
@@ -1209,7 +1269,13 @@ export const ExpensesPage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex justify-between items-center pt-4 border-t">
+              <button
+                type="button"
+                onClick={() => handleDownloadSingleVoucherPDF(selectedExpense)}
+                className="px-3.5 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md text-xs font-bold flex items-center gap-1.5 transition-colors">
+                <FileText size={14} /> Download Voucher (PDF)
+              </button>
               <button
                 onClick={closeDetails}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200">
