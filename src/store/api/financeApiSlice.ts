@@ -270,6 +270,22 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         { type: 'SalarySlips', id: 'LIST' },
       ],
     }),
+
+    deleteSalarySlip: builder.mutation<any, string | number>({
+      query: (id) => {
+        console.log(`RTK Query Sending Delete Request for Salary Slip ID: ${id}`);
+
+        return {
+          url: `/finance/salary-slips/${id}`,
+          method: 'DELETE',
+        };
+      },
+      // Invalidates the specific deleted item tag as well as the main listing tag
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'SalarySlips', id },
+        { type: 'SalarySlips', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -281,6 +297,8 @@ export const {
   useUpdateReimbursementStatusMutation,
   useDeleteReimbursementMutation,
   useUpdateSalarySlipMutation,
+
+  useDeleteSalarySlipMutation,
 
   // Salary Slip Hooks
   useGetAllSalarySlipsQuery,
