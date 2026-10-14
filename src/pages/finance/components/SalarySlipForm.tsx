@@ -259,7 +259,13 @@ const getInitialForm = (): SalarySlipData => {
   };
 };
 
-const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) => {
+const SalarySlipForm = ({
+  onClose,
+  onCreate,
+  fetchUsers,
+  initialValues,
+  isEditing = false,
+}: SalarySlipFormProps) => {
   const loggedInUser = useSelector((state: any) => state.auth?.user || state.user?.currentUser);
   const { user } = useAuth();
   const [formData, setFormData] = useState<SalarySlipData>(() => {
@@ -308,6 +314,150 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
       clearTimeout(timer);
     };
   }, [searchTerm, fetchUsers]);
+
+  useEffect(() => {
+    if (!initialValues) return;
+
+    // Local type-safe alias to access raw database snake_case properties
+    const raw = initialValues as Record<string, any>;
+
+    // 1. Safe Recipient ID Parsing
+    const recipientId =
+      raw.user_id ?? initialValues.userId ?? raw.employee_code ?? initialValues.employeeId ?? 0;
+
+    // 2. Local Fallbacks
+    const monthsList = [
+      'JANUARY',
+      'FEBRUARY',
+      'MARCH',
+      'APRIL',
+      'MAY',
+      'JUNE',
+      'JULY',
+      'AUGUST',
+      'SEPTEMBER',
+      'OCTOBER',
+      'NOVEMBER',
+      'DECEMBER',
+    ];
+    const now = new Date();
+    const fallbackYear = String(now.getFullYear());
+    const fallbackMonth = monthsList[now.getMonth()];
+
+    let monthVal = fallbackMonth;
+    let yearVal = fallbackYear;
+
+    // 3. Month & Year Extraction
+    if (raw.pay_period_month && raw.pay_period_year) {
+      const mIdx = Number(raw.pay_period_month) - 1;
+      if (mIdx >= 0 && mIdx < 12) monthVal = monthsList[mIdx];
+      yearVal = String(raw.pay_period_year);
+    } else if (initialValues.monthYear || initialValues.payPeriod) {
+      const parts = String(initialValues.monthYear || initialValues.payPeriod)
+        .trim()
+        .split(' ');
+      if (parts.length >= 2) {
+        monthVal = parts[0].toUpperCase();
+        yearVal = parts[1];
+      }
+    }
+
+    // 4. Pay Cycle & Cycle Number
+    const rawCycle = raw.pay_frequency || initialValues.payPeriod;
+    const cycle = rawCycle
+      ? String(rawCycle).toLowerCase().includes('bi')
+        ? 'Bi-Weekly'
+        : 'Monthly'
+      : 'Bi-Weekly';
+
+    const cycleNum = (Number(raw.cycle_number) || 1) as 1 | 2;
+    setBiWeeklyPeriod(cycleNum);
+
+    // 5. Employee Details & Search Term
+    const empName = initialValues.employeeName || raw.username || raw.employee_name || '';
+
+    setSearchTerm(empName);
+
+    // 6. Safe Date Formatting for HTML <input type="date" />
+    const rawDate = raw.payment_date || raw.paymentDate || initialValues.generatedOn;
+
+    const formattedDate = rawDate
+      ? new Date(rawDate).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0];
+
+    // 7. Dynamic Pay Period Fallback
+    const computedPayPeriod =
+      initialValues.payPeriod ||
+      (typeof calculatePayPeriod === 'function'
+        ? calculatePayPeriod(monthVal, yearVal, cycle, cycleNum)
+        : `${monthVal} ${yearVal}`);
+
+    // 8. Financial Breakdown
+    const basePay = Number(raw.basic_salary || initialValues.base || 0);
+    const hraPay = Number(raw.house_rent_allowance || raw.hra || 0);
+    const specialPay = Number(raw.special_allowance || 0);
+    const conveyancePay = Number(raw.conveyance_allowance || 0);
+    const bonusPay = Number(raw.bonus || initialValues.bonus || 0);
+    const otherEarnPay = Number(raw.other_earnings || 0);
+
+    const parsedEarnings =
+      Array.isArray(initialValues.earnings) && initialValues.earnings.length > 0
+        ? initialValues.earnings
+        : [
+            { name: 'Basic Pay', amount: basePay },
+            ...(hraPay > 0 ? [{ name: 'HRA', amount: hraPay }] : []),
+            ...(specialPay > 0 ? [{ name: 'Special Allowance', amount: specialPay }] : []),
+            ...(conveyancePay > 0 ? [{ name: 'Conveyance', amount: conveyancePay }] : []),
+            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+            ...(otherEarnPay > 0 ? [{ name: 'Other Earnings', amount: otherEarnPay }] : []),
+          ];
+
+    const pfDeduct = Number(raw.provident_fund || 0);
+    const ptDeduct = Number(raw.professional_tax || 0);
+    const tdsDeduct = Number(raw.income_tax_tds || 0);
+    const otherDeduct = Number(raw.other_deductions || 0);
+
+    const parsedDeductions =
+      Array.isArray(initialValues.deductions) && initialValues.deductions.length > 0
+        ? initialValues.deductions
+        : [
+            ...(pfDeduct > 0 ? [{ name: 'Provident Fund (PF)', amount: pfDeduct }] : []),
+            ...(ptDeduct > 0 ? [{ name: 'Professional Tax (PT)', amount: ptDeduct }] : []),
+            ...(tdsDeduct > 0 ? [{ name: 'TDS', amount: tdsDeduct }] : []),
+            ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
+          ];
+
+    // 9. Update Form State with Strict String / Number Fallbacks
+    // 9. Update Form State with Strict String / Number Fallbacks & Required Signatory Properties
+    setFormData({
+      userId: Number(recipientId) || 0,
+      employeeId: String(raw.employee_code || initialValues.employeeId || ''),
+      employeeName: String(empName || ''),
+      position: String(raw.designation || initialValues.position || ''),
+      department: String(initialValues.department || ''),
+      accountNumber: String(raw.bank_account_number || initialValues.accountNumber || ''),
+      payCycle: cycle as 'Bi-Weekly' | 'Monthly',
+      monthYear: `${monthVal} ${yearVal}`,
+      payPeriod: String(computedPayPeriod || ''),
+      paySlipNo: String(
+        raw.pay_slip_no || initialValues.paySlipNo || `SLIP-${initialValues.id || Date.now()}`
+      ),
+      companyName: String(initialValues.companyName || 'AETHERADIX'),
+      companyAddress: String(
+        initialValues.companyAddress || 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+      ),
+      paidDays: Number(raw.days_worked ?? raw.paid_days ?? initialValues.paidDays ?? 30),
+      lopDays: Number(raw.leave_days ?? raw.lop_days ?? initialValues.lopDays ?? 0),
+      earnings: parsedEarnings,
+      deductions: parsedDeductions,
+      generatedOn: String(formattedDate),
+      hrNote: String(raw.remarks || initialValues.hrNote || ''),
+
+      // 🟢 Add these missing properties required by SalarySlipData interface
+      authorizedSignatory: String(initialValues.authorizedSignatory || 'Seema Srivastava'),
+      signatoryRole: String(initialValues.signatoryRole || '(Director)'),
+    });
+  }, [initialValues]);
 
   const months: string[] = [
     'JANUARY',
@@ -518,224 +668,6 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
   );
   const netSalary = totalEarnings - totalDeductions;
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   // 1. Recipient Employee ID (selected from the employee dropdown)
-  //   const recipientUserId = formData.userId || formData.employeeId;
-  //   const numericRecipientId = Number(recipientUserId);
-
-  //   if (!recipientUserId || isNaN(numericRecipientId) || numericRecipientId === 0) {
-  //     setErrors((prev) => ({
-  //       ...prev,
-  //       userId: 'Please select a valid employee from the list.',
-  //       employeeId: 'Employee selection is required.',
-  //     }));
-  //     return;
-  //   }
-
-  //   // 2. Creator ID (Logged-in HR/Admin generating the payslip)
-  //   const creatorId = user?.id || loggedInUser?.id || null;
-
-  //   try {
-  //     setIsSubmitting(true);
-
-  //     // 3. Parse Month & Year safely into Numeric Month (1 - 12)
-  //     const monthMap: Record<string, number> = {
-  //       JANUARY: 1,
-  //       FEBRUARY: 2,
-  //       MARCH: 3,
-  //       APRIL: 4,
-  //       MAY: 5,
-  //       JUNE: 6,
-  //       JULY: 7,
-  //       AUGUST: 8,
-  //       SEPTEMBER: 9,
-  //       OCTOBER: 10,
-  //       NOVEMBER: 11,
-  //       DECEMBER: 12,
-  //     };
-
-  //     const dateParts = formData.monthYear ? formData.monthYear.trim().split(/\s+/) : [];
-  //     let payPeriodMonth: number = new Date().getMonth() + 1;
-  //     let payPeriodYear: number = new Date().getFullYear();
-
-  //     if (dateParts.length >= 1) {
-  //       const firstPartUpper = dateParts[0].toUpperCase();
-  //       if (monthMap[firstPartUpper]) {
-  //         payPeriodMonth = monthMap[firstPartUpper];
-  //       }
-  //     }
-
-  //     if (dateParts.length >= 2) {
-  //       payPeriodYear = parseInt(dateParts[1], 10) || payPeriodYear;
-  //     }
-
-  //     // 4. Keyword matching utilities
-  //     const findAmountByKeywords = (items: typeof formData.earnings, keywords: string[]) => {
-  //       const match = items.find((i) =>
-  //         keywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
-  //       );
-  //       return match ? Number(match.amount) || 0 : 0;
-  //     };
-
-  //     const getUnmatchedSum = (items: typeof formData.earnings, matchedKeywords: string[]) => {
-  //       return items
-  //         .filter(
-  //           (i) =>
-  //             !matchedKeywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
-  //         )
-  //         .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-  //     };
-
-  //     // 5. Earnings & Deductions field mapping
-  //     const basicSalary = findAmountByKeywords(formData.earnings, ['basic']);
-  //     const houseRentAllowance = findAmountByKeywords(formData.earnings, ['hra', 'house rent']);
-  //     const bonus = findAmountByKeywords(formData.earnings, ['bonus', 'incentive']);
-  //     const specialAllowance = findAmountByKeywords(formData.earnings, ['special']);
-  //     const conveyanceAllowance = findAmountByKeywords(formData.earnings, [
-  //       'conveyance',
-  //       'transport',
-  //     ]);
-
-  //     const matchedEarningKeywords = [
-  //       'basic',
-  //       'hra',
-  //       'house rent',
-  //       'bonus',
-  //       'incentive',
-  //       'special',
-  //       'conveyance',
-  //       'transport',
-  //     ];
-  //     const otherEarnings = getUnmatchedSum(formData.earnings, matchedEarningKeywords);
-
-  //     const providentFund = findAmountByKeywords(formData.deductions, ['pf', 'provident']);
-  //     const professionalTax = findAmountByKeywords(formData.deductions, ['pt', 'professional tax']);
-  //     const incomeTaxTds = findAmountByKeywords(formData.deductions, ['tds', 'income tax', 'tax']);
-
-  //     const matchedDeductionKeywords = [
-  //       'pf',
-  //       'provident',
-  //       'pt',
-  //       'professional tax',
-  //       'tds',
-  //       'income tax',
-  //       'tax',
-  //     ];
-  //     const otherDeductions = getUnmatchedSum(formData.deductions, matchedDeductionKeywords);
-
-  //     const paidDays = Number(formData.paidDays) || 15;
-  //     const lopDays = Number(formData.lopDays) || 0;
-
-  //     // 6. Complete corrected payload
-  //     const payload = {
-  //       // --- Target Employee (Recipient receiving the slip) ---
-  //       user_id: numericRecipientId,
-  //       userId: numericRecipientId,
-  //       employee_code: String(formData.employeeId || numericRecipientId),
-  //       employeeId: String(formData.employeeId || numericRecipientId),
-  //       employee_id: String(formData.employeeId || numericRecipientId),
-  //       employeeName: formData.employeeName || 'Employee',
-
-  //       // --- Creator (HR/Admin issuing the slip) ---
-  //       created_by: creatorId ? Number(creatorId) : null,
-  //       createdById: creatorId ? Number(creatorId) : null,
-
-  //       // --- Pay Period & Dates ---
-  //       pay_cycle: formData.payCycle || 'Bi-Weekly',
-  //       payCycle: formData.payCycle || 'Bi-Weekly',
-  //       pay_period_month: payPeriodMonth,
-  //       payPeriodMonth: payPeriodMonth,
-  //       pay_period_year: payPeriodYear,
-  //       payPeriodYear: payPeriodYear,
-  //       monthYear: formData.monthYear,
-  //       month_year: formData.monthYear,
-  //       payPeriod: formData.payPeriod || calculatePayPeriod(selectedMonth, selectedYear, formData.payCycle, biWeeklyPeriod),
-  //       pay_period: formData.payPeriod || calculatePayPeriod(selectedMonth, selectedYear, formData.payCycle, biWeeklyPeriod),
-  //       paySlipNo: formData.paySlipNo,
-  //       pay_slip_no: formData.paySlipNo,
-
-  //       // --- Department & Bank ---
-  //       designation: formData.position || null,
-  //       position: formData.position || null,
-  //       department: formData.department || null,
-  //       bank_account_number: formData.accountNumber || null,
-  //       bankAccountNumber: formData.accountNumber || null,
-  //       accountNumber: formData.accountNumber || '',
-
-  //       // --- Working Days ---
-  //       total_working_days: paidDays + lopDays,
-  //       totalWorkingDays: paidDays + lopDays,
-  //       days_worked: paidDays,
-  //       daysWorked: paidDays,
-  //       paidDays: paidDays,
-  //       paid_days: paidDays,
-  //       leave_days: lopDays,
-  //       leaveDays: lopDays,
-  //       lopDays: lopDays,
-  //       lop_days: lopDays,
-
-  //       // --- Earnings & Deductions Arrays ---
-  //       earnings: formData.earnings.filter((e) => e.name.trim() !== ''),
-  //       deductions: formData.deductions.filter((d) => d.name.trim() !== ''),
-
-  //       // --- Earnings Breakdown ---
-  //       basic_salary: basicSalary,
-  //       basicSalary,
-  //       basePay: basicSalary || totalEarnings,
-  //       base_amount: basicSalary || totalEarnings,
-  //       house_rent_allowance: houseRentAllowance,
-  //       houseRentAllowance,
-  //       special_allowance: specialAllowance,
-  //       specialAllowance,
-  //       conveyance_allowance: conveyanceAllowance,
-  //       conveyanceAllowance,
-  //       bonus,
-  //       bonusPay: bonus,
-  //       bonus_amount: bonus,
-  //       other_earnings: otherEarnings,
-  //       otherEarnings,
-  //       gross_salary: totalEarnings,
-
-  //       // --- Deductions Breakdown ---
-  //       provident_fund: providentFund,
-  //       providentFund,
-  //       professional_tax: professionalTax,
-  //       professionalTax,
-  //       income_tax_tds: incomeTaxTds,
-  //       incomeTaxTds,
-  //       other_deductions: otherDeductions,
-  //       otherDeductions,
-
-  //       // --- Totals ---
-  //       totalEarnings,
-  //       totalDeductions,
-  //       total_deductions: totalDeductions,
-  //       net_salary: netSalary,
-  //       netSalary,
-  //       total_amount: netSalary,
-
-  //       // --- Status & Signatory ---
-  //       payment_status: 'paid',
-  //       paymentStatus: 'paid',
-  //       payment_date: formData.generatedOn || new Date().toISOString().split('T')[0],
-  //       paymentDate: formData.generatedOn || null,
-  //       remarks: formData.hrNote || null,
-  //       hrNote: formData.hrNote || '',
-  //       authorizedSignatory: formData.authorizedSignatory || '',
-  //       signatoryRole: formData.signatoryRole || '',
-  //     };
-
-  //     console.log('Submitting fixed payload:', payload);
-  //     await onCreate(payload);
-  //   } catch (error) {
-  //     console.error('Failed to create salary slip:', error);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -813,53 +745,86 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
       const paidDays = Number(formData.paidDays) || 15;
       const lopDays = Number(formData.lopDays) || 0;
 
+      // Extract pay period month (1-12) & year for SQL database queries
+      const monthStr = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
+      const yearStr = formData.monthYear?.split(' ')[1] || String(currentYear);
+      const payPeriodMonth = months.indexOf(monthStr.toUpperCase()) + 1;
+      const payPeriodYear = Number(yearStr);
+
       const payload = {
-        // 1. Recipient ID
+        // 1. Recipient & Creator IDs
         user_id: numericRecipientId,
-
-        // 2. Creator ID (Logged-in HR/Admin)
+        userId: numericRecipientId,
         created_by: creatorId,
-        pay_slip_no: formData.paySlipNo || null, // Added pay_slip_no to payload
 
-        // 3. Dates & Cycle
+        // 2. Slip Identifiers & Pay Period Metadata
+        pay_slip_no: formData.paySlipNo || null,
         month_year: formData.monthYear,
+        pay_period_month: payPeriodMonth,
+        payPeriodMonth: payPeriodMonth,
+        pay_period_year: payPeriodYear,
+        payPeriodYear: payPeriodYear,
         pay_frequency: (formData.payCycle || 'biweekly').toLowerCase(),
+        payFrequency: (formData.payCycle || 'biweekly').toLowerCase(),
         cycle_number: biWeeklyPeriod || 1,
+        cycleNumber: biWeeklyPeriod || 1,
 
-        // 4. Attendance
+        // 3. Attendance Details
+        days_worked: paidDays,
+        daysWorked: paidDays,
         paid_days: paidDays,
+        leave_days: lopDays,
+        leaveDays: lopDays,
         lop_days: lopDays,
+        total_working_days: paidDays + lopDays,
         totalWorkingDays: paidDays + lopDays,
 
-        // 5. Employee Details
+        // 4. Employee Profile Details
         employee_code: formData.employeeId ? String(formData.employeeId) : null,
+        employeeCode: formData.employeeId ? String(formData.employeeId) : null,
         designation: formData.position || null,
+        position: formData.position || null,
         department: formData.department || null,
         bank_account_number: formData.accountNumber || null,
+        bankAccountNumber: formData.accountNumber || null,
 
-        // 6. Breakdown Arrays & Calculated Figures
+        // 5. Breakdown Arrays
         earnings: formData.earnings.filter((e) => e.name.trim() !== ''),
         deductions: formData.deductions.filter((d) => d.name.trim() !== ''),
-        basicSalary,
-        houseRentAllowance,
-        specialAllowance,
-        conveyanceAllowance,
-        bonus,
-        otherEarnings,
-        providentFund,
-        professionalTax,
-        incomeTaxTds,
-        otherDeductions,
 
-        // 7. Status & Remarks
+        // 6. Financial Figures (snake_case + camelCase for total service compatibility)
+        basic_salary: basicSalary,
+        basicSalary: basicSalary,
+        house_rent_allowance: houseRentAllowance,
+        houseRentAllowance: houseRentAllowance,
+        special_allowance: specialAllowance,
+        specialAllowance: specialAllowance,
+        conveyance_allowance: conveyanceAllowance,
+        conveyanceAllowance: conveyanceAllowance,
+        bonus: bonus,
+        other_earnings: otherEarnings,
+        otherEarnings: otherEarnings,
+        provident_fund: providentFund,
+        providentFund: providentFund,
+        professional_tax: professionalTax,
+        professionalTax: professionalTax,
+        income_tax_tds: incomeTaxTds,
+        incomeTaxTds: incomeTaxTds,
+        other_deductions: otherDeductions,
+        otherDeductions: otherDeductions,
+
+        // 7. Status & Dates
+        payment_status: 'paid',
         paymentStatus: 'paid',
+        payment_date: formData.generatedOn || new Date().toISOString().split('T')[0],
         paymentDate: formData.generatedOn || new Date().toISOString().split('T')[0],
         remarks: formData.hrNote || null,
+        hr_note: formData.hrNote || null,
       };
 
       await onCreate(payload);
     } catch (error) {
-      console.error('Failed to create salary slip:', error);
+      console.error('Failed to save salary slip:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -1295,7 +1260,13 @@ const SalarySlipForm = ({ onClose, onCreate, fetchUsers }: SalarySlipFormProps) 
               disabled={isSubmitting}
               className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50">
               {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              {isSubmitting ? 'Generating Slip...' : 'Create Salary Slip'}
+              {isSubmitting
+                ? isEditing
+                  ? 'Updating Slip...'
+                  : 'Generating Slip...'
+                : isEditing
+                  ? 'Update Salary Slip'
+                  : 'Create Salary Slip'}
             </button>
           </div>
         </form>
