@@ -85,6 +85,17 @@ export const authApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    changePassword: builder.mutation<
+      { message: string; success?: boolean },
+      { currentPassword?: string; newPassword: string; logoutOtherSessions?: boolean }
+    >({
+      query: (data) => ({
+        url: '/auth/change-password',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
     getDepartments: builder.query({
       query: () => '/metadata/departments',
     }),
@@ -170,6 +181,7 @@ export const {
   useRequestOTPMutation,
   useLoginWithOTPMutation,
   useResetPasswordMutation,
+  useChangePasswordMutation,
   useGetDepartmentsQuery,
   useRequestAdminElevationMutation,
   useGetAdminElevationRequestsQuery,

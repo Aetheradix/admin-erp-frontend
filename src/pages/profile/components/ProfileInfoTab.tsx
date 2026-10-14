@@ -73,6 +73,17 @@ export const ProfileInfoTab = ({
             </div>
           </div>
 
+          {/* Address */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
+              Residential / Postal Address
+            </span>
+            <div className="text-xs font-bold text-foreground flex items-center gap-2">
+              <MapPin size={14} className="text-muted" />
+              {user.address || 'Not specified'}
+            </div>
+          </div>
+
           {/* Company */}
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">

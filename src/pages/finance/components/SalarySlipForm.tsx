@@ -18,6 +18,8 @@ import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
 import { useAuth } from '@/hooks/useAuth';
 import type { PayrollRecord } from '../PayrollPage';
+
+import { Input } from '@/components/ui/composed/Input';
 export interface EarningsItem {
   name: string;
   amount: number;
@@ -74,6 +76,12 @@ interface SectionTitleProps {
   description: string;
 }
 
+interface SectionTitleProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
 const SectionTitle: React.FC<SectionTitleProps> = ({ icon, title, description }) => (
   <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100">
     <div className="p-2 bg-gray-100 text-gray-800 rounded-xl">{icon}</div>
@@ -81,26 +89,6 @@ const SectionTitle: React.FC<SectionTitleProps> = ({ icon, title, description })
       <h2 className="text-base font-bold text-gray-900">{title}</h2>
       <p className="text-xs text-gray-500">{description}</p>
     </div>
-  </div>
-);
-
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  error?: string;
-}
-
-const Input: React.FC<InputProps> = ({ label, error, required, className = '', ...props }) => (
-  <div>
-    <label className="block text-xs font-semibold text-gray-700 mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <input
-      {...props}
-      className={`w-full border rounded-xl px-3 py-2 text-sm outline-none transition ${
-        error ? 'border-red-500 bg-red-50/30' : 'border-gray-200 focus:border-black'
-      } ${className}`}
-    />
-    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
 );
 
@@ -315,8 +303,12 @@ const SalarySlipForm = ({
     };
   }, [searchTerm, fetchUsers]);
 
+  // Use a ref to ensure initialValues only populates the form once on mount
+  const hasInitializedRef = useRef(false);
+
   useEffect(() => {
-    if (!initialValues) return;
+    if (!initialValues || hasInitializedRef.current) return;
+    hasInitializedRef.current = true; // Lock it
 
     // Local type-safe alias to access raw database snake_case properties
     const raw = initialValues as Record<string, any>;
@@ -373,14 +365,14 @@ const SalarySlipForm = ({
     const cycleNum = (Number(raw.cycle_number) || 1) as 1 | 2;
     setBiWeeklyPeriod(cycleNum);
 
-    // 5. Employee Details & Search Term
+    // 5. Employee Details & Search Term (Only set initial search term if editing an existing slip)
     const empName = initialValues.employeeName || raw.username || raw.employee_name || '';
-
-    setSearchTerm(empName);
+    if (empName) {
+      setSearchTerm(empName);
+    }
 
     // 6. Safe Date Formatting for HTML <input type="date" />
     const rawDate = raw.payment_date || raw.paymentDate || initialValues.generatedOn;
-
     const formattedDate = rawDate
       ? new Date(rawDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0];
@@ -427,8 +419,7 @@ const SalarySlipForm = ({
             ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
           ];
 
-    // 9. Update Form State with Strict String / Number Fallbacks
-    // 9. Update Form State with Strict String / Number Fallbacks & Required Signatory Properties
+    // 9. Update Form State
     setFormData({
       userId: Number(recipientId) || 0,
       employeeId: String(raw.employee_code || initialValues.employeeId || ''),
@@ -452,8 +443,6 @@ const SalarySlipForm = ({
       deductions: parsedDeductions,
       generatedOn: String(formattedDate),
       hrNote: String(raw.remarks || initialValues.hrNote || ''),
-
-      // 🟢 Add these missing properties required by SalarySlipData interface
       authorizedSignatory: String(initialValues.authorizedSignatory || 'Seema Srivastava'),
       signatoryRole: String(initialValues.signatoryRole || '(Director)'),
     });
@@ -585,28 +574,39 @@ const SalarySlipForm = ({
   }, []);
 
   const handleSelectEmployee = (user: any) => {
-    // Extract a numeric user ID or fallback to user.id / user._id
-    const rawId = user.userId || user.id || user._id || user.employeeId;
+    console.log('1. Clicked user object:', user);
+
+    const rawId = user.id || user.employee_code;
     const numericId = Number(rawId);
+    const resolvedName = getEmployeeName(user);
 
-    setFormData((prev) => ({
-      ...prev,
-      userId: isNaN(numericId) ? rawId : numericId, // Ensure userId is populated
-      employeeId: user.employeeId || user.id || `EMP-${rawId}`,
-      employeeName: getEmployeeName(user),
-      position: user.position || user.designation || user.role || '',
-      accountNumber: user.accountNumber || user.bankAccount || '',
-    }));
-
-    // Clear previous validation errors
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors.userId;
-      delete newErrors.employeeId;
-      return newErrors;
-    });
-
+    setSearchTerm(resolvedName);
     setIsDropdownOpen(false);
+
+    // Parse base salary if available
+    const baseSalaryNum = Number(user.base_salary || 0);
+
+    setFormData((prev) => {
+      // Optionally update the first earning item (Basic Pay) if base_salary exists
+      const updatedEarnings = [...prev.earnings];
+      if (baseSalaryNum > 0 && updatedEarnings.length > 0) {
+        updatedEarnings[0] = { ...updatedEarnings[0], amount: baseSalaryNum };
+      }
+
+      const updated = {
+        ...prev,
+        userId: isNaN(numericId) ? rawId : numericId,
+        employeeId: String(user.employee_code || user.id || ''),
+        employeeName: resolvedName,
+        position: user.designation || user.role || '',
+        department: user.department || '',
+        accountNumber: user.bank_account_number || '',
+        earnings: updatedEarnings,
+      };
+
+      console.log('2. New calculated formData state:', updated);
+      return updated;
+    });
   };
 
   const clearEmployeeSearch = () => {
@@ -614,13 +614,14 @@ const SalarySlipForm = ({
     setIsDropdownOpen(true);
 
     setFormData((prev: SalarySlipData) => ({
-      ...prev, // Keep existing earnings, deductions, dates, notes, etc.
-      userId: 0, // Or undefined / null depending on your SalarySlipData interface
+      ...prev,
+      userId: 0,
       employeeId: '',
       employeeName: '',
       position: '',
       department: '',
       accountNumber: '',
+      baseSalary: '',
     }));
   };
 
@@ -1066,7 +1067,10 @@ const SalarySlipForm = ({
                       return (
                         <div
                           key={id}
-                          onClick={() => handleSelectEmployee(user)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectEmployee(user);
+                          }}
                           className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-none transition">
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{name}</p>
