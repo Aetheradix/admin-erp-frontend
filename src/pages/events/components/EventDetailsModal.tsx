@@ -151,6 +151,10 @@ export const EventDetailsModal = ({
           <img
             src={imageBanner}
             alt={event.title}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src =
+                CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
+            }}
             className="w-full h-full object-cover opacity-85"
           />
           <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-black/30" />

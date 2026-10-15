@@ -183,8 +183,18 @@ export function formatEventTime(event: ERPEvent): string {
   if (event.start_time) {
     return event.start_time;
   }
-  if (event.time) {
+  if (event.time && event.time.trim() && event.time.trim() !== 'Time: TBD') {
     return event.time;
+  }
+  if (event.event_date) {
+    const d = new Date(event.event_date);
+    if (!Number.isNaN(d.getTime())) {
+      const hours = d.getHours();
+      const minutes = d.getMinutes();
+      if (hours !== 0 || minutes !== 0) {
+        return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      }
+    }
   }
   return 'Time: TBD';
 }
@@ -336,6 +346,23 @@ export function saveEventAttachmentLocally(
 
   return list;
 }
+
+export function removeEventAttachmentLocally(
+  eventId: string | number,
+  attachmentId: string
+): EventAttachment[] {
+  const idStr = String(eventId);
+  const all = getAllLocalAttachments();
+  const list = (all[idStr] || []).filter((a) => a.id !== attachmentId);
+  all[idStr] = list;
+  try {
+    localStorage.setItem(ATTACHMENTS_STORAGE_KEY, JSON.stringify(all));
+  } catch (err) {
+    console.error('Failed to remove local attachment', err);
+  }
+  return list;
+}
+
 
 export interface RegisterOptions {
   userIdentifier?: string;

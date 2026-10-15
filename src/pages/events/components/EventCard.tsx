@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Button } from '@/components/ui/primitives/Button';
 import {
@@ -68,10 +68,26 @@ export const EventCard = ({
         String(user.role).toLowerCase().includes(r)
       )
   );
-  const [imageSrc, setImageSrc] = useState(
-    event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
-  );
+
+  const fallbackCategoryImg = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
+  const initialImage = event.image || fallbackCategoryImg;
+
+  const [imageSrc, setImageSrc] = useState(initialImage);
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageSrc(event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE);
+    setImageError(false);
+  }, [event.image, event.category]);
+
+  const handleImageError = () => {
+    const fallback = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
+    if (imageSrc !== fallback) {
+      setImageSrc(fallback);
+    } else {
+      setImageError(true);
+    }
+  };
 
   const categoryVariants: Record<string, 'primary' | 'success' | 'warning' | 'secondary'> = {
     Conference: 'primary',
@@ -107,10 +123,7 @@ export const EventCard = ({
           <img
             src={imageSrc}
             alt={event.title}
-            onError={() => {
-              setImageError(true);
-              setImageSrc(CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE);
-            }}
+            onError={handleImageError}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (

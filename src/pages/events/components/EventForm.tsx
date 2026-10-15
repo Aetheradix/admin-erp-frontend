@@ -5,10 +5,15 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { useEffect, useState, useRef } from 'react';
-import { Sparkles, PartyPopper, Wrench, Mic, Rocket, PlusCircle, Upload, Image as ImageIcon, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Sparkles, PartyPopper, Wrench, Mic, Rocket, PlusCircle, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { TimePicker } from 'antd';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import type { ERPEvent } from '@/types/models';
 import { useUploadFileMutation } from '@/store/api/eventSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+
+dayjs.extend(customParseFormat);
 
 interface EventFormProps {
   initialData?: ERPEvent | null;
@@ -108,7 +113,7 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
     attendees: 0,
     max_participants: 50,
     image:
-      'https://images.unsplash.com/photo-1540575861501-7ce058a877c3?q=80&w=2070&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
   });
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +150,23 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
   useEffect(() => {
     if (initialData) {
       queueMicrotask(() => {
-        setFormData(initialData);
+        const rawDate = initialData.event_date || initialData.date || '';
+        let startTime = initialData.start_time || '';
+        let endTime = initialData.end_time || '';
+        if ((!startTime || !endTime) && initialData.time) {
+          const parts = initialData.time.split('-');
+          if (!startTime && parts[0]) startTime = parts[0].trim();
+          if (!endTime && parts[1]) endTime = parts[1].trim();
+        }
+
+        setFormData({
+          ...initialData,
+          date: rawDate,
+          event_date: rawDate,
+          start_time: startTime || '10:00 AM',
+          end_time: endTime || '01:00 PM',
+          employee_status: initialData.employee_status || 'Active',
+        });
 
         // Check if existing category matches standard categories or if it is a custom category
         const initialCat = initialData.category || 'Workshop';
@@ -215,10 +236,15 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
         ? `${formData.start_time} - ${formData.end_time}`
         : formData.time || '10:00 AM - 1:00 PM';
 
+    const effectiveDate = formData.event_date || formData.date || '';
+
     const payload: Partial<ERPEvent> = {
       ...formData,
       category: finalCategory,
       time: formattedTime,
+      date: effectiveDate,
+      event_date: effectiveDate,
+      employee_status: formData.employee_status || 'Active',
     };
 
     onSubmit(payload);
@@ -397,13 +423,30 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
           <FormField label="Date" required id="event-date">
             <Calendar
               id="event-date"
-              value={formData.date ? new Date(formData.date) : null}
+              value={
+                formData.date || formData.event_date
+                  ? new Date(formData.date || formData.event_date || '')
+                  : null
+              }
               onChange={(e) => {
                 const selected = e.value as Date | null;
-                setFormData({
-                  ...formData,
-                  date: selected ? selected.toISOString() : '',
-                });
+                if (selected) {
+                  const year = selected.getFullYear();
+                  const month = String(selected.getMonth() + 1).padStart(2, '0');
+                  const day = String(selected.getDate()).padStart(2, '0');
+                  const formatted = `${year}-${month}-${day} 10:00:00`;
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: formatted,
+                    event_date: formatted,
+                  }));
+                } else {
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: '',
+                    event_date: '',
+                  }));
+                }
               }}
               placeholder="Select date"
               dateFormat="yy-mm-dd"
@@ -412,19 +455,51 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
 
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Start Time" id="event-start-time">
-              <Input
+              <TimePicker
                 id="event-start-time"
-                value={formData.start_time || ''}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                placeholder="10:00 AM"
+                use12Hours
+                format="hh:mm A"
+                minuteStep={15}
+                needConfirm={false}
+                value={
+                  formData.start_time
+                    ? dayjs(formData.start_time, ['hh:mm A', 'h:mm A', 'HH:mm', 'H:mm'])
+                    : null
+                }
+                onChange={(_time, timeStr) => {
+                  const str = typeof timeStr === 'string' ? timeStr : '';
+                  setFormData((prev) => ({
+                    ...prev,
+                    start_time: str,
+                    time: str && prev.end_time ? `${str} - ${prev.end_time}` : str || prev.time,
+                  }));
+                }}
+                placeholder="Select start time"
+                className="w-full h-11 rounded-xl border border-border-subtle bg-white font-medium hover:border-primary/50 focus:border-primary shadow-xs"
               />
             </FormField>
             <FormField label="End Time" id="event-end-time">
-              <Input
+              <TimePicker
                 id="event-end-time"
-                value={formData.end_time || ''}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                placeholder="01:00 PM"
+                use12Hours
+                format="hh:mm A"
+                minuteStep={15}
+                needConfirm={false}
+                value={
+                  formData.end_time
+                    ? dayjs(formData.end_time, ['hh:mm A', 'h:mm A', 'HH:mm', 'H:mm'])
+                    : null
+                }
+                onChange={(_time, timeStr) => {
+                  const str = typeof timeStr === 'string' ? timeStr : '';
+                  setFormData((prev) => ({
+                    ...prev,
+                    end_time: str,
+                    time: prev.start_time && str ? `${prev.start_time} - ${str}` : str || prev.time,
+                  }));
+                }}
+                placeholder="Select end time"
+                className="w-full h-11 rounded-xl border border-border-subtle bg-white font-medium hover:border-primary/50 focus:border-primary shadow-xs"
               />
             </FormField>
           </div>
@@ -462,7 +537,13 @@ export const EventForm = ({ initialData, onSubmit, onCancel, availableCategories
               id="event-status"
               options={employeeStatusOptions}
               value={formData.employee_status || 'Active'}
-              onChange={(e) => setFormData({ ...formData, employee_status: e.value })}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  employee_status: e.value,
+                  status: e.value === 'On Leave' ? 'On Leave' : 'Active',
+                }))
+              }
             />
           </FormField>
         </div>

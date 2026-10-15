@@ -10,10 +10,11 @@ import {
   FileCheck,
   Loader2,
   X,
+  Trash2,
 } from 'lucide-react';
 import type { EventAttachment } from '@/types/models';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import { saveEventAttachmentLocally, getEventAttachments } from '../utils/eventUtils';
+import { saveEventAttachmentLocally, getEventAttachments, removeEventAttachmentLocally } from '../utils/eventUtils';
 import { API_URL } from '@/config/env';
 
 interface EventMediaUploaderProps {
@@ -125,6 +126,18 @@ export const EventMediaUploader = ({
 
   const isUploading = uploadingFiles.some((u) => u.progress === 'uploading');
 
+  const handleRemove = (attachment: EventAttachment) => {
+    const updated = removeEventAttachmentLocally(eventId, attachment.id);
+    setAttachments(updated);
+    if (selectedPreview?.id === attachment.id) setSelectedPreview(null);
+    showToast({
+      severity: 'info',
+      summary: 'Removed',
+      detail: `"${attachment.name}" has been removed.`,
+      life: 2500,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-5">
       {/* Header */}
@@ -227,7 +240,6 @@ export const EventMediaUploader = ({
                 {images.map((img) => (
                   <div
                     key={img.id}
-                    onClick={() => setSelectedPreview(img)}
                     className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-900 border border-border-subtle shadow-xs hover:shadow-lg transition-all cursor-pointer"
                   >
                     <img
@@ -236,9 +248,22 @@ export const EventMediaUploader = ({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-foreground transition-all">
+                      <div
+                        onClick={() => setSelectedPreview(img)}
+                        className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-foreground transition-all cursor-pointer"
+                        title="Preview"
+                      >
                         <Eye size={15} />
                       </div>
+                      {!isReadOnly && (
+                        <div
+                          onClick={(e) => { e.stopPropagation(); handleRemove(img); }}
+                          className="w-8 h-8 rounded-xl bg-red-500/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
+                          title="Remove Image"
+                        >
+                          <Trash2 size={14} />
+                        </div>
+                      )}
                     </div>
                     <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                       <span className="text-[10px] font-bold text-white truncate block">{img.name}</span>
@@ -269,19 +294,30 @@ export const EventMediaUploader = ({
                         <h5 className="text-xs font-bold text-foreground truncate">{doc.name}</h5>
                         <div className="flex items-center gap-2 text-[10px] text-muted font-medium mt-0.5">
                           <span>{doc.size || 'Document'}</span>
-                          <span>·</span>
+                          <span>â€¢</span>
                           <span>{doc.uploaded_at}</span>
                         </div>
                       </div>
                     </div>
-                    <a
-                      href={doc.url}
-                      download={doc.name}
-                      className="w-9 h-9 rounded-xl bg-surface-subtle text-foreground hover:bg-primary hover:text-white flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
-                      title="Download File"
-                    >
-                      <Download size={14} />
-                    </a>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <a
+                        href={doc.url}
+                        download={doc.name}
+                        className="w-9 h-9 rounded-xl bg-surface-subtle text-foreground hover:bg-primary hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                        title="Download File"
+                      >
+                        <Download size={14} />
+                      </a>
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => handleRemove(doc)}
+                          className="w-9 h-9 rounded-xl bg-surface-subtle text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                          title="Remove File"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -321,6 +357,15 @@ export const EventMediaUploader = ({
                   <Download size={14} />
                   <span>Download</span>
                 </a>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => handleRemove(selectedPreview)}
+                    className="px-4 py-2 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all"
+                  >
+                    <Trash2 size={14} />
+                    <span>Remove</span>
+                  </button>
+                )}
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedPreview(null)}

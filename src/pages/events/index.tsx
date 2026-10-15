@@ -203,8 +203,23 @@ const Events = () => {
         if (result.data) {
           passResultData = result.data;
         }
-      } catch {
-        // Fallback for mock/local event registration
+      } catch (apiErr: unknown) {
+        const err = apiErr as { status?: number; data?: { message?: string } };
+        const errMsg = err?.data?.message || '';
+        // Surface "already registered" error immediately — do not proceed
+        if (err?.status === 400 || errMsg.toLowerCase().includes('already registered')) {
+          showToast({
+            severity: 'warn',
+            summary: 'Already Registered',
+            detail: errMsg || `You have already registered for "${event.title}".`,
+            life: 4000,
+          });
+          handleViewPass(event);
+          setRegisteringEventId(null);
+          return;
+        }
+        // For network/server failures, fallback to local-only registration (no email)
+        console.warn('API registration failed, falling back to local registration:', errMsg);
       }
 
       // Record local registration to dynamically update attendee count & prevent duplicates with full participant info
@@ -219,11 +234,14 @@ const Events = () => {
       setLocalUpdateTick((t) => t + 1);
 
       const emailRecipient = passResultData?.recipientEmail || user?.email || 'your registered email';
+      const emailSentByServer = passResultData?.emailSent === true;
 
       showToast({
         severity: 'success',
         summary: 'Registration Confirmed!',
-        detail: `Pass generated! VIP entry ticket is ready and confirmed for ${emailRecipient}.`,
+        detail: emailSentByServer
+          ? `VIP entry pass emailed to ${emailRecipient}!`
+          : `Pass generated for ${emailRecipient}. Check your inbox shortly.`,
         life: 5000,
       });
 
