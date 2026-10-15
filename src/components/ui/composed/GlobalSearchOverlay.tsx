@@ -84,8 +84,7 @@ export function GlobalSearchOverlay({
             exit={{ opacity: 0, scale: 0.96, y: -20 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="global-search-palette"
-            onKeyDown={onKeyDown}
-          >
+            onKeyDown={onKeyDown}>
             {/* Search Input */}
             <div className="global-search-input-wrapper">
               <Search size={20} className="text-muted shrink-0" />
@@ -138,8 +137,7 @@ export function GlobalSearchOverlay({
                             data-active={isActive}
                             className={`global-search-item ${isActive ? 'global-search-item--active' : ''}`}
                             onClick={() => selectItem(item)}
-                            onMouseEnter={() => setActiveIndex(idx)}
-                          >
+                            onMouseEnter={() => setActiveIndex(idx)}>
                             <div className="global-search-item-icon">
                               <Icon size={18} />
                             </div>

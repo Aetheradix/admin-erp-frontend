@@ -120,8 +120,7 @@ const MyBookingsPage = () => {
                           type="button"
                           disabled={cancelling}
                           onClick={() => handleCancel(booking.id)}
-                          className="text-sm font-medium text-red-600 hover:underline"
-                        >
+                          className="text-sm font-medium text-red-600 hover:underline">
                           Cancel
                         </button>
                       )}

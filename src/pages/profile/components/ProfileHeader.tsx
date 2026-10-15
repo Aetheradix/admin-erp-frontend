@@ -1,4 +1,4 @@
-import { Camera, Edit3 } from 'lucide-react';
+import { Camera, Edit3, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import { ProfileRoleBadges } from './ProfileRoleBadges';
 import type { ProfileUserData } from '../hooks/useProfile';
@@ -11,6 +11,7 @@ interface ProfileHeaderProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   onStartEdit: () => void;
+  onChangePassword?: () => void;
   onAddRole: (roleName: string) => void;
   onRemoveRole: (roleId: string) => void;
 }
@@ -21,6 +22,7 @@ export const ProfileHeader = ({
   activeTab,
   onTabChange,
   onStartEdit,
+  onChangePassword,
   onAddRole,
   onRemoveRole,
 }: ProfileHeaderProps) => {
@@ -41,8 +43,7 @@ export const ProfileHeader = ({
               <button
                 onClick={onStartEdit}
                 className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer border-2 border-surface-elevated"
-                title="Change picture / Edit profile"
-              >
+                title="Change picture / Edit profile">
                 <Camera size={14} />
               </button>
             </div>
@@ -84,14 +85,24 @@ export const ProfileHeader = ({
                 <Edit3 size={14} /> Editing Mode
               </span>
             ) : (
-              <Button
-                variant="secondary"
-                onClick={onStartEdit}
-                className="h-10 px-5 rounded-2xl! gap-2 border-border-subtle! hover:border-primary/40!"
-              >
-                <Edit3 size={14} />
-                <span className="font-bold text-xs">Edit Details</span>
-              </Button>
+              <>
+                {onChangePassword && (
+                  <Button
+                    variant="outline"
+                    onClick={onChangePassword}
+                    className="h-10 px-4 rounded-2xl! gap-2 border-border-subtle! hover:border-primary/40!">
+                    <KeyRound size={14} />
+                    <span className="font-bold text-xs">Password</span>
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  onClick={onStartEdit}
+                  className="h-10 px-5 rounded-2xl! gap-2 border-border-subtle! hover:border-primary/40!">
+                  <Edit3 size={14} />
+                  <span className="font-bold text-xs">Edit Details</span>
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -104,8 +115,7 @@ export const ProfileHeader = ({
               onClick={() => onTabChange(tab)}
               className={`pb-3 text-sm font-extrabold capitalize tracking-wide transition-all relative cursor-pointer ${
                 activeTab === tab ? 'text-primary' : 'text-muted hover:text-foreground'
-              }`}
-            >
+              }`}>
               {tab}
               {activeTab === tab && (
                 <span className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full animate-in fade-in zoom-in-75 duration-200" />

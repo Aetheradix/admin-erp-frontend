@@ -115,8 +115,7 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
           </div>
         </div>
       }
-      className="max-w-2xl w-full"
-    >
+      className="max-w-2xl w-full">
       <div className="flex flex-col gap-6 p-6">
         {/* Secret generated banner */}
         {newTokenRaw && (
@@ -129,8 +128,7 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
               <button
                 type="button"
                 onClick={() => setShowCreatedToken(!showCreatedToken)}
-                className="text-xs text-success/80 hover:text-success flex items-center gap-1 font-bold"
-              >
+                className="text-xs text-success/80 hover:text-success flex items-center gap-1 font-bold">
                 {showCreatedToken ? <EyeOff size={14} /> : <Eye size={14} />}
                 {showCreatedToken ? 'Hide Secret' : 'Show Secret'}
               </button>
@@ -146,8 +144,7 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
                 size="small"
                 variant="primary"
                 onClick={() => handleCopy(newTokenRaw)}
-                className="shrink-0 font-bold"
-              >
+                className="shrink-0 font-bold">
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied' : 'Copy Token'}
               </Button>
@@ -158,13 +155,11 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
         {/* Form to generate new token */}
         <form
           onSubmit={handleCreateToken}
-          className="flex flex-col sm:flex-row gap-3 items-end bg-surface-subtle p-4 rounded-xl border border-border-subtle"
-        >
+          className="flex flex-col sm:flex-row gap-3 items-end bg-surface-subtle p-4 rounded-xl border border-border-subtle">
           <div className="flex-1 w-full">
             <label
               htmlFor="token-name"
-              className="block text-xs font-black uppercase text-foreground mb-1.5"
-            >
+              className="block text-xs font-black uppercase text-foreground mb-1.5">
               New Token Description / Name
             </label>
             <Input
@@ -178,8 +173,7 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
           <Button
             variant="primary"
             type="submit"
-            className="w-full sm:w-auto h-12 px-6 rounded-lg font-bold shrink-0"
-          >
+            className="w-full sm:w-auto h-12 px-6 rounded-lg font-bold shrink-0">
             <Plus size={16} />
             Generate Token
           </Button>
@@ -204,8 +198,7 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
               {apiTokens.map((token) => (
                 <div
                   key={token.id}
-                  className="flex items-center justify-between p-4 bg-surface-elevated rounded-xl border border-border-subtle hover:border-border-strong transition-all"
-                >
+                  className="flex items-center justify-between p-4 bg-surface-elevated rounded-xl border border-border-subtle hover:border-border-strong transition-all">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg bg-surface-subtle flex items-center justify-center text-primary shrink-0">
                       <Key size={18} />
@@ -224,8 +217,7 @@ export function ApiTokenModal({ visible, onHide }: ApiTokenModalProps) {
                     variant="ghost"
                     onClick={() => handleRevoke(token.id, token.name)}
                     className="text-error hover:bg-error/10 hover:text-error h-9 px-3 rounded-lg text-xs font-bold"
-                    aria-label={`Revoke token ${token.name}`}
-                  >
+                    aria-label={`Revoke token ${token.name}`}>
                     <Trash2 size={16} />
                     Revoke
                   </Button>

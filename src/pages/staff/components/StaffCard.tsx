@@ -1,4 +1,5 @@
-import { Mail, Phone, Edit2, Trash2, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, Edit2, Trash2, Shield, Calendar } from 'lucide-react';
 import type { StaffMember } from '@/types/models';
 
 interface StaffCardProps {
@@ -30,8 +31,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
               onClick={() => onEdit?.(String(member.id))}
               className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
               title="Edit Profile"
-              aria-label={`Edit ${member.username || member.name}'s profile`}
-            >
+              aria-label={`Edit ${member.username || member.name}'s profile`}>
               <Edit2 size={16} />
             </button>
           )}
@@ -40,8 +40,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
               onClick={() => onPromote?.(String(member.id))}
               className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
               title="Promote to Admin"
-              aria-label={`Promote ${member.username || member.name} to Administrator`}
-            >
+              aria-label={`Promote ${member.username || member.name} to Administrator`}>
               <Shield size={16} />
             </button>
           )}
@@ -50,8 +49,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
               onClick={() => onDelete?.(String(member.id))}
               className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
               title="Remove Member"
-              aria-label={`Remove ${member.username || member.name} from staff`}
-            >
+              aria-label={`Remove ${member.username || member.name} from staff`}>
               <Trash2 size={16} />
             </button>
           )}
@@ -113,8 +111,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
           {member.skills.slice(0, 3).map((skill) => (
             <span
               key={skill}
-              className="px-3 py-1 rounded-lg bg-surface-subtle text-[10px] font-bold text-muted-foreground border border-border-subtle/50"
-            >
+              className="px-3 py-1 rounded-lg bg-surface-subtle text-[10px] font-bold text-muted-foreground border border-border-subtle/50">
               {skill}
             </span>
           ))}
@@ -130,20 +127,27 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
           <a
             href={`mailto:${member.email}`}
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
-            aria-label={`Send email to ${member.name || member.username}`}
-          >
+            aria-label={`Send email to ${member.name || member.username}`}>
             <Mail size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Email</span>
           </a>
           <a
             href={`tel:${member.phone || member.contact_no || ''}`}
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
-            aria-label={`Call ${member.name || member.username}`}
-          >
+            aria-label={`Call ${member.name || member.username}`}>
             <Phone size={16} className="text-muted group-hover/contact:text-primary" />
             <span className="text-xs font-black uppercase tracking-wider">Call</span>
           </a>
         </div>
+
+        {/* Public Schedule Link */}
+        <Link
+          to={`/calendar?user=${encodeURIComponent(member.username || member.name || '')}`}
+          className="flex items-center justify-center gap-2 h-10 w-full rounded-2xl bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 hover:border-primary/30 text-xs font-black uppercase tracking-wider transition-all"
+          title={`View ${member.username || member.name}'s Schedule`}>
+          <Calendar size={14} />
+          <span>View Schedule</span>
+        </Link>
       </div>
     </div>
   );

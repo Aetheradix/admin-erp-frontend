@@ -1,228 +1,173 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Input } from '@/components/ui/primitives/Input';
+import { Select } from '@/components/ui/primitives/Select';
+import { useGetInventoryStatsQuery } from '@/store/api/inventorySlice';
+import { Clock, Package, Layers, History, Search, FileText } from 'lucide-react';
 
-interface Movement {
-  id: number;
-  item: string;
-  sku: string;
-  type: 'In' | 'Out';
-  quantity: number;
-  date: string;
-  reference: string;
-  by: string;
-}
+export const MovementsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { data: stats, isLoading } = useGetInventoryStatsQuery();
+  const [search, setSearch] = useState('');
+  const [actionFilter, setActionFilter] = useState('');
 
-const movements: Movement[] = [
-  {
-    id: 1,
-    item: 'MacBook Pro 16"',
-    sku: 'HW-MBP-001',
-    type: 'In',
-    quantity: 10,
-    date: '2026-06-09',
-    reference: 'PO-2026-0145',
-    by: 'Sarah Chen',
-  },
-  {
-    id: 2,
-    item: 'Office Chair Pro',
-    sku: 'FRN-OCP-006',
-    type: 'Out',
-    quantity: 3,
-    date: '2026-06-09',
-    reference: 'REQ-2026-0089',
-    by: 'James Wilson',
-  },
-  {
-    id: 3,
-    item: 'USB-C Hub',
-    sku: 'ACC-UCH-004',
-    type: 'Out',
-    quantity: 5,
-    date: '2026-06-08',
-    reference: 'REQ-2026-0088',
-    by: 'David Kim',
-  },
-  {
-    id: 4,
-    item: 'Ergonomic Keyboard',
-    sku: 'ACC-EK-003',
-    type: 'In',
-    quantity: 20,
-    date: '2026-06-08',
-    reference: 'PO-2026-0144',
-    by: 'Lisa Park',
-  },
-  {
-    id: 5,
-    item: 'Wireless Mouse',
-    sku: 'ACC-WM-007',
-    type: 'In',
-    quantity: 30,
-    date: '2026-06-07',
-    reference: 'PO-2026-0143',
-    by: 'Sarah Chen',
-  },
-  {
-    id: 6,
-    item: 'Standing Desk',
-    sku: 'FRN-SD-005',
-    type: 'Out',
-    quantity: 2,
-    date: '2026-06-07',
-    reference: 'REQ-2026-0087',
-    by: 'Emily Davis',
-  },
-  {
-    id: 7,
-    item: 'Webcam HD',
-    sku: 'HW-WC-008',
-    type: 'Out',
-    quantity: 4,
-    date: '2026-06-06',
-    reference: 'REQ-2026-0086',
-    by: 'Rahul Patel',
-  },
-  {
-    id: 8,
-    item: 'Dell Monitor 27"',
-    sku: 'HW-DM27-002',
-    type: 'In',
-    quantity: 8,
-    date: '2026-06-05',
-    reference: 'PO-2026-0142',
-    by: 'Lisa Park',
-  },
-];
+  const audits = stats?.recentAudits || [];
 
-export function MovementsPage() {
-  const totalIn = movements.filter((m) => m.type === 'In').reduce((a, m) => a + m.quantity, 0);
-  const totalOut = movements.filter((m) => m.type === 'Out').reduce((a, m) => a + m.quantity, 0);
+  const filteredAudits = audits.filter((log) => {
+    const matchesSearch =
+      !search ||
+      log.item_name?.toLowerCase().includes(search.toLowerCase()) ||
+      log.asset_id?.toLowerCase().includes(search.toLowerCase()) ||
+      log.details?.toLowerCase().includes(search.toLowerCase());
 
-  const columns: ColumnsType<Movement> = [
-    {
-      title: 'Type',
-      key: 'type',
-      width: 80,
-      render: (_, record) => (
-        <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center ${record.type === 'In' ? 'bg-success/10' : 'bg-error/10'}`}
-        >
-          {record.type === 'In' ? (
-            <ArrowDownLeft size={16} className="text-success" />
-          ) : (
-            <ArrowUpRight size={16} className="text-error" />
-          )}
-        </div>
-      ),
-    },
-    {
-      title: 'Item',
-      key: 'item',
-      render: (_, record) => (
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-foreground">{record.item}</span>
-          <span className="text-[10px] text-muted tracking-wider">{record.sku}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Quantity',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (quantity, record) => (
-        <span
-          className={`text-sm font-bold ${record.type === 'In' ? 'text-success' : 'text-error'}`}
-        >
-          {record.type === 'In' ? '+' : '-'}
-          {quantity}
-        </span>
-      ),
-    },
-    {
-      title: 'Reference',
-      dataIndex: 'reference',
-      key: 'reference',
-      render: (text) => <span className="text-xs font-medium text-muted">{text}</span>,
-    },
-    {
-      title: 'By',
-      dataIndex: 'by',
-      key: 'by',
-      render: (text) => <span className="text-xs font-medium text-muted">{text}</span>,
-    },
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date) => (
-        <span className="text-xs font-medium text-muted">
-          {new Date(date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </span>
-      ),
-    },
+    const matchesAction = !actionFilter || log.action === actionFilter;
+
+    return matchesSearch && matchesAction;
+  });
+
+  const actionFilterOptions = [
+    { label: 'All Actions', value: '' },
+    { label: 'Created / Registered', value: 'CREATED' },
+    { label: 'Staff Assignment', value: 'ASSIGNED' },
+    { label: 'Returned to Stock', value: 'UNASSIGNED' },
+    { label: 'Bookable Toggle Changed', value: 'TOGGLE_BOOKABLE' },
+    { label: 'Maintenance Logged', value: 'MAINTENANCE' },
+    { label: 'Resource Booked', value: 'RESOURCE_BOOKED' },
+    { label: 'Asset Retired', value: 'RETIRED' },
   ];
 
   return (
-    <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col gap-8 pb-16">
       <PageHeader
-        title="Stock Movements"
-        description="Track inventory inflows and outflows."
-        breadcrumbs={[
-          { label: 'Home', url: '/' },
-          { label: 'Inventory', url: '/inventory' },
-          { label: 'Movements' },
-        ]}
+        title="Asset Movements & Audit Trail"
+        description="Chronological log of asset allocations, handovers, resource reservations, and maintenance adjustments"
       />
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-8 flex items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center">
-            <ArrowDownLeft size={28} className="text-success" />
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-2xl font-black text-foreground">{totalIn} units</span>
-            <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-              Total Received
-            </span>
-          </div>
+      {/* Navigation Sub-Tabs */}
+      <div className="flex items-center gap-2 border-b border-border-subtle pb-1 -mt-2">
+        <button
+          type="button"
+          onClick={() => navigate('/inventory')}
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
+          <Package size={15} /> Assets & Resources Dashboard
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/inventory/stock-levels')}
+          className="px-5 py-2.5 rounded-2xl text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle transition-all cursor-pointer flex items-center gap-2">
+          <Layers size={15} /> Stock Health & Categories
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/inventory/movements')}
+          className="px-5 py-2.5 rounded-2xl text-xs font-black bg-primary text-white shadow-xs cursor-pointer flex items-center gap-2">
+          <Clock size={15} /> Asset Movements & Audits
+        </button>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="p-5 rounded-3xl bg-white backdrop-blur-xl border border-border-subtle shadow-xs flex flex-col md:flex-row items-center gap-4">
+        <div className="relative flex-1 w-full">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search audit trail by asset name, ID, or activity remarks..."
+            className="pl-10 h-11 text-xs"
+          />
         </div>
-        <div className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-8 flex items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-error/10 flex items-center justify-center">
-            <ArrowUpRight size={28} className="text-error" />
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-2xl font-black text-foreground">{totalOut} units</span>
-            <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-              Total Dispatched
-            </span>
-          </div>
+
+        <div className="w-full md:w-64">
+          <Select
+            options={actionFilterOptions}
+            value={actionFilter}
+            onChange={(e) => setActionFilter(e.value as string)}
+          />
         </div>
       </div>
 
-      {/* Movements Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-[32px] border border-border-subtle shadow-soft overflow-hidden"
-      >
-        <Table
-          columns={columns}
-          dataSource={movements}
-          rowKey="id"
-          pagination={false}
-          className="premium-table"
-        />
-      </motion.div>
+      {/* Audit Trail Timeline / Table */}
+      <div className="rounded-4xl bg-white backdrop-blur-xl border border-border-subtle shadow-soft overflow-hidden">
+        <div className="p-6 border-b border-border-subtle">
+          <h3 className="text-base font-black text-foreground">Recent Audit Log Events</h3>
+          <p className="text-xs text-muted font-bold mt-0.5">
+            System records tracking all operational state transitions
+          </p>
+        </div>
+
+        <div className="divide-y divide-border-subtle/60">
+          {isLoading ? (
+            <div className="p-12 text-center text-xs font-bold text-muted animate-pulse">
+              Loading audit records...
+            </div>
+          ) : filteredAudits.length === 0 ? (
+            <div className="p-16 text-center">
+              <History size={36} className="mx-auto text-muted mb-2" />
+              <p className="text-xs font-bold text-muted">No movement records found.</p>
+            </div>
+          ) : (
+            filteredAudits.map((log) => {
+              const actionColors: Record<string, string> = {
+                CREATED: 'bg-emerald-50 text-emerald-700  ',
+                ASSIGNED: 'bg-purple-50 text-purple-700  ',
+                UNASSIGNED: 'bg-blue-50 text-blue-700  ',
+                TOGGLE_BOOKABLE: 'bg-amber-50 text-amber-700  ',
+                MAINTENANCE: 'bg-rose-50 text-rose-700  ',
+                RESOURCE_BOOKED: 'bg-sky-50 text-sky-700  ',
+                RETIRED: 'bg-slate-100 text-slate-700  ',
+              };
+
+              const actionColor = actionColors[log.action] || 'bg-slate-100 text-slate-700';
+
+              return (
+                <div
+                  key={log.id}
+                  className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-surface-subtle/40 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center justify-center text-primary shrink-0 mt-0.5">
+                      <FileText size={18} />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg ${actionColor}`}>
+                          {log.action}
+                        </span>
+                        <span className="font-black text-foreground text-xs">
+                          {log.item_name || 'Asset Item'}
+                        </span>
+                        {log.asset_id && (
+                          <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-surface-subtle text-muted">
+                            {log.asset_id}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-muted font-medium mt-1 leading-relaxed max-w-2xl">
+                        {log.details || 'Operational record updated.'}
+                      </p>
+
+                      <div className="text-[11px] font-bold text-muted mt-1">
+                        Recorded by:{' '}
+                        <span className="text-foreground">{log.user_name || 'System'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-[11px] font-mono text-muted block">
+                      {new Date(log.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default MovementsPage;

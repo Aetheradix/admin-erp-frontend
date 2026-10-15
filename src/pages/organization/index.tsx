@@ -1,13 +1,12 @@
-import { Routes, Route } from 'react-router-dom';
-import { OrganizationPage } from './OrganizationPage';
-import { BranchesPage } from './BranchesPage';
+import { Route, Routes } from 'react-router-dom';
 import ApprovalPage from './ApprovalPage';
+import { OrganizationPage } from './OrganizationPage';
 
 const OrganizationModule = () => {
   return (
     <Routes>
       <Route path="/" element={<OrganizationPage />} />
-      <Route path="/branches" element={<BranchesPage />} />
+      {/* <Route path="/branches" element={<BranchesPage />} /> */}
       <Route path="/approvals" element={<ApprovalPage />} />
     </Routes>
   );

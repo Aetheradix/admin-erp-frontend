@@ -23,7 +23,7 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
         return Upload.LIST_IGNORE;
       }
 
-      // For mock implementation, convert to base64
+      // Read file as data URL
       const reader = new FileReader();
       reader.onload = (e) => {
         if (onUpload && e.target?.result) {
@@ -32,27 +32,27 @@ export const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
       };
       reader.readAsDataURL(file);
 
-      return false; // Prevent actual upload
+      return false; // Prevent automatic antd network upload
     };
 
     return (
-      <div ref={ref} className={cn('rounded-card', className)}>
+      <div ref={ref} className={cn('rounded-card relative w-full h-full', className)}>
         <Upload
           showUploadList={mode === 'basic' ? false : true}
           accept={accept}
           beforeUpload={beforeUpload}
           multiple={false}
           className={cn(
-            mode === 'basic' && 'w-full h-full [&_.ant-upload]:w-full [&_.ant-upload]:h-full'
+            mode === 'basic' &&
+              'w-full h-full block [&_.ant-upload]:w-full [&_.ant-upload]:h-full [&_.ant-upload]:block [&_.ant-upload-select]:w-full [&_.ant-upload-select]:h-full [&_.ant-upload-select]:block'
           )}
-          {...props}
-        >
+          {...props}>
           {mode === 'advanced' ? (
             <div className="bg-surface-subtle border-t border-border-strong px-6 py-8 flex flex-col items-center justify-center gap-4 cursor-pointer">
               <span className="font-bold text-primary">Attach Files</span>
             </div>
           ) : (
-            <span className="sr-only">Upload file</span>
+            <div className="w-full h-full absolute inset-0 cursor-pointer" />
           )}
         </Upload>
       </div>

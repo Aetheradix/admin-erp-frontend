@@ -183,8 +183,7 @@ export function ReimbursementCard({ request, onApprove, onReject }: Reimbursemen
               className={cn(
                 'flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border',
                 getStatusStyles(request.status)
-              )}
-            >
+              )}>
               {getStatusIcon(request.status)}
               <span>{request.status}</span>
             </div>
@@ -193,8 +192,7 @@ export function ReimbursementCard({ request, onApprove, onReject }: Reimbursemen
             <button
               type="button"
               className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline group/btn"
-              aria-label={`View details for ${request.item} reimbursement`}
-            >
+              aria-label={`View details for ${request.item} reimbursement`}>
               View Details
               <ChevronRight
                 size={14}
@@ -209,8 +207,7 @@ export function ReimbursementCard({ request, onApprove, onReject }: Reimbursemen
               <button
                 type="button"
                 onClick={() => onApprove(String(request.id))}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-emerald-700 transition-colors"
-              >
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-emerald-700 transition-colors">
                 <CheckCircle2 size={16} />
                 Approve
               </button>
@@ -218,8 +215,7 @@ export function ReimbursementCard({ request, onApprove, onReject }: Reimbursemen
               <button
                 type="button"
                 onClick={() => onReject(String(request.id))}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-red-700 transition-colors"
-              >
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-red-700 transition-colors">
                 <XCircle size={16} />
                 Reject
               </button>

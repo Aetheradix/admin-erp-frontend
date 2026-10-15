@@ -43,7 +43,7 @@ export const AntdProvider = ({ children }: { children: ReactNode }) => {
       '--primary-soft',
       darkMode ? `rgba(${r}, ${g}, ${b}, 0.15)` : `rgba(${r}, ${g}, ${b}, 0.08)`
     );
-    root.style.setProperty('--primary-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
+    root.style.setProperty('--primary-glow', `rgba(${r}, ${g}, ${b}, 0.25)`);
     root.style.setProperty(
       '--accent-light',
       darkMode ? `rgba(${r}, ${g}, ${b}, 0.18)` : `rgba(${r}, ${g}, ${b}, 0.1)`

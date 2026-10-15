@@ -45,15 +45,13 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.1 + index * 0.1 }}
-          className="group relative bg-white rounded-3xl p-6 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden"
-        >
+          className="group relative bg-white rounded-3xl p-6 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden">
           {/* Subtle Background Pattern */}
           <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-surface-subtle rounded-full opacity-30 group-hover:scale-125 transition-transform duration-500" />
 
           <div className="relative flex items-start justify-between mb-4">
             <div
-              className={`p-3 rounded-2xl bg-surface-subtle border border-border-subtle group-hover:bg-primary/10 transition-colors`}
-            >
+              className={`p-3 rounded-2xl bg-surface-subtle border border-border-subtle group-hover:bg-primary/10 transition-colors`}>
               <card.icon
                 size={20}
                 className={`text-muted group-hover:text-primary transition-colors`}
@@ -70,8 +68,7 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
           <div className="relative flex items-baseline justify-between mt-2">
             <h3 className="text-3xl font-black text-foreground tracking-tight">{card.value}</h3>
             <div
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${card.isPositive ? 'bg-success/5 border-success/20 text-success' : 'bg-error/5 border-error/20 text-error'} text-[10px] font-black`}
-            >
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${card.isPositive ? 'bg-success/5 border-success/20 text-success' : 'bg-error/5 border-error/20 text-error'} text-[10px] font-black`}>
               {card.isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
               {card.trend}
             </div>
@@ -98,8 +95,7 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="bg-primary rounded-3xl p-6 text-white shadow-lg shadow-primary/20 relative overflow-hidden"
-      >
+        className="bg-primary rounded-3xl p-6 text-white shadow-lg shadow-primary/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Activity size={80} />
         </div>

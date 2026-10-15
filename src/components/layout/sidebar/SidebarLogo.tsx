@@ -11,8 +11,7 @@ export function SidebarLogo({ isOpen }: { isOpen: boolean }) {
   return (
     <div className="h-24 flex items-center px-5 gap-3">
       <div
-        className={`shrink-0 rounded-[14px] bg-white/5 border border-white/10 flex items-center justify-center text-primary shadow-md transition-all hover:scale-105 active:scale-95 ${isOpen ? 'w-14 h-14 p-2' : 'w-9 h-9 p-1.5'}`}
-      >
+        className={`shrink-0 rounded-[14px] bg-white/5 border border-white/10 flex items-center justify-center text-primary shadow-md transition-all hover:scale-105 active:scale-95 ${isOpen ? 'w-14 h-14 p-2' : 'w-9 h-9 p-1.5'}`}>
         <ARXLogo
           isCheckedIn={isCheckedIn}
           isOnBreak={isOnBreak}
@@ -27,8 +26,7 @@ export function SidebarLogo({ isOpen }: { isOpen: boolean }) {
             initial="closed"
             animate="open"
             exit="closed"
-            className="text-xl font-bold tracking-tight text-white whitespace-nowrap overflow-hidden"
-          >
+            className="text-xl font-bold tracking-tight text-white whitespace-nowrap overflow-hidden">
             Startup<span className="text-primary">OS</span>
           </motion.span>
         )}

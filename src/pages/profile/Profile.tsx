@@ -8,6 +8,7 @@ import { ProfileInfoTab } from './components/ProfileInfoTab';
 import { OrganizationTab } from './components/OrganizationTab';
 import { OverviewTab } from './components/OverviewTab';
 import { ProfileForm } from './components/ProfileForm';
+import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
 
 const Profile = () => {
   const {
@@ -25,6 +26,7 @@ const Profile = () => {
   } = useProfile();
 
   const [activeTab, setActiveTab] = useState<TabType>('profile');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   return (
     <div className="flex flex-col gap-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 mx-auto w-full">
@@ -51,6 +53,7 @@ const Profile = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onStartEdit={() => setIsEditing(true)}
+        onChangePassword={() => setShowPasswordModal(true)}
         onAddRole={addRole}
         onRemoveRole={removeRole}
       />
@@ -86,8 +89,7 @@ const Profile = () => {
         visible={showElevationDialog}
         onHide={() => setShowElevationDialog(false)}
         header="Request Admin Rights Elevation"
-        style={{ width: '450px' }}
-      >
+        style={{ width: '450px' }}>
         <AdminElevationRequest onSuccess={() => setShowElevationDialog(false)} />
       </Dialog>
 
@@ -104,8 +106,7 @@ const Profile = () => {
             isUpdatingAutoApprove || isLoadingAutoApprove ? 'cursor-not-allowed opacity-50' : ''
           }`}
           aria-pressed={user.autoApprove}
-          aria-label="Toggle auto approve"
-        >
+          aria-label="Toggle auto approve">
           <span
             className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${
               user.autoApprove ? 'translate-x-5' : 'translate-x-0'
@@ -115,6 +116,12 @@ const Profile = () => {
 
         <span className="text-sm text-muted-foreground">{user.autoApprove ? 'True' : 'False'}</span>
       </div>
+
+      <ChangePasswordModal
+        visible={showPasswordModal}
+        onHide={() => setShowPasswordModal(false)}
+        requireCurrentPassword={true}
+      />
     </div>
   );
 };

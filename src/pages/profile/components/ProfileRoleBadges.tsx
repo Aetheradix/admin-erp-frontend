@@ -30,15 +30,13 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
       {roles.map((role) => (
         <span
           key={role.id}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle border border-border-subtle text-xs font-bold text-foreground shadow-2xs hover:border-primary/40 transition-all"
-        >
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle border border-border-subtle text-xs font-bold text-foreground shadow-2xs hover:border-primary/40 transition-all">
           <span className="w-2 h-2 rounded-full bg-primary" />
           <span>{role.name}</span>
           <button
             onClick={() => onRemoveRole(role.id)}
             className="text-muted hover:text-danger cursor-pointer rounded-full p-0.5 hover:bg-danger-soft/30 transition-colors"
-            title={`Remove ${role.name} role`}
-          >
+            title={`Remove ${role.name} role`}>
             <X size={12} />
           </button>
         </span>
@@ -60,14 +58,12 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
           />
           <button
             onClick={handleAddRoleSubmit}
-            className="text-xs font-black bg-primary text-white px-2 py-0.5 rounded-full hover:bg-primary/90 cursor-pointer"
-          >
+            className="text-xs font-black bg-primary text-white px-2 py-0.5 rounded-full hover:bg-primary/90 cursor-pointer">
             Add
           </button>
           <button
             onClick={() => setIsAddingRole(false)}
-            className="text-xs text-muted hover:text-foreground px-1 cursor-pointer"
-          >
+            className="text-xs text-muted hover:text-foreground px-1 cursor-pointer">
             <X size={12} />
           </button>
         </div>
@@ -75,8 +71,7 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
         <button
           onClick={() => setIsAddingRole(true)}
           className="w-7 h-7 rounded-full bg-surface-subtle border border-dashed border-border-subtle hover:border-primary text-muted hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-          title="Add Role"
-        >
+          title="Add Role">
           <Plus size={14} />
         </button>
       )}

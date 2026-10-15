@@ -142,8 +142,7 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               } flex items-center justify-center gap-2.5 active:scale-95 transition-all cursor-pointer`}
               onClick={handleAttendance}
               loading={isLoading}
-              disabled={isLoading || isOnBreak}
-            >
+              disabled={isLoading || isOnBreak}>
               {isCheckedIn ? <LogOut size={18} /> : <LogIn size={18} />}
               <span className="font-black tracking-wider uppercase">
                 {isCheckedIn ? 'Check Out' : 'Check In'}
@@ -160,8 +159,7 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               } flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer`}
               onClick={handleBreak}
               loading={isBreakLoading}
-              disabled={isBreakLoading || !isCheckedIn}
-            >
+              disabled={isBreakLoading || !isCheckedIn}>
               <Coffee size={16} className={isOnBreak ? 'text-amber-500' : 'text-muted'} />
               <span className="font-black tracking-wider uppercase">
                 {isOnBreak ? 'End Break' : 'Take Break'}
@@ -192,8 +190,7 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                     selectedMood === m.value
                       ? 'bg-primary/10 border-primary/30 text-primary shadow-sm'
                       : 'bg-surface-subtle border-transparent hover:bg-surface-elevated text-muted'
-                  }`}
-                >
+                  }`}>
                   <m.icon size={15} />
                   <span className="text-[8px] font-bold uppercase">{m.label}</span>
                 </button>

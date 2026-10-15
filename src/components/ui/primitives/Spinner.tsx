@@ -17,8 +17,7 @@ export const Spinner = ({ size = 'md', className }: SpinnerProps) => {
         ${sizeMap[size]}
         ${className || ''}
       `}
-      role="status"
-    >
+      role="status">
       <span className="sr-only">Loading...</span>
     </div>
   );

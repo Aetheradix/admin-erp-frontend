@@ -25,8 +25,7 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           onClick={onMenuClick}
           aria-label="Toggle navigation menu"
           variant="secondary"
-          className="p-2.5! rounded-pill! bg-surface-subtle! hover:bg-surface-elevated! transition-colors"
-        >
+          className="p-2.5! rounded-pill! bg-surface-subtle! hover:bg-surface-elevated! transition-colors">
           <Menu size={20} className="text-muted" />
         </Button>
 
@@ -56,8 +55,7 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           onClick={onCopilotClick}
           aria-label="Gemini AI Copilot"
           title="Aether Copilot (Gemini AI)"
-          className="w-13! h-13! rounded-pill! bg-primary/10! border-primary/20! hover:bg-primary/20! text-primary transition-all duration-150 relative group"
-        >
+          className="w-13! h-13! rounded-pill! bg-primary/10! border-primary/20! hover:bg-primary/20! text-primary transition-all duration-150 relative group">
           <Sparkles
             size={20}
             className="animate-pulse group-hover:scale-110 transition-transform"
@@ -68,8 +66,7 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           variant="ghost"
           onClick={() => navigate('/settings')}
           aria-label="Settings"
-          className="hidden sm:flex w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150"
-        >
+          className="hidden sm:flex w-13! h-13! rounded-pill! bg-surface-subtle! border-border-subtle! hover:bg-surface-elevated! transition-all duration-150">
           <Settings size={18} className="text-muted transition-transform hover:rotate-45" />
         </Button>
 
@@ -85,8 +82,7 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && navigate('/profile')}
           aria-label="View user profile"
-          className="flex items-center gap-3 pl-2 pr-1.5 py-1.5 rounded-pill border border-border-subtle bg-surface-subtle cursor-pointer hover:bg-surface-elevated hover:border-border-strong transition-all duration-300 shadow-sm"
-        >
+          className="flex items-center gap-3 pl-2 pr-1.5 py-1.5 rounded-pill border border-border-subtle bg-surface-subtle cursor-pointer hover:bg-surface-elevated hover:border-border-strong transition-all duration-300 shadow-sm">
           <span className="hidden sm:block text-xs font-bold text-foreground ml-2">
             {user?.username || 'Admin User'}
           </span>

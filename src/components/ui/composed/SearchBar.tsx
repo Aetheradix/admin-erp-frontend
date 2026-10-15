@@ -89,8 +89,7 @@ export const SearchBar = ({
             'rounded-pill border border-border-subtle bg-surface-subtle',
             'hover:bg-surface-elevated hover:border-border-strong',
             'transition-all duration-300 cursor-pointer group'
-          )}
-        >
+          )}>
           <Search
             size={16}
             className="text-muted shrink-0 group-hover:text-primary transition-colors"
@@ -108,8 +107,7 @@ export const SearchBar = ({
             'flex items-center w-full gap-3 px-4 py-2.5',
             'rounded-pill border-2 border-primary bg-surface-elevated',
             'shadow-md transition-all duration-200'
-          )}
-        >
+          )}>
           <Search size={16} className="text-primary shrink-0" />
           <input
             ref={inputRef}
@@ -124,8 +122,7 @@ export const SearchBar = ({
           />
           <kbd
             onClick={close}
-            className="flex items-center px-2 py-1 rounded-md bg-surface-subtle border border-border-subtle text-[10px] font-bold text-muted uppercase tracking-wider shrink-0 cursor-pointer hover:bg-background transition-colors"
-          >
+            className="flex items-center px-2 py-1 rounded-md bg-surface-subtle border border-border-subtle text-[10px] font-bold text-muted uppercase tracking-wider shrink-0 cursor-pointer hover:bg-background transition-colors">
             Esc
           </kbd>
         </div>
@@ -140,8 +137,7 @@ export const SearchBar = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="global-search-dropdown"
-          >
+            className="global-search-dropdown">
             {/* Results */}
             <div ref={listRef} className="global-search-results">
               {flatResults.length === 0 && query.trim() ? (
@@ -173,8 +169,7 @@ export const SearchBar = ({
                             data-active={isActive}
                             className={`global-search-item ${isActive ? 'global-search-item--active' : ''}`}
                             onClick={() => selectItem(item)}
-                            onMouseEnter={() => setActiveIndex(idx)}
-                          >
+                            onMouseEnter={() => setActiveIndex(idx)}>
                             <div className="global-search-item-icon">
                               <Icon size={16} />
                             </div>

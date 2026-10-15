@@ -124,8 +124,7 @@ export function CareerList() {
         pt={{
           root: { className: 'rounded-4xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <CareerForm
           initialData={editingCareer}
           onSubmit={handleSubmit}

@@ -58,11 +58,9 @@ export function RulebookPage() {
         {policies.map((policy) => (
           <div
             key={policy.title}
-            className="group bg-white p-10 rounded-4xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex items-start gap-8"
-          >
+            className="group bg-white p-10 rounded-4xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 relative overflow-hidden flex items-start gap-8">
             <div
-              className={`w-16 h-16 rounded-3xl bg-surface-subtle flex items-center justify-center ${policy.color} group-hover:scale-110 transition-transform duration-500`}
-            >
+              className={`w-16 h-16 rounded-3xl bg-surface-subtle flex items-center justify-center ${policy.color} group-hover:scale-110 transition-transform duration-500`}>
               <policy.icon size={32} />
             </div>
 

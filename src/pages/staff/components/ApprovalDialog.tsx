@@ -24,11 +24,9 @@ export const ApprovalDialog = ({
   return (
     <div className="flex flex-col gap-6">
       <div
-        className={`p-4 rounded-2xl flex items-start gap-4 ${isApproved ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}
-      >
+        className={`p-4 rounded-2xl flex items-start gap-4 ${isApproved ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
         <div
-          className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center ${isApproved ? 'bg-green-100' : 'bg-red-100'}`}
-        >
+          className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center ${isApproved ? 'bg-green-100' : 'bg-red-100'}`}>
           <AlertCircle size={16} />
         </div>
         <div>
@@ -64,16 +62,14 @@ export const ApprovalDialog = ({
           variant="ghost"
           onClick={onCancel}
           disabled={loading}
-          className="px-6! rounded-2xl! font-bold text-muted!"
-        >
+          className="px-6! rounded-2xl! font-bold text-muted!">
           Cancel
         </Button>
         <Button
           variant="primary"
           onClick={() => onConfirm(comment)}
           loading={loading}
-          className={`px-8! h-12 rounded-2xl! font-black tracking-wide shadow-lg ${isApproved ? 'bg-green-600! hover:bg-green-700! shadow-green-500/20!' : 'bg-red-600! hover:bg-red-700! shadow-red-500/20!'}`}
-        >
+          className={`px-8! h-12 rounded-2xl! font-black tracking-wide shadow-lg ${isApproved ? 'bg-green-600! hover:bg-green-700! shadow-green-500/20!' : 'bg-red-600! hover:bg-red-700! shadow-red-500/20!'}`}>
           Confirm {type}
         </Button>
       </div>

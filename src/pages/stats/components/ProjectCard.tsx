@@ -57,8 +57,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           className={cn(
             'flex items-center gap-2 px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-widest border',
             getStatusStyles(project.status || 'Ongoing')
-          )}
-        >
+          )}>
           {getStatusIcon(project.status || 'Ongoing')}
           <span>{project.status}</span>
         </div>

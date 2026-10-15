@@ -89,11 +89,9 @@ export function GuestPassPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-white p-6 rounded-[32px] border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group"
-          >
+            className="bg-white p-6 rounded-[32px] border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group">
             <div
-              className={`w-14 h-14 rounded-2xl bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}
-            >
+              className={`w-14 h-14 rounded-2xl bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
               <stat.icon size={28} />
             </div>
             <div className="flex flex-col">
@@ -154,8 +152,7 @@ export function GuestPassPage() {
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <GuestPassForm onSubmit={handlePassSubmit} onCancel={() => setShowForm(false)} />
       </Dialog>
     </div>

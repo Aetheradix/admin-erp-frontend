@@ -15,12 +15,12 @@ export default function ProfitChartCard() {
           const { ctx, chartArea } = chart;
           if (!chartArea) return undefined;
           const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          gradient.addColorStop(0, 'rgba(232, 88, 58, 0)');
-          gradient.addColorStop(0.2, 'rgba(232, 88, 58, 0.4)');
-          gradient.addColorStop(1, '#E8583A');
+          gradient.addColorStop(0, 'rgba(59, 130, 246, 0)');
+          gradient.addColorStop(0.2, 'rgba(59, 130, 246, 0.4)');
+          gradient.addColorStop(1, '#3B82F6');
           return gradient;
         },
-        hoverBackgroundColor: '#E8583A',
+        hoverBackgroundColor: '#3B82F6',
         borderRadius: 6,
         data: [45, 60, 40, 75, 50, 65, 55, 90, 60, 70],
         barThickness: 12,
@@ -85,8 +85,7 @@ export default function ProfitChartCard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-white rounded-3xl p-8 border border-border-subtle shadow-soft h-full flex flex-col group hover:shadow-lg transition-all duration-300"
-    >
+      className="bg-white rounded-3xl p-8 border border-border-subtle shadow-soft h-full flex flex-col group hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-10">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -103,15 +102,13 @@ export default function ProfitChartCard() {
           <button
             type="button"
             aria-label="Expand chart"
-            className="w-9 h-9 rounded-2xl bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-all"
-          >
+            className="w-9 h-9 rounded-2xl bg-surface-subtle flex items-center justify-center border border-border-subtle cursor-pointer hover:bg-surface-elevated transition-all">
             <Maximize2 size={14} className="text-muted" />
           </button>
           <button
             type="button"
             aria-label="View report"
-            className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer hover:bg-primary-hover transition-all group/btn"
-          >
+            className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer hover:bg-primary-hover transition-all group/btn">
             <ArrowUpRight
               size={14}
               className="text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"

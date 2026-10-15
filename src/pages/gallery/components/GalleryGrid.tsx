@@ -2,7 +2,8 @@ import { Carousel, Modal } from 'antd';
 import { useState } from 'react';
 import type { GalleryItem } from '../hooks/mockGallery';
 import { GalleryCard } from './GalleryCard';
-import { X, ChevronLeft, ChevronRight, Share2, Info } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Share2, Info, Download } from 'lucide-react';
+import { resolveImageUrl, downloadImageFile } from '@/utils/imageUrl';
 
 interface GalleryGridProps {
   items: GalleryItem[];
@@ -48,8 +49,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
         styles={{
           body: { background: 'transparent', padding: 0 },
         }}
-        closeIcon={null}
-      >
+        closeIcon={null}>
         <div className="relative h-screen flex flex-col justify-center items-center overflow-hidden">
           {/* Top Navbar */}
           <div className="absolute top-0 inset-x-0 p-8 flex justify-between items-center z-50">
@@ -68,14 +68,27 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
             </div>
 
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  const curr = items[activeIndex];
+                  if (curr)
+                    downloadImageFile(
+                      curr.image_url,
+                      `${curr.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`
+                    );
+                }}
+                className="w-12 h-12 rounded-2xl bg-white/5 text-white hover:bg-emerald-500 hover:text-white flex items-center justify-center border border-white/10 transition-all backdrop-blur-md cursor-pointer"
+                title="Download High-Res Asset"
+                aria-label="Download image">
+                <Download size={18} />
+              </button>
               <button className="w-12 h-12 rounded-2xl bg-white/5 text-white hover:bg-white/10 flex items-center justify-center border border-white/10 transition-all backdrop-blur-md">
                 <Share2 size={18} />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
                 className="w-12 h-12 rounded-2xl bg-white text-primary hover:bg-primary-hover hover:text-white flex items-center justify-center transition-all shadow-xl active:scale-95"
-                aria-label="Close Lightbox"
-              >
+                aria-label="Close Lightbox">
                 <X size={24} />
               </button>
             </div>
@@ -96,16 +109,14 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
               <div className="custom-arrow-right">
                 <ChevronRight size={32} />
               </div>
-            }
-          >
+            }>
             {items.map((item) => (
               <div
                 key={item.id}
-                className="h-screen flex flex-col items-center justify-center relative p-12 transition-all duration-700"
-              >
+                className="h-screen flex flex-col items-center justify-center relative p-12 transition-all duration-700">
                 <div className="relative group max-w-[85vw] max-h-[70vh]">
                   <img
-                    src={item.image_url}
+                    src={resolveImageUrl(item.image_url)}
                     alt={item.title}
                     className="rounded-[3rem] shadow-[0_0_80px_rgba(0,0,0,0.5)] object-contain w-full h-full border border-white/10"
                   />

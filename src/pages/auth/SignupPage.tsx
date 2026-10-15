@@ -216,8 +216,7 @@ const SignupPage = () => {
           <Button
             onClick={() => navigate('/auth/login')}
             variant="primary"
-            className="w-full h-14 rounded-2xl! shadow-lg shadow-emerald-500/20 font-black tracking-widest text-sm"
-          >
+            className="w-full h-14 rounded-2xl! shadow-lg shadow-emerald-500/20 font-black tracking-widest text-sm">
             GO TO LOGIN
           </Button>
         </div>
@@ -228,8 +227,7 @@ const SignupPage = () => {
   return (
     <AuthLayout
       title="Create Your Account"
-      subtitle="ENTER YOUR DETAILS TO REGISTER ON AETHERERP WORKSPACE."
-    >
+      subtitle="ENTER YOUR DETAILS TO REGISTER ON AETHERERP WORKSPACE.">
       <form onSubmit={handleSignup} className="space-y-5">
         <FormField label="Full Name" required>
           <Input
@@ -286,8 +284,7 @@ const SignupPage = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-            >
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
               {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
             </button>
           </div>
@@ -312,8 +309,7 @@ const SignupPage = () => {
           type="submit"
           variant="primary"
           className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm mt-2"
-          loading={isRegistering}
-        >
+          loading={isRegistering}>
           CREATE ACCOUNT
         </Button>
       </form>

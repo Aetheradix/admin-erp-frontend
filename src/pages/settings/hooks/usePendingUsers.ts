@@ -2,18 +2,40 @@ import {
   useGetPendingUsersQuery,
   useApproveAccountMutation,
   useRejectAccountMutation,
+  useGetApprovalLogsQuery,
+  useSendInvitationMutation,
+  type AuditLog,
 } from '@/store/api/authApiSlice';
 import type { User } from '@/types/auth';
 import type { UserRole } from '@/config/navItems';
 
 export function usePendingUsers() {
-  const { data: pendingUsersResponse, isLoading, isError, refetch } = useGetPendingUsersQuery();
+  const {
+    data: pendingUsersResponse,
+    isLoading: isLoadingPending,
+    isError: isPendingError,
+    refetch: refetchPending,
+  } = useGetPendingUsersQuery();
+
+  const {
+    data: logsResponse,
+    isLoading: isLoadingLogs,
+    isError: isLogsError,
+    refetch: refetchLogs,
+  } = useGetApprovalLogsQuery();
 
   const [approveAccount, { isLoading: isApproving }] = useApproveAccountMutation();
-
   const [rejectAccount, { isLoading: isRejecting }] = useRejectAccountMutation();
+  const [sendInvitation, { isLoading: isSendingInvite }] = useSendInvitationMutation();
 
-  const pendingUsers: User[] = pendingUsersResponse?.data ?? [];
+  const pendingUsers: User[] = pendingUsersResponse?.data ?? pendingUsersResponse ?? [];
+
+  // ✅ Fix: Safely unwrap logs array from response envelope
+  const responseObj = logsResponse as unknown as { data?: AuditLog[]; logs?: AuditLog[] };
+  const rawLogs = Array.isArray(logsResponse)
+    ? logsResponse
+    : (responseObj?.data ?? responseObj?.logs ?? []);
+  const logs: AuditLog[] = Array.isArray(rawLogs) ? rawLogs : [];
 
   const handleApproveUser = async (id: number, role: UserRole) => {
     try {
@@ -35,14 +57,32 @@ export function usePendingUsers() {
     }
   };
 
+  const handleSendInvite = async (email: string, role: UserRole): Promise<boolean> => {
+    try {
+      await sendInvitation({ email, role }).unwrap();
+      return true;
+    } catch (error) {
+      console.error('Send invite email failed:', error);
+      return false;
+    }
+  };
+
+  const refetchAll = () => {
+    refetchPending();
+    refetchLogs();
+  };
+
   return {
     pendingUsers,
-    isLoading,
-    isError,
+    logs,
+    isLoading: isLoadingPending || isLoadingLogs,
     isApproving,
     isRejecting,
+    isSendingInvite,
+    isError: isPendingError || isLogsError,
     handleApproveUser,
     handleRejectUser,
-    refetch,
+    handleSendInvite,
+    refetch: refetchAll,
   };
 }

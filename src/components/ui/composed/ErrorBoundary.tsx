@@ -65,8 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <Button
             variant="primary"
             onClick={this.handleReset}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-lg cursor-pointer"
-          >
+            className="flex items-center gap-2 px-6 py-3 rounded-xl shadow-lg cursor-pointer">
             <RefreshCw size={16} />
             <span>Reload Application</span>
           </Button>

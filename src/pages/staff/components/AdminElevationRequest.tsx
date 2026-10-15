@@ -61,8 +61,7 @@ export function AdminElevationRequest({ onSuccess }: AdminElevationRequestProps)
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-8 p-10 animate-in fade-in duration-700"
-    >
+      className="flex flex-col gap-8 p-10 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3 mb-2 text-primary">
           <Shield size={24} />
@@ -105,8 +104,7 @@ export function AdminElevationRequest({ onSuccess }: AdminElevationRequestProps)
           type="submit"
           loading={isLoading}
           disabled={!reason.trim()}
-          className="w-full py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-        >
+          className="w-full py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
           <Send size={16} /> Submit Elevation Request
         </Button>
         <span className="text-[10px] text-center font-bold text-muted/60 uppercase tracking-widest italic flex items-center justify-center gap-2">
@@ -126,8 +124,7 @@ const ClockIcon = ({ size }: { size: number }) => (
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+    strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
   </svg>

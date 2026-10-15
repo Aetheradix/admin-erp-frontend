@@ -18,7 +18,7 @@ const GuestPassModule = lazy(() => import('@/pages/guest-pass'));
 const RulebookModule = lazy(() => import('@/pages/rulebook'));
 const SettingsModule = lazy(() => import('@/pages/settings'));
 const Profile = lazy(() => import('@/pages/profile/Profile'));
-
+const BenefitsPerksModule = lazy(() => import('@/pages/benefits/pages/index'));
 // New Modules
 const OrganizationModule = lazy(() => import('@/pages/organization'));
 const TeamsModule = lazy(() => import('@/pages/teams'));
@@ -26,6 +26,9 @@ const UsersModule = lazy(() => import('@/pages/users'));
 const TasksModule = lazy(() => import('@/pages/tasks'));
 const InventoryModule = lazy(() => import('@/pages/inventory'));
 const ResourceBookingModule = lazy(() => import('@/pages/resourcebooking'));
+const Forbidden403Page = lazy(() => import('@/pages/error/Forbidden403Page'));
+const ChannelsModule = lazy(() => import('@/pages/channels'));
+
 const ContentLoadingFallback = () => (
   <div className="w-full h-64 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
     <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -106,7 +109,8 @@ const AppFeature = () => {
       'Finance',
       'Grievances',
       'Guest Pass',
-      'Resouce Booking',
+      'Resource Booking',
+      'Inventory',
     ];
     for (const f of features) {
       map[f] = check(f);
@@ -133,25 +137,64 @@ const AppFeature = () => {
         <Route path="/teams/*" element={<TeamsModule />} />
         <Route path="/users/*" element={<UsersModule />} />
         <Route path="/tasks/*" element={<TasksModule />} />
-        <Route path="/inventory/*" element={<InventoryModule />} />
+        <Route
+          path="/inventory/*"
+          element={
+            (allowedMap['Inventory'] ?? true) ? <InventoryModule /> : <Navigate to="/" replace />
+          }
+        />
+
+        {/* Social Module Routes */}
+        <Route
+          path="/social/blogs/*"
+          element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/social/gallery/*"
+          element={allowedMap['Gallery'] ? <GalleryModule /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/social"
+          element={
+            allowedMap['Blogs'] ? (
+              <Navigate to="/social/blogs" replace />
+            ) : allowedMap['Gallery'] ? (
+              <Navigate to="/social/gallery" replace />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+
+        {/* Legacy route redirects for backward compatibility */}
         <Route
           path="/blogs/*"
           element={allowedMap['Blogs'] ? <BlogsModule /> : <Navigate to="/" replace />}
         />
+        <Route path="/gallery/*" element={<Navigate to="/social/gallery" replace />} />
+
         <Route
           path="/resource-booking/*"
           element={
-            (allowedMap['Resource Booking'] ?? true) ? ( // 👈 Default to true if undefined
+            (allowedMap['Resource Booking'] ?? true) ? (
               <ResourceBookingModule />
             ) : (
               <Navigate to="/" replace />
             )
           }
         />
+
         <Route
-          path="/gallery/*"
-          element={allowedMap['Gallery'] ? <GalleryModule /> : <Navigate to="/" replace />}
+          path="/benefits-perks/*"
+          element={
+            (allowedMap['Benefits & Perks'] ?? true) ? (
+              <BenefitsPerksModule />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
+
         <Route
           path="/events/*"
           element={allowedMap['Events'] ? <EventsModule /> : <Navigate to="/" replace />}
@@ -180,7 +223,9 @@ const AppFeature = () => {
           element={allowedMap['Guest Pass'] ? <GuestPassModule /> : <Navigate to="/" replace />}
         />
         <Route path="/rulebook/*" element={<RulebookModule />} />
+        <Route path="/channels/*" element={<ChannelsModule />} />
         <Route path="/settings/*" element={<SettingsModule />} />
+        <Route path="/403" element={<Forbidden403Page />} />
       </Routes>
     </Suspense>
   );

@@ -1,9 +1,3 @@
-// src/types/resourceBooking.ts
-
-// ============================================================
-// Resource
-// ============================================================
-
 export type ResourceType = 'Room' | 'Equipment' | 'Vehicle' | 'Other';
 
 export type ResourceStatus = 'Active' | 'Inactive';
@@ -29,10 +23,6 @@ export interface Resource {
 
   updated_at?: string;
 }
-
-// ============================================================
-// Resource Booking
-// ============================================================
 
 export type ResourceBookingStatus =
   'Pending' | 'Confirmed' | 'Rejected' | 'Cancelled' | 'Completed';
@@ -75,10 +65,6 @@ export interface ResourceBooking {
   email?: string;
 }
 
-// ============================================================
-// Create Booking
-// ============================================================
-
 export interface CreateResourceBookingRequest {
   resource_id: number;
 
@@ -91,10 +77,6 @@ export interface CreateResourceBookingRequest {
   notes?: string;
 }
 
-// ============================================================
-// Update Booking Status
-// ============================================================
-
 export interface UpdateResourceBookingStatusRequest {
   id: number;
 
@@ -103,10 +85,6 @@ export interface UpdateResourceBookingStatusRequest {
   admin_comment?: string;
 }
 
-// ============================================================
-// Availability Request
-// ============================================================
-
 export interface CheckResourceAvailabilityRequest {
   resource_id: number;
 
@@ -114,10 +92,6 @@ export interface CheckResourceAvailabilityRequest {
 
   end_datetime: string;
 }
-
-// ============================================================
-// Availability Response
-// ============================================================
 
 export interface ResourceAvailability {
   available: boolean;
@@ -133,10 +107,6 @@ export interface ResourceAvailability {
   conflicting_booking?: ResourceBooking | null;
 }
 
-// ============================================================
-// API Response
-// ============================================================
-
 export interface ResourceBookingResponse {
   success: boolean;
 
@@ -144,10 +114,6 @@ export interface ResourceBookingResponse {
 
   data?: ResourceBooking;
 }
-
-// ============================================================
-// Resource List Response
-// ============================================================
 
 export interface ResourcesResponse {
   success: boolean;
@@ -157,10 +123,6 @@ export interface ResourcesResponse {
   data: Resource[];
 }
 
-// ============================================================
-// Booking List Response
-// ============================================================
-
 export interface ResourceBookingsResponse {
   success: boolean;
 
@@ -168,10 +130,6 @@ export interface ResourceBookingsResponse {
 
   data: ResourceBooking[];
 }
-
-// ============================================================
-// Statistics
-// ============================================================
 
 export interface ResourceBookingStats {
   total: number;

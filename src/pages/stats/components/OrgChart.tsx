@@ -15,8 +15,7 @@ export function OrgChart({ nodes }: OrgChartProps) {
       <div key={node.id} className="flex flex-col gap-6">
         <div
           className="relative bg-white p-6 rounded-2xl border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 w-64 group"
-          style={{ marginLeft: `${level * 40}px` }}
-        >
+          style={{ marginLeft: `${level * 40}px` }}>
           {level > 0 && <div className="absolute -left-10 top-1/2 w-10 h-px bg-border-strong" />}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-surface-subtle shadow-inner">

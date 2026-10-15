@@ -41,8 +41,7 @@ export const PageHeader = ({
               {crumb.url ? (
                 <button
                   onClick={() => navigate(crumb.url!)}
-                  className="hover:text-primary transition-all duration-300 animated-underline active:scale-95"
-                >
+                  className="hover:text-primary transition-all duration-300 animated-underline active:scale-95">
                   {crumb.label}
                 </button>
               ) : (

@@ -53,11 +53,9 @@ export function AttendanceStats() {
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="bg-white p-6 rounded-4xl border border-border-subtle shadow-soft flex flex-col gap-4"
-        >
+          className="bg-white p-6 rounded-4xl border border-border-subtle shadow-soft flex flex-col gap-4">
           <div
-            className={`w-12 h-12 rounded-3xl ${stat.bg} ${stat.color} flex items-center justify-center`}
-          >
+            className={`w-12 h-12 rounded-3xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
             <stat.icon size={24} />
           </div>
           <div className="flex flex-col">

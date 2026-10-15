@@ -29,8 +29,7 @@ export const CalloutBanner = ({
 
   return (
     <div
-      className={cn(`${padCls} rounded-[48px] ${bgCls} relative overflow-hidden group`, className)}
-    >
+      className={cn(`${padCls} rounded-[48px] ${bgCls} relative overflow-hidden group`, className)}>
       <div
         className={`absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l ${glowFrom} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000`}
       />
@@ -43,8 +42,7 @@ export const CalloutBanner = ({
           <Button
             variant={action.variant ?? 'secondary'}
             onClick={action.onClick}
-            className="h-14 px-10 rounded-2xl! font-black tracking-widest bg-white text-primary border-none shrink-0"
-          >
+            className="h-14 px-10 rounded-2xl! font-black tracking-widest bg-white text-primary border-none shrink-0">
             {action.label}
           </Button>
         )}

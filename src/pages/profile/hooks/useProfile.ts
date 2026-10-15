@@ -3,6 +3,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
 import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { recordAuditLog } from '@/services/auditService';
 
 export interface ManagerInfo {
   name: string;
@@ -40,6 +41,7 @@ export interface ProfileUserData {
   lastSeen: string;
   workHours: string;
   autoApprove: boolean;
+  address?: string;
   roles: Array<{
     id: string;
     name: string;
@@ -141,6 +143,8 @@ export const useProfile = () => {
 
       workHours: (authUserRecord?.work_hours as string) || 'Standard Hours',
 
+      address: (authUserRecord?.address as string) || '',
+
       /**
        * This gets updated from useGetAutoApproveQuery()
        * after the API response arrives.
@@ -215,6 +219,7 @@ export const useProfile = () => {
       lastSeen: (record.last_seen as string) ?? prev.lastSeen,
 
       workHours: (record.work_hours as string) ?? prev.workHours,
+      address: (record.address as string) ?? prev.address,
 
       manager: (record.manager as ManagerInfo) ?? prev.manager,
 
@@ -345,8 +350,52 @@ export const useProfile = () => {
     country?: string;
     employeeType?: string;
     subOrganization?: string;
+    address?: string;
   }) => {
     try {
+      // Calculate field diffs for audit log
+      const changedFields: Array<{ field: string; from: any; to: any }> = [];
+      if (user.name !== updatedData.name) {
+        changedFields.push({ field: 'name', from: user.name, to: updatedData.name });
+      }
+      if (user.email !== updatedData.email) {
+        changedFields.push({ field: 'email', from: user.email, to: updatedData.email });
+      }
+      if (user.contactNo !== updatedData.contactNo) {
+        changedFields.push({ field: 'contactNo', from: user.contactNo, to: updatedData.contactNo });
+      }
+      if (user.designation !== updatedData.designation) {
+        changedFields.push({
+          field: 'designation',
+          from: user.designation,
+          to: updatedData.designation,
+        });
+      }
+      if (user.department !== updatedData.department) {
+        changedFields.push({
+          field: 'department',
+          from: user.department,
+          to: updatedData.department,
+        });
+      }
+      if (user.workLocation !== (updatedData.workLocation || '')) {
+        changedFields.push({
+          field: 'workLocation',
+          from: user.workLocation,
+          to: updatedData.workLocation || '',
+        });
+      }
+      if (user.address !== (updatedData.address || '')) {
+        changedFields.push({
+          field: 'address',
+          from: user.address || '',
+          to: updatedData.address || '',
+        });
+      }
+      if (user.company !== (updatedData.company || '')) {
+        changedFields.push({ field: 'company', from: user.company, to: updatedData.company || '' });
+      }
+
       const payload = {
         username: updatedData.name,
         email: updatedData.email,
@@ -358,6 +407,7 @@ export const useProfile = () => {
         country: updatedData.country,
         employee_type: updatedData.employeeType,
         sub_organization: updatedData.subOrganization,
+        address: updatedData.address,
       };
 
       const result = await updateProfile(payload)
@@ -369,15 +419,41 @@ export const useProfile = () => {
         ...updatedData,
       }));
 
-      if (result?.user) {
-        const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+      // Update stored user in localStorage and dispatch sync event
+      const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = {
+        ...existingUser,
+        username: updatedData.name,
+        email: updatedData.email,
+        contact_number: updatedData.contactNo,
+        designation: updatedData.designation,
+        department: updatedData.department,
+        work_location: updatedData.workLocation,
+        address: updatedData.address,
+        company: updatedData.company,
+        country: updatedData.country,
+        ...(result?.user || {}),
+      };
 
-        const updatedUser = {
-          ...existingUser,
-          ...result.user,
-        };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
 
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('aether_user_updated', { detail: updatedUser }));
+      }
+
+      // Record in centralized audit log
+      if (changedFields.length > 0) {
+        recordAuditLog({
+          action: 'Profile Updated',
+          category: 'profile',
+          user: user.name || authUser?.username || 'User',
+          userEmail: user.email || authUser?.email || '',
+          target: `${updatedData.name} Profile`,
+          targetEmail: updatedData.email,
+          status: 'Success',
+          details: `Updated personal information: ${changedFields.map((c) => c.field).join(', ')}.`,
+          changes: changedFields,
+        });
       }
 
       setIsEditing(false);
@@ -385,7 +461,7 @@ export const useProfile = () => {
       showToast({
         severity: 'success',
         summary: 'Success',
-        detail: 'Profile updated successfully',
+        detail: 'Profile updated successfully and reflected across the application.',
         life: 3000,
       });
     } catch (err: unknown) {

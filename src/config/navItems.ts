@@ -145,20 +145,21 @@
 import {
   BarChart3,
   Building2,
-  CalendarDays,
   CalendarCheck,
+  CalendarDays,
   CheckSquare,
+  Clock,
   CreditCard,
+  Gift,
   LayoutDashboard,
   Package,
   Settings,
-  Clock,
-  FileText,
-  Image,
+  Share2,
   type LucideIcon,
 } from 'lucide-react';
 
-export type UserRole = 'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee';
+export type UserRole =
+  'SuperAdmin' | 'Admin' | 'HrAdmin' | 'FinanceAdmin' | 'Employee' | 'Inventory operator';
 
 export interface NavChild {
   label: string;
@@ -188,7 +189,7 @@ export const navItems: NavItem[] = [
     icon: LayoutDashboard,
     category: 'OVERVIEW',
     description: 'Overview of operations',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator', 'Employee'],
   },
   {
     label: 'Check-In',
@@ -211,17 +212,27 @@ export const navItems: NavItem[] = [
     roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
     children: [
       {
-        label: 'New Accounts',
+        label: 'Company Profile',
+        path: '/org',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'User Management',
         path: '/org/approvals',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
+      // {
+      //   label: 'Branches',
+      //   path: '/org/branches',
+      //   roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      // },
       {
         label: 'Teams',
         path: '/teams',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
-        label: 'Team',
+        label: 'Employee Directory',
         path: '/staff',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
@@ -234,6 +245,18 @@ export const navItems: NavItem[] = [
     category: 'MANAGEMENT',
     description: 'Event planner & dynamic filters',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    children: [
+      {
+        label: 'Events Planner',
+        path: '/events',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+      {
+        label: 'Attendance Calendar',
+        path: '/calendar',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+    ],
   },
   {
     label: 'Tasks',
@@ -243,6 +266,21 @@ export const navItems: NavItem[] = [
     description: 'Task management',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
   },
+  // {
+  //   label: 'Channels',
+  //   path: '/channels',
+  //   icon: MessageSquare,
+  //   category: 'MANAGEMENT',
+  //   description: 'Team communication channels',
+  //   roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //   children: [
+  //     {
+  //       label: 'All Channels',
+  //       path: '/channels',
+  //       roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //     },
+  //   ],
+  // },
   {
     label: 'Resource Booking',
     path: '/resource-booking',
@@ -275,6 +313,37 @@ export const navItems: NavItem[] = [
   },
 
   {
+    label: 'Benefits & Perks',
+    path: '/benefits-perks',
+    icon: Gift,
+    category: 'MANAGEMENT',
+    description: 'Manage employee benefits and perks',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    children: [
+      {
+        label: 'My Perks',
+        path: '/benefits-perks/my-perks',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+      },
+      {
+        label: 'Recreation Benefits',
+        path: '/benefits-perks/recreation-benefits',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+      },
+      {
+        label: 'Perk Types',
+        path: '/benefits-perks/perk-types',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
+      {
+        label: 'Benefits Opt In',
+        path: '/benefits-perks/opt-in-benefits',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
+    ],
+  },
+
+  {
     label: 'Finance',
     path: '/finance',
     icon: CreditCard,
@@ -302,6 +371,21 @@ export const navItems: NavItem[] = [
         path: '/finance/payroll',
         roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
       },
+      {
+        label: 'My PaySlip',
+        path: '/finance/my-payslip',
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'Audit Book',
+        path: '/finance/audit',
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Admin'],
+      },
+      {
+        label: 'Reimbursements',
+        path: '/finance/reimbursements',
+        roles: ['SuperAdmin', 'FinanceAdmin', 'Employee', 'Admin', 'HrAdmin'],
+      },
     ],
   },
   {
@@ -315,35 +399,39 @@ export const navItems: NavItem[] = [
       {
         label: 'Items',
         path: '/inventory',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator', 'Employee'],
       },
       {
         label: 'Stock Levels',
         path: '/inventory/stock-levels',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator'],
       },
       {
         label: 'Movements',
         path: '/inventory/movements',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Inventory operator'],
       },
     ],
   },
   {
-    label: 'Blogs',
-    path: '/blogs',
-    icon: FileText,
+    label: 'Social',
+    path: '/social',
+    icon: Share2,
     category: 'MANAGEMENT',
-    description: 'Content management',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
-  },
-  {
-    label: 'Gallery',
-    path: '/gallery',
-    icon: Image,
-    category: 'MANAGEMENT',
-    description: 'Asset library',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    description: 'Content and media management',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    children: [
+      {
+        label: 'Blogs',
+        path: '/social/blogs',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
+      {
+        label: 'Gallery',
+        path: '/social/gallery',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────

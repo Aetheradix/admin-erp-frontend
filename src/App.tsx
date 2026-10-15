@@ -7,6 +7,7 @@ const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const AdminApproval = lazy(() => import('@/pages/auth/AdminApproval'));
+const OnboardingPage = lazy(() => import('@/pages/auth/OnboardingPage'));
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const AppFeature = lazy(() => import('@/pages/index'));
 
@@ -46,10 +47,12 @@ function App() {
           <Route path="/auth/signup" element={<SignupPage />} />
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/auth/approve-admin" element={<AdminApproval />} />
+          <Route path="/auth/onboarding" element={<OnboardingPage />} />
 
           {/* Redirects for convenience */}
           <Route path="/login" element={<Navigate to="/auth/login" replace />} />
           <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
+          <Route path="/onboarding" element={<Navigate to="/auth/onboarding" replace />} />
           <Route
             path="/forgot-password"
             element={<Navigate to="/auth/forgot-password" replace />}

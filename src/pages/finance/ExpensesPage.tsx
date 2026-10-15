@@ -1,203 +1,1330 @@
-import { useState } from 'react';
-import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { Receipt } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Dialog } from '@/components/ui/composed/Dialog';
-import { Input } from '@/components/ui/primitives/Input';
-import { Select } from '@/components/ui/primitives/Select';
-import { Button } from '@/components/ui/primitives/Button';
+// import { useState } from 'react';
+// import { PageHeader } from '@/components/ui/composed/PageHeader';
+// import { Receipt } from 'lucide-react';
+// import { motion } from 'framer-motion';
+// import { Dialog } from '@/components/ui/composed/Dialog';
+// import { Input } from '@/components/ui/primitives/Input';
+// import { Select } from '@/components/ui/primitives/Select';
+// import { Button } from '@/components/ui/primitives/Button';
 
-interface Expense {
-  id: number;
-  category: string;
-  description: string;
-  amount: number;
-  status: string;
+// interface Expense {
+//   id: number;
+//   category: string;
+//   description: string;
+//   amount: number;
+//   status: string;
+// }
+
+// const EXPENSE_CATEGORIES = [
+//   { label: 'Hardware', value: 'Hardware' },
+//   { label: 'Food & Drink', value: 'Food & Drink' },
+//   { label: 'Utilities', value: 'Utilities' },
+//   { label: 'Subscriptions', value: 'Subscriptions' },
+//   { label: 'Travel', value: 'Travel' },
+//   { label: 'Office Supplies', value: 'Office Supplies' },
+// ];
+
+// const initialExpenses: Expense[] = [
+//   {
+//     id: 1,
+//     category: 'Hardware',
+//     description: 'MacBook Pro 16" - Engineering',
+//     amount: 2499,
+//     status: 'Approved',
+//   },
+//   {
+//     id: 2,
+//     category: 'Food & Drink',
+//     description: 'Team Lunch - Q2 Planning',
+//     amount: 120,
+//     status: 'Pending',
+//   },
+//   {
+//     id: 3,
+//     category: 'Utilities',
+//     description: 'Office Electricity - May',
+//     amount: 450,
+//     status: 'Approved',
+//   },
+//   {
+//     id: 4,
+//     category: 'Subscriptions',
+//     description: 'AWS Infrastructure',
+//     amount: 1560,
+//     status: 'Pending',
+//   },
+// ];
+
+// const emptyForm = { category: '', description: '', amount: 0 };
+
+// export function ExpensesPage() {
+//   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+//   const [showForm, setShowForm] = useState(false);
+//   const [form, setForm] = useState(emptyForm);
+
+//   const handleSubmit = () => {
+//     if (!form.category || !form.description || !form.amount) return;
+//     const newExpense: Expense = {
+//       id: Date.now(),
+//       category: form.category,
+//       description: form.description,
+//       amount: form.amount,
+//       status: 'Pending',
+//     };
+//     setExpenses([newExpense, ...expenses]);
+//     setForm(emptyForm);
+//     setShowForm(false);
+//   };
+
+//   return (
+//     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+//       <PageHeader
+//         title="Expenses"
+//         description="Track and manage organizational spending."
+//         breadcrumbs={[
+//           { label: 'Home', url: '/' },
+//           { label: 'Finance', url: '/finance' },
+//           { label: 'Expenses' },
+//         ]}
+//         primaryAction={{
+//           label: 'Record Expense',
+//           onClick: () => setShowForm(true),
+//           icon: 'pi pi-plus',
+//         }}
+//       />
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//         {expenses.map((exp, i) => (
+//           <motion.div
+//             key={exp.id}
+//             initial={{ opacity: 0, y: 20 }}
+//             animate={{ opacity: 1, y: 0 }}
+//             transition={{ duration: 0.4, delay: i * 0.1 }}
+//             className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 group hover:shadow-lg transition-all duration-300">
+//             <div className="flex items-start justify-between mb-6">
+//               <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+//                 <Receipt size={24} />
+//               </div>
+//               <span
+//                 className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${exp.status === 'Approved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
+//                 {exp.status}
+//               </span>
+//             </div>
+//             <div className="flex flex-col gap-1 mb-4">
+//               <h3 className="text-lg font-black text-foreground tracking-tight leading-tight">
+//                 {exp.description}
+//               </h3>
+//               <span className="text-[10px] font-bold text-muted uppercase tracking-[0.1em]">
+//                 {exp.category}
+//               </span>
+//             </div>
+//             <div className="flex items-center justify-between pt-4 border-t border-border-subtle/50">
+//               <span className="text-xl font-black text-foreground">
+//                 ₹{exp.amount.toLocaleString()}
+//               </span>
+//               <button className="text-xs font-bold text-primary hover:underline">Details →</button>
+//             </div>
+//           </motion.div>
+//         ))}
+//       </div>
+
+//       {/* Record Expense Dialog */}
+//       <Dialog
+//         visible={showForm}
+//         onHide={() => setShowForm(false)}
+//         header="Record Expense"
+//         modal
+//         className="w-full max-w-xl mx-4"
+//         contentClassName="p-8"
+//         headerClassName="px-8 pt-8 pb-4 text-xl font-black tracking-tight border-none"
+//         pt={{
+//           root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' },
+//           mask: { className: 'backdrop-blur-md bg-black/40' },
+//         }}>
+//         <div className="flex flex-col gap-5">
+//           <div className="flex flex-col gap-2">
+//             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
+//               Description
+//             </label>
+//             <Input
+//               placeholder="e.g. Team lunch for Q2 planning"
+//               value={form.description}
+//               onChange={(e) => setForm({ ...form, description: e.target.value })}
+//             />
+//           </div>
+//           <div className="grid grid-cols-2 gap-4">
+//             <div className="flex flex-col gap-2">
+//               <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
+//                 Category
+//               </label>
+//               <Select
+//                 options={EXPENSE_CATEGORIES}
+//                 value={form.category}
+//                 onChange={(e) => setForm({ ...form, category: e.value })}
+//                 placeholder="Select"
+//               />
+//             </div>
+//             <div className="flex flex-col gap-2">
+//               <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
+//                 Amount (₹)
+//               </label>
+//               <Input
+//                 type="number"
+//                 placeholder="0"
+//                 value={String(form.amount || '')}
+//                 onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })}
+//               />
+//             </div>
+//           </div>
+//           <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
+//             <Button
+//               variant="ghost"
+//               label="Cancel"
+//               onClick={() => {
+//                 setShowForm(false);
+//                 setForm(emptyForm);
+//               }}
+//               className="rounded-xl!"
+//             />
+//             <Button
+//               label="Record Expense"
+//               onClick={handleSubmit}
+//               icon="pi pi-check"
+//               className="rounded-xl! px-8!"
+//             />
+//           </div>
+//         </div>
+//       </Dialog>
+//     </div>
+//   );
+// }
+
+import React, { useState, useMemo } from 'react';
+import { useExpensesPage, EXPENSE_CATEGORIES, EXPENSE_STATUSES } from './hooks/useExpensesPage'; // Adjust import path as needed
+import type { ExpenseRecord } from '@/store/api/expenseSlice';
+import { Download, FileText } from 'lucide-react';
+
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+export interface UserOption {
+  id: number | string;
+  name: string;
+  email?: string;
+  department?: string;
 }
 
-const EXPENSE_CATEGORIES = [
-  { label: 'Hardware', value: 'Hardware' },
-  { label: 'Food & Drink', value: 'Food & Drink' },
-  { label: 'Utilities', value: 'Utilities' },
-  { label: 'Subscriptions', value: 'Subscriptions' },
-  { label: 'Travel', value: 'Travel' },
-  { label: 'Office Supplies', value: 'Office Supplies' },
+const MOCK_USERS: UserOption[] = [
+  { id: 1, name: 'Sarah Connor', department: 'Engineering' },
+  { id: 2, name: 'John Doe', department: 'Product' },
+  { id: 3, name: 'Alex Rivera', department: 'Marketing' },
+  { id: 4, name: 'Emily Chen', department: 'Design' },
+  { id: 5, name: 'Michael Scott', department: 'Management' },
 ];
 
-const initialExpenses: Expense[] = [
-  {
-    id: 1,
-    category: 'Hardware',
-    description: 'MacBook Pro 16" - Engineering',
-    amount: 2499,
-    status: 'Approved',
-  },
-  {
-    id: 2,
-    category: 'Food & Drink',
-    description: 'Team Lunch - Q2 Planning',
-    amount: 120,
-    status: 'Pending',
-  },
-  {
-    id: 3,
-    category: 'Utilities',
-    description: 'Office Electricity - May',
-    amount: 450,
-    status: 'Approved',
-  },
-  {
-    id: 4,
-    category: 'Subscriptions',
-    description: 'AWS Infrastructure',
-    amount: 1560,
-    status: 'Pending',
-  },
-];
+const MULTI_USER_CATEGORIES = ['Travel', 'Team Outing', 'Meals & Entertainment', 'Events'];
 
-const emptyForm = { category: '', description: '', amount: 0 };
+type DateRangePreset = 'all' | '7days' | '30days' | 'last_month' | '1year' | '3years' | 'custom';
 
-export function ExpensesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(emptyForm);
+export const ExpensesPage: React.FC = () => {
+  const {
+    filteredExpenses,
+    stats,
+    isLoading,
+    isFetching,
+    isSubmitting,
+    isUpdatingStatus,
+    isError,
+    error,
+    showFormModal,
+    setShowFormModal,
+    showDetailModal,
+    selectedExpense,
+    openDetails,
+    closeDetails,
+    searchQuery,
+    setSearchQuery,
+    activeCategory,
+    setActiveCategory,
+    activeStatus,
+    setActiveStatus,
+    resetFilters,
 
-  const handleSubmit = () => {
-    if (!form.category || !form.description || !form.amount) return;
-    const newExpense: Expense = {
-      id: Date.now(),
-      category: form.category,
-      description: form.description,
-      amount: form.amount,
-      status: 'Pending',
+    handleCreateExpense,
+    handleApprove,
+    handleReject,
+    handleMarkAsPaid,
+    refetch,
+  } = useExpensesPage();
+
+  const [rejectionModalId, setRejectionModalId] = useState<number | string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string>('');
+
+  const [isSharedExpense, setIsSharedExpense] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    EXPENSE_CATEGORIES[1] || 'General'
+  );
+  const [selectedUserIds, setSelectedUserIds] = useState<(number | string)[]>([]);
+  const [amountInput, setAmountInput] = useState<string>('');
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+
+  // const handleDownloadPDF = () => {
+  //   if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+  //     alert('No expense records available to export for the selected filters.');
+  //     return;
+  //   }
+
+  //   const doc = new jsPDF();
+
+  //   // Document Title & Metadata
+  //   doc.setFontSize(16);
+  //   doc.setTextColor(17, 24, 39);
+  //   doc.text('Expenses Management Report', 14, 15);
+
+  //   doc.setFontSize(9);
+  //   doc.setTextColor(107, 114, 128);
+  //   doc.text(`Generated on: ${new Date().toLocaleDateString()} | Total Records: ${dateFilteredExpenses.length}`, 14, 22);
+
+  //   // Build Table Columns and Rows
+  //   const tableHeaders = [['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Status', 'Amount']];
+  //   const tableRows = dateFilteredExpenses.map((exp: ExpenseRecord) => [
+  //     exp.expense_number || `#${exp.id}`,
+  //     exp.title || '',
+  //     (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A',
+  //     exp.vendor_name || 'N/A',
+  //     exp.employee_name || 'N/A',
+  //     exp.category || '',
+  //     exp.status || 'Pending',
+  //     formatCurrency(Number(exp.amount || 0)),
+  //   ]);
+
+  //   // Render Table in PDF
+  //   autoTable(doc, {
+  //     head: tableHeaders,
+  //     body: tableRows,
+  //     startY: 28,
+  //     theme: 'striped',
+  //     headStyles: { fillColor: [37, 99, 235], fontSize: 8, fontStyle: 'bold' }, // Blue header
+  //     styles: { fontSize: 8, cellPadding: 2.5 },
+  //     columnStyles: {
+  //       7: { halign: 'right' }, // Right-align Amount column
+  //     },
+  //   });
+
+  //   // Save File
+  //   doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+  // };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
+
+  const getStatusBadge = (status?: string) => {
+    const s = status?.toLowerCase();
+    switch (s) {
+      case 'approved':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'paid':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'pending':
+      default:
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+  };
+
+  const dateFilteredExpenses = useMemo(() => {
+    if (!filteredExpenses) return [];
+    if (datePreset === 'all') return filteredExpenses;
+
+    const now = new Date();
+
+    return filteredExpenses.filter((exp: ExpenseRecord) => {
+      // Safely fall back to expenseDate, created_at, or date properties
+      const rawDate = (exp as any).expenseDate || (exp as any).created_at || (exp as any).date;
+      if (!rawDate) return true;
+
+      const expDate = new Date(rawDate);
+      if (isNaN(expDate.getTime())) return true;
+
+      switch (datePreset) {
+        case '7days': {
+          const sevenDaysAgo = new Date(now);
+          sevenDaysAgo.setDate(now.getDate() - 7);
+          return expDate >= sevenDaysAgo && expDate <= now;
+        }
+        case '30days': {
+          const thirtyDaysAgo = new Date(now);
+          thirtyDaysAgo.setDate(now.getDate() - 30);
+          return expDate >= thirtyDaysAgo && expDate <= now;
+        }
+        case 'last_month': {
+          const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+          return expDate >= startOfLastMonth && expDate <= endOfLastMonth;
+        }
+        case '1year': {
+          const oneYearAgo = new Date(now);
+          oneYearAgo.setFullYear(now.getFullYear() - 1);
+          return expDate >= oneYearAgo && expDate <= now;
+        }
+        case '3years': {
+          const threeYearsAgo = new Date(now);
+          threeYearsAgo.setFullYear(now.getFullYear() - 3);
+          return expDate >= threeYearsAgo && expDate <= now;
+        }
+        case 'custom': {
+          const start = customStartDate ? new Date(customStartDate) : null;
+          const end = customEndDate ? new Date(`${customEndDate}T23:59:59`) : null;
+
+          if (start && expDate < start) return false;
+          if (end && expDate > end) return false;
+          return true;
+        }
+        default:
+          return true;
+      }
+    });
+  }, [filteredExpenses, datePreset, customStartDate, customEndDate]);
+
+  const handleCategoryChange = (cat: string) => {
+    setSelectedCategory(cat);
+    const isMultiCategory = MULTI_USER_CATEGORIES.some((c) =>
+      cat.toLowerCase().includes(c.toLowerCase())
+    );
+    if (isMultiCategory) {
+      setIsSharedExpense(true);
+    }
+  };
+
+  const toggleUserSelection = (userId: number | string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleSelectAllUsers = () => {
+    if (selectedUserIds.length === MOCK_USERS.length) {
+      setSelectedUserIds([]);
+    } else {
+      setSelectedUserIds(MOCK_USERS.map((u) => u.id));
+    }
+  };
+
+  const handleCloseFormModal = () => {
+    setShowFormModal(false);
+    setIsSharedExpense(false);
+    setSelectedUserIds([]);
+    setAmountInput('');
+  };
+
+  const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    if (isSharedExpense && selectedUserIds.length > 0) {
+      formData.append('is_shared', 'true');
+      formData.append('participant_ids', JSON.stringify(selectedUserIds));
+    }
+
+    await handleCreateExpense(formData);
+    handleCloseFormModal();
+  };
+
+  const onConfirmReject = async () => {
+    if (!rejectionModalId) return;
+    await handleReject(rejectionModalId, rejectionReason);
+    setRejectionModalId(null);
+    setRejectionReason('');
+  };
+
+  const parsedAmount = parseFloat(amountInput) || 0;
+  const participantCount = selectedUserIds.length;
+  const splitAmount = participantCount > 0 ? parsedAmount / participantCount : 0;
+
+  const handleDownloadCSV = () => {
+    if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+      alert('No expense records available to export for the selected filters.');
+      return;
+    }
+
+    const headers = [
+      'Expense #',
+      'Title',
+      'Date',
+      'Vendor',
+      'Employee',
+      'Category',
+      'Amount',
+      'Status',
+    ];
+    const rows = dateFilteredExpenses.map((exp: ExpenseRecord) => {
+      const expDate =
+        (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A';
+      return [
+        `"${exp.expense_number || '#' + exp.id}"`,
+        `"${(exp.title || '').replace(/"/g, '""')}"`,
+        `"${expDate}"`,
+        `"${(exp.vendor_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(exp.employee_name || 'N/A').replace(/"/g, '""')}"`,
+        `"${(exp.category || '').replace(/"/g, '""')}"`,
+        exp.amount || 0,
+        `"${exp.status || 'Pending'}"`,
+      ];
+    });
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Expenses_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExpenseReportDownloadPDF = () => {
+    if (!dateFilteredExpenses || dateFilteredExpenses.length === 0) {
+      alert('No expense records available to export for the selected filters.');
+      return;
+    }
+
+    const totalExportAmount = dateFilteredExpenses.reduce(
+      (sum: number, exp: ExpenseRecord) => sum + Number(exp.amount || 0),
+      0
+    );
+
+    const getDatePresetLabel = () => {
+      switch (datePreset) {
+        case '7days':
+          return 'Last 7 Days';
+        case '30days':
+          return 'Last 30 Days';
+        case 'last_month':
+          return 'Last Month';
+        case '1year':
+          return 'Last Year';
+        case '3years':
+          return 'Last 3 Years';
+        case 'custom':
+          return `Custom (${customStartDate || 'Start'} to ${customEndDate || 'End'})`;
+        default:
+          return 'All Time';
+      }
     };
-    setExpenses([newExpense, ...expenses]);
-    setForm(emptyForm);
-    setShowForm(false);
+
+    // Initialize PDF Document
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // 1. Title & Header Subtitle
+    doc.setFontSize(18);
+    doc.setTextColor(17, 24, 39); // #111827
+    doc.text('Expenses Management Report', 14, 18);
+
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128); // #6b7280
+    doc.text(
+      `Generated on ${new Date().toLocaleDateString()}  •  Total Items: ${dateFilteredExpenses.length}`,
+      14,
+      25
+    );
+
+    // 2. Meta Grid / Summary Box (Draw Rect & Text)
+    doc.setFillColor(249, 250, 251); // #f9fafb
+    doc.setDrawColor(229, 231, 235); // #e5e7eb
+    doc.roundedRect(14, 29, 182, 18, 1.5, 1.5, 'FD');
+
+    const col1 = 18,
+      col2 = 65,
+      col3 = 115,
+      col4 = 155;
+
+    doc.setFontSize(7);
+    doc.setTextColor(107, 114, 128);
+    doc.text('FILTERED TOTAL VALUE', col1, 34);
+    doc.text('DATE RANGE FILTER', col2, 34);
+    doc.text('CATEGORY FILTER', col3, 34);
+    doc.text('STATUS FILTER', col4, 34);
+
+    doc.setFontSize(9);
+    doc.setTextColor(17, 24, 39);
+    doc.text(formatCurrency(totalExportAmount), col1, 41);
+    doc.text(getDatePresetLabel(), col2, 41);
+    doc.text(String(activeCategory || 'All'), col3, 41);
+    doc.text(String(activeStatus || 'All'), col4, 41);
+
+    // 3. Prepare Table Headers and Data Rows
+    const tableHeaders = [
+      ['Expense #', 'Title', 'Date', 'Vendor', 'Employee', 'Category', 'Status', 'Amount'],
+    ];
+
+    const tableRows = dateFilteredExpenses.map((exp: ExpenseRecord) => [
+      exp.expense_number || `#${exp.id}`,
+      exp.title || '',
+      (exp as any).expenseDate || (exp as any).created_at || (exp as any).date || 'N/A',
+      exp.vendor_name || 'N/A',
+      exp.employee_name || 'N/A',
+      exp.category || '',
+      exp.status || 'Pending',
+      formatCurrency(Number(exp.amount || 0)),
+    ]);
+
+    // 4. Render Table
+    autoTable(doc, {
+      head: tableHeaders,
+      body: tableRows,
+      startY: 52,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2.5,
+        textColor: [17, 24, 39],
+      },
+      headStyles: {
+        fillColor: [243, 244, 246], // #f3f4f6
+        textColor: [55, 65, 81], // #374151
+        fontStyle: 'bold',
+        fontSize: 8,
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251], // #f9fafb
+      },
+      columnStyles: {
+        7: { halign: 'right' }, // Right align Amount column
+      },
+    });
+
+    // 5. Save & Directly Download .pdf File
+    doc.save(`Expenses_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const handleDownloadSingleVoucherPDF = (expense: ExpenseRecord) => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+
+    // Header
+    doc.setFontSize(16);
+    doc.setTextColor(17, 24, 39);
+    doc.text('EXPENSE PAYMENT VOUCHER', 14, 16);
+
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128);
+    doc.text(`Voucher Ref: ${expense.expense_number || '#' + expense.id}`, 14, 23);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
+
+    // Box
+    doc.setFillColor(249, 250, 251);
+    doc.setDrawColor(229, 231, 235);
+    doc.roundedRect(14, 33, 120, 20, 2, 2, 'FD');
+
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('APPROVED AMOUNT', 18, 40);
+    doc.text('STATUS', 75, 40);
+
+    doc.setFontSize(13);
+    doc.setTextColor(17, 24, 39);
+    doc.text(formatCurrency(Number(expense.amount || 0)), 18, 48);
+    doc.text(String(expense.status || 'Pending'), 75, 48);
+
+    const voucherDetails = [
+      ['Expense Title', String(expense.title || 'N/A')],
+      ['Expense Category', String(expense.category || 'N/A')],
+      ['Claimed By', String(expense.employee_name || 'N/A')],
+      ['Vendor / Payee', String(expense.vendor_name || 'N/A')],
+      ['Payment Mode', String(expense.payment_mode || 'Corporate / Direct')],
+      ['Description', String(expense.description || 'No additional notes provided.')],
+    ];
+
+    autoTable(doc, {
+      head: [['Field', 'Details']],
+      body: voucherDetails,
+      startY: 58,
+      styles: { fontSize: 8.5, cellPadding: 3 },
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
+    });
+
+    doc.save(`Voucher_${expense.expense_number || expense.id}.pdf`);
+  };
+
+  const resetAllFiltersWithDate = () => {
+    resetFilters();
+    setDatePreset('all');
+    setCustomStartDate('');
+    setCustomEndDate('');
   };
 
   return (
-    <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader
-        title="Expenses"
-        description="Track and manage organizational spending."
-        breadcrumbs={[
-          { label: 'Home', url: '/' },
-          { label: 'Finance', url: '/finance' },
-          { label: 'Expenses' },
-        ]}
-        primaryAction={{
-          label: 'Record Expense',
-          onClick: () => setShowForm(true),
-          icon: 'pi pi-plus',
-        }}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {expenses.map((exp, i) => (
-          <motion.div
-            key={exp.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.1 }}
-            className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 group hover:shadow-lg transition-all duration-300"
-          >
-            <div className="flex items-start justify-between mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
-                <Receipt size={24} />
-              </div>
-              <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${exp.status === 'Approved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}
-              >
-                {exp.status}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1 mb-4">
-              <h3 className="text-lg font-black text-foreground tracking-tight leading-tight">
-                {exp.description}
-              </h3>
-              <span className="text-[10px] font-bold text-muted uppercase tracking-[0.1em]">
-                {exp.category}
-              </span>
-            </div>
-            <div className="flex items-center justify-between pt-4 border-t border-border-subtle/50">
-              <span className="text-xl font-black text-foreground">
-                ₹{exp.amount.toLocaleString()}
-              </span>
-              <button className="text-xs font-bold text-primary hover:underline">Details →</button>
-            </div>
-          </motion.div>
-        ))}
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Expenses Management</h1>
+          <p className="text-sm text-gray-500">
+            Track, approve, and process employee company expenses with verifiable audit trails.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+            {isFetching ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button
+            onClick={handleExpenseReportDownloadPDF}
+            className="px-3.5 py-2 text-sm font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 shadow-xs flex items-center gap-1.5 transition-colors">
+            <Download size={15} /> Export PDF Report
+          </button>
+          <button
+            onClick={handleDownloadCSV}
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 shadow-xs flex items-center gap-1.5">
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowFormModal(true)}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow-sm">
+            + New Expense
+          </button>
+        </div>
       </div>
 
-      {/* Record Expense Dialog */}
-      <Dialog
-        visible={showForm}
-        onHide={() => setShowForm(false)}
-        header="Record Expense"
-        modal
-        className="w-full max-w-xl mx-4"
-        contentClassName="p-8"
-        headerClassName="px-8 pt-8 pb-4 text-xl font-black tracking-tight border-none"
-        pt={{
-          root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-              Description
-            </label>
-            <Input
-              placeholder="e.g. Team lunch for Q2 planning"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <p className="text-xs font-semibold text-gray-500 uppercase">Total Expenses</p>
+          <p className="text-xl font-bold text-gray-900 mt-1">
+            {formatCurrency(stats.totalExpenses)}
+          </p>
+        </div>
+        <div className="p-4 bg-yellow-50/50 rounded-lg border border-yellow-200 shadow-sm">
+          <p className="text-xs font-semibold text-yellow-700 uppercase">
+            Pending ({stats.pendingCount})
+          </p>
+          <p className="text-xl font-bold text-yellow-900 mt-1">
+            {formatCurrency(stats.pendingAmount)}
+          </p>
+        </div>
+        <div className="p-4 bg-blue-50/50 rounded-lg border border-blue-200 shadow-sm">
+          <p className="text-xs font-semibold text-blue-700 uppercase">
+            Approved ({stats.approvedCount})
+          </p>
+          <p className="text-xl font-bold text-blue-900 mt-1">
+            {formatCurrency(stats.approvedAmount)}
+          </p>
+        </div>
+        <div className="p-4 bg-green-50/50 rounded-lg border border-green-200 shadow-sm">
+          <p className="text-xs font-semibold text-green-700 uppercase">Paid ({stats.paidCount})</p>
+          <p className="text-xl font-bold text-green-900 mt-1">
+            {formatCurrency(stats.paidAmount)}
+          </p>
+        </div>
+        <div className="p-4 bg-red-50/50 rounded-lg border border-red-200 shadow-sm">
+          <p className="text-xs font-semibold text-red-700 uppercase">
+            Rejected ({stats.rejectedCount})
+          </p>
+          <p className="text-xl font-bold text-red-900 mt-1">
+            {formatCurrency(stats.rejectedAmount)}
+          </p>
+        </div>
+      </div>
+
+      {/* REPORTS & DATE RANGE SECTION */}
+      <div className="p-5 bg-white rounded-lg border border-gray-200 shadow-sm space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-gray-100">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <svg
+                className="w-4 h-4 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Expense Reports & Export Center
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Select date ranges and export filtered expense reports ({dateFilteredExpenses.length}{' '}
+              record
+              {dateFilteredExpenses.length === 1 ? '' : 's'}).
+            </p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-                Category
-              </label>
-              <Select
-                options={EXPENSE_CATEGORIES}
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.value })}
-                placeholder="Select"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-                Amount (₹)
-              </label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={String(form.amount || '')}
-                onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
-            <Button
-              variant="ghost"
-              label="Cancel"
-              onClick={() => {
-                setShowForm(false);
-                setForm(emptyForm);
-              }}
-              className="rounded-xl!"
-            />
-            <Button
-              label="Record Expense"
-              onClick={handleSubmit}
-              icon="pi pi-check"
-              className="rounded-xl! px-8!"
-            />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDownloadCSV}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Export CSV (.csv)
+            </button>
+            <button
+              type="button"
+              onClick={handleExpenseReportDownloadPDF}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-800 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Download PDF (.pdf)
+            </button>
           </div>
         </div>
-      </Dialog>
+
+        {/* DATE PRESETS BUTTON BAR */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-gray-600 mr-1 flex items-center gap-1">
+            <svg
+              className="w-3.5 h-3.5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Period:
+          </span>
+
+          {[
+            { id: 'all', label: 'All Time' },
+            { id: '7days', label: 'Last 7 Days' },
+            { id: '30days', label: 'Last 30 Days' },
+            { id: 'last_month', label: 'Last Month' },
+            { id: '1year', label: 'Last Year' },
+            { id: '3years', label: 'Last 3 Years' },
+            { id: 'custom', label: 'Custom Range...' },
+          ].map((preset) => {
+            const isActive = datePreset === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => setDatePreset(preset.id as DateRangePreset)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* CUSTOM DATE INPUTS (Shown when 'custom' preset selected) */}
+        {datePreset === 'custom' && (
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-dashed border-gray-200">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-600 font-medium">From:</label>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-2.5 py-1.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-600 font-medium">To:</label>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-2.5 py-1.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            {(customStartDate || customEndDate) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomStartDate('');
+                  setCustomEndDate('');
+                }}
+                className="text-xs text-red-600 hover:underline">
+                Clear Dates
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+          {/* Search Input */}
+          <div className="w-full md:w-1/3">
+            <input
+              type="text"
+              placeholder="Search by title, employee, vendor, or #"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <select
+              value={activeCategory}
+              onChange={(e) => setActiveCategory(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  Category: {cat}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={activeStatus}
+              onChange={(e) => setActiveStatus(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              {EXPENSE_STATUSES.map((st) => (
+                <option key={st} value={st}>
+                  Status: {st}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={resetAllFiltersWithDate}
+              className="text-sm text-gray-500 hover:text-gray-800 underline px-2 py-1">
+              Reset Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        {isLoading ? (
+          <div className="p-12 text-center text-gray-500">Loading expenses...</div>
+        ) : isError ? (
+          <div className="p-12 text-center text-red-600">
+            <p>Failed to load expenses.</p>
+            <p className="text-xs text-gray-400 mt-1">{JSON.stringify(error)}</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm hover:bg-red-100">
+              Try Again
+            </button>
+          </div>
+        ) : dateFilteredExpenses.length === 0 ? (
+          <div className="p-12 text-center text-gray-500">
+            No expenses found matching the selected criteria or date range.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500 font-medium">
+                <tr>
+                  <th className="px-4 py-3">Expense #</th>
+                  <th className="px-4 py-3">Title & Vendor</th>
+                  <th className="px-4 py-3">Employee / Team</th>
+                  <th className="px-4 py-3">Category</th>
+                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 text-gray-700">
+                {dateFilteredExpenses.map((expense: ExpenseRecord) => {
+                  const status = expense.status?.toLowerCase();
+                  const participants =
+                    (expense as any).participants || (expense as any).participant_ids;
+                  const isShared = Array.isArray(participants) && participants.length > 0;
+
+                  return (
+                    <tr key={expense.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                        {expense.expense_number || `#${expense.id}`}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{expense.title}</div>
+                        <div className="text-xs text-gray-500">{expense.vendor_name || 'N/A'}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>{expense.employee_name || 'N/A'}</div>
+                        {isShared && (
+                          <span className="inline-flex items-center text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 mt-0.5">
+                            Shared ({participants.length} people)
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">{expense.category}</td>
+                      <td className="px-4 py-3 font-semibold text-gray-900">
+                        {formatCurrency(Number(expense.amount || 0))}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadge(
+                            expense.status
+                          )}`}>
+                          {expense.status || 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right space-x-2">
+                        <button
+                          onClick={() => openDetails(expense)}
+                          className="text-xs font-medium text-gray-600 hover:text-gray-900 underline">
+                          Details
+                        </button>
+
+                        {status === 'pending' && (
+                          <>
+                            <button
+                              disabled={isUpdatingStatus}
+                              onClick={() => handleApprove(expense.id)}
+                              className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 disabled:opacity-50">
+                              Approve
+                            </button>
+                            <button
+                              disabled={isUpdatingStatus}
+                              onClick={() => setRejectionModalId(expense.id)}
+                              className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 disabled:opacity-50">
+                              Reject
+                            </button>
+                          </>
+                        )}
+
+                        {status === 'approved' && (
+                          <button
+                            disabled={isUpdatingStatus}
+                            onClick={() => handleMarkAsPaid(expense.id)}
+                            className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100 disabled:opacity-50">
+                            Mark Paid
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* CREATE EXPENSE FORM MODAL */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-bold mb-4">Record New Expense</h2>
+            <form onSubmit={onFormSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700">Title</label>
+                <input
+                  name="title"
+                  required
+                  type="text"
+                  placeholder="e.g. Flight tickets or Team Dinner"
+                  className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Total Amount</label>
+                  <input
+                    name="amount"
+                    required
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={amountInput}
+                    onChange={(e) => setAmountInput(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Expense Date</label>
+                  <input
+                    name="expenseDate"
+                    required
+                    type="date"
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Category</label>
+                  <select
+                    name="category"
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    {EXPENSE_CATEGORIES.filter((c) => c !== 'All').map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-md space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-semibold text-blue-900 block">
+                      Shared / Multi-User Expense
+                    </label>
+                    <p className="text-[11px] text-gray-600">
+                      Include involved team members (e.g. Travel, Outings, Group Meals)
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={isSharedExpense}
+                    onChange={(e) => setIsSharedExpense(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                </div>
+
+                {isSharedExpense && (
+                  <div className="space-y-2 pt-2 border-t border-blue-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        Select Participants ({selectedUserIds.length} selected)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSelectAllUsers}
+                        className="text-xs text-blue-700 hover:text-blue-900 font-medium underline">
+                        {selectedUserIds.length === MOCK_USERS.length
+                          ? 'Deselect All'
+                          : 'Select All'}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
+                      {MOCK_USERS.map((user) => {
+                        const isChecked = selectedUserIds.includes(user.id);
+                        return (
+                          <div
+                            key={user.id}
+                            onClick={() => toggleUserSelection(user.id)}
+                            className={`flex items-center gap-2 p-2 rounded border text-xs cursor-pointer select-none transition-colors ${
+                              isChecked
+                                ? 'bg-blue-100/80 border-blue-400 text-blue-900 font-medium'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                            }`}>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              readOnly
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 pointer-events-none"
+                            />
+                            <div className="truncate">
+                              <p className="truncate font-medium">{user.name}</p>
+                              {user.department && (
+                                <p className="text-[10px] text-gray-500 truncate">
+                                  {user.department}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {parsedAmount > 0 && participantCount > 0 && (
+                      <div className="flex items-center justify-between text-xs bg-white p-2.5 rounded border border-blue-300 text-blue-900 mt-2 font-medium">
+                        <span>Cost per person ({participantCount} participants):</span>
+                        <span className="font-bold text-sm text-blue-700">
+                          {formatCurrency(splitAmount)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Vendor</label>
+                  <input
+                    name="vendor_name"
+                    type="text"
+                    placeholder="e.g. Delta Airlines / Marriott"
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700">Payment Mode</label>
+                  <input
+                    name="payment_mode"
+                    type="text"
+                    placeholder="e.g. Corporate Card"
+                    className="mt-1 w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700">
+                  Receipt Attachment
+                </label>
+                <input
+                  name="receipt"
+                  type="file"
+                  className="mt-1 w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={handleCloseFormModal}
+                  className="px-4 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 font-medium">
+                  {isSubmitting ? 'Submitting...' : 'Save Expense'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DETAILS MODAL */}
+      {showDetailModal && selectedExpense && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl space-y-4">
+            <div className="flex justify-between items-start border-b pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">{selectedExpense.title}</h3>
+                <p className="text-xs text-gray-500">{selectedExpense.expense_number}</p>
+              </div>
+              <span
+                className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadge(
+                  selectedExpense.status
+                )}`}>
+                {selectedExpense.status}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-xs text-gray-500">Amount</p>
+                <p className="font-semibold text-gray-900">
+                  {formatCurrency(Number(selectedExpense.amount || 0))}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Category</p>
+                <p className="font-medium text-gray-800">{selectedExpense.category}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Employee</p>
+                <p className="font-medium text-gray-800">
+                  {selectedExpense.employee_name || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Vendor</p>
+                <p className="font-medium text-gray-800">{selectedExpense.vendor_name || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Payment Mode</p>
+                <p className="font-medium text-gray-800">{selectedExpense.payment_mode || 'N/A'}</p>
+              </div>
+
+              {((selectedExpense as any).participants ||
+                (selectedExpense as any).participant_ids) && (
+                <div className="col-span-2 pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1 font-medium">Involved Team Members</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {MOCK_USERS.filter((u) =>
+                      ((selectedExpense as any).participant_ids || []).includes(u.id)
+                    ).map((user) => (
+                      <span
+                        key={user.id}
+                        className="px-2 py-0.5 text-xs bg-blue-50 text-blue-800 rounded border border-blue-200">
+                        {user.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t">
+              <button
+                type="button"
+                onClick={() => handleDownloadSingleVoucherPDF(selectedExpense)}
+                className="px-3.5 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md text-xs font-bold flex items-center gap-1.5 transition-colors">
+                <FileText size={14} /> Download Voucher (PDF)
+              </button>
+              <button
+                onClick={closeDetails}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REJECTION REASON MODAL */}
+      {rejectionModalId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-sm w-full p-5 shadow-xl space-y-4">
+            <h3 className="text-md font-bold text-gray-900">Reject Expense</h3>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Reason for Rejection (Optional)
+              </label>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={3}
+                placeholder="e.g. Missing valid receipt"
+                className="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setRejectionModalId(null);
+                  setRejectionReason('');
+                }}
+                className="px-3 py-1.5 border rounded text-xs text-gray-600 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                onClick={onConfirmReject}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-red-600 text-white rounded text-xs hover:bg-red-700 disabled:opacity-50">
+                Confirm Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default ExpensesPage;

@@ -106,13 +106,12 @@ export const ModuleQuickHub: React.FC<ModuleQuickHubProps> = ({ liveCounts, stat
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="mb-10"
-    >
+      className="mb-10">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em]">
-          Sidebar Module Live Hub
-        </h3>
-        <span className="text-[10px] font-bold text-muted/60">Real-time RTK Data Sync</span>
+        {/* <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em]">
+          Live Hub
+        </h3> */}
+        {/* <span className="text-[10px] font-bold text-muted/60">Real-time RTK Data Sync</span> */}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
@@ -121,8 +120,7 @@ export const ModuleQuickHub: React.FC<ModuleQuickHubProps> = ({ liveCounts, stat
             key={card.title}
             whileHover={{ y: -4, scale: 1.02 }}
             onClick={() => navigate(card.route)}
-            className="bg-surface-elevated p-4 rounded-3xl border border-border-subtle shadow-soft cursor-pointer hover:border-primary/40 transition-all flex flex-col justify-between min-h-[120px] group"
-          >
+            className="bg-surface-elevated p-4 rounded-3xl border border-border-subtle shadow-soft cursor-pointer hover:border-primary/40 transition-all flex flex-col justify-between min-h-[120px] group">
             <div className="flex items-center justify-between mb-2">
               <div className={`p-2.5 rounded-2xl ${card.color}`}>
                 <card.icon size={16} />

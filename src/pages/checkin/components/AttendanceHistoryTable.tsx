@@ -136,8 +136,7 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-11 px-4 pr-8 bg-surface-subtle rounded-2xl border border-border-subtle text-xs font-bold text-foreground focus:outline-none focus:border-primary appearance-none cursor-pointer"
-            >
+              className="h-11 px-4 pr-8 bg-surface-subtle rounded-2xl border border-border-subtle text-xs font-bold text-foreground focus:outline-none focus:border-primary appearance-none cursor-pointer">
               <option value="ALL">All Statuses</option>
               <option value="PRESENT">Present</option>
               <option value="LATE">Late Arrivals</option>
@@ -193,8 +192,7 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
               <tr
                 key={r.id}
                 onClick={() => onSelectRecord && onSelectRecord(r)}
-                className="hover:bg-surface-subtle/80 transition-colors cursor-pointer"
-              >
+                className="hover:bg-surface-subtle/80 transition-colors cursor-pointer">
                 <td className="py-4 px-6 text-foreground font-black">{formatDate(r.date)}</td>
                 <td className="py-4 px-6">{getStatusBadge(r.status)}</td>
                 <td className="py-4 px-6 text-foreground">{r.checkIn || '---'}</td>

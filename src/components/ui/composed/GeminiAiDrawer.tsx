@@ -191,8 +191,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-[480px] bg-surface-elevated border-l border-border-subtle shadow-2xl z-50 flex flex-col"
-          >
+            className="fixed right-0 top-0 bottom-0 w-full sm:w-[480px] bg-surface-elevated border-l border-border-subtle shadow-2xl z-50 flex flex-col">
             {/* Drawer Header */}
             <div className="p-5 border-b border-border-subtle flex items-center justify-between bg-surface-subtle/50">
               <div className="flex items-center gap-3">
@@ -223,8 +222,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                     showKeyInput
                       ? 'bg-primary text-white'
                       : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'
-                  }`}
-                >
+                  }`}>
                   <Key size={18} />
                 </button>
 
@@ -232,8 +230,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                   type="button"
                   title="Clear Chat History"
                   onClick={handleClearHistory}
-                  className="p-2 rounded-lg text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer"
-                >
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer">
                   <RotateCcw size={18} />
                 </button>
 
@@ -241,8 +238,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                   type="button"
                   title="Close Copilot"
                   onClick={onClose}
-                  className="p-2 rounded-lg text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer"
-                >
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors cursor-pointer">
                   <X size={20} />
                 </button>
               </div>
@@ -255,8 +251,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden border-b border-border-subtle bg-surface-subtle p-4 flex flex-col gap-2"
-                >
+                  className="overflow-hidden border-b border-border-subtle bg-surface-subtle p-4 flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs font-bold text-foreground">
                     <span className="flex items-center gap-1.5">
                       <Key size={14} className="text-primary" />
@@ -266,8 +261,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[11px] text-primary hover:underline font-semibold"
-                    >
+                      className="text-[11px] text-primary hover:underline font-semibold">
                       Get Free Key ↗
                     </a>
                   </div>
@@ -282,8 +276,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                     <Button
                       variant="primary"
                       onClick={handleSaveApiKey}
-                      className="h-9 px-4 text-xs font-bold rounded-lg! bg-primary! text-white!"
-                    >
+                      className="h-9 px-4 text-xs font-bold rounded-lg! bg-primary! text-white!">
                       Save Key
                     </Button>
                   </div>
@@ -298,16 +291,14 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                   key={msg.id}
                   className={`flex items-start gap-3 ${
                     msg.sender === 'user' ? 'flex-row-reverse' : ''
-                  }`}
-                >
+                  }`}>
                   {/* Avatar */}
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-xs ${
                       msg.sender === 'user'
                         ? 'bg-primary shadow-xs'
                         : 'bg-surface border border-border-strong text-primary shadow-xs'
-                    }`}
-                  >
+                    }`}>
                     {msg.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
                   </div>
 
@@ -317,8 +308,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                       msg.sender === 'user'
                         ? 'bg-primary text-white font-medium rounded-tr-none shadow-md shadow-primary/10'
                         : 'bg-surface border border-border-subtle text-foreground rounded-tl-none shadow-soft backdrop-blur-md'
-                    }`}
-                  >
+                    }`}>
                     <FormattedChatMessage content={msg.text} isUser={msg.sender === 'user'} />
 
                     <div
@@ -326,14 +316,12 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                         msg.sender === 'user'
                           ? 'border-white/20 text-white/80'
                           : 'border-border-subtle text-muted-foreground'
-                      }`}
-                    >
+                      }`}>
                       <span className="font-mono text-[9px]">{msg.timestamp}</span>
                       <button
                         type="button"
                         onClick={() => handleCopy(msg.id, msg.text)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:underline cursor-pointer"
-                      >
+                        className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:underline cursor-pointer">
                         {copiedId === msg.id ? (
                           <>
                             <Check size={12} /> Copied
@@ -375,8 +363,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                     type="button"
                     onClick={() => handleSend(qp.prompt)}
                     disabled={loading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-subtle border border-border-subtle hover:border-primary/50 text-[11px] font-semibold text-foreground whitespace-nowrap transition-colors cursor-pointer disabled:opacity-50"
-                  >
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-subtle border border-border-subtle hover:border-primary/50 text-[11px] font-semibold text-foreground whitespace-nowrap transition-colors cursor-pointer disabled:opacity-50">
                     <IconComp size={13} className="text-primary" />
                     {qp.label}
                   </button>
@@ -391,8 +378,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                   e.preventDefault();
                   handleSend();
                 }}
-                className="flex items-center gap-2"
-              >
+                className="flex items-center gap-2">
                 <input
                   type="text"
                   placeholder="Ask Aether Copilot anything about your ERP..."
@@ -405,8 +391,7 @@ export const GeminiAiDrawer: React.FC<GeminiAiDrawerProps> = ({ visible, onClose
                   type="submit"
                   variant="primary"
                   disabled={loading || !inputPrompt.trim()}
-                  className="h-11 px-4 rounded-xl! bg-primary! text-white! cursor-pointer flex items-center justify-center shrink-0"
-                >
+                  className="h-11 px-4 rounded-xl! bg-primary! text-white! cursor-pointer flex items-center justify-center shrink-0">
                   <Send size={16} />
                 </Button>
               </form>

@@ -43,8 +43,7 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
             <Button
               variant="primary"
               onClick={() => onGeminiApiKeySave(keyInput)}
-              className="h-10 px-4 rounded-md! font-bold text-xs bg-primary! text-white! cursor-pointer"
-            >
+              className="h-10 px-4 rounded-md! font-bold text-xs bg-primary! text-white! cursor-pointer">
               Save
             </Button>
           </div>
@@ -66,8 +65,7 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
           <Button
             variant="secondary"
             onClick={onOpenTokenModal}
-            className="h-10 px-4 rounded-md! font-bold text-xs uppercase underline tracking-wider cursor-pointer hover:bg-primary-soft hover:text-primary transition-colors"
-          >
+            className="h-10 px-4 rounded-md! font-bold text-xs uppercase underline tracking-wider cursor-pointer hover:bg-primary-soft hover:text-primary transition-colors">
             Manage Tokens
           </Button>
         }

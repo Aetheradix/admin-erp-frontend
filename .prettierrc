@@ -8,6 +8,6 @@
   "printWidth": 100,
   "arrowParens": "always",
   "bracketSpacing": true,
-  "bracketSameLine": false,
+  "bracketSameLine": true,
   "endOfLine": "lf"
 }

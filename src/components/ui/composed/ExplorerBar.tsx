@@ -8,7 +8,7 @@ interface ExplorerBarProps {
   icon?: LucideIcon;
   title: string;
   countLabel: string;
-  tabs: string[];
+  tabs: readonly string[];
   activeTab: string;
   onTabChange: (tab: string) => void;
   action?: React.ReactNode;

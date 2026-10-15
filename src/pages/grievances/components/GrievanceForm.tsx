@@ -74,8 +74,7 @@ export const GrievanceForm = ({ onSubmit, onCancel }: GrievanceFormProps) => {
                 formData.isAnonymous
                   ? 'Submission is currently anonymous. Click to share identity.'
                   : 'Identity will be shared. Click to submit anonymously.'
-              }
-            >
+              }>
               {formData.isAnonymous ? <Shield size={18} /> : <ShieldOff size={18} />}
               <span className="font-bold text-sm">
                 {formData.isAnonymous ? 'Submission is Anonymous' : 'Identity will be Shared'}
@@ -115,16 +114,14 @@ export const GrievanceForm = ({ onSubmit, onCancel }: GrievanceFormProps) => {
           variant="ghost"
           onClick={onCancel}
           className="px-8! rounded-3xl! font-bold text-muted!"
-          aria-label="Discard grievance"
-        >
+          aria-label="Discard grievance">
           Discard
         </Button>
         <Button
           variant="primary"
           onClick={handleApply}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
-          aria-label="Submit grievance report"
-        >
+          aria-label="Submit grievance report">
           Submit Grievance
         </Button>
       </div>

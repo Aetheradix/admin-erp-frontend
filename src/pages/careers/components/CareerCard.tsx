@@ -17,15 +17,13 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
         <button
           onClick={() => onEdit?.(String(career.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-info hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
-          title="Edit Position"
-        >
+          title="Edit Position">
           <Edit2 size={16} />
         </button>
         <button
           onClick={() => onDelete?.(String(career.id))}
           className="w-10 h-10 rounded-3xl bg-surface-subtle hover:bg-error hover:text-white transition-all duration-300 flex items-center justify-center border border-border-subtle shadow-sm"
-          title="Remove Position"
-        >
+          title="Remove Position">
           <Trash2 size={16} />
         </button>
       </div>
@@ -81,8 +79,7 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
           <Button
             onClick={() => onViewDetails?.(String(career.id))}
             variant="ghost"
-            className="w-full justify-between h-14 px-6 rounded-3xl! group/btn hover:bg-primary! hover:text-white! transition-all duration-300 border border-transparent hover:border-primary!"
-          >
+            className="w-full justify-between h-14 px-6 rounded-3xl! group/btn hover:bg-primary! hover:text-white! transition-all duration-300 border border-transparent hover:border-primary!">
             <span className="font-black text-sm uppercase tracking-widest">Explore Role</span>
             <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
           </Button>

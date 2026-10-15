@@ -69,8 +69,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           sizeClasses[size],
           className
         )}
-        {...props}
-      >
+        {...props}>
         {content}
       </AntButton>
     );

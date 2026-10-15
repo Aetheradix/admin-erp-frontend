@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { Calendar, User } from 'lucide-react';
+import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
@@ -207,7 +207,13 @@ export function TasksPage() {
   const TABS = ['All', 'To Do', 'In Progress', 'Done'];
   const { data: usersData = [] } = useGetUsersQuery();
   const { data: projectsData = [] } = useGetProjectsQuery();
+  const [viewMode, setViewMode] = useState<'kanban' | 'grid'>('kanban');
   const filtered = activeTab === 'All' ? tasks : tasks.filter((t) => t.status === activeTab);
+
+  const handleUpdateStatus = (taskId: number, newStatus: Task['status']) => {
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
+    message.success(`Task moved to "${newStatus}"`);
+  };
 
   const [syncToJira, setSyncToJira] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -361,8 +367,7 @@ export function TasksPage() {
         {Object.entries(counts).map(([status, count]) => (
           <div
             key={status}
-            className={`rounded-xl border p-6 shadow-soft flex items-center justify-between ${statusColors[status]}`}
-          >
+            className={`rounded-xl border p-6 shadow-soft flex items-center justify-between ${statusColors[status]}`}>
             <div className="flex flex-col gap-1">
               <span className="text-2xl font-black text-foreground">{count}</span>
               <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
@@ -373,68 +378,185 @@ export function TasksPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-4 px-8 flex items-center justify-between">
-        <span className="text-sm font-black text-foreground uppercase tracking-wider">
-          Task Board
-        </span>
-        <Tabs items={TABS} activeItem={activeTab} onItemChange={setActiveTab} />
+      {/* Task Board Bar with Kanban vs Grid Switcher */}
+      <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-4 px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-black text-foreground uppercase tracking-wider">
+            Pipeline View
+          </span>
+          <div className="flex items-center p-1 bg-surface-subtle rounded-xl border border-border-subtle">
+            <button
+              type="button"
+              id="kanban-view-btn"
+              onClick={() => setViewMode('kanban')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                viewMode === 'kanban'
+                  ? 'bg-white text-primary shadow-xs'
+                  : 'text-muted hover:text-foreground'
+              }`}>
+              <Columns size={14} />
+              <span>Kanban Board</span>
+            </button>
+            <button
+              type="button"
+              id="grid-view-btn"
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                viewMode === 'grid'
+                  ? 'bg-white text-primary shadow-xs'
+                  : 'text-muted hover:text-foreground'
+              }`}>
+              <LayoutGrid size={14} />
+              <span>Grid View</span>
+            </button>
+          </div>
+        </div>
+        {viewMode === 'grid' && (
+          <Tabs items={TABS} activeItem={activeTab} onItemChange={setActiveTab} />
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((task, i) => {
-          const renderDescriptionWithLinks = (text: string) => {
-            if (!text) return null;
-            const jiraRegex = /🔗 \*\*Jira Issue:\*\* \[(.+?)\]\((.+?)\)/;
-            const match = text.match(jiraRegex);
-            if (match) {
-              const preText = text.split('🔗')[0];
-              const issueKey = match[1];
-              const issueLink = match[2];
-              return (
-                <div className="text-xs text-muted-foreground flex flex-col gap-1.5 pt-1">
-                  {preText && <p className="whitespace-pre-line leading-relaxed">{preText}</p>}
-                  <a
-                    href={issueLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-primary hover:underline font-bold text-[10px] w-fit"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Jira Issue: {issueKey}
-                  </a>
-                </div>
-              );
-            }
-            return (
-              <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed pt-1 line-clamp-3">
-                {text}
-              </p>
-            );
-          };
+      {viewMode === 'kanban' ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {(['To Do', 'In Progress', 'Done'] as const).map((status) => {
+            const columnTasks = tasks.filter((t) => t.status === status);
+            const statusConfig = {
+              'To Do': { bar: 'bg-blue-500' },
+              'In Progress': { bar: 'bg-amber-500' },
+              Done: { bar: 'bg-emerald-500' },
+            }[status];
 
-          return (
+            return (
+              <div
+                key={status}
+                className="flex flex-col gap-4 p-5 rounded-3xl border border-border-subtle bg-surface-subtle/40 min-h-[500px]">
+                {/* Column Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${statusConfig.bar}`} />
+                    <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+                      {status}
+                    </h3>
+                  </div>
+                  <span className="w-6 h-6 rounded-full bg-white text-muted text-xs font-black flex items-center justify-center border border-border-subtle shadow-2xs">
+                    {columnTasks.length}
+                  </span>
+                </div>
+
+                {/* Column Cards */}
+                <div className="flex flex-col gap-4 flex-1">
+                  {columnTasks.map((task, i) => (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: i * 0.05 }}
+                      className="bg-white rounded-2xl border border-border-subtle shadow-soft p-5 flex flex-col gap-3.5 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="text-sm font-bold text-foreground leading-snug flex-1">
+                          {task.title}
+                        </h4>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}>
+                          {task.priority}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-primary/80 bg-primary/5 self-start px-2 py-0.5 rounded-md border border-primary/10">
+                        Project #{task.project}
+                      </span>
+                      <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed line-clamp-2">
+                        {task.description}
+                      </p>
+                      <div className="flex items-center justify-between pt-2.5 border-t border-border-subtle/50 text-muted text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <User size={12} />
+                          <span>User #{task.assignee}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar size={12} />
+                          <span>
+                            {new Date(task.dueDate).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action Progression */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-border-subtle/30">
+                        {task.status === 'To Do' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateStatus(task.id, 'In Progress')}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-xs font-black transition-all cursor-pointer">
+                            <span>Start Task</span>
+                            <ArrowRight size={13} />
+                          </button>
+                        )}
+                        {task.status === 'In Progress' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(task.id, 'To Do')}
+                              className="py-1.5 px-2 rounded-xl bg-surface-subtle hover:bg-surface-elevated text-muted text-xs font-bold transition-all cursor-pointer">
+                              &larr; To Do
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(task.id, 'Done')}
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black shadow-xs transition-all cursor-pointer">
+                              <CheckCircle2 size={13} />
+                              <span>Done</span>
+                            </button>
+                          </>
+                        )}
+                        {task.status === 'Done' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateStatus(task.id, 'In Progress')}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 rounded-xl bg-surface-subtle hover:bg-surface-elevated text-muted hover:text-foreground text-xs font-bold transition-all cursor-pointer">
+                            <Clock size={13} />
+                            <span>Reopen Task</span>
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                  {columnTasks.length === 0 && (
+                    <div className="flex flex-col items-center justify-center flex-1 py-12 text-center text-muted border-2 border-dashed border-border-subtle rounded-2xl">
+                      <span className="text-xs font-bold">No tasks in {status}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((task, i) => (
             <motion.div
               key={task.id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: i * 0.05 }}
-              className="bg-white rounded-xl border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300"
-            >
+              className="bg-white rounded-xl border border-border-subtle shadow-soft p-7 flex flex-col gap-5 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between">
                 <h3 className="text-sm font-bold text-foreground leading-snug flex-1 pr-3">
                   {task.title}
                 </h3>
                 <span
-                  className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}
-                >
+                  className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${priorityColors[task.priority]}`}>
                   {task.priority}
                 </span>
               </div>
               <span className="text-xs font-medium text-primary/80 bg-primary/5 self-start px-3 py-1 rounded">
-                {task.project}
+                Project #{task.project}
               </span>
-              {renderDescriptionWithLinks(task.description)}
+              <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed pt-1 line-clamp-3">
+                {task.description}
+              </p>
               <div className="flex items-center justify-between pt-3 border-t border-border-subtle/50">
                 <div className="flex items-center gap-2 text-muted">
                   <User size={13} />
@@ -451,9 +573,9 @@ export function TasksPage() {
                 </div>
               </div>
             </motion.div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* New Task Dialog */}
       <Dialog
@@ -467,8 +589,7 @@ export function TasksPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
@@ -586,8 +707,7 @@ export function TasksPage() {
               <div className="flex flex-col gap-0.5">
                 <label
                   htmlFor="syncToJira"
-                  className="text-xs font-bold text-foreground cursor-pointer select-none"
-                >
+                  className="text-xs font-bold text-foreground cursor-pointer select-none">
                   Sync Task with Jira
                 </label>
                 <span className="text-[10px] text-muted italic">

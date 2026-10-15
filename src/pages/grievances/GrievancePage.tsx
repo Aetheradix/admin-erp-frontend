@@ -111,8 +111,7 @@ export function GrievancePage() {
         pt={{
           root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <GrievanceForm onSubmit={handleGrievanceSubmit} onCancel={() => setShowForm(false)} />
       </Dialog>
     </div>

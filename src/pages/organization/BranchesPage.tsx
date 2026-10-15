@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { MapPin, Users, User } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
+import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
-import { Button } from '@/components/ui/primitives/Button';
+import { motion } from 'framer-motion';
+import { MapPin, User, Users } from 'lucide-react';
+import { useState } from 'react';
 
 interface Branch {
   id: number;
@@ -113,7 +112,7 @@ export function BranchesPage() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader
+      {/* <PageHeader
         title="Branches"
         description="Manage your organization's physical locations and regional offices."
         breadcrumbs={[
@@ -126,7 +125,7 @@ export function BranchesPage() {
           onClick: () => setShowForm(true),
           icon: 'pi pi-plus',
         }}
-      />
+      /> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {branches.map((branch, i) => (
@@ -135,8 +134,7 @@ export function BranchesPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.08 }}
-            className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300"
-          >
+            className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300">
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-1">
                 <h3 className="text-lg font-black text-foreground tracking-tight">{branch.name}</h3>
@@ -146,8 +144,7 @@ export function BranchesPage() {
                 </div>
               </div>
               <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeColors[branch.type] || 'bg-surface-subtle text-muted'}`}
-              >
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeColors[branch.type] || 'bg-surface-subtle text-muted'}`}>
                 {branch.type}
               </span>
             </div>
@@ -163,8 +160,7 @@ export function BranchesPage() {
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-border-subtle">
               <span
-                className={`text-[10px] font-extrabold uppercase tracking-wider ${branch.status === 'Active' ? 'text-success' : 'text-warning'}`}
-              >
+                className={`text-[10px] font-extrabold uppercase tracking-wider ${branch.status === 'Active' ? 'text-success' : 'text-warning'}`}>
                 ● {branch.status}
               </span>
               <button className="text-xs font-bold text-primary hover:underline">Manage →</button>
@@ -185,8 +181,7 @@ export function BranchesPage() {
         pt={{
           root: { className: 'rounded-[32px] overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">

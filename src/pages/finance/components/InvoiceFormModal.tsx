@@ -107,8 +107,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
         mask: {
           className: 'backdrop-blur-md bg-black/40',
         },
-      }}
-    >
+      }}>
       <div className="max-h-[78vh] overflow-y-auto">
         <div className="px-8 pb-8 space-y-8">
           <section>
@@ -289,8 +288,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                   return (
                     <div
                       key={index}
-                      className="grid grid-cols-1 md:grid-cols-[1fr_120px_160px_160px_50px] gap-3 items-center"
-                    >
+                      className="grid grid-cols-1 md:grid-cols-[1fr_120px_160px_160px_50px] gap-3 items-center">
                       <div>
                         <label className="text-xs text-muted-foreground md:hidden">
                           Description
@@ -324,8 +322,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                         type="button"
                         disabled={form.items.length === 1}
                         onClick={() => removeItem(index)}
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-muted hover:text-error hover:bg-error/10 disabled:opacity-30 cursor-pointer"
-                      >
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-muted hover:text-error hover:bg-error/10 disabled:opacity-30 cursor-pointer">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -335,8 +332,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                 <button
                   type="button"
                   onClick={addItem}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border-strong text-xs font-bold text-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
-                >
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-border-strong text-xs font-bold text-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer">
                   <Plus size={16} />
                   Add Item
                 </button>

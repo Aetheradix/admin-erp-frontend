@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Button } from '@/components/ui/primitives/Button';
 import {
@@ -11,6 +12,8 @@ import {
   Building2,
   ShieldCheck,
   ArrowUpRight,
+  ExternalLink,
+  AlertCircle,
   Calendar as CalendarIcon,
   CheckCircle2,
   Sparkles,
@@ -34,7 +37,7 @@ interface EventCardProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onRegister?: (event: ERPEvent) => void;
-  onViewPass?: (event: ERPEvent) => void;
+  onTagClick?: (tag: string) => void;
   isRegistering?: boolean;
 }
 
@@ -54,19 +57,14 @@ const DEFAULT_IMAGE =
 
 export const EventCard = ({
   event,
-  onCardClick,
   onEdit,
   onDelete,
   onRegister,
-  onViewPass,
+  onTagClick,
   isRegistering,
 }: EventCardProps) => {
-  const { user } = useAuth();
-  const isAdmin = Boolean(
-    user?.role &&
-      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
-        String(user.role).toLowerCase().includes(r)
-      )
+  const [imageSrc, setImageSrc] = useState(
+    resolveImageUrl(event.image) || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
   );
 
   const fallbackCategoryImg = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
@@ -145,44 +143,36 @@ export const EventCard = ({
             <span className="text-sm font-black tracking-tight">{day}</span>
           </div>
 
-          {/* Glass Action Capsule - Admin Only */}
-          {isAdmin && (
-            <div
-              className="flex items-center gap-1 p-1 bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(String(event.id));
-                }}
-                className="w-8 h-8 rounded-xl bg-white/10 text-white hover:bg-white hover:text-primary flex items-center justify-center transition-all cursor-pointer"
-                title="Edit Event"
-              >
-                <Edit2 size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(String(event.id));
-                }}
-                className="w-8 h-8 rounded-xl bg-white/10 text-rose-300 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                title="Delete Event"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          )}
+          {/* Glass Action Capsule */}
+          <div className="flex items-center gap-1 p-1 bg-black/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(String(event.id));
+              }}
+              className="w-8 h-8 rounded-xl bg-white/10 text-white hover:bg-white hover:text-primary flex items-center justify-center transition-all cursor-pointer"
+              title="Edit Event">
+              <Edit2 size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(String(event.id));
+              }}
+              className="w-8 h-8 rounded-xl bg-white/10 text-rose-300 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              title="Delete Event">
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Bottom Floating Bar: Category & Status */}
         <div className="absolute bottom-3.5 inset-x-3.5 flex items-center justify-between z-10">
           <Badge
             variant={categoryVariants[event.category] || 'primary'}
-            className="rounded-xl px-3 py-1 text-[10px] font-black tracking-wider uppercase backdrop-blur-md bg-white/25 text-white border border-white/20 shadow-md"
-          >
+            className="rounded-xl px-3 py-1 text-[10px] font-black tracking-wider uppercase backdrop-blur-md bg-white/20 text-white border border-white/20 shadow-md">
             {event.category || 'General'}
           </Badge>
 
@@ -224,16 +214,35 @@ export const EventCard = ({
           </p>
         </div>
 
+        {/* Linkable Event Tag */}
+        {event.event_link && (
+          <a
+            href={event.event_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 dark:text-indigo-300 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors truncate">
+            <ExternalLink size={12} className="shrink-0" />
+            <span className="truncate">
+              Resource: {event.event_link.replace(/^https?:\/\//, '')}
+            </span>
+          </a>
+        )}
+
         {/* Tags */}
         {event.tags && event.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {event.tags.map((tag) => (
-              <span
+              <button
                 key={tag}
-                className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 px-2.5 py-0.5 rounded-lg border border-primary/15"
-              >
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTagClick?.(tag);
+                }}
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 hover:bg-primary/15 transition-colors px-2.5 py-0.5 rounded-lg border border-primary/15 cursor-pointer">
                 <Tag size={9} /> #{tag}
-              </span>
+              </button>
             ))}
           </div>
         )}
@@ -279,56 +288,53 @@ export const EventCard = ({
           </div>
         </div>
 
-        {/* Registration & Action CTA */}
-        <div onClick={(e) => e.stopPropagation()} className="pt-2">
-          {isPast ? (
-            <Button
-              variant="secondary"
-              onClick={handleCardClick}
-              className="w-full h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider bg-surface-subtle hover:bg-primary hover:text-white border border-border-subtle transition-all cursor-pointer"
-            >
-              <Sparkles size={14} />
-              <span>Event Ended • View Recap</span>
-            </Button>
-          ) : isRegistered ? (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider">
-                <CheckCircle2 size={14} />
-                <span>Registered</span>
-              </div>
-              {onViewPass && (
-                <button
-                  type="button"
-                  onClick={() => onViewPass(event)}
-                  className="h-11 px-3.5 rounded-2xl bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-1 text-xs font-black transition-all cursor-pointer shadow-md"
-                  title="View VIP Pass Ticket"
-                >
-                  <Ticket size={14} />
-                  <span className="hidden sm:inline">Pass</span>
-                </button>
-              )}
+        {/* CTA Button according to button_type */}
+        {event.button_type === 'Mandatory' ? (
+          <Button
+            variant="primary"
+            onClick={() => onRegister?.(event)}
+            disabled={isRegistering}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle size={15} />
+              <span>Mandatory Attendance</span>
             </div>
-          ) : (
-            <Button
-              variant="primary"
-              onClick={() => onRegister?.(event)}
-              disabled={isRegistering}
-              className="w-full h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isRegistering ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Registering...</span>
-                </>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <span>Register Now</span>
-                  <ArrowUpRight size={14} />
-                </div>
-              )}
-            </Button>
-          )}
-        </div>
+          </Button>
+        ) : event.button_type === 'View Details' ? (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (event.event_link) {
+                window.open(event.event_link, '_blank', 'noopener,noreferrer');
+              } else {
+                onRegister?.(event);
+              }
+            }}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider border border-border-subtle hover:bg-surface-subtle transition-all cursor-pointer">
+            <div className="flex items-center gap-1.5">
+              <span>View Details</span>
+              {event.event_link ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
+            </div>
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            onClick={() => onRegister?.(event)}
+            disabled={isRegistering}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+            {isRegistering ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Registering...</span>
+              </>
+            ) : (
+              <div className="flex items-center gap-1">
+                <span>Register Now</span>
+                <ArrowUpRight size={14} />
+              </div>
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

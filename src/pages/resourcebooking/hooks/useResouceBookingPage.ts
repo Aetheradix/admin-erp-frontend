@@ -1,5 +1,3 @@
-// src/hooks/useResourceBookingPage.ts
-
 import { useState } from 'react';
 
 import {
@@ -9,22 +7,18 @@ import {
   useCancelResourceBookingMutation,
   useDeleteResourceBookingMutation,
   useGetResourceBookingStatsQuery,
+  useGetResourcesQuery,
+  useCreateResourceMutation,
   type ResourceBooking,
+  type CreateResourceBookingRequest,
+  type CreateResourceRequest,
 } from '@/store/api/resourceBookingSlice';
 
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
-import type {
-  Resource,
-  ResourceBookingStatus,
-  CreateResourceBookingRequest,
-} from '../types/index.types';
+import type { Resource, ResourceBookingStatus } from '../types/index.types';
 
 export const useResourceBookingPage = () => {
-  // ============================================================
-  // UI State
-  // ============================================================
-
   const [showForm, setShowForm] = useState(false);
 
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
@@ -37,10 +31,6 @@ export const useResourceBookingPage = () => {
 
   const [activeStatus, setActiveStatus] = useState('All');
 
-  // ============================================================
-  // Filters
-  // ============================================================
-
   const RESOURCE_TYPES = ['All', 'Room', 'Equipment', 'Vehicle', 'Other'];
 
   const STATUSES: Array<'All' | ResourceBookingStatus> = [
@@ -52,9 +42,9 @@ export const useResourceBookingPage = () => {
     'Completed',
   ];
 
-  // ============================================================
-  // Queries
-  // ============================================================
+  const { data: resources = [], isLoading: resourcesLoading } = useGetResourcesQuery();
+
+  const [createResource, { isLoading: isCreatingResource }] = useCreateResourceMutation();
 
   const {
     data: allBookings = [],
@@ -70,72 +60,75 @@ export const useResourceBookingPage = () => {
 
   const { data: stats, isLoading: statsLoading } = useGetResourceBookingStatsQuery();
 
-  // ============================================================
-  // Mutations
-  // ============================================================
-
   const [createResourceBooking, { isLoading: isCreating }] = useCreateResourceBookingMutation();
 
   const [cancelResourceBooking, { isLoading: isCancelling }] = useCancelResourceBookingMutation();
 
   const [deleteResourceBooking, { isLoading: isDeleting }] = useDeleteResourceBookingMutation();
 
-  // ============================================================
-  // Filter My Bookings
-  // ============================================================
-
   const filteredMyBookings = myBookings.filter((booking) => {
-    const searchValue = search.toLowerCase();
+    const searchValue = search.trim().toLowerCase();
 
     const matchesSearch =
-      !search ||
+      !searchValue ||
       booking.resource_name?.toLowerCase().includes(searchValue) ||
       booking.purpose?.toLowerCase().includes(searchValue);
 
-    const matchesStatus = activeStatus === 'All' || booking.status === activeStatus;
+    const matchesStatus =
+      activeStatus === 'All' || booking.status.toLowerCase() === activeStatus.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
 
-  // ============================================================
-  // Filter All Bookings
-  // ============================================================
-
   const filteredAllBookings = allBookings.filter((booking) => {
-    const searchValue = search.toLowerCase();
+    const searchValue = search.trim().toLowerCase();
 
     const matchesSearch =
-      !search ||
+      !searchValue ||
       booking.resource_name?.toLowerCase().includes(searchValue) ||
       booking.username?.toLowerCase().includes(searchValue) ||
       booking.purpose?.toLowerCase().includes(searchValue);
 
-    const matchesStatus = activeStatus === 'All' || booking.status === activeStatus;
+    const matchesStatus =
+      activeStatus === 'All' || booking.status.toLowerCase() === activeStatus.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
-
-  // ============================================================
-  // Open Booking Form
-  // ============================================================
 
   const openBookingForm = (resource: Resource | null = null) => {
     setSelectedResource(resource);
     setShowForm(true);
   };
 
-  // ============================================================
-  // Close Booking Form
-  // ============================================================
-
   const closeBookingForm = () => {
     setShowForm(false);
     setSelectedResource(null);
   };
 
-  // ============================================================
-  // Create Booking
-  // ============================================================
+  const handleCreateResource = async (data: CreateResourceRequest) => {
+    console.log('1. Resource data:', data);
+
+    console.log('2. About to call API mutation');
+
+    try {
+      const result = await createResource(data).unwrap();
+
+      console.log('3. API SUCCESS:', result);
+
+      showToast({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Resource created successfully.',
+        life: 3000,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('3. API ERROR:', error);
+
+      throw error;
+    }
+  };
 
   const handleBookingSubmit = async (data: CreateResourceBookingRequest) => {
     try {
@@ -164,12 +157,10 @@ export const useResourceBookingPage = () => {
         detail: apiError.data?.message || 'Failed to create resource booking.',
         life: 3000,
       });
+
+      throw err;
     }
   };
-
-  // ============================================================
-  // Cancel Booking
-  // ============================================================
 
   const handleCancel = async (id: number) => {
     try {
@@ -198,10 +189,6 @@ export const useResourceBookingPage = () => {
       });
     }
   };
-
-  // ============================================================
-  // Delete Booking
-  // ============================================================
 
   const handleDelete = async (id: number) => {
     try {
@@ -235,10 +222,6 @@ export const useResourceBookingPage = () => {
     }
   };
 
-  // ============================================================
-  // Select Booking
-  // ============================================================
-
   const openBookingDetails = (booking: ResourceBooking) => {
     setSelectedBooking(booking);
   };
@@ -247,70 +230,47 @@ export const useResourceBookingPage = () => {
     setSelectedBooking(null);
   };
 
-  // ============================================================
-  // Loading State
-  // ============================================================
+  const isLoading = resourcesLoading || allBookingsLoading || myBookingsLoading || statsLoading;
 
-  const isLoading = allBookingsLoading || myBookingsLoading || statsLoading;
-
-  const isMutating = isCreating || isCancelling || isDeleting;
-
-  // ============================================================
-  // Return
-  // ============================================================
+  const isMutating = isCreating || isCreatingResource || isCancelling || isDeleting;
 
   return {
-    // ----------------------------------------------------------
-    // Bookings
-    // ----------------------------------------------------------
+    /* Resources */
+    resources,
+    resourcesLoading,
+    handleCreateResource,
+    isCreatingResource,
 
+    /* Bookings */
     allBookings,
     myBookings,
-
     filteredAllBookings,
     filteredMyBookings,
 
-    // ----------------------------------------------------------
-    // Stats
-    // ----------------------------------------------------------
-
+    /* Stats */
     stats,
 
-    // ----------------------------------------------------------
-    // Loading
-    // ----------------------------------------------------------
-
+    /* Loading */
     isLoading,
     isCreating,
     isCancelling,
     isDeleting,
     isMutating,
 
-    // ----------------------------------------------------------
-    // Search
-    // ----------------------------------------------------------
-
+    /* Search */
     search,
     setSearch,
 
-    // ----------------------------------------------------------
-    // Filters
-    // ----------------------------------------------------------
-
+    /* Filters */
     activeResourceType,
     setActiveResourceType,
-
     RESOURCE_TYPES,
 
     activeStatus,
     setActiveStatus,
-
     STATUSES,
 
-    // ----------------------------------------------------------
-    // Booking Form
-    // ----------------------------------------------------------
-
+    /* Booking Form */
     showForm,
     setShowForm,
 
@@ -320,26 +280,17 @@ export const useResourceBookingPage = () => {
     openBookingForm,
     closeBookingForm,
 
-    // ----------------------------------------------------------
-    // Booking Details
-    // ----------------------------------------------------------
-
+    /* Booking Details */
     selectedBooking,
     openBookingDetails,
     closeBookingDetails,
 
-    // ----------------------------------------------------------
-    // Actions
-    // ----------------------------------------------------------
-
+    /* Actions */
     handleBookingSubmit,
     handleCancel,
     handleDelete,
 
-    // ----------------------------------------------------------
-    // Manual Refetch
-    // ----------------------------------------------------------
-
+    /* Refetch */
     refetchAllBookings,
     refetchMyBookings,
   };
