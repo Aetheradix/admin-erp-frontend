@@ -144,7 +144,8 @@ export const ItemsPage: React.FC = () => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDownloadImportTemplate = () => {
-    const headers = 'asset_id,name,category,brand,model,serial_number,quantity,purchase_cost,location,condition_status\n';
+    const headers =
+      'asset_id,name,category,brand,model,serial_number,quantity,purchase_cost,location,condition_status\n';
     const sampleRows =
       'AST-2026-101,MacBook Pro 16",Hardware,Apple,M3 Max,C02G1234ABCD,5,2499.00,Floor 3 IT Room,Good\n' +
       'AST-2026-102,Dell UltraSharp 32" 4K,Peripherals,Dell,U3223QE,CN0A8921B,10,750.00,Design Studio,New\n' +
@@ -213,7 +214,9 @@ export const ItemsPage: React.FC = () => {
                   location,
                   condition_status: condition,
                   status: 'Available',
-                }).unwrap().catch(() => {});
+                })
+                  .unwrap()
+                  .catch(() => {});
                 importedCount++;
               }
             }

@@ -36,7 +36,13 @@ export default function OnboardingPage() {
   const [verifying, setVerifying] = useState(true);
   const [invitationStatus, setInvitationStatus] = useState<{
     valid: boolean;
-    reason?: 'missing_token' | 'not_found' | 'expired' | 'revoked' | 'already_accepted' | 'duplicate_account';
+    reason?:
+      | 'missing_token'
+      | 'not_found'
+      | 'expired'
+      | 'revoked'
+      | 'already_accepted'
+      | 'duplicate_account';
     invitation?: InvitationRecord;
   }>({ valid: false });
 
@@ -130,7 +136,11 @@ export default function OnboardingPage() {
     setIsSubmitting(true);
     try {
       const email = invitationStatus.invitation.email;
-      const fullAddress = `${streetAddress}, ${city}, ${stateRegion} ${postalCode}, ${country}`.replace(/,\s*,/g, ',');
+      const fullAddress =
+        `${streetAddress}, ${city}, ${stateRegion} ${postalCode}, ${country}`.replace(
+          /,\s*,/g,
+          ','
+        );
 
       // Mark invitation accepted in audit log
       acceptInvitation(invitationStatus.invitation.token, {
@@ -319,7 +329,8 @@ export default function OnboardingPage() {
               <strong className="text-foreground">
                 {invitationStatus.invitation?.email || emailParam}
               </strong>{' '}
-              has already been successfully activated. You can sign in immediately using your established password.
+              has already been successfully activated. You can sign in immediately using your
+              established password.
             </p>
           </div>
 
@@ -388,7 +399,9 @@ export default function OnboardingPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted font-semibold">Work Email:</span>
-              <span className="font-bold text-foreground">{invitationStatus.invitation?.email}</span>
+              <span className="font-bold text-foreground">
+                {invitationStatus.invitation?.email}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted font-semibold">Assigned Role:</span>
@@ -503,10 +516,14 @@ export default function OnboardingPage() {
                       strengthScore <= 2
                         ? 'bg-error/10 text-error'
                         : strengthScore <= 4
-                        ? 'bg-warning/10 text-warning'
-                        : 'bg-success/10 text-success'
+                          ? 'bg-warning/10 text-warning'
+                          : 'bg-success/10 text-success'
                     }`}>
-                    {strengthScore <= 2 ? 'Weak' : strengthScore <= 4 ? 'Moderate' : 'Strong & Compliant'}
+                    {strengthScore <= 2
+                      ? 'Weak'
+                      : strengthScore <= 4
+                        ? 'Moderate'
+                        : 'Strong & Compliant'}
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-surface-subtle rounded-full overflow-hidden flex gap-1">
@@ -518,8 +535,8 @@ export default function OnboardingPage() {
                           ? strengthScore <= 2
                             ? 'bg-error'
                             : strengthScore <= 4
-                            ? 'bg-warning'
-                            : 'bg-success'
+                              ? 'bg-warning'
+                              : 'bg-success'
                           : 'bg-border-subtle/50'
                       }`}
                     />
@@ -713,7 +730,7 @@ export default function OnboardingPage() {
                 variant="primary"
                 label="Continue to Organization"
                 icon="pi pi-arrow-right"
-                  disabled={!isStep2Valid}
+                disabled={!isStep2Valid}
                 onClick={() => setCurrentStep(3)}
                 className="flex-1 rounded-xl! h-12 font-bold! shadow-lg shadow-primary/20"
               />
@@ -730,7 +747,9 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col gap-6">
             <div className="space-y-1">
-              <h3 className="text-base font-black text-foreground">Organization & Role Placement</h3>
+              <h3 className="text-base font-black text-foreground">
+                Organization & Role Placement
+              </h3>
               <p className="text-xs text-muted">
                 Review your assigned department, office hub, and operational title.
               </p>
@@ -804,7 +823,7 @@ export default function OnboardingPage() {
                 variant="primary"
                 label="Review & Activate"
                 icon="pi pi-arrow-right"
-                  disabled={!isStep3Valid}
+                disabled={!isStep3Valid}
                 onClick={() => setCurrentStep(4)}
                 className="flex-1 rounded-xl! h-12 font-bold! shadow-lg shadow-primary/20"
               />
@@ -898,7 +917,7 @@ export default function OnboardingPage() {
                 variant="primary"
                 label={isSubmitting ? 'Finalizing...' : 'Complete Onboarding & Activate'}
                 icon="pi pi-check"
-                  disabled={!isStep4Valid || isSubmitting}
+                disabled={!isStep4Valid || isSubmitting}
                 loading={isSubmitting}
                 onClick={handleCompleteOnboarding}
                 className="flex-1 rounded-xl! h-12 font-black! shadow-lg shadow-primary/20"

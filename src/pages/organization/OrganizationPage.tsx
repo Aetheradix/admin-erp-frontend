@@ -73,7 +73,12 @@ const initialCompanyInfo = {
     'To accelerate business performance globally through intelligent, modular, and human-centric enterprise operating systems.',
   vision:
     'To become the global benchmark for frictionless enterprise governance, supply chain velocity, and collaborative intelligence.',
-  values: ['Radical Innovation', 'Extreme Transparency', 'Operational Excellence', 'Customer First'],
+  values: [
+    'Radical Innovation',
+    'Extreme Transparency',
+    'Operational Excellence',
+    'Customer First',
+  ],
 };
 
 const initialDocuments: CompanyDocument[] = [
@@ -85,7 +90,8 @@ const initialDocuments: CompanyDocument[] = [
     uploadDate: '2026-01-15',
     visibility: 'Public',
     downloadUrl: '#',
-    description: 'Official corporate registration certificate issued by the Registrar of Companies.',
+    description:
+      'Official corporate registration certificate issued by the Registrar of Companies.',
   },
   {
     id: 2,
@@ -115,7 +121,8 @@ const initialDocuments: CompanyDocument[] = [
     uploadDate: '2026-03-01',
     visibility: 'Public',
     downloadUrl: '#',
-    description: 'Comprehensive guide to organizational standards, ethics, and workplace protocols.',
+    description:
+      'Comprehensive guide to organizational standards, ethics, and workplace protocols.',
   },
   {
     id: 5,
@@ -135,7 +142,8 @@ const initialDocuments: CompanyDocument[] = [
     uploadDate: '2026-04-12',
     visibility: 'Private',
     downloadUrl: '#',
-    description: 'Third-party auditor report verifying cloud security and confidentiality controls.',
+    description:
+      'Third-party auditor report verifying cloud security and confidentiality controls.',
   },
 ];
 
@@ -240,7 +248,13 @@ export function OrganizationPage() {
 
   const [deleteDocId, setDeleteDocId] = useState<number | string | null>(null);
 
-  const TABS = ['Overview', 'What We Do', 'Company Policies', 'Document Vault', 'Offices & Branches'];
+  const TABS = [
+    'Overview',
+    'What We Do',
+    'Company Policies',
+    'Document Vault',
+    'Offices & Branches',
+  ];
 
   // Handle Edit Profile Save
   const handleSaveProfile = () => {
@@ -575,7 +589,9 @@ export function OrganizationPage() {
 
           {/* Core Capability Pillars */}
           <div className="flex flex-col gap-6">
-            <h3 className="text-xl font-black text-foreground">Enterprise Solutions & Core Pillars</h3>
+            <h3 className="text-xl font-black text-foreground">
+              Enterprise Solutions & Core Pillars
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 {
@@ -626,7 +642,10 @@ export function OrganizationPage() {
                   </div>
                   <div className="flex items-center gap-1 text-xs font-bold text-primary pt-2">
                     <span>Explore module</span>
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight
+                      size={14}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
                   </div>
                 </motion.div>
               ))}
@@ -640,14 +659,19 @@ export function OrganizationPage() {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl font-black text-foreground">Operational Policies & Guidelines</h3>
+              <h3 className="text-xl font-black text-foreground">
+                Operational Policies & Guidelines
+              </h3>
               <p className="text-xs text-muted">
-                Official regulatory and cultural guidelines enforced across all departments and subsidiaries.
+                Official regulatory and cultural guidelines enforced across all departments and
+                subsidiaries.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted">Filtered by:</span>
-              <Tag color="blue" className="font-bold">All Employees</Tag>
+              <Tag color="blue" className="font-bold">
+                All Employees
+              </Tag>
             </div>
           </div>
 
@@ -699,7 +723,8 @@ export function OrganizationPage() {
             <div>
               <h3 className="text-lg font-black text-foreground">Compliance Document Vault</h3>
               <p className="text-xs text-muted">
-                Statutory legal contracts, ISO certificates, and internal handbooks with granular access visibility controls.
+                Statutory legal contracts, ISO certificates, and internal handbooks with granular
+                access visibility controls.
               </p>
             </div>
             <Button

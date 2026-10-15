@@ -15,6 +15,7 @@ export interface SalaryBreakdownItem {
   amount: number;
 }
 
+
 export interface CreateSalarySlipPayload {
   // Target Employee (Recipient receiving slip)
   user_id: number;
@@ -60,6 +61,37 @@ export interface CreateSalarySlipPayload {
   paymentDate?: string;
   remarks?: string | null; // Maps to hrNote
 }
+
+// Helper to normalize and map flat DB records into structured template data
+const mapSalarySlipResponse = (payload: any) => {
+  const normalize = (slip: any) => {
+    if (!slip) return slip;
+    return {
+      ...slip,
+      employeeName: slip.username || slip.employeeName,
+      paySlipNo: slip.payslipNo || slip.pay_slip_no,
+      earnings: [
+        { name: 'Basic Salary', amount: Number(slip.basic_salary || 0) },
+        { name: 'House Rent Allowance (HRA)', amount: Number(slip.house_rent_allowance || 0) },
+        { name: 'Special Allowance', amount: Number(slip.special_allowance || 0) },
+        { name: 'Conveyance Allowance', amount: Number(slip.conveyance_allowance || 0) },
+        { name: 'Bonus', amount: Number(slip.bonus || 0) },
+        { name: 'Other Earnings', amount: Number(slip.other_earnings || 0) },
+      ],
+      deductions: [
+        { name: 'Provident Fund (PF)', amount: Number(slip.provident_fund || 0) },
+        { name: 'Professional Tax', amount: Number(slip.professional_tax || 0) },
+        { name: 'Income Tax (TDS)', amount: Number(slip.income_tax_tds || 0) },
+        { name: 'Other Deductions', amount: Number(slip.other_deductions || 0) },
+      ],
+    };
+  };
+
+  if (Array.isArray(payload)) {
+    return payload.map(normalize);
+  }
+  return normalize(payload);
+};
 
 export const financeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -142,14 +174,18 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         { type: 'Reimbursements', id: 'LIST' },
       ],
     }),
-
+    
     // Fetch all salary slips (JSON data records)
     getAllSalarySlips: builder.query<any, void>({
       query: () => '/finance/salary-slips',
+      transformResponse: (response: any) => {
+        const payload = response?.data ?? response?.result ?? response;
+        return mapSalarySlipResponse(payload);
+      },
       providesTags: (result) =>
-        result && Array.isArray(result.data)
+        result && Array.isArray(result)
           ? [
-              ...result.data.map((item: any) => ({ type: 'SalarySlips' as const, id: item.id })),
+              ...result.map((item: any) => ({ type: 'SalarySlips' as const, id: item.id })),
               { type: 'SalarySlips', id: 'LIST' },
             ]
           : [{ type: 'SalarySlips', id: 'LIST' }],
@@ -158,22 +194,10 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     // Fetch single salary slip by slip ID (for on-demand PDF generation)
     getSalarySlipById: builder.query<any, string | number>({
       query: (id) => `/finance/salary-slips/${id}`,
-      // Normalize response: if it's a single object, wrap it in an array
       transformResponse: (response: any) => {
-        // 1. Un-wrap common backend envelopes if present
         const payload = response?.data ?? response?.result ?? response;
-
-        // 2. If it's already an array, return it directly
-        if (Array.isArray(payload)) {
-          return payload;
-        }
-
-        // 3. If it's a single non-null object, wrap it into an array
-        if (payload && typeof payload === 'object') {
-          return [payload];
-        }
-
-        return [];
+        const mapped = mapSalarySlipResponse(payload);
+        return Array.isArray(mapped) ? mapped : [mapped];
       },
       providesTags: (_result, _error, id) => [{ type: 'SalarySlips', id }],
     }),
@@ -181,42 +205,15 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     // Fetch salary slips by employee ID
     getSalarySlipsByEmployeeId: builder.query<any, string | number>({
       query: (employeeId) => `/finance/salary-slips/employee/${employeeId}`,
+      transformResponse: (response: any) => {
+        const payload = response?.data ?? response?.result ?? response;
+        return mapSalarySlipResponse(payload);
+      },
       providesTags: (_result, _error, employeeId) => [
         { type: 'SalarySlips', id: `EMP-${employeeId}` },
       ],
     }),
 
-    // Create salary slip record as JSON payload
-    // createSalarySlip: builder.mutation<any, CreateSalarySlipPayload>({
-    //   query: (payload) => ({
-    //     url: '/finance/create-salary-slip',
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: {
-    //       user_id: payload.userId,
-    //       employee_id: payload.employeeId,
-    //       employee_name: payload.employeeName,
-    //       position: payload.position,
-    //       month_year: payload.monthYear,
-    //       pay_period: payload.payPeriod,
-    //       pay_slip_no: payload.paySlipNo,
-    //       account_number: payload.accountNumber,
-    //       paid_days: payload.paidDays,
-    //       lop_days: payload.lopDays,
-    //       base_amount: payload.basePay,
-    //       bonus_amount: payload.bonusPay,
-    //       total_amount: payload.netSalary,
-    //       earnings: payload.earnings,
-    //       deductions: payload.deductions,
-    //       authorized_signatory: payload.authorizedSignatory,
-    //       signatory_role: payload.signatoryRole,
-    //       hr_note: payload.hrNote,
-    //     },
-    //   }),
-    //   invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }],
-    // }),
 
     createSalarySlip: builder.mutation<any, any>({
       query: (payload) => {
