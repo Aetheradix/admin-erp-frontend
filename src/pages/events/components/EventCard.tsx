@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { resolveImageUrl } from '@/utils/imageUrl';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Button } from '@/components/ui/primitives/Button';
@@ -16,10 +16,8 @@ import {
   AlertCircle,
   Calendar as CalendarIcon,
   CheckCircle2,
-  Sparkles,
   Radio,
   ClockAlert,
-  Ticket,
 } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,7 +26,6 @@ import {
   getEventStatusInfo,
   getDynamicAttendeesCount,
   isUserRegisteredForEvent,
-  isPastEvent,
 } from '../utils/eventUtils';
 
 interface EventCardProps {
@@ -57,24 +54,22 @@ const DEFAULT_IMAGE =
 
 export const EventCard = ({
   event,
+  onCardClick,
   onEdit,
   onDelete,
   onRegister,
   onTagClick,
   isRegistering,
 }: EventCardProps) => {
-  const [imageSrc, setImageSrc] = useState(
-    resolveImageUrl(event.image) || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
-  );
-
+  const { user } = useAuth();
   const fallbackCategoryImg = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
-  const initialImage = event.image || fallbackCategoryImg;
+  const initialImage = resolveImageUrl(event.image) || fallbackCategoryImg;
 
   const [imageSrc, setImageSrc] = useState(initialImage);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    setImageSrc(event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE);
+    setImageSrc(resolveImageUrl(event.image) || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE);
     setImageError(false);
   }, [event.image, event.category]);
 
@@ -97,7 +92,6 @@ export const EventCard = ({
   const statusInfo = getEventStatusInfo(event);
   const attendeesCount = getDynamicAttendeesCount(event);
   const isRegistered = isUserRegisteredForEvent(event.id, user?.email || user?.username, event);
-  const isPast = isPastEvent(event);
 
   const eventDate = new Date(event.event_date || event.date || '');
   const month = Number.isNaN(eventDate.getTime())
@@ -314,6 +308,16 @@ export const EventCard = ({
             <div className="flex items-center gap-1.5">
               <span>View Details</span>
               {event.event_link ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
+            </div>
+          </Button>
+        ) : isRegistered ? (
+          <Button
+            variant="secondary"
+            onClick={() => onRegister?.(event)}
+            className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition-all cursor-pointer">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 size={15} />
+              <span>Registered</span>
             </div>
           </Button>
         ) : (

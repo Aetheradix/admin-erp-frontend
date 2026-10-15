@@ -7,11 +7,26 @@ import { Calendar } from '@/components/ui/primitives/Calendar';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
-import { useEffect, useState } from 'react';
-import { Sparkles, PartyPopper, Wrench, Mic, Rocket, Plus, X } from 'lucide-react';
+import { useEffect, useState, useRef, useMemo } from 'react';
+import {
+  Sparkles,
+  PartyPopper,
+  Wrench,
+  Mic,
+  Rocket,
+  Plus,
+  X,
+  Image as ImageIcon,
+  Loader2,
+  Upload,
+  PlusCircle,
+} from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 import { useUploadFileMutation } from '@/store/api/eventSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { TimePicker } from 'antd';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
 
@@ -24,7 +39,23 @@ interface EventFormProps {
 
 const DEFAULT_CATEGORIES = ['Conference', 'Workshop', 'Social', 'Meeting'];
 
-const TEMPLATE_PRESETS = [
+interface EventTemplatePreset {
+  label: string;
+  icon: typeof PartyPopper;
+  category: string;
+  title: string;
+  description: string;
+  location: string;
+  organizer: string;
+  author_department: string;
+  time: string;
+  start_time: string;
+  end_time: string;
+  max_participants: number;
+  image: string;
+}
+
+const TEMPLATE_PRESETS: EventTemplatePreset[] = [
   {
     label: 'Social Party',
     icon: PartyPopper,
@@ -35,6 +66,9 @@ const TEMPLATE_PRESETS = [
     organizer: 'Culture & Welfare Team',
     author_department: 'People Operations',
     time: '5:00 PM - 8:00 PM',
+    start_time: '05:00 PM',
+    end_time: '08:00 PM',
+    max_participants: 100,
     image:
       'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
   },
@@ -49,6 +83,9 @@ const TEMPLATE_PRESETS = [
     organizer: 'Engineering Team',
     author_department: 'Engineering',
     time: '2:00 PM - 5:00 PM',
+    start_time: '02:00 PM',
+    end_time: '05:00 PM',
+    max_participants: 50,
     image:
       'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=60',
   },
@@ -63,6 +100,9 @@ const TEMPLATE_PRESETS = [
     organizer: 'Executive Board',
     author_department: 'Executive',
     time: '11:00 AM - 1:00 PM',
+    start_time: '11:00 AM',
+    end_time: '01:00 PM',
+    max_participants: 250,
     image:
       'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=60',
   },
@@ -76,14 +116,49 @@ const TEMPLATE_PRESETS = [
     organizer: 'Product Operations',
     author_department: 'Product',
     time: '10:00 AM - 12:30 PM',
+    start_time: '10:00 AM',
+    end_time: '12:30 PM',
+    max_participants: 500,
     image:
       'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=60',
   },
 ];
 
-export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) => {
+export const EventForm = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  availableCategories,
+}: EventFormProps) => {
   const [uploadImage, { isLoading: isUploadingImage }] = useUploadImageMutation();
+  const [uploadFile] = useUploadFileMutation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newTagInput, setNewTagInput] = useState('');
+
+  const baseCategoryList = useMemo(() => {
+    const list =
+      availableCategories && availableCategories.length > 0
+        ? availableCategories
+        : DEFAULT_CATEGORIES;
+    return Array.from(new Set([...list, ...DEFAULT_CATEGORIES]));
+  }, [availableCategories]);
+
+  const [selectedCategoryType, setSelectedCategoryType] = useState<string>(
+    initialData?.category && !baseCategoryList.includes(initialData.category)
+      ? 'Other'
+      : initialData?.category || 'Workshop'
+  );
+  const [customCategoryInput, setCustomCategoryInput] = useState<string>(
+    initialData?.category && !baseCategoryList.includes(initialData.category)
+      ? initialData.category
+      : ''
+  );
+
+  const categoryOptions = useMemo(() => {
+    const opts = baseCategoryList.map((cat) => ({ label: cat, value: cat }));
+    return [...opts, { label: 'Other (Enter Custom)', value: 'Other' }];
+  }, [baseCategoryList]);
+
   const [formData, setFormData] = useState<Partial<ERPEvent>>({
     title: '',
     description: '',
@@ -216,13 +291,6 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
       tags: (prev.tags || []).filter((t) => t !== tagToRemove),
     }));
   };
-
-  const categories = [
-    { label: 'Conference', value: 'Conference' },
-    { label: 'Workshop', value: 'Workshop' },
-    { label: 'Social', value: 'Social' },
-    { label: 'Meeting', value: 'Meeting' },
-  ];
 
   const buttonTypeOptions = [
     { label: 'Register Now (Standard RSVP)', value: 'Register Now' },
@@ -514,8 +582,8 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                     ? dayjs(formData.start_time, ['hh:mm A', 'h:mm A', 'HH:mm', 'H:mm'])
                     : null
                 }
-                onChange={(_time, timeStr) => {
-                  const str = typeof timeStr === 'string' ? timeStr : '';
+                onChange={(_time: dayjs.Dayjs | null, dateString: string | null) => {
+                  const str = typeof dateString === 'string' ? dateString : '';
                   setFormData((prev) => ({
                     ...prev,
                     start_time: str,
@@ -538,8 +606,8 @@ export const EventForm = ({ initialData, onSubmit, onCancel }: EventFormProps) =
                     ? dayjs(formData.end_time, ['hh:mm A', 'h:mm A', 'HH:mm', 'H:mm'])
                     : null
                 }
-                onChange={(_time, timeStr) => {
-                  const str = typeof timeStr === 'string' ? timeStr : '';
+                onChange={(_time: dayjs.Dayjs | null, dateString: string | null) => {
+                  const str = typeof dateString === 'string' ? dateString : '';
                   setFormData((prev) => ({
                     ...prev,
                     end_time: str,

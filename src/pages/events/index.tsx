@@ -20,7 +20,9 @@ import type { ERPEvent, EventFilters } from '@/types/models';
 import {
   Building2,
   Calendar as CalendarIcon,
+  CalendarDays,
   Filter,
+  History as HistoryIcon,
   RotateCcw,
   Search,
   Tag,
@@ -390,7 +392,7 @@ const Events = () => {
               : 'bg-white hover:bg-surface-subtle text-foreground border border-border-subtle shadow-xs'
           }`}
         >
-          <History size={16} />
+          <HistoryIcon size={16} />
           <span>Previous Events</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-black ${

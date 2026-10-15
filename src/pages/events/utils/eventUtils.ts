@@ -1,4 +1,4 @@
-import type { ERPEvent, EventAttachment } from '@/types/models';
+import type { ERPEvent, EventAttachment, EventParticipant } from '@/types/models';
 import {
   Calendar,
   CheckCircle2,
@@ -9,16 +9,7 @@ import {
 const REGISTRATIONS_STORAGE_KEY = 'aether_event_registrations_v1';
 const ATTACHMENTS_STORAGE_KEY = 'aether_event_attachments_v1';
 
-export interface EventParticipant {
-  id: string;
-  name: string;
-  email: string;
-  department?: string;
-  avatar?: string;
-  role?: string;
-  joinedAt: string;
-  passCode?: string;
-}
+export type { EventParticipant };
 
 interface EventLocalState {
   registeredUsers: string[];
@@ -226,7 +217,7 @@ export function isUserRegisteredForEvent(
   // 1. Check registered_users from database
   if (
     eventData?.registered_users &&
-    eventData.registered_users.some((u) => u && u.toLowerCase() === identifier)
+    eventData.registered_users.some((u: string) => u && u.toLowerCase() === identifier)
   ) {
     return true;
   }
@@ -235,7 +226,7 @@ export function isUserRegisteredForEvent(
   if (
     eventData?.participants &&
     eventData.participants.some(
-      (p) =>
+      (p: EventParticipant) =>
         (p.email && p.email.toLowerCase() === identifier) ||
         (p.name && p.name.toLowerCase() === identifier)
     )
@@ -250,7 +241,7 @@ export function isUserRegisteredForEvent(
     eventState &&
     (eventState.registeredUsers.includes(identifier) ||
       eventState.participants?.some(
-        (p) =>
+        (p: EventParticipant) =>
           (p.email && p.email.toLowerCase() === identifier) ||
           (p.name && p.name.toLowerCase() === identifier)
       ))
@@ -263,7 +254,7 @@ export function isUserRegisteredForEvent(
 
 export function getEventParticipantsList(event: ERPEvent): EventParticipant[] {
   // 1. Get backend participants from database
-  const backendParticipants: EventParticipant[] = (event.participants || []).map((p) => ({
+  const backendParticipants: EventParticipant[] = (event.participants || []).map((p: EventParticipant) => ({
     id: String(p.id || `bp_${Math.random()}`),
     name: p.name || 'Attendee',
     email: p.email || '',

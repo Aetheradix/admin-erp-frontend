@@ -119,6 +119,15 @@ export interface ERPEvent {
   employee_status?: string;
   button_type?: 'Register Now' | 'Mandatory' | 'View Details' | string;
   event_link?: string;
+  start_time?: string;
+  end_time?: string;
+  status?: string;
+  max_participants?: number;
+  participants?: EventParticipant[];
+  media_attachments?: EventAttachment[];
+  is_registered?: boolean;
+  registered_users?: string[];
+  photos?: string[];
 }
 
 export interface EventFilters {
