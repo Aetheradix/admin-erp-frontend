@@ -13,6 +13,7 @@ interface DialogProps {
   children: ReactNode;
   footer?: ReactNode | null;
   style?: React.CSSProperties;
+  width?: string | number;
   pt?: {
     root?: { className?: string };
     mask?: { className?: string };
@@ -29,12 +30,14 @@ export const Dialog = ({
   children,
   footer = null,
   style,
+  width,
   pt,
 }: DialogProps) => {
   return (
     <Modal
       open={visible}
       onCancel={onHide}
+      width={width}
       title={
         header ? (
           <span className={cn('text-2xl font-black tracking-tight', headerClassName)}>

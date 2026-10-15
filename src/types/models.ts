@@ -77,6 +77,27 @@ export interface Career {
   status: string;
 }
 
+export interface EventAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: 'image' | 'file';
+  size?: string;
+  uploaded_by?: string;
+  uploaded_at?: string;
+}
+
+export interface EventParticipant {
+  id: string;
+  name: string;
+  email: string;
+  department?: string;
+  avatar?: string;
+  role?: string;
+  joinedAt?: string;
+  passCode?: string;
+}
+
 export interface ERPEvent {
   id: string | number;
   title: string;
@@ -86,6 +107,7 @@ export interface ERPEvent {
   location: string;
   category: string;
   image: string;
+  image_url?: string;
   organizer: string;
   attendees: number;
   date?: string;

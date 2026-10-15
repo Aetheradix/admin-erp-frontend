@@ -116,6 +116,17 @@ export const eventSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Event'],
     }),
+    uploadFile: builder.mutation<{ success: boolean; url: string; data?: unknown }, File>({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: '/upload/file',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
     updateEvent: builder.mutation<ERPEvent, { id: string | number; data: Partial<ERPEvent> }>({
       query: ({ id, data }) => ({
         url: `/events/${id}`,
@@ -141,4 +152,5 @@ export const {
   useRegisterEventMutation,
   useUpdateEventMutation,
   useDeleteEventMutation,
+  useUploadFileMutation,
 } = eventSlice;

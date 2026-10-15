@@ -15,11 +15,25 @@ import {
   ExternalLink,
   AlertCircle,
   Calendar as CalendarIcon,
+  CheckCircle2,
+  Sparkles,
+  Radio,
+  ClockAlert,
+  Ticket,
 } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  formatEventTime,
+  getEventStatusInfo,
+  getDynamicAttendeesCount,
+  isUserRegisteredForEvent,
+  isPastEvent,
+} from '../utils/eventUtils';
 
 interface EventCardProps {
   event: ERPEvent;
+  onCardClick?: (event: ERPEvent) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onRegister?: (event: ERPEvent) => void;
@@ -52,7 +66,26 @@ export const EventCard = ({
   const [imageSrc, setImageSrc] = useState(
     resolveImageUrl(event.image) || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE
   );
+
+  const fallbackCategoryImg = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
+  const initialImage = event.image || fallbackCategoryImg;
+
+  const [imageSrc, setImageSrc] = useState(initialImage);
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageSrc(event.image || CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE);
+    setImageError(false);
+  }, [event.image, event.category]);
+
+  const handleImageError = () => {
+    const fallback = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
+    if (imageSrc !== fallback) {
+      setImageSrc(fallback);
+    } else {
+      setImageError(true);
+    }
+  };
 
   const categoryVariants: Record<string, 'primary' | 'success' | 'warning' | 'secondary'> = {
     Conference: 'primary',
@@ -61,24 +94,34 @@ export const EventCard = ({
     Meeting: 'secondary',
   };
 
-  const eventDate = new Date(event.event_date);
+  const statusInfo = getEventStatusInfo(event);
+  const attendeesCount = getDynamicAttendeesCount(event);
+  const isRegistered = isUserRegisteredForEvent(event.id, user?.email || user?.username, event);
+  const isPast = isPastEvent(event);
+
+  const eventDate = new Date(event.event_date || event.date || '');
   const month = Number.isNaN(eventDate.getTime())
     ? 'EVENT'
     : eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
   const day = Number.isNaN(eventDate.getDate()) ? '--' : eventDate.getDate();
+  const formattedTime = formatEventTime(event);
+
+  const handleCardClick = () => {
+    onCardClick?.(event);
+  };
 
   return (
-    <div className="group bg-white rounded-3xl border border-border-subtle overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
+    <div
+      onClick={handleCardClick}
+      className="group bg-white rounded-3xl border border-border-subtle overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1.5 cursor-pointer relative"
+    >
       {/* Visual Header */}
       <div className="relative h-52 overflow-hidden bg-zinc-900">
         {!imageError ? (
           <img
             src={imageSrc}
-            alt=""
-            onError={() => {
-              setImageError(true);
-              setImageSrc(CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE);
-            }}
+            alt={event.title}
+            onError={handleImageError}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
@@ -88,13 +131,13 @@ export const EventCard = ({
         )}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/30" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-black/30" />
 
         {/* Top Floating Bar: Date Pill & Action Buttons */}
         <div className="absolute top-3.5 inset-x-3.5 flex items-center justify-between z-10">
           {/* Glass Date Pill */}
-          <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-1.5 flex items-center gap-2 text-white shadow-lg">
-            <span className="text-[10px] font-black text-primary uppercase tracking-wider bg-white/10 px-1.5 py-0.5 rounded-lg">
+          <div className="bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl px-3 py-1.5 flex items-center gap-2 text-white shadow-lg">
+            <span className="text-[10px] font-black text-primary uppercase tracking-wider bg-white/15 px-1.5 py-0.5 rounded-lg">
               {month}
             </span>
             <span className="text-sm font-black tracking-tight">{day}</span>
@@ -133,21 +176,39 @@ export const EventCard = ({
             {event.category || 'General'}
           </Badge>
 
-          {event.employee_status && (
+          {/* Status Display: On Leave, Completed, Live Now, or Employee Status */}
+          {statusInfo.isLeave ? (
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-amber-500/90 text-white uppercase tracking-wider flex items-center gap-1 border border-amber-400/40 shadow-md animate-pulse">
+              <ClockAlert size={12} />
+              On Leave
+            </span>
+          ) : statusInfo.isPast ? (
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-zinc-700/80 text-zinc-200 uppercase tracking-wider flex items-center gap-1 border border-zinc-500/30 shadow-md">
+              <CheckCircle2 size={12} />
+              Completed
+            </span>
+          ) : statusInfo.isLive ? (
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-emerald-500/90 text-white uppercase tracking-wider flex items-center gap-1 border border-emerald-400/30 shadow-md animate-pulse">
+              <Radio size={12} />
+              Live Now
+            </span>
+          ) : event.employee_status ? (
             <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-emerald-500/80 text-white uppercase tracking-wider flex items-center gap-1 border border-emerald-400/30 shadow-md">
               <ShieldCheck size={12} />
               {event.employee_status}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
 
       {/* Content Area */}
       <div className="p-6 flex flex-col flex-1 gap-4">
         <div className="flex flex-col gap-1.5">
-          <h3 className="text-lg font-black text-foreground leading-snug tracking-tight group-hover:text-primary transition-colors line-clamp-1">
-            {event.title}
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-black text-foreground leading-snug tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+              {event.title}
+            </h3>
+          </div>
           <p className="text-xs text-muted font-medium line-clamp-2 leading-relaxed">
             {event.description || 'No additional description provided for this event.'}
           </p>
@@ -188,20 +249,30 @@ export const EventCard = ({
 
         {/* Info Grid */}
         <div className="mt-auto grid grid-cols-2 gap-y-2.5 pt-4 border-t border-border-subtle">
+          {/* Time */}
           <div className="flex items-center gap-2 text-foreground font-bold text-xs">
             <Clock size={14} className="text-primary flex-shrink-0" />
-            <span className="truncate">{event.time?.split(' - ')[0] || event.time || 'TBD'}</span>
+            <span className="truncate">{formattedTime}</span>
           </div>
+
+          {/* Location */}
           <div className="flex items-center gap-2 text-foreground font-bold text-xs">
             <MapPin size={14} className="text-primary flex-shrink-0" />
             <span className="truncate">
               {event.location?.split(',')[0] || event.location || 'Company HQ'}
             </span>
           </div>
+
+          {/* Participants Count */}
           <div className="flex items-center gap-2 text-muted font-bold text-[11px]">
-            <Users size={13} className="flex-shrink-0" />
-            <span>{event.attendees || 0}+ Joined</span>
+            <Users size={13} className="text-primary flex-shrink-0" />
+            <span>
+              {attendeesCount} Joined
+              {event.max_participants ? ` / ${event.max_participants}` : ''}
+            </span>
           </div>
+
+          {/* Department / Organizer */}
           <div className="flex items-center gap-2 text-muted font-bold text-[11px] truncate">
             {event.author_department ? (
               <>
