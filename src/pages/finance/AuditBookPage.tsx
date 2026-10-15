@@ -42,13 +42,37 @@ function generateAuditData(year: string, quarter: string) {
   ];
 
   const expenses: FinancialEntry[] = [
-    { particulars: 'Employee Salaries & Wages', currentPeriod: r(2100000, 100000), category: 'expense' },
+    {
+      particulars: 'Employee Salaries & Wages',
+      currentPeriod: r(2100000, 100000),
+      category: 'expense',
+    },
     { particulars: 'Rent & Office Expenses', currentPeriod: r(420000, 30000), category: 'expense' },
-    { particulars: 'Travel & Transportation', currentPeriod: r(185000, 40000), category: 'expense' },
-    { particulars: 'Software & Subscriptions', currentPeriod: r(95000, 20000), category: 'expense' },
-    { particulars: 'Marketing & Advertising', currentPeriod: r(240000, 60000), category: 'expense' },
-    { particulars: 'Utilities & Communication', currentPeriod: r(68000, 15000), category: 'expense' },
-    { particulars: 'Professional Fees (Legal/CA)', currentPeriod: r(120000, 25000), category: 'expense' },
+    {
+      particulars: 'Travel & Transportation',
+      currentPeriod: r(185000, 40000),
+      category: 'expense',
+    },
+    {
+      particulars: 'Software & Subscriptions',
+      currentPeriod: r(95000, 20000),
+      category: 'expense',
+    },
+    {
+      particulars: 'Marketing & Advertising',
+      currentPeriod: r(240000, 60000),
+      category: 'expense',
+    },
+    {
+      particulars: 'Utilities & Communication',
+      currentPeriod: r(68000, 15000),
+      category: 'expense',
+    },
+    {
+      particulars: 'Professional Fees (Legal/CA)',
+      currentPeriod: r(120000, 25000),
+      category: 'expense',
+    },
     { particulars: 'Depreciation', currentPeriod: r(75000, 10000), category: 'expense' },
     { particulars: 'Miscellaneous Expenses', currentPeriod: r(48000, 12000), category: 'expense' },
   ];
@@ -62,7 +86,11 @@ const YEARS = ['2026', '2025', '2024'];
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function fmt(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
@@ -88,25 +116,36 @@ function KPICard({ label, value, sub, trend, icon, color }: KPICardProps) {
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
-      }}
-    >
+      }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 13, color: '#64748b', fontWeight: 500 }}>{label}</span>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: `${color}22`, color,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: `${color}22`,
+            color,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           {icon}
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.5px' }}>{value}</div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.5px' }}>
+          {value}
+        </div>
         {sub && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
             {trend === 'up' && <TrendingUp size={13} color="#22c55e" />}
             {trend === 'down' && <TrendingDown size={13} color="#f87171" />}
-            <span style={{ fontSize: 12, color: trend === 'up' ? '#22c55e' : trend === 'down' ? '#f87171' : '#64748b' }}>
+            <span
+              style={{
+                fontSize: 12,
+                color: trend === 'up' ? '#22c55e' : trend === 'down' ? '#f87171' : '#64748b',
+              }}>
               {sub}
             </span>
           </div>
@@ -130,33 +169,53 @@ function LedgerTable({ title, entries, color, icon, defaultOpen = true }: Ledger
   const total = entries.reduce((sum, e) => sum + e.currentPeriod, 0);
 
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.02)',
-      border: '1px solid rgba(255,255,255,0.07)',
-      borderRadius: 16,
-      overflow: 'hidden',
-    }}>
+    <div
+      style={{
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 16,
+        overflow: 'hidden',
+      }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', background: 'transparent', border: 'none', cursor: 'pointer',
-        }}
-      >
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 20px',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+        }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: `${color}22`, color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: `${color}22`,
+              color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
             {icon}
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#f1f5f9', textAlign: 'left' }}>{title}</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: '#f1f5f9', textAlign: 'left' }}>
+              {title}
+            </div>
             <div style={{ fontSize: 12, color: '#64748b' }}>{entries.length} line items</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontWeight: 800, fontSize: 16, color }}>
-            {fmt(total)}
-          </div>
-          {open ? <ChevronUp size={16} color="#64748b" /> : <ChevronDown size={16} color="#64748b" />}
+          <div style={{ fontWeight: 800, fontSize: 16, color }}>{fmt(total)}</div>
+          {open ? (
+            <ChevronUp size={16} color="#64748b" />
+          ) : (
+            <ChevronDown size={16} color="#64748b" />
+          )}
         </div>
       </button>
 
@@ -166,22 +225,25 @@ function LedgerTable({ title, entries, color, icon, defaultOpen = true }: Ledger
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            style={{ overflow: 'hidden' }}
-          >
+            style={{ overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   {['Particulars', 'Current Period (₹)', '% of Total'].map((h, i) => (
-                    <th key={h} style={{
-                      padding: '10px 20px',
-                      textAlign: i === 0 ? 'left' : 'right',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: '#475569',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.06em',
-                      background: 'rgba(255,255,255,0.02)',
-                    }}>{h}</th>
+                    <th
+                      key={h}
+                      style={{
+                        padding: '10px 20px',
+                        textAlign: i === 0 ? 'left' : 'right',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: '#475569',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        background: 'rgba(255,255,255,0.02)',
+                      }}>
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -193,28 +255,65 @@ function LedgerTable({ title, entries, color, icon, defaultOpen = true }: Ledger
                       borderTop: '1px solid rgba(255,255,255,0.04)',
                       transition: 'background 0.1s',
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                  >
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }}>
                     <td style={{ padding: '12px 20px', fontSize: 14, color: '#cbd5e1' }}>
                       {entry.particulars}
                     </td>
-                    <td style={{ padding: '12px 20px', fontSize: 14, color: '#f1f5f9', fontWeight: 600, textAlign: 'right' }}>
+                    <td
+                      style={{
+                        padding: '12px 20px',
+                        fontSize: 14,
+                        color: '#f1f5f9',
+                        fontWeight: 600,
+                        textAlign: 'right',
+                      }}>
                       {fmt(entry.currentPeriod)}
                     </td>
-                    <td style={{ padding: '12px 20px', fontSize: 13, color: '#64748b', textAlign: 'right' }}>
+                    <td
+                      style={{
+                        padding: '12px 20px',
+                        fontSize: 13,
+                        color: '#64748b',
+                        textAlign: 'right',
+                      }}>
                       {total > 0 ? `${((entry.currentPeriod / total) * 100).toFixed(1)}%` : '—'}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr style={{ borderTop: '1px solid rgba(255,255,255,0.1)', background: `${color}08` }}>
-                  <td style={{ padding: '14px 20px', fontWeight: 800, fontSize: 14, color }}>Total {title}</td>
-                  <td style={{ padding: '14px 20px', fontWeight: 800, fontSize: 15, color, textAlign: 'right' }}>
+                <tr
+                  style={{
+                    borderTop: '1px solid rgba(255,255,255,0.1)',
+                    background: `${color}08`,
+                  }}>
+                  <td style={{ padding: '14px 20px', fontWeight: 800, fontSize: 14, color }}>
+                    Total {title}
+                  </td>
+                  <td
+                    style={{
+                      padding: '14px 20px',
+                      fontWeight: 800,
+                      fontSize: 15,
+                      color,
+                      textAlign: 'right',
+                    }}>
                     {fmt(total)}
                   </td>
-                  <td style={{ padding: '14px 20px', textAlign: 'right', color: '#64748b', fontSize: 13 }}>100%</td>
+                  <td
+                    style={{
+                      padding: '14px 20px',
+                      textAlign: 'right',
+                      color: '#64748b',
+                      fontSize: 13,
+                    }}>
+                    100%
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -271,7 +370,10 @@ export default function AuditBookPage() {
       const kpis = [
         { label: 'Total Revenue', value: fmt(totalRevenue) },
         { label: 'Total Expenses', value: fmt(totalExpenses) },
-        { label: netProfitLoss >= 0 ? 'Net Profit' : 'Net Loss', value: fmt(Math.abs(netProfitLoss)) },
+        {
+          label: netProfitLoss >= 0 ? 'Net Profit' : 'Net Loss',
+          value: fmt(Math.abs(netProfitLoss)),
+        },
         { label: 'Gross Margin', value: `${grossMargin}%` },
       ];
       kpis.forEach((kpi, i) => {
@@ -298,7 +400,7 @@ export default function AuditBookPage() {
         startY: y,
         head: [['Particulars', 'Amount (INR)', '% of Revenue']],
         body: [
-          ...income.map(e => [
+          ...income.map((e) => [
             e.particulars,
             fmt(e.currentPeriod),
             totalRevenue > 0 ? `${((e.currentPeriod / totalRevenue) * 100).toFixed(1)}%` : '—',
@@ -306,7 +408,12 @@ export default function AuditBookPage() {
           ['TOTAL REVENUE', fmt(totalRevenue), '100%'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [15, 23, 42], textColor: [99, 102, 241], fontStyle: 'bold', fontSize: 9 },
+        headStyles: {
+          fillColor: [15, 23, 42],
+          textColor: [99, 102, 241],
+          fontStyle: 'bold',
+          fontSize: 9,
+        },
         bodyStyles: { textColor: [51, 65, 85], fontSize: 9 },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         footStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
@@ -332,7 +439,7 @@ export default function AuditBookPage() {
         startY: y,
         head: [['Particulars', 'Amount (INR)', '% of Expenses']],
         body: [
-          ...expenseEntries.map(e => [
+          ...expenseEntries.map((e) => [
             e.particulars,
             fmt(e.currentPeriod),
             totalExpenses > 0 ? `${((e.currentPeriod / totalExpenses) * 100).toFixed(1)}%` : '—',
@@ -340,7 +447,12 @@ export default function AuditBookPage() {
           ['TOTAL EXPENSES', fmt(totalExpenses), '100%'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [127, 29, 29], textColor: [254, 202, 202], fontStyle: 'bold', fontSize: 9 },
+        headStyles: {
+          fillColor: [127, 29, 29],
+          textColor: [254, 202, 202],
+          fontStyle: 'bold',
+          fontSize: 9,
+        },
         bodyStyles: { textColor: [51, 65, 85], fontSize: 9 },
         alternateRowStyles: { fillColor: [255, 247, 247] },
         didParseCell: (data) => {
@@ -355,7 +467,10 @@ export default function AuditBookPage() {
       y = (doc as any).lastAutoTable.finalY + 14;
 
       // ── P&L Summary ──
-      if (y > 240) { doc.addPage(); y = 20; }
+      if (y > 240) {
+        doc.addPage();
+        y = 20;
+      }
       autoTable(doc, {
         startY: y,
         head: [['Profit & Loss Summary', 'Amount (INR)']],
@@ -368,7 +483,9 @@ export default function AuditBookPage() {
         theme: 'plain',
         headStyles: {
           fillColor: netProfitLoss >= 0 ? [6, 78, 59] : [127, 29, 29],
-          textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
         },
         bodyStyles: { textColor: [15, 23, 42], fontSize: 10 },
         didParseCell: (data) => {
@@ -409,15 +526,44 @@ export default function AuditBookPage() {
   return (
     <div style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: 32,
+          flexWrap: 'wrap',
+          gap: 16,
+        }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1' }}>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: 'rgba(99,102,241,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#6366f1',
+              }}>
               <BookOpen size={22} />
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.5px' }}>Financial Audit Book</h1>
-              <p style={{ margin: 0, fontSize: 14, color: '#64748b' }}>CA-grade financial ledger and audit trail</p>
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: 26,
+                  fontWeight: 800,
+                  color: '#f1f5f9',
+                  letterSpacing: '-0.5px',
+                }}>
+                Financial Audit Book
+              </h1>
+              <p style={{ margin: 0, fontSize: 14, color: '#64748b' }}>
+                CA-grade financial ledger and audit trail
+              </p>
             </div>
           </div>
         </div>
@@ -430,11 +576,19 @@ export default function AuditBookPage() {
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
             style={{
-              padding: '9px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)', color: '#f1f5f9', fontSize: 14, outline: 'none',
-            }}
-          >
-            {YEARS.map((y) => <option key={y} value={y} style={{ background: '#1e293b' }}>{y}</option>)}
+              padding: '9px 14px',
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#f1f5f9',
+              fontSize: 14,
+              outline: 'none',
+            }}>
+            {YEARS.map((y) => (
+              <option key={y} value={y} style={{ background: '#1e293b' }}>
+                {y}
+              </option>
+            ))}
           </select>
 
           {/* Quarter */}
@@ -443,11 +597,19 @@ export default function AuditBookPage() {
             value={selectedQuarter}
             onChange={(e) => setSelectedQuarter(e.target.value)}
             style={{
-              padding: '9px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)', color: '#f1f5f9', fontSize: 14, outline: 'none',
-            }}
-          >
-            {QUARTERS.map((q) => <option key={q} value={q} style={{ background: '#1e293b' }}>{q}</option>)}
+              padding: '9px 14px',
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#f1f5f9',
+              fontSize: 14,
+              outline: 'none',
+            }}>
+            {QUARTERS.map((q) => (
+              <option key={q} value={q} style={{ background: '#1e293b' }}>
+                {q}
+              </option>
+            ))}
           </select>
 
           <button
@@ -455,13 +617,25 @@ export default function AuditBookPage() {
             onClick={handleExportPDF}
             disabled={isGenerating}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px',
-              borderRadius: 10, background: '#6366f1', color: '#fff', border: 'none',
-              cursor: isGenerating ? 'default' : 'pointer', fontWeight: 600, fontSize: 14,
-              opacity: isGenerating ? 0.7 : 1, transition: 'opacity 0.15s',
-            }}
-          >
-            {isGenerating ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={16} />}
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 18px',
+              borderRadius: 10,
+              background: '#6366f1',
+              color: '#fff',
+              border: 'none',
+              cursor: isGenerating ? 'default' : 'pointer',
+              fontWeight: 600,
+              fontSize: 14,
+              opacity: isGenerating ? 0.7 : 1,
+              transition: 'opacity 0.15s',
+            }}>
+            {isGenerating ? (
+              <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
+            ) : (
+              <Download size={16} />
+            )}
             {isGenerating ? 'Generating…' : 'Export PDF'}
           </button>
 
@@ -469,35 +643,64 @@ export default function AuditBookPage() {
             id="audit-print-btn"
             onClick={() => window.print()}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
-              borderRadius: 10, background: 'rgba(255,255,255,0.05)', color: '#94a3b8',
-              border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 14,
-            }}
-          >
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 14px',
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.05)',
+              color: '#94a3b8',
+              border: '1px solid rgba(255,255,255,0.1)',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}>
             <Printer size={16} />
           </button>
         </div>
       </div>
 
       {/* Period badge */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28,
-        padding: '12px 20px', borderRadius: 12,
-        background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          marginBottom: 28,
+          padding: '12px 20px',
+          borderRadius: 12,
+          background: 'rgba(99,102,241,0.08)',
+          border: '1px solid rgba(99,102,241,0.2)',
+        }}>
         <AlertCircle size={16} color="#6366f1" />
         <span style={{ fontSize: 13, color: '#94a3b8' }}>
-          Audit Report for: <strong style={{ color: '#f1f5f9' }}>{selectedQuarter} {selectedYear}</strong>
-          {' '}— Data is reconciled across Invoices, Expenses, Payroll, and Reimbursements.
+          Audit Report for:{' '}
+          <strong style={{ color: '#f1f5f9' }}>
+            {selectedQuarter} {selectedYear}
+          </strong>{' '}
+          — Data is reconciled across Invoices, Expenses, Payroll, and Reimbursements.
         </span>
-        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#22c55e' }}>
+        <span
+          style={{
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            color: '#22c55e',
+          }}>
           <CheckCircle size={13} />
           Live data
         </span>
       </div>
 
       {/* KPI Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 32 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 16,
+          marginBottom: 32,
+        }}>
         <KPICard
           label="Total Revenue"
           value={fmt(totalRevenue)}
@@ -550,49 +753,108 @@ export default function AuditBookPage() {
         />
 
         {/* P&L Summary box */}
-        <div style={{
-          background: netProfitLoss >= 0 ? 'rgba(34,197,94,0.06)' : 'rgba(248,113,113,0.06)',
-          border: `1px solid ${netProfitLoss >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(248,113,113,0.2)'}`,
-          borderRadius: 16,
-          padding: '24px 28px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 24,
-        }}>
+        <div
+          style={{
+            background: netProfitLoss >= 0 ? 'rgba(34,197,94,0.06)' : 'rgba(248,113,113,0.06)',
+            border: `1px solid ${netProfitLoss >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(248,113,113,0.2)'}`,
+            borderRadius: 16,
+            padding: '24px 28px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 24,
+          }}>
           <div>
-            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            <div
+              style={{
+                fontSize: 12,
+                color: '#64748b',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: 8,
+              }}>
               Net Profit / Loss Summary
             </div>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               {[
                 ['Total Revenue', fmt(totalRevenue), '#22c55e'],
                 ['Less: Expenses', `(${fmt(totalExpenses)})`, '#f87171'],
-                [netProfitLoss >= 0 ? 'Net Profit' : 'Net Loss', fmt(Math.abs(netProfitLoss)), netProfitLoss >= 0 ? '#6366f1' : '#f87171'],
+                [
+                  netProfitLoss >= 0 ? 'Net Profit' : 'Net Loss',
+                  fmt(Math.abs(netProfitLoss)),
+                  netProfitLoss >= 0 ? '#6366f1' : '#f87171',
+                ],
               ].map(([label, val, color], i) => (
-                <tr key={i} style={{ borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                  <td style={{ padding: '8px 0', fontSize: 14, color: '#94a3b8', fontWeight: i === 2 ? 700 : 400 }}>{label}</td>
-                  <td style={{ padding: '8px 0', fontSize: 14, color, fontWeight: 700, textAlign: 'right' }}>{val}</td>
+                <tr
+                  key={i}
+                  style={{ borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                  <td
+                    style={{
+                      padding: '8px 0',
+                      fontSize: 14,
+                      color: '#94a3b8',
+                      fontWeight: i === 2 ? 700 : 400,
+                    }}>
+                    {label}
+                  </td>
+                  <td
+                    style={{
+                      padding: '8px 0',
+                      fontSize: 14,
+                      color,
+                      fontWeight: 700,
+                      textAlign: 'right',
+                    }}>
+                    {val}
+                  </td>
                 </tr>
               ))}
             </table>
           </div>
           <div>
-            <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            <div
+              style={{
+                fontSize: 12,
+                color: '#64748b',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: 8,
+              }}>
               Financial Health Indicators
             </div>
             {[
-              { label: 'Gross Margin', value: `${grossMargin}%`, good: parseFloat(grossMargin) > 30 },
-              { label: 'Expense Ratio', value: `${totalRevenue > 0 ? ((totalExpenses / totalRevenue) * 100).toFixed(1) : '0'}%`, good: (totalExpenses / totalRevenue) < 0.7 },
+              {
+                label: 'Gross Margin',
+                value: `${grossMargin}%`,
+                good: parseFloat(grossMargin) > 30,
+              },
+              {
+                label: 'Expense Ratio',
+                value: `${totalRevenue > 0 ? ((totalExpenses / totalRevenue) * 100).toFixed(1) : '0'}%`,
+                good: totalExpenses / totalRevenue < 0.7,
+              },
               { label: 'Revenue per Employee', value: fmt(totalRevenue / 24), good: true },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                <span style={{ fontSize: 13, color: '#94a3b8' }}>{item.label}</span>
-                <span style={{
-                  fontSize: 13, fontWeight: 700,
-                  color: item.good ? '#22c55e' : '#f87171',
-                  background: item.good ? 'rgba(34,197,94,0.1)' : 'rgba(248,113,113,0.1)',
-                  padding: '2px 8px', borderRadius: 6,
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '7px 0',
+                  borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none',
                 }}>
+                <span style={{ fontSize: 13, color: '#94a3b8' }}>{item.label}</span>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: item.good ? '#22c55e' : '#f87171',
+                    background: item.good ? 'rgba(34,197,94,0.1)' : 'rgba(248,113,113,0.1)',
+                    padding: '2px 8px',
+                    borderRadius: 6,
+                  }}>
                   {item.value}
                 </span>
               </div>
@@ -601,14 +863,20 @@ export default function AuditBookPage() {
         </div>
 
         {/* Disclaimer */}
-        <div style={{
-          padding: '14px 20px', borderRadius: 12,
-          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
-          fontSize: 12, color: '#475569', lineHeight: 1.6,
-        }}>
-          <strong style={{ color: '#64748b' }}>Disclaimer:</strong> This financial audit book is generated from ERP system data and is for internal reference purposes. 
-          Figures are subject to review and reconciliation by a Chartered Accountant. This document does not constitute a certified audit report.
-          All monetary values are in Indian Rupees (INR).
+        <div
+          style={{
+            padding: '14px 20px',
+            borderRadius: 12,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            fontSize: 12,
+            color: '#475569',
+            lineHeight: 1.6,
+          }}>
+          <strong style={{ color: '#64748b' }}>Disclaimer:</strong> This financial audit book is
+          generated from ERP system data and is for internal reference purposes. Figures are subject
+          to review and reconciliation by a Chartered Accountant. This document does not constitute
+          a certified audit report. All monetary values are in Indian Rupees (INR).
         </div>
       </div>
 

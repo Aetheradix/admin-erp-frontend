@@ -231,7 +231,9 @@ export function UsersPage() {
 
   // Invitations Audit Log state
   const [invitations, setInvitations] = useState<InvitationRecord[]>(() => getInvitations());
-  const [invitationFilter, setInvitationFilter] = useState<'all' | 'pending' | 'accepted' | 'expired' | 'revoked'>('all');
+  const [invitationFilter, setInvitationFilter] = useState<
+    'all' | 'pending' | 'accepted' | 'expired' | 'revoked'
+  >('all');
 
   // System Audit Logs state
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => getAuditLogs());
@@ -576,13 +578,22 @@ export function UsersPage() {
 
     // Calculate diffs for audit log
     const changedFields: Array<{ field: string; from: any; to: any }> = [];
-    if (orig.name !== edited.name) changedFields.push({ field: 'name', from: orig.name, to: edited.name });
-    if (orig.email !== edited.email) changedFields.push({ field: 'email', from: orig.email, to: edited.email });
-    if (orig.role !== edited.role) changedFields.push({ field: 'role', from: orig.role, to: edited.role });
-    if (orig.department !== edited.department) changedFields.push({ field: 'department', from: orig.department, to: edited.department });
-    if (orig.status !== edited.status) changedFields.push({ field: 'status', from: orig.status, to: edited.status });
+    if (orig.name !== edited.name)
+      changedFields.push({ field: 'name', from: orig.name, to: edited.name });
+    if (orig.email !== edited.email)
+      changedFields.push({ field: 'email', from: orig.email, to: edited.email });
+    if (orig.role !== edited.role)
+      changedFields.push({ field: 'role', from: orig.role, to: edited.role });
+    if (orig.department !== edited.department)
+      changedFields.push({ field: 'department', from: orig.department, to: edited.department });
+    if (orig.status !== edited.status)
+      changedFields.push({ field: 'status', from: orig.status, to: edited.status });
     if ((orig.contactNo || '') !== (edited.contactNo || '')) {
-      changedFields.push({ field: 'contactNo', from: orig.contactNo || '', to: edited.contactNo || '' });
+      changedFields.push({
+        field: 'contactNo',
+        from: orig.contactNo || '',
+        to: edited.contactNo || '',
+      });
     }
     if ((orig.address || '') !== (edited.address || '')) {
       changedFields.push({ field: 'address', from: orig.address || '', to: edited.address || '' });
@@ -602,9 +613,7 @@ export function UsersPage() {
     }
 
     // Update local state
-    setLocalUsers((prev) =>
-      prev.map((u) => (u.id === orig.id ? { ...u, ...edited } : u))
-    );
+    setLocalUsers((prev) => prev.map((u) => (u.id === orig.id ? { ...u, ...edited } : u)));
 
     // Record in centralized audit log
     if (changedFields.length > 0) {
@@ -820,11 +829,7 @@ export function UsersPage() {
           }`}>
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              status === 'Active'
-                ? 'bg-success'
-                : status === 'Away'
-                ? 'bg-warning'
-                : 'bg-muted'
+              status === 'Active' ? 'bg-success' : status === 'Away' ? 'bg-warning' : 'bg-muted'
             }`}
           />
           {status}
@@ -894,9 +899,7 @@ export function UsersPage() {
       key: 'invitedAt',
       render: (ts) => (
         <div className="flex flex-col text-xs">
-          <span className="font-semibold text-foreground">
-            {new Date(ts).toLocaleDateString()}
-          </span>
+          <span className="font-semibold text-foreground">{new Date(ts).toLocaleDateString()}</span>
           <span className="text-[11px] text-muted">
             {new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
@@ -995,7 +998,8 @@ export function UsersPage() {
 
             {/* Resend / Renew */}
             {(record.status === 'pending' || record.status === 'expired') && (
-              <Tooltip title={record.status === 'expired' ? 'Renew 7-Day Invitation' : 'Resend Invite'}>
+              <Tooltip
+                title={record.status === 'expired' ? 'Renew 7-Day Invitation' : 'Resend Invite'}>
                 <button
                   onClick={() => handleResendInvitation(record)}
                   className="p-1.5 rounded-lg bg-surface-subtle hover:bg-success/10 hover:text-success transition-colors text-muted cursor-pointer"
@@ -1582,20 +1586,17 @@ export function UsersPage() {
           confirmModal.type === 'revoke_invitation'
             ? 'Revoke User Invitation'
             : confirmModal.type === 'offboard'
-            ? 'Confirm User Offboarding'
-            : confirmModal.type === 'reactivate'
-            ? 'Reactivate User Account'
-            : 'Delete User Record'
+              ? 'Confirm User Offboarding'
+              : confirmModal.type === 'reactivate'
+                ? 'Reactivate User Account'
+                : 'Delete User Record'
         }
         message={
           confirmModal.type === 'revoke_invitation' ? (
             <div className="space-y-2">
               <p>
                 Are you sure you want to revoke the invitation for{' '}
-                <strong className="text-foreground">
-                  {confirmModal.targetInvitation?.email}
-                </strong>
-                ?
+                <strong className="text-foreground">{confirmModal.targetInvitation?.email}</strong>?
               </p>
               <p className="text-xs text-muted">
                 The onboarding security token will be immediately invalidated and recorded as{' '}

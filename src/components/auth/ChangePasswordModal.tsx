@@ -42,9 +42,7 @@ export const ChangePasswordModal = ({
       hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
       passwordsMatch: newPassword.length > 0 && newPassword === confirmPassword,
       notSameAsCurrent:
-        !requireCurrentPassword ||
-        !currentPassword ||
-        newPassword !== currentPassword,
+        !requireCurrentPassword || !currentPassword || newPassword !== currentPassword,
     };
   }, [newPassword, confirmPassword, currentPassword, requireCurrentPassword]);
 
@@ -143,7 +141,9 @@ export const ChangePasswordModal = ({
         target: 'Security Authentication Credentials',
         status: 'Success',
         details: `Password changed successfully. ${
-          invalidateSessions ? 'Invalidated all other active sessions.' : 'Kept other sessions active.'
+          invalidateSessions
+            ? 'Invalidated all other active sessions.'
+            : 'Kept other sessions active.'
         }`,
       });
 
@@ -265,8 +265,8 @@ export const ChangePasswordModal = ({
                       ? strengthScore <= 2
                         ? 'bg-error'
                         : strengthScore === 3
-                        ? 'bg-warning'
-                        : 'bg-success'
+                          ? 'bg-warning'
+                          : 'bg-success'
                       : 'bg-border-subtle/50'
                   }`}
                 />

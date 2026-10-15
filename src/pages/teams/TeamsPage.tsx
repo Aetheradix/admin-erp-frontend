@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { Users, Crown, Folder, Network, LayoutGrid, ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
+import {
+  Users,
+  Crown,
+  Folder,
+  Network,
+  LayoutGrid,
+  ChevronDown,
+  ChevronRight,
+  Briefcase,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
@@ -228,7 +237,9 @@ export function TeamsPage() {
                 lead: 'Sarah Chen',
                 role: 'VP of Engineering',
                 color: '#3B82F6',
-                teams: teams.filter((t) => t.department === 'Technology' || t.department === 'Infrastructure'),
+                teams: teams.filter(
+                  (t) => t.department === 'Technology' || t.department === 'Infrastructure'
+                ),
               },
               {
                 id: 'creative',
@@ -286,7 +297,10 @@ export function TeamsPage() {
                       <div
                         className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs"
                         style={{ backgroundColor: pillar.color }}>
-                        {pillar.lead.split(' ').map((n) => n[0]).join('')}
+                        {pillar.lead
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-foreground">{pillar.lead}</span>
@@ -366,7 +380,9 @@ export function TeamsPage() {
                     <Users size={24} style={{ color: team.color }} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-foreground tracking-tight">{team.name}</h3>
+                    <h3 className="text-lg font-black text-foreground tracking-tight">
+                      {team.name}
+                    </h3>
                     <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
                       {team.department}
                     </span>

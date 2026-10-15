@@ -154,7 +154,7 @@ function generateDemoMessages(channelId: number): ChatMessage[] {
       'Just pushed the new inventory deduction feature to staging.',
       'Can someone review PR #142? It fixes the invoice export bug.',
       'Build pipeline is green ✅ — deploying to prod tonight at 11 PM.',
-      "Using jsPDF for the expense reports — works great, highly recommend.",
+      'Using jsPDF for the expense reports — works great, highly recommend.',
       'We should add WebSocket support for real-time channel updates in v2.',
     ],
     3: [
@@ -208,7 +208,7 @@ interface AvatarProps {
   color?: string;
 }
 function Avatar({ name, size = 32, color }: AvatarProps) {
-  const hue = name.charCodeAt(0) * 37 % 360;
+  const hue = (name.charCodeAt(0) * 37) % 360;
   const bg = color || `hsl(${hue}, 65%, 50%)`;
   return (
     <div
@@ -225,8 +225,7 @@ function Avatar({ name, size = 32, color }: AvatarProps) {
         fontSize: size * 0.36,
         flexShrink: 0,
         letterSpacing: '-0.5px',
-      }}
-    >
+      }}>
       {getInitials(name)}
     </div>
   );
@@ -241,7 +240,15 @@ interface ChannelItemProps {
 }
 function ChannelItem({ channel, isActive, onClick }: ChannelItemProps) {
   const icon =
-    channel.type === 'private' ? <Lock size={13} /> : channel.type === 'direct' ? <AtSign size={13} /> : channel.type === 'project' ? <Briefcase size={13} /> : <Hash size={13} />;
+    channel.type === 'private' ? (
+      <Lock size={13} />
+    ) : channel.type === 'direct' ? (
+      <AtSign size={13} />
+    ) : channel.type === 'project' ? (
+      <Briefcase size={13} />
+    ) : (
+      <Hash size={13} />
+    );
 
   return (
     <button
@@ -266,8 +273,7 @@ function ChannelItem({ channel, isActive, onClick }: ChannelItemProps) {
       }}
       onMouseLeave={(e) => {
         if (!isActive) e.currentTarget.style.background = 'transparent';
-      }}
-    >
+      }}>
       <span style={{ opacity: 0.7, flexShrink: 0 }}>{icon}</span>
       <span
         style={{
@@ -278,8 +284,7 @@ function ChannelItem({ channel, isActive, onClick }: ChannelItemProps) {
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
           color: isActive ? '#6366f1' : channel.unreadCount ? '#e2e8f0' : 'inherit',
-        }}
-      >
+        }}>
         {channel.name}
       </span>
       {(channel.unreadCount ?? 0) > 0 && (
@@ -293,8 +298,7 @@ function ChannelItem({ channel, isActive, onClick }: ChannelItemProps) {
             padding: '1px 7px',
             minWidth: 20,
             textAlign: 'center',
-          }}
-        >
+          }}>
           {channel.unreadCount}
         </span>
       )}
@@ -314,7 +318,16 @@ interface MessageBubbleProps {
   onDelete: () => void;
   onPin: () => void;
 }
-function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDelete, onPin }: MessageBubbleProps) {
+function MessageBubble({
+  msg,
+  isMine,
+  showAvatar,
+  onReact,
+  onReply,
+  onEdit,
+  onDelete,
+  onPin,
+}: MessageBubbleProps) {
   const [showActions, setShowActions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -331,7 +344,10 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
       onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => { setShowActions(false); setShowEmojiPicker(false); }}
+      onMouseLeave={() => {
+        setShowActions(false);
+        setShowEmojiPicker(false);
+      }}
       style={{
         display: 'flex',
         gap: 10,
@@ -339,8 +355,7 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
         position: 'relative',
         background: showActions ? 'rgba(255,255,255,0.03)' : 'transparent',
         transition: 'background 0.1s',
-      }}
-    >
+      }}>
       {/* Avatar */}
       <div style={{ width: 36, flexShrink: 0, paddingTop: 2 }}>
         {showAvatar && <Avatar name={msg.senderName} size={36} />}
@@ -354,38 +369,50 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
               {msg.senderName}
             </span>
             {msg.senderDesignation && (
-              <span style={{ fontSize: 11, color: '#64748b', background: 'rgba(99,102,241,0.1)', padding: '1px 6px', borderRadius: 4 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: '#64748b',
+                  background: 'rgba(99,102,241,0.1)',
+                  padding: '1px 6px',
+                  borderRadius: 4,
+                }}>
                 {msg.senderDesignation}
               </span>
             )}
             <span style={{ fontSize: 11, color: '#475569' }}>{formatTime(msg.createdAt)}</span>
-            {msg.isEdited && <span style={{ fontSize: 11, color: '#475569', fontStyle: 'italic' }}>(edited)</span>}
+            {msg.isEdited && (
+              <span style={{ fontSize: 11, color: '#475569', fontStyle: 'italic' }}>(edited)</span>
+            )}
             {msg.isPinned && <Pin size={11} color="#f59e0b" />}
           </div>
         )}
 
         {/* Reply reference */}
         {msg.replyToMessage && (
-          <div style={{
-            borderLeft: '3px solid #6366f1',
-            paddingLeft: 10,
-            marginBottom: 6,
-            opacity: 0.7,
-            fontSize: 12,
-            color: '#94a3b8',
-          }}>
-            <strong>{msg.replyToMessage.senderName}:</strong> {msg.replyToMessage.content.slice(0, 80)}
+          <div
+            style={{
+              borderLeft: '3px solid #6366f1',
+              paddingLeft: 10,
+              marginBottom: 6,
+              opacity: 0.7,
+              fontSize: 12,
+              color: '#94a3b8',
+            }}>
+            <strong>{msg.replyToMessage.senderName}:</strong>{' '}
+            {msg.replyToMessage.content.slice(0, 80)}
             {msg.replyToMessage.content.length > 80 ? '…' : ''}
           </div>
         )}
 
-        <p style={{
-          margin: 0,
-          fontSize: 14,
-          color: '#cbd5e1',
-          lineHeight: 1.6,
-          wordBreak: 'break-word',
-        }}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 14,
+            color: '#cbd5e1',
+            lineHeight: 1.6,
+            wordBreak: 'break-word',
+          }}>
           {msg.content}
         </p>
 
@@ -409,9 +436,12 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
                   color: '#94a3b8',
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99,102,241,0.25)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(99,102,241,0.12)'; }}
-              >
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(99,102,241,0.25)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(99,102,241,0.12)';
+                }}>
                 {r.emoji} <span style={{ fontWeight: 600, fontSize: 11 }}>{r.count}</span>
               </button>
             ))}
@@ -439,16 +469,14 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
               padding: '4px',
               zIndex: 10,
               boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-            }}
-          >
+            }}>
             {/* Emoji quick-pick */}
             <div style={{ position: 'relative' }}>
               <button
                 id={`msg-emoji-${msg.id}`}
                 title="React"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                style={actionBtnStyle}
-              >
+                style={actionBtnStyle}>
                 <Smile size={14} />
               </button>
               <AnimatePresence>
@@ -470,12 +498,14 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
                       marginBottom: 6,
                       whiteSpace: 'nowrap',
                       zIndex: 20,
-                    }}
-                  >
+                    }}>
                     {QUICK_EMOJIS.map((emoji) => (
                       <button
                         key={emoji}
-                        onClick={() => { onReact(emoji); setShowEmojiPicker(false); }}
+                        onClick={() => {
+                          onReact(emoji);
+                          setShowEmojiPicker(false);
+                        }}
                         style={{
                           background: 'transparent',
                           border: 'none',
@@ -485,9 +515,12 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
                           borderRadius: 6,
                           transition: 'transform 0.1s',
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.3)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                      >
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}>
                         {emoji}
                       </button>
                     ))}
@@ -496,15 +529,39 @@ function MessageBubble({ msg, isMine, showAvatar, onReact, onReply, onEdit, onDe
               </AnimatePresence>
             </div>
 
-            <button id={`msg-reply-${msg.id}`} title="Reply" onClick={onReply} style={actionBtnStyle}><Reply size={14} /></button>
-            <button id={`msg-pin-${msg.id}`} title="Pin" onClick={onPin} style={actionBtnStyle}><Pin size={14} /></button>
-            <button id={`msg-copy-${msg.id}`} title="Copy" onClick={handleCopy} style={actionBtnStyle}>
+            <button
+              id={`msg-reply-${msg.id}`}
+              title="Reply"
+              onClick={onReply}
+              style={actionBtnStyle}>
+              <Reply size={14} />
+            </button>
+            <button id={`msg-pin-${msg.id}`} title="Pin" onClick={onPin} style={actionBtnStyle}>
+              <Pin size={14} />
+            </button>
+            <button
+              id={`msg-copy-${msg.id}`}
+              title="Copy"
+              onClick={handleCopy}
+              style={actionBtnStyle}>
               {copied ? <Check size={14} color="#22c55e" /> : <Copy size={14} />}
             </button>
             {isMine && (
               <>
-                <button id={`msg-edit-${msg.id}`} title="Edit" onClick={onEdit} style={actionBtnStyle}><Edit2 size={14} /></button>
-                <button id={`msg-delete-${msg.id}`} title="Delete" onClick={onDelete} style={{ ...actionBtnStyle, color: '#f87171' }}><Trash2 size={14} /></button>
+                <button
+                  id={`msg-edit-${msg.id}`}
+                  title="Edit"
+                  onClick={onEdit}
+                  style={actionBtnStyle}>
+                  <Edit2 size={14} />
+                </button>
+                <button
+                  id={`msg-delete-${msg.id}`}
+                  title="Delete"
+                  onClick={onDelete}
+                  style={{ ...actionBtnStyle, color: '#f87171' }}>
+                  <Trash2 size={14} />
+                </button>
               </>
             )}
           </motion.div>
@@ -542,7 +599,12 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
     e.preventDefault();
     if (!name.trim()) return;
     try {
-      const result = await createChannel({ name: name.toLowerCase().replace(/\s+/g, '-'), description, type, memberIds: [] }).unwrap();
+      const result = await createChannel({
+        name: name.toLowerCase().replace(/\s+/g, '-'),
+        description,
+        type,
+        memberIds: [],
+      }).unwrap();
       onCreated(result);
       antMessage.success(`Channel #${name} created!`);
       onClose();
@@ -564,17 +626,36 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
     }
   };
 
-  const typeOptions: { value: ChannelType; label: string; icon: React.ReactNode; desc: string }[] = [
-    { value: 'public', label: 'Public', icon: <Globe size={16} />, desc: 'Anyone in the org can join' },
-    { value: 'private', label: 'Private', icon: <Lock size={16} />, desc: 'Invite-only channel' },
-    { value: 'project', label: 'Project', icon: <Briefcase size={16} />, desc: 'Linked to a project' },
-  ];
+  const typeOptions: { value: ChannelType; label: string; icon: React.ReactNode; desc: string }[] =
+    [
+      {
+        value: 'public',
+        label: 'Public',
+        icon: <Globe size={16} />,
+        desc: 'Anyone in the org can join',
+      },
+      { value: 'private', label: 'Private', icon: <Lock size={16} />, desc: 'Invite-only channel' },
+      {
+        value: 'project',
+        label: 'Project',
+        icon: <Briefcase size={16} />,
+        desc: 'Linked to a project',
+      },
+    ];
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-    }} onClick={onClose}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.7)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+      }}
+      onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -588,14 +669,32 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
           width: '100%',
           maxWidth: 480,
           boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 24,
+          }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#f1f5f9' }}>Create Channel</h2>
-            <p style={{ margin: 0, fontSize: 13, color: '#64748b', marginTop: 4 }}>Channels are where conversations happen.</p>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#f1f5f9' }}>
+              Create Channel
+            </h2>
+            <p style={{ margin: 0, fontSize: 13, color: '#64748b', marginTop: 4 }}>
+              Channels are where conversations happen.
+            </p>
           </div>
-          <button id="close-create-channel" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}>
+          <button
+            id="close-create-channel"
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#64748b',
+              padding: 4,
+            }}>
             <X size={20} />
           </button>
         </div>
@@ -603,7 +702,16 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* Channel type */}
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 10 }}>
+            <label
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                display: 'block',
+                marginBottom: 10,
+              }}>
               Channel Type
             </label>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -613,14 +721,21 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
                   type="button"
                   onClick={() => setType(opt.value)}
                   style={{
-                    flex: 1, padding: '10px 8px', borderRadius: 10, cursor: 'pointer',
-                    border: type === opt.value ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.08)',
-                    background: type === opt.value ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                    flex: 1,
+                    padding: '10px 8px',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    border:
+                      type === opt.value ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.08)',
+                    background:
+                      type === opt.value ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 6,
                     color: type === opt.value ? '#6366f1' : '#64748b',
                     transition: 'all 0.15s',
-                  }}
-                >
+                  }}>
                   {opt.icon}
                   <span style={{ fontSize: 12, fontWeight: 600 }}>{opt.label}</span>
                 </button>
@@ -630,11 +745,29 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
 
           {/* Name */}
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+            <label
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                display: 'block',
+                marginBottom: 8,
+              }}>
               Name
             </label>
             <div style={{ position: 'relative' }}>
-              <Hash size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#475569' }} />
+              <Hash
+                size={14}
+                style={{
+                  position: 'absolute',
+                  left: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#475569',
+                }}
+              />
               <input
                 id="channel-name-input"
                 type="text"
@@ -643,9 +776,15 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
                 placeholder="e.g. project-alpha"
                 required
                 style={{
-                  width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10,
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f1f5f9', fontSize: 14, outline: 'none', boxSizing: 'border-box',
+                  width: '100%',
+                  padding: '10px 12px 10px 32px',
+                  borderRadius: 10,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#f1f5f9',
+                  fontSize: 14,
+                  outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -653,8 +792,20 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
 
           {/* Description */}
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
-              Description <span style={{ fontWeight: 400, textTransform: 'none', color: '#475569' }}>(optional)</span>
+            <label
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                display: 'block',
+                marginBottom: 8,
+              }}>
+              Description{' '}
+              <span style={{ fontWeight: 400, textTransform: 'none', color: '#475569' }}>
+                (optional)
+              </span>
             </label>
             <input
               id="channel-description-input"
@@ -663,9 +814,15 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What's this channel about?"
               style={{
-                width: '100%', padding: '10px 12px', borderRadius: 10,
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                color: '#f1f5f9', fontSize: 14, outline: 'none', boxSizing: 'border-box',
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: 10,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#f1f5f9',
+                fontSize: 14,
+                outline: 'none',
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -675,11 +832,17 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
             type="submit"
             disabled={isLoading || !name.trim()}
             style={{
-              padding: '12px', borderRadius: 10, background: '#6366f1', color: '#fff',
-              border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14,
-              opacity: !name.trim() ? 0.5 : 1, transition: 'opacity 0.15s',
-            }}
-          >
+              padding: '12px',
+              borderRadius: 10,
+              background: '#6366f1',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 14,
+              opacity: !name.trim() ? 0.5 : 1,
+              transition: 'opacity 0.15s',
+            }}>
             {isLoading ? 'Creating…' : 'Create Channel'}
           </button>
         </form>
@@ -718,7 +881,10 @@ export default function ChannelsPage() {
 
   // RTK Query
   const { data: apiChannels } = useGetChannelsQuery();
-  const { data: apiMessages } = useGetMessagesQuery({ channelId: activeChannelId }, { skip: !activeChannelId });
+  const { data: apiMessages } = useGetMessagesQuery(
+    { channelId: activeChannelId },
+    { skip: !activeChannelId }
+  );
   const [sendMessage] = useSendMessageMutation();
   const [editMessage] = useEditMessageMutation();
   const [deleteMessage] = useDeleteMessageMutation();
@@ -784,7 +950,9 @@ export default function ChannelsPage() {
       [activeChannelId]: [...(prev[activeChannelId] || []), newMsg],
     }));
     setLocalChannels((prev) =>
-      prev.map((c) => (c.id === activeChannelId ? { ...c, lastActivity: new Date().toISOString() } : c))
+      prev.map((c) =>
+        c.id === activeChannelId ? { ...c, lastActivity: new Date().toISOString() } : c
+      )
     );
     setMessageInput('');
     setReplyTo(null);
@@ -879,25 +1047,34 @@ export default function ChannelsPage() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{
-      display: 'flex',
-      height: 'calc(100vh - 64px)',
-      background: '#0a0f1e',
-      overflow: 'hidden',
-    }}>
-      {/* ── LEFT SIDEBAR ── */}
-      <div style={{
-        width: 260,
-        flexShrink: 0,
-        background: '#0d1526',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+    <div
+      style={{
         display: 'flex',
-        flexDirection: 'column',
+        height: 'calc(100vh - 64px)',
+        background: '#0a0f1e',
         overflow: 'hidden',
       }}>
+      {/* ── LEFT SIDEBAR ── */}
+      <div
+        style={{
+          width: 260,
+          flexShrink: 0,
+          background: '#0d1526',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
         {/* Header */}
-        <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div
+          style={{ padding: '16px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <MessageSquare size={18} color="#6366f1" />
               <span style={{ fontWeight: 700, fontSize: 15, color: '#f1f5f9' }}>Channels</span>
@@ -915,23 +1092,37 @@ export default function ChannelsPage() {
                 padding: '4px 8px',
                 display: 'flex',
                 alignItems: 'center',
-              }}
-            >
+              }}>
               <Plus size={16} />
             </button>
           </div>
           {/* Search */}
           <div style={{ position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#475569' }} />
+            <Search
+              size={13}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#475569',
+              }}
+            />
             <input
               id="channel-search-input"
               value={channelSearch}
               onChange={(e) => setChannelSearch(e.target.value)}
               placeholder="Search channels…"
               style={{
-                width: '100%', padding: '7px 10px 7px 30px', borderRadius: 8,
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-                color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                width: '100%',
+                padding: '7px 10px 7px 30px',
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: '#f1f5f9',
+                fontSize: 13,
+                outline: 'none',
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -944,23 +1135,35 @@ export default function ChannelsPage() {
             <button
               onClick={() => setPublicCollapsed(!publicCollapsed)}
               style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 6,
-                padding: '4px 16px', background: 'transparent', border: 'none',
-                cursor: 'pointer', color: '#64748b', fontSize: 11, fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.08em',
-              }}
-            >
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '4px 16px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#64748b',
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}>
               {publicCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
               Public
             </button>
-            {!publicCollapsed && publicChannels.map((ch) => (
-              <ChannelItem
-                key={ch.id}
-                channel={ch}
-                isActive={ch.id === activeChannelId}
-                onClick={() => { setActiveChannelId(ch.id); navigate(`/channels/${ch.id}`); }}
-              />
-            ))}
+            {!publicCollapsed &&
+              publicChannels.map((ch) => (
+                <ChannelItem
+                  key={ch.id}
+                  channel={ch}
+                  isActive={ch.id === activeChannelId}
+                  onClick={() => {
+                    setActiveChannelId(ch.id);
+                    navigate(`/channels/${ch.id}`);
+                  }}
+                />
+              ))}
           </div>
 
           {/* Private */}
@@ -969,23 +1172,35 @@ export default function ChannelsPage() {
               <button
                 onClick={() => setPrivateCollapsed(!privateCollapsed)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '4px 16px', background: 'transparent', border: 'none',
-                  cursor: 'pointer', color: '#64748b', fontSize: 11, fontWeight: 700,
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                }}
-              >
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 16px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                }}>
                 {privateCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
                 Private
               </button>
-              {!privateCollapsed && privateChannels.map((ch) => (
-                <ChannelItem
-                  key={ch.id}
-                  channel={ch}
-                  isActive={ch.id === activeChannelId}
-                  onClick={() => { setActiveChannelId(ch.id); navigate(`/channels/${ch.id}`); }}
-                />
-              ))}
+              {!privateCollapsed &&
+                privateChannels.map((ch) => (
+                  <ChannelItem
+                    key={ch.id}
+                    channel={ch}
+                    isActive={ch.id === activeChannelId}
+                    onClick={() => {
+                      setActiveChannelId(ch.id);
+                      navigate(`/channels/${ch.id}`);
+                    }}
+                  />
+                ))}
             </div>
           )}
 
@@ -995,23 +1210,35 @@ export default function ChannelsPage() {
               <button
                 onClick={() => setProjectCollapsed(!projectCollapsed)}
                 style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '4px 16px', background: 'transparent', border: 'none',
-                  cursor: 'pointer', color: '#64748b', fontSize: 11, fontWeight: 700,
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                }}
-              >
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 16px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                }}>
                 {projectCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
                 Project Channels
               </button>
-              {!projectCollapsed && projectChannels.map((ch) => (
-                <ChannelItem
-                  key={ch.id}
-                  channel={ch}
-                  isActive={ch.id === activeChannelId}
-                  onClick={() => { setActiveChannelId(ch.id); navigate(`/channels/${ch.id}`); }}
-                />
-              ))}
+              {!projectCollapsed &&
+                projectChannels.map((ch) => (
+                  <ChannelItem
+                    key={ch.id}
+                    channel={ch}
+                    isActive={ch.id === activeChannelId}
+                    onClick={() => {
+                      setActiveChannelId(ch.id);
+                      navigate(`/channels/${ch.id}`);
+                    }}
+                  />
+                ))}
             </div>
           )}
         </div>
@@ -1021,28 +1248,41 @@ export default function ChannelsPage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Channel header */}
         {activeChannel && (
-          <div style={{
-            padding: '0 20px',
-            height: 56,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            background: '#0d1526',
-            flexShrink: 0,
-          }}>
+          <div
+            style={{
+              padding: '0 20px',
+              height: 56,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background: '#0d1526',
+              flexShrink: 0,
+            }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: `${CHANNEL_COLORS[activeChannel.type]}22`,
-                color: CHANNEL_COLORS[activeChannel.type],
-              }}>
-                {activeChannel.type === 'private' ? <Lock size={15} /> :
-                 activeChannel.type === 'project' ? <Briefcase size={15} /> :
-                 <Hash size={15} />}
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: `${CHANNEL_COLORS[activeChannel.type]}22`,
+                  color: CHANNEL_COLORS[activeChannel.type],
+                }}>
+                {activeChannel.type === 'private' ? (
+                  <Lock size={15} />
+                ) : activeChannel.type === 'project' ? (
+                  <Briefcase size={15} />
+                ) : (
+                  <Hash size={15} />
+                )}
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: '#f1f5f9' }}>{activeChannel.name}</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#f1f5f9' }}>
+                  {activeChannel.name}
+                </div>
                 {activeChannel.description && (
                   <div style={{ fontSize: 12, color: '#64748b' }}>{activeChannel.description}</div>
                 )}
@@ -1054,16 +1294,32 @@ export default function ChannelsPage() {
                 id="channel-members-toggle"
                 onClick={() => setShowMembers(!showMembers)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 12px',
+                  borderRadius: 8,
                   background: showMembers ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.05)',
-                  border: showMembers ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(255,255,255,0.08)',
-                  cursor: 'pointer', color: showMembers ? '#6366f1' : '#94a3b8', fontSize: 13, fontWeight: 500,
-                }}
-              >
+                  border: showMembers
+                    ? '1px solid rgba(99,102,241,0.3)'
+                    : '1px solid rgba(255,255,255,0.08)',
+                  cursor: 'pointer',
+                  color: showMembers ? '#6366f1' : '#94a3b8',
+                  fontSize: 13,
+                  fontWeight: 500,
+                }}>
                 <Users size={14} />
                 <span>{activeChannel.memberCount}</span>
               </button>
-              <button id="channel-settings-btn" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: 6 }}>
+              <button
+                id="channel-settings-btn"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  padding: 6,
+                }}>
                 <Settings size={16} />
               </button>
             </div>
@@ -1075,28 +1331,40 @@ export default function ChannelsPage() {
           {groupedMessages.map(({ date, messages: msgs }) => (
             <div key={date}>
               {/* Date divider */}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px',
-              }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 20px',
+                }}>
                 <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>{date}</span>
+                <span
+                  style={{ fontSize: 12, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>
+                  {date}
+                </span>
                 <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
               </div>
 
               {msgs.map((msg, idx) => {
                 const prevMsg = idx > 0 ? msgs[idx - 1] : null;
-                const showAvatar = !prevMsg || prevMsg.senderId !== msg.senderId ||
-                  new Date(msg.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() > 5 * 60 * 1000;
+                const showAvatar =
+                  !prevMsg ||
+                  prevMsg.senderId !== msg.senderId ||
+                  new Date(msg.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() >
+                    5 * 60 * 1000;
                 const isMine = msg.senderId === (user?.id || 0);
 
                 if (editingMsgId === msg.id) {
                   return (
                     <div key={msg.id} style={{ padding: '4px 16px 4px 62px' }}>
-                      <div style={{
-                        background: 'rgba(99,102,241,0.08)',
-                        border: '1px solid rgba(99,102,241,0.25)',
-                        borderRadius: 10, padding: '10px 12px',
-                      }}>
+                      <div
+                        style={{
+                          background: 'rgba(99,102,241,0.08)',
+                          border: '1px solid rgba(99,102,241,0.25)',
+                          borderRadius: 10,
+                          padding: '10px 12px',
+                        }}>
                         <input
                           autoFocus
                           value={editingContent}
@@ -1106,14 +1374,46 @@ export default function ChannelsPage() {
                             if (e.key === 'Escape') setEditingMsgId(null);
                           }}
                           style={{
-                            width: '100%', background: 'transparent', border: 'none',
-                            color: '#f1f5f9', fontSize: 14, outline: 'none',
+                            width: '100%',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#f1f5f9',
+                            fontSize: 14,
+                            outline: 'none',
                           }}
                         />
-                        <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 12, color: '#64748b' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: 8,
+                            marginTop: 8,
+                            fontSize: 12,
+                            color: '#64748b',
+                          }}>
                           <span>Enter to save · Esc to cancel</span>
-                          <button onClick={() => setEditingMsgId(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#f87171', fontSize: 12 }}>Cancel</button>
-                          <button onClick={() => handleEdit(msg.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6366f1', fontSize: 12, fontWeight: 600 }}>Save</button>
+                          <button
+                            onClick={() => setEditingMsgId(null)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#f87171',
+                              fontSize: 12,
+                            }}>
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleEdit(msg.id)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#6366f1',
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}>
+                            Save
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1128,7 +1428,10 @@ export default function ChannelsPage() {
                     showAvatar={showAvatar}
                     onReact={(emoji) => handleReact(msg.id, emoji)}
                     onReply={() => setReplyTo(msg)}
-                    onEdit={() => { setEditingMsgId(msg.id); setEditingContent(msg.content); }}
+                    onEdit={() => {
+                      setEditingMsgId(msg.id);
+                      setEditingContent(msg.content);
+                    }}
                     onDelete={() => handleDelete(msg.id)}
                     onPin={() => handlePin(msg.id)}
                   />
@@ -1140,12 +1443,13 @@ export default function ChannelsPage() {
         </div>
 
         {/* Input area */}
-        <div style={{
-          padding: '12px 20px 16px',
-          background: '#0d1526',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          flexShrink: 0,
-        }}>
+        <div
+          style={{
+            padding: '12px 20px 16px',
+            background: '#0d1526',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            flexShrink: 0,
+          }}>
           {/* Reply preview */}
           <AnimatePresence>
             {replyTo && (
@@ -1154,49 +1458,103 @@ export default function ChannelsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
-                  borderRadius: 10, padding: '8px 12px', marginBottom: 10,
-                }}
-              >
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: 'rgba(99,102,241,0.08)',
+                  border: '1px solid rgba(99,102,241,0.2)',
+                  borderRadius: 10,
+                  padding: '8px 12px',
+                  marginBottom: 10,
+                }}>
                 <Reply size={14} color="#6366f1" />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#6366f1' }}>Replying to {replyTo.senderName}</span>
-                  <p style={{ margin: 0, fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#6366f1' }}>
+                    Replying to {replyTo.senderName}
+                  </span>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: '#64748b',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
                     {replyTo.content}
                   </p>
                 </div>
-                <button onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                <button
+                  onClick={() => setReplyTo(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                  }}>
                   <X size={14} />
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 14, padding: '4px 8px 4px 16px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 14,
+              padding: '4px 8px 4px 16px',
+            }}>
             <input
               ref={inputRef}
               id="message-input"
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               placeholder={activeChannel ? `Message #${activeChannel.name}` : 'Select a channel'}
               disabled={!activeChannel}
               style={{
-                flex: 1, background: 'transparent', border: 'none',
-                color: '#f1f5f9', fontSize: 14, outline: 'none',
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                color: '#f1f5f9',
+                fontSize: 14,
+                outline: 'none',
                 padding: '8px 0',
               }}
             />
-            <button id="msg-attach-btn" title="Attach file" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#475569', padding: '6px', display: 'flex' }}>
+            <button
+              id="msg-attach-btn"
+              title="Attach file"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#475569',
+                padding: '6px',
+                display: 'flex',
+              }}>
               <Paperclip size={18} />
             </button>
-            <button id="msg-emoji-btn" title="Emoji" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#475569', padding: '6px', display: 'flex' }}>
+            <button
+              id="msg-emoji-btn"
+              title="Emoji"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#475569',
+                padding: '6px',
+                display: 'flex',
+              }}>
               <Smile size={18} />
             </button>
             <button
@@ -1205,11 +1563,18 @@ export default function ChannelsPage() {
               disabled={!messageInput.trim()}
               style={{
                 background: messageInput.trim() ? '#6366f1' : 'rgba(99,102,241,0.2)',
-                border: 'none', borderRadius: 10, cursor: messageInput.trim() ? 'pointer' : 'default',
-                color: '#fff', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6,
-                fontWeight: 600, fontSize: 13, transition: 'all 0.15s',
-              }}
-            >
+                border: 'none',
+                borderRadius: 10,
+                cursor: messageInput.trim() ? 'pointer' : 'default',
+                color: '#fff',
+                padding: '8px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontWeight: 600,
+                fontSize: 13,
+                transition: 'all 0.15s',
+              }}>
               <Send size={14} />
             </button>
           </div>
@@ -1232,30 +1597,58 @@ export default function ChannelsPage() {
               borderLeft: '1px solid rgba(255,255,255,0.06)',
               overflow: 'hidden',
               flexShrink: 0,
-            }}
-          >
+            }}>
             <div style={{ width: 240, padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: '#f1f5f9' }}>Members ({activeChannel.memberCount})</span>
-                <button id="btn-add-member" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 6, cursor: 'pointer', color: '#6366f1', padding: '4px 8px', display: 'flex', alignItems: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                }}>
+                <span style={{ fontWeight: 700, fontSize: 14, color: '#f1f5f9' }}>
+                  Members ({activeChannel.memberCount})
+                </span>
+                <button
+                  id="btn-add-member"
+                  style={{
+                    background: 'rgba(99,102,241,0.15)',
+                    border: '1px solid rgba(99,102,241,0.3)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    color: '#6366f1',
+                    padding: '4px 8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}>
                   <UserPlus size={14} />
                 </button>
               </div>
               {/* Sample members */}
               {['Aryan Sharma', 'Priya Mehta', 'Rahul Singh', 'Sneha Patel'].map((name, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                <div
+                  key={i}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
                   <div style={{ position: 'relative' }}>
                     <Avatar name={name} size={32} />
-                    <div style={{
-                      position: 'absolute', bottom: 0, right: 0,
-                      width: 9, height: 9, borderRadius: '50%',
-                      background: i < 2 ? '#22c55e' : '#64748b',
-                      border: '1.5px solid #0d1526',
-                    }} />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        right: 0,
+                        width: 9,
+                        height: 9,
+                        borderRadius: '50%',
+                        background: i < 2 ? '#22c55e' : '#64748b',
+                        border: '1.5px solid #0d1526',
+                      }}
+                    />
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>{name}</div>
-                    <div style={{ fontSize: 11, color: '#475569' }}>{i < 2 ? '🟢 Online' : '⚫ Offline'}</div>
+                    <div style={{ fontSize: 11, color: '#475569' }}>
+                      {i < 2 ? '🟢 Online' : '⚫ Offline'}
+                    </div>
                   </div>
                 </div>
               ))}

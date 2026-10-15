@@ -156,7 +156,8 @@ const SEEDED_AUDIT_LOGS: AuditLogEntry[] = [
     timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     ip: '192.168.1.88',
     status: 'Success',
-    details: 'User successfully verified invitation token, set secure password, and completed profile onboarding.',
+    details:
+      'User successfully verified invitation token, set secure password, and completed profile onboarding.',
   },
   {
     id: 'log-103',
@@ -263,9 +264,7 @@ export function createInvitation(payload: {
   const id = `inv-${Date.now().toString(36)}`;
   const days = payload.customExpiryDays ?? 7;
   const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-  const tempPass =
-    payload.tempPassword ||
-    `Aether@${Math.floor(100000 + Math.random() * 900000)}!`;
+  const tempPass = payload.tempPassword || `Aether@${Math.floor(100000 + Math.random() * 900000)}!`;
 
   const newInvitation: InvitationRecord = {
     id,
@@ -409,7 +408,13 @@ export function validateInvitation(
   email?: string | null
 ): {
   valid: boolean;
-  reason?: 'missing_token' | 'not_found' | 'expired' | 'revoked' | 'already_accepted' | 'duplicate_account';
+  reason?:
+    | 'missing_token'
+    | 'not_found'
+    | 'expired'
+    | 'revoked'
+    | 'already_accepted'
+    | 'duplicate_account';
   invitation?: InvitationRecord;
 } {
   if (!token && !email) {
@@ -462,7 +467,9 @@ export function acceptInvitation(
   }
 ): boolean {
   const invitations = getInvitations();
-  const target = invitations.find((i) => i.token === token || i.email.toLowerCase() === completedProfile.email.toLowerCase());
+  const target = invitations.find(
+    (i) => i.token === token || i.email.toLowerCase() === completedProfile.email.toLowerCase()
+  );
   if (!target) return false;
 
   const updatedList = invitations.map((inv) => {

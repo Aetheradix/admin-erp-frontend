@@ -155,7 +155,7 @@ import {
   Package,
   Settings,
   Share2,
-  type LucideIcon
+  type LucideIcon,
 } from 'lucide-react';
 
 export type UserRole =

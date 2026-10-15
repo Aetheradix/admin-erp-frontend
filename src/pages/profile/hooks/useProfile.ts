@@ -365,16 +365,32 @@ export const useProfile = () => {
         changedFields.push({ field: 'contactNo', from: user.contactNo, to: updatedData.contactNo });
       }
       if (user.designation !== updatedData.designation) {
-        changedFields.push({ field: 'designation', from: user.designation, to: updatedData.designation });
+        changedFields.push({
+          field: 'designation',
+          from: user.designation,
+          to: updatedData.designation,
+        });
       }
       if (user.department !== updatedData.department) {
-        changedFields.push({ field: 'department', from: user.department, to: updatedData.department });
+        changedFields.push({
+          field: 'department',
+          from: user.department,
+          to: updatedData.department,
+        });
       }
       if (user.workLocation !== (updatedData.workLocation || '')) {
-        changedFields.push({ field: 'workLocation', from: user.workLocation, to: updatedData.workLocation || '' });
+        changedFields.push({
+          field: 'workLocation',
+          from: user.workLocation,
+          to: updatedData.workLocation || '',
+        });
       }
       if (user.address !== (updatedData.address || '')) {
-        changedFields.push({ field: 'address', from: user.address || '', to: updatedData.address || '' });
+        changedFields.push({
+          field: 'address',
+          from: user.address || '',
+          to: updatedData.address || '',
+        });
       }
       if (user.company !== (updatedData.company || '')) {
         changedFields.push({ field: 'company', from: user.company, to: updatedData.company || '' });

@@ -162,7 +162,9 @@ export const EventCard = ({
             onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 dark:text-indigo-300 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors truncate">
             <ExternalLink size={12} className="shrink-0" />
-            <span className="truncate">Resource: {event.event_link.replace(/^https?:\/\//, '')}</span>
+            <span className="truncate">
+              Resource: {event.event_link.replace(/^https?:\/\//, '')}
+            </span>
           </a>
         )}
 

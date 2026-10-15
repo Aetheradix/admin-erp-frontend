@@ -211,9 +211,7 @@ export function TasksPage() {
   const filtered = activeTab === 'All' ? tasks : tasks.filter((t) => t.status === activeTab);
 
   const handleUpdateStatus = (taskId: number, newStatus: Task['status']) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
-    );
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
     message.success(`Task moved to "${newStatus}"`);
   };
 

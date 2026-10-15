@@ -38,10 +38,6 @@ export interface SalarySlipData {
   signatoryRole: string;
 
   hrNote: string;
-
-  /**
-   * Optional values from the new design
-   */
   currencySymbol?: string;
   watermarkText?: string;
   netPayInWords?: string;
