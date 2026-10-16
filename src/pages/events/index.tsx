@@ -93,7 +93,8 @@ const Events = () => {
     const previous: ERPEvent[] = [];
 
     events.forEach((evt) => {
-      if (isPastEvent(evt)) {
+      const st = (evt.status || '').toLowerCase();
+      if (st === 'completed' || isPastEvent(evt)) {
         previous.push(evt);
       } else {
         upcoming.push(evt);

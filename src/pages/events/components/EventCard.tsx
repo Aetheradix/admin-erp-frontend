@@ -10,14 +10,12 @@ import {
   Users,
   Tag,
   Building2,
-  ShieldCheck,
   ArrowUpRight,
   ExternalLink,
   AlertCircle,
   Calendar as CalendarIcon,
   CheckCircle2,
   Radio,
-  ClockAlert,
 } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 import { useAuth } from '@/hooks/useAuth';
@@ -170,28 +168,28 @@ export const EventCard = ({
             {event.category || 'General'}
           </Badge>
 
-          {/* Status Display: On Leave, Completed, Live Now, or Employee Status */}
-          {statusInfo.isLeave ? (
-            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-amber-500/90 text-white uppercase tracking-wider flex items-center gap-1 border border-amber-400/40 shadow-md animate-pulse">
-              <ClockAlert size={12} />
-              On Leave
+          {/* Status Display: Inactive, Completed, Active, or Upcoming */}
+          {statusInfo.isInactive ? (
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-rose-500/90 text-white uppercase tracking-wider flex items-center gap-1 border border-rose-400/40 shadow-md">
+              <AlertCircle size={12} />
+              {statusInfo.label}
             </span>
           ) : statusInfo.isPast ? (
             <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-zinc-700/80 text-zinc-200 uppercase tracking-wider flex items-center gap-1 border border-zinc-500/30 shadow-md">
               <CheckCircle2 size={12} />
               Completed
             </span>
-          ) : statusInfo.isLive ? (
+          ) : statusInfo.isLive || (event.status || '').toLowerCase() === 'active' ? (
             <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-emerald-500/90 text-white uppercase tracking-wider flex items-center gap-1 border border-emerald-400/30 shadow-md animate-pulse">
               <Radio size={12} />
-              Live Now
+              Active
             </span>
-          ) : event.employee_status ? (
-            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-emerald-500/80 text-white uppercase tracking-wider flex items-center gap-1 border border-emerald-400/30 shadow-md">
-              <ShieldCheck size={12} />
-              {event.employee_status}
+          ) : (
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-xl backdrop-blur-md bg-sky-500/90 text-white uppercase tracking-wider flex items-center gap-1 border border-sky-400/30 shadow-md">
+              <CalendarIcon size={12} />
+              {event.status || 'Upcoming'}
             </span>
-          ) : null}
+          )}
         </div>
       </div>
 

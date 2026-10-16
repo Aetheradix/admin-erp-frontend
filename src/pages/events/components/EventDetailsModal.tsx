@@ -430,11 +430,9 @@ export const EventDetailsModal = ({
                       </span>
                     )}
                   </div>
-                  {event.employee_status && (
-                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-white border border-border-subtle text-foreground shadow-xs whitespace-nowrap">
-                      {event.employee_status}
-                    </span>
-                  )}
+                  <span className="px-3 py-1 rounded-xl text-xs font-black bg-white border border-border-subtle text-foreground shadow-xs whitespace-nowrap">
+                    {event.status || 'Upcoming'}
+                  </span>
                 </div>
 
                 <div className="p-5 rounded-3xl bg-surface-subtle/50 border border-border-subtle flex items-center justify-between gap-4">

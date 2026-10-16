@@ -3,7 +3,7 @@ import {
   Calendar,
   CheckCircle2,
   Radio,
-  ClockAlert,
+  AlertCircle,
 } from 'lucide-react';
 
 const REGISTRATIONS_STORAGE_KEY = 'aether_event_registrations_v1';
@@ -111,42 +111,41 @@ export function isLiveEvent(event: ERPEvent): boolean {
  * Determines comprehensive status badge metadata for an event
  */
 export function getEventStatusInfo(event: ERPEvent) {
-  const isLeave =
-    event.employee_status?.toLowerCase() === 'on leave' ||
-    event.employee_status?.toLowerCase() === 'on_leave' ||
-    event.status?.toLowerCase() === 'on leave' ||
-    event.status?.toLowerCase() === 'on_leave';
+  const rawStatus = (event.status || '').trim().toLowerCase();
 
-  if (isLeave) {
+  if (rawStatus === 'inactive' || rawStatus === 'cancelled') {
     return {
-      label: 'On Leave',
-      variant: 'warning' as const,
-      colorClasses: 'bg-amber-500/15 text-amber-600 border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-400',
-      icon: ClockAlert,
-      isLeave: true,
-      isPast: isPastEvent(event),
+      label: event.status || 'Inactive',
+      variant: 'error' as const,
+      colorClasses: 'bg-rose-500/90 text-white border-rose-400/40 shadow-md',
+      icon: AlertCircle,
+      isInactive: true,
+      isLeave: false,
+      isPast: false,
       isLive: false,
     };
   }
 
-  if (isPastEvent(event)) {
+  if (rawStatus === 'completed' || isPastEvent(event)) {
     return {
       label: 'Completed',
       variant: 'secondary' as const,
-      colorClasses: 'bg-zinc-500/15 text-zinc-600 border-zinc-500/30 dark:bg-zinc-700/40 dark:text-zinc-300',
+      colorClasses: 'bg-zinc-700/80 text-zinc-200 border-zinc-500/30 shadow-md',
       icon: CheckCircle2,
+      isInactive: false,
       isLeave: false,
       isPast: true,
       isLive: false,
     };
   }
 
-  if (isLiveEvent(event)) {
+  if (rawStatus === 'active' || isLiveEvent(event)) {
     return {
-      label: 'Live Now',
+      label: 'Active',
       variant: 'success' as const,
-      colorClasses: 'bg-emerald-500/20 text-emerald-600 border-emerald-500/40 animate-pulse dark:text-emerald-400',
+      colorClasses: 'bg-emerald-500/90 text-white border-emerald-400/30 shadow-md animate-pulse',
       icon: Radio,
+      isInactive: false,
       isLeave: false,
       isPast: false,
       isLive: true,
@@ -156,8 +155,9 @@ export function getEventStatusInfo(event: ERPEvent) {
   return {
     label: event.status || 'Upcoming',
     variant: 'primary' as const,
-    colorClasses: 'bg-primary/10 text-primary border-primary/30',
+    colorClasses: 'bg-sky-500/90 text-white border-sky-400/30 shadow-md',
     icon: Calendar,
+    isInactive: false,
     isLeave: false,
     isPast: false,
     isLive: false,
