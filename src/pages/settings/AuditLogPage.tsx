@@ -1,10 +1,25 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { motion } from 'framer-motion';
-import { Clock, User, Terminal, Search, Shield, UserPlus, KeyRound, FileText } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
-import { Table, Modal } from 'antd';
+import { getAuditLogs, getInvitations, type AuditLogEntry, type InvitationRecord } from '@/services/auditService';
+import { Modal, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { getAuditLogs, type AuditLogEntry } from '@/services/auditService';
+import { motion } from 'framer-motion';
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  FileText,
+  KeyRound,
+  Lock,
+  Mail,
+  Search,
+  Shield,
+  Terminal,
+  User,
+  UserPlus,
+  Zap
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 const statusColors: Record<string, string> = {
   Success: 'text-success bg-success/10 border-success/20',
@@ -21,29 +36,274 @@ const categoryIcons: Record<string, any> = {
   admin: Shield,
 };
 
+// ─── Journey Timeline ──────────────────────────────────────────────────────────
+
+interface JourneyStep {
+  label: string;
+  description: string;
+  timestamp?: string;
+  status: 'done' | 'pending' | 'failed';
+  icon: any;
+  logEntry?: AuditLogEntry;
+}
+
+function buildJourney(invitation: InvitationRecord, logs: AuditLogEntry[]): JourneyStep[] {
+  const email = invitation.email.toLowerCase();
+
+  // Find relevant log entries for this email
+  const inviteSentLog = logs.find(
+    (l) =>
+      l.category === 'invitation' &&
+      l.action.toLowerCase().includes('dispatched') &&
+      (l.targetEmail?.toLowerCase() === email || l.target.toLowerCase().includes(email))
+  );
+
+  const passwordLog = logs.find(
+    (l) =>
+      l.category === 'security' &&
+      l.action.toLowerCase().includes('password') &&
+      (l.userEmail?.toLowerCase() === email || l.targetEmail?.toLowerCase() === email)
+  );
+
+  const onboardingCompleteLog = logs.find(
+    (l) =>
+      l.category === 'invitation' &&
+      (l.action.toLowerCase().includes('onboarding') || l.action.toLowerCase().includes('completed')) &&
+      (l.userEmail?.toLowerCase() === email || l.targetEmail?.toLowerCase() === email)
+  );
+
+  const profileLog = logs.find(
+    (l) =>
+      l.category === 'profile' &&
+      (l.userEmail?.toLowerCase() === email || l.targetEmail?.toLowerCase() === email)
+  );
+
+  const isAccepted = invitation.status === 'accepted';
+  const isRevoked = invitation.status === 'revoked';
+  const isExpired = invitation.status === 'expired';
+
+  return [
+    {
+      label: 'Invitation Dispatched',
+      description: `Admin sent invite with role ${invitation.role} (${invitation.department})`,
+      timestamp: invitation.invitedAt,
+      status: 'done',
+      icon: Mail,
+      logEntry: inviteSentLog,
+    },
+    {
+      label: 'Invite Email Delivered',
+      description: `Temporary credentials sent to ${invitation.email}`,
+      timestamp: invitation.invitedAt,
+      status: isRevoked || isExpired ? 'failed' : 'done',
+      icon: Mail,
+    },
+    {
+      label: 'Temporary Password Changed',
+      description: 'User logged in and changed single-use temp password',
+      timestamp: passwordLog?.timestamp,
+      status: passwordLog ? 'done' : isAccepted ? 'done' : 'pending',
+      icon: Lock,
+      logEntry: passwordLog,
+    },
+    {
+      label: 'Profile & Details Submitted',
+      description: 'Full name, contact number, department and designation saved',
+      timestamp: onboardingCompleteLog?.timestamp || profileLog?.timestamp,
+      status: onboardingCompleteLog || isAccepted ? 'done' : 'pending',
+      icon: FileText,
+      logEntry: onboardingCompleteLog || profileLog,
+    },
+    {
+      label: 'Account Fully Activated',
+      description: 'Onboarding complete — user has full system access',
+      timestamp: invitation.acceptedAt || onboardingCompleteLog?.timestamp,
+      status: isAccepted ? 'done' : isRevoked ? 'failed' : 'pending',
+      icon: CheckCircle2,
+    },
+  ];
+}
+
+const stepStatusStyle: Record<string, string> = {
+  done: 'bg-success text-white',
+  pending: 'bg-border-subtle/60 text-muted',
+  failed: 'bg-error text-white',
+};
+
+const invStatusBadge: Record<string, string> = {
+  pending: 'bg-warning/10 text-warning border border-warning/20',
+  accepted: 'bg-success/10 text-success border border-success/20',
+  expired: 'bg-muted/10 text-muted border border-border-subtle',
+  revoked: 'bg-error/10 text-error border border-error/20',
+};
+
+function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs: AuditLogEntry[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const steps = buildJourney(invitation, logs);
+  const doneCount = steps.filter((s) => s.status === 'done').length;
+  const progress = Math.round((doneCount / steps.length) * 100);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
+      {/* Header */}
+      <button
+        onClick={() => setExpanded((p) => !p)}
+        className="w-full text-left p-5 flex items-center gap-4 hover:bg-surface-subtle/40 transition-colors cursor-pointer">
+        {/* Avatar */}
+        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center shrink-0">
+          {(invitation.name || invitation.email).charAt(0).toUpperCase()}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-sm font-black text-foreground truncate">{invitation.name || invitation.email}</span>
+            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${invStatusBadge[invitation.status]}`}>
+              {invitation.status}
+            </span>
+          </div>
+          <div className="text-[11px] text-muted truncate">{invitation.email}</div>
+          <div className="text-[10px] text-muted mt-0.5 flex items-center gap-3">
+            <span>Role: <strong className="text-foreground">{invitation.role}</strong></span>
+            <span>·</span>
+            <span>By: <strong className="text-foreground">{invitation.invitedBy.name}</strong></span>
+            <span>·</span>
+            <span>{new Date(invitation.invitedAt).toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        {/* Progress ring */}
+        <div className="shrink-0 flex flex-col items-center gap-1">
+          <div className="relative w-12 h-12">
+            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3" className="text-border-subtle/40" />
+              <circle
+                cx="18" cy="18" r="15.5" fill="none"
+                stroke={progress === 100 ? '#22c55e' : '#6366f1'}
+                strokeWidth="3"
+                strokeDasharray={`${(progress / 100) * 97.4} 97.4`}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-foreground">
+              {progress}%
+            </span>
+          </div>
+          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">{doneCount}/{steps.length}</span>
+        </div>
+
+        {/* Expand caret */}
+        <div className="text-muted ml-1">
+          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </div>
+      </button>
+
+      {/* Progress bar */}
+      <div className="h-1 w-full bg-border-subtle/30">
+        <div
+          className="h-full transition-all duration-700 ease-out rounded-full"
+          style={{
+            width: `${progress}%`,
+            background: progress === 100 ? '#22c55e' : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+          }}
+        />
+      </div>
+
+      {/* Timeline (expandable) */}
+      {expanded && (
+        <div className="px-5 pb-5 pt-4">
+          <div className="relative pl-6">
+            {/* Vertical connector line */}
+            <div className="absolute left-3 top-3 bottom-3 w-px bg-border-subtle/50" />
+
+            {steps.map((step, idx) => {
+              // const Icon = step.icon;
+              const isLast = idx === steps.length - 1;
+              return (
+                <div key={idx} className={`relative flex items-start gap-4 ${isLast ? '' : 'mb-5'}`}>
+                  {/* Step dot */}
+                  <div
+                    className={`absolute -left-[9px] w-4 h-4 rounded-full flex items-center justify-center shrink-0 z-10 ${stepStatusStyle[step.status]}`}>
+                    {step.status === 'done' ? (
+                      <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 fill-white"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    ) : step.status === 'failed' ? (
+                      <span className="text-[8px] font-black">✕</span>
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-muted/40 block" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 ml-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-bold ${step.status === 'done' ? 'text-foreground' : step.status === 'failed' ? 'text-error' : 'text-muted'}`}>
+                        {step.label}
+                      </span>
+                      {step.status === 'done' && (
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-success/10 text-success">done</span>
+                      )}
+                      {step.status === 'pending' && (
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-muted/10 text-muted">pending</span>
+                      )}
+                      {step.status === 'failed' && (
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-error/10 text-error">blocked</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted mt-0.5">{step.description}</p>
+                    {step.timestamp && (
+                      <p className="text-[10px] text-muted/60 flex items-center gap-1 mt-0.5">
+                        <Clock size={9} />
+                        {new Date(step.timestamp).toLocaleString()}
+                      </p>
+                    )}
+                    {step.logEntry && (
+                      <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-surface-subtle border border-border-subtle text-[10px] text-muted leading-relaxed">
+                        {step.logEntry.details}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
+
 export function AuditLogPage() {
   const [logs, setLogs] = useState<AuditLogEntry[]>(() => getAuditLogs());
+  const [invitations, setInvitations] = useState<InvitationRecord[]>(() => getInvitations());
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
+  const [activeView, setActiveView] = useState<'stream' | 'journey'>('stream');
 
-  // Sync when audit logs update across the application
+  // Live sync when audit logs update
   useEffect(() => {
-    const handleUpdate = () => {
-      setLogs(getAuditLogs());
+    const handleLogUpdate = () => setLogs(getAuditLogs());
+    const handleInvUpdate = () => setInvitations(getInvitations());
+    window.addEventListener('aether_audit_logs_updated', handleLogUpdate);
+    window.addEventListener('aether_invitations_updated', handleInvUpdate);
+    return () => {
+      window.removeEventListener('aether_audit_logs_updated', handleLogUpdate);
+      window.removeEventListener('aether_invitations_updated', handleInvUpdate);
     };
-    window.addEventListener('aether_audit_logs_updated', handleUpdate);
-    return () => window.removeEventListener('aether_audit_logs_updated', handleUpdate);
   }, []);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((l) => {
-      // Category filter
       if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
-      // Status filter
       if (statusFilter !== 'all' && l.status !== statusFilter) return false;
-      // Text search
       if (!search.trim()) return true;
       const term = search.toLowerCase();
       return (
@@ -55,6 +315,19 @@ export function AuditLogPage() {
       );
     });
   }, [logs, search, categoryFilter, statusFilter]);
+
+  // Filter invitations by search
+  const filteredInvitations = useMemo(() => {
+    if (!search.trim()) return invitations;
+    const term = search.toLowerCase();
+    return invitations.filter(
+      (inv) =>
+        inv.email.toLowerCase().includes(term) ||
+        inv.name.toLowerCase().includes(term) ||
+        inv.role.toLowerCase().includes(term) ||
+        inv.invitedBy.name.toLowerCase().includes(term)
+    );
+  }, [invitations, search]);
 
   const columns: ColumnsType<AuditLogEntry> = [
     {
@@ -148,10 +421,10 @@ export function AuditLogPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col gap-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <PageHeader
         title="Security & System Audit Log"
-        description="Immutable chronological record of invitations, user profile updates, authentication changes, and system administration events."
+        description="Immutable chronological record of invitations, onboarding journeys, authentication changes, and system administration events."
         breadcrumbs={[
           { label: 'Home', url: '/' },
           { label: 'Settings', url: '/settings' },
@@ -159,7 +432,34 @@ export function AuditLogPage() {
         ]}
       />
 
-      {/* Search and Category Filters */}
+      {/* View toggle */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setActiveView('stream')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeView === 'stream'
+              ? 'bg-primary text-white shadow-md shadow-primary/20'
+              : 'bg-white border border-border-subtle text-muted hover:text-foreground'
+          }`}>
+          <Terminal size={14} />
+          Activity Stream
+        </button>
+        <button
+          onClick={() => setActiveView('journey')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeView === 'journey'
+              ? 'bg-primary text-white shadow-md shadow-primary/20'
+              : 'bg-white border border-border-subtle text-muted hover:text-foreground'
+          }`}>
+          <Zap size={14} />
+          Onboarding Journeys
+          <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[9px] font-black">
+            {invitations.length}
+          </span>
+        </button>
+      </div>
+
+      {/* Search and Filters */}
       <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-6 flex flex-col gap-4">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
@@ -173,86 +473,126 @@ export function AuditLogPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-muted uppercase tracking-wider mr-1">
-              Status:
-            </span>
-            {['all', 'Success', 'Warning', 'Critical'].map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  statusFilter === st
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'bg-surface-subtle text-muted hover:text-foreground'
-                }`}>
-                {st === 'all' ? 'All Outcomes' : st}
-              </button>
-            ))}
-          </div>
+          {activeView === 'stream' && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-muted uppercase tracking-wider mr-1">Status:</span>
+              {['all', 'Success', 'Warning', 'Critical'].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    statusFilter === st
+                      ? 'bg-foreground text-background shadow-sm'
+                      : 'bg-surface-subtle text-muted hover:text-foreground'
+                  }`}>
+                  {st === 'all' ? 'All Outcomes' : st}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-2 border-t border-border-subtle/60 pt-4 overflow-x-auto no-scrollbar">
-          {[
-            { id: 'all', label: 'All Activities', icon: Terminal },
-            { id: 'invitation', label: 'User Invitations', icon: UserPlus },
-            { id: 'profile', label: 'Profile Changes', icon: FileText },
-            { id: 'security', label: 'Security & Password', icon: KeyRound },
-            { id: 'admin', label: 'Administration', icon: Shield },
-          ].map((cat) => {
-            const Icon = cat.icon;
-            const active = categoryFilter === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setCategoryFilter(cat.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                  active
-                    ? 'bg-primary text-white shadow-md shadow-primary/20'
-                    : 'bg-surface-subtle text-muted hover:text-foreground hover:bg-surface-subtle/80'
-                }`}>
-                <Icon size={13} />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Category Filter Pills — only for Activity Stream */}
+        {activeView === 'stream' && (
+          <div className="flex items-center gap-2 border-t border-border-subtle/60 pt-4 overflow-x-auto no-scrollbar">
+            {[
+              { id: 'all', label: 'All Activities', icon: Terminal },
+              { id: 'invitation', label: 'User Invitations', icon: UserPlus },
+              { id: 'profile', label: 'Profile Changes', icon: FileText },
+              { id: 'security', label: 'Security & Password', icon: KeyRound },
+              { id: 'admin', label: 'Administration', icon: Shield },
+            ].map((cat) => {
+              const Icon = cat.icon;
+              const active = categoryFilter === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                    active
+                      ? 'bg-primary text-white shadow-md shadow-primary/20'
+                      : 'bg-surface-subtle text-muted hover:text-foreground hover:bg-surface-subtle/80'
+                  }`}>
+                  <Icon size={13} />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Main Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
-        <div className="p-6 pb-4 border-b border-border-subtle flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Terminal size={18} className="text-primary" />
-            <span className="text-sm font-black text-foreground uppercase tracking-wider">
-              System Activity Stream
+      {/* ─── ACTIVITY STREAM VIEW ─── */}
+      {activeView === 'stream' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
+          <div className="p-6 pb-4 border-b border-border-subtle flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Terminal size={18} className="text-primary" />
+              <span className="text-sm font-black text-foreground uppercase tracking-wider">
+                System Activity Stream
+              </span>
+            </div>
+            <span className="text-xs font-bold text-muted">
+              {filteredLogs.length} {filteredLogs.length === 1 ? 'event' : 'events'} recorded
             </span>
           </div>
-          <span className="text-xs font-bold text-muted">
-            {filteredLogs.length} {filteredLogs.length === 1 ? 'event' : 'events'} recorded
-          </span>
-        </div>
 
-        <Table
-          columns={columns}
-          dataSource={filteredLogs}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          className="premium-table"
-          locale={{
-            emptyText: (
-              <div className="py-12 text-center text-muted text-sm">
-                No audit entries match the selected filters.
+          <Table
+            columns={columns}
+            dataSource={filteredLogs}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            className="premium-table"
+            locale={{
+              emptyText: (
+                <div className="py-12 text-center text-muted text-sm">
+                  No audit entries match the selected filters.
+                </div>
+              ),
+            }}
+          />
+        </motion.div>
+      )}
+
+      {/* ─── ONBOARDING JOURNEY VIEW ─── */}
+      {activeView === 'journey' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col gap-4">
+          {/* Stats row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Invites', value: invitations.length, color: 'text-primary', bg: 'bg-primary/5' },
+              { label: 'Onboarded', value: invitations.filter((i) => i.status === 'accepted').length, color: 'text-success', bg: 'bg-success/5' },
+              { label: 'Pending', value: invitations.filter((i) => i.status === 'pending').length, color: 'text-warning', bg: 'bg-warning/5' },
+              { label: 'Expired / Revoked', value: invitations.filter((i) => i.status === 'expired' || i.status === 'revoked').length, color: 'text-error', bg: 'bg-error/5' },
+            ].map((stat) => (
+              <div key={stat.label} className={`${stat.bg} rounded-2xl p-4 border border-border-subtle`}>
+                <div className={`text-2xl font-black ${stat.color}`}>{stat.value}</div>
+                <div className="text-xs text-muted font-semibold mt-0.5">{stat.label}</div>
               </div>
-            ),
-          }}
-        />
-      </motion.div>
+            ))}
+          </div>
+
+          {filteredInvitations.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-border-subtle p-12 text-center text-muted text-sm">
+              No invitation journeys found{search ? ' matching your search' : ''}.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {filteredInvitations.map((inv) => (
+                <JourneyCard key={inv.id} invitation={inv} logs={logs} />
+              ))}
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* Detail Modal */}
       <Modal
@@ -333,7 +673,6 @@ export function AuditLogPage() {
               </div>
             )}
 
-            {/* Changes Diff Table if applicable */}
             {selectedLog.changes && selectedLog.changes.length > 0 && (
               <div className="space-y-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-muted">

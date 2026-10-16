@@ -31,6 +31,10 @@ export interface User {
   join_date?: string;
   roles?: string[];
   permissions?: string[];
+  /** Onboarding fields – present for invited users */
+  is_temporary_password?: boolean;
+  is_onboarded?: boolean;
+  onboarding_step?: number;
 }
 
 export interface LoginCredentials {
@@ -51,4 +55,6 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  /** Update user state + localStorage after onboarding steps */
+  updateUser: (partial: Partial<User>, newToken?: string) => void;
 }

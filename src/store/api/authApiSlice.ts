@@ -167,6 +167,42 @@ export const authApiSlice = apiSlice.injectEndpoints({
       query: () => '/auth/me/permissions',
       providesTags: ['User', 'Permissions'],
     }),
+
+    // --- MANDATORY ONBOARDING ---
+    changeTemporaryPassword: builder.mutation<
+      { success: boolean; message: string; token: string; user: any },
+      { currentPassword: string; newPassword: string }
+    >({
+      query: (data) => ({
+        url: '/auth/change-temporary-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    completeOnboarding: builder.mutation<
+      { success: boolean; message: string; token: string; user: any },
+      {
+        username?: string;
+        contact_number?: string;
+        department?: string;
+        designation?: string;
+      }
+    >({
+      query: (data) => ({
+        url: '/auth/complete-onboarding',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    getOnboardingStatus: builder.query<
+      { success: boolean; data: { is_temporary_password: boolean; is_onboarded: boolean; onboarding_step: number } },
+      void
+    >({
+      query: () => '/auth/onboarding-status',
+    }),
   }),
 });
 
@@ -193,4 +229,8 @@ export const {
   useSendInvitationMutation,
   useGetMyPermissionsQuery,
   useLazyGetMyPermissionsQuery,
+  // Onboarding hooks
+  useChangeTemporaryPasswordMutation,
+  useCompleteOnboardingMutation,
+  useGetOnboardingStatusQuery,
 } = authApiSlice;
