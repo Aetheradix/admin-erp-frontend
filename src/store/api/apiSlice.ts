@@ -70,6 +70,7 @@ export const apiSlice = createApi({
     'ResourceBooking',
     'Resource',
     'Perks',
+    'ActivityLogs',
     'PerkTypes',
     'UserPerks',
     'Expense',

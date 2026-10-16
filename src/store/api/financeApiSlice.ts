@@ -15,7 +15,6 @@ export interface SalaryBreakdownItem {
   amount: number;
 }
 
-
 export interface CreateSalarySlipPayload {
   // Target Employee (Recipient receiving slip)
   user_id: number;
@@ -123,7 +122,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
-    // Create a reimbursement claim (FormData or Object)
+    // Create a reimbursement claim
     createReimbursement: builder.mutation<
       Reimbursement,
       FormData | Partial<Omit<Reimbursement, 'id' | 'created_at' | 'updated_at' | 'approved_at'>>
@@ -175,7 +174,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       ],
     }),
     
-    // Fetch all salary slips (JSON data records)
+    // Fetch all salary slips
     getAllSalarySlips: builder.query<any, void>({
       query: () => '/finance/salary-slips',
       transformResponse: (response: any) => {
@@ -191,7 +190,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
           : [{ type: 'SalarySlips', id: 'LIST' }],
     }),
 
-    // Fetch single salary slip by slip ID (for on-demand PDF generation)
+    // Fetch single salary slip by slip ID
     getSalarySlipById: builder.query<any, string | number>({
       query: (id) => `/finance/salary-slips/${id}`,
       transformResponse: (response: any) => {
@@ -214,73 +213,62 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-
     createSalarySlip: builder.mutation<any, any>({
       query: (payload) => {
-        // Standardize user_id so backend destructuring gets user_id regardless of form key naming
         const formattedPayload = {
           ...payload,
           user_id: payload.user_id || payload.userId,
         };
-
-        console.log('RTK Query Sending Body to Backend:', formattedPayload);
-
         return {
           url: '/finance/create-salary-slip',
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: formattedPayload, // 👈 Directly sends the complete payload object
+          headers: { 'Content-Type': 'application/json' },
+          body: formattedPayload,
         };
       },
-      invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }],
+      // 💡 Automatically invalidates both SalarySlips and ActivityLogs so both tables update!
+      invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }, 'ActivityLogs'],
+    }),
+
+    getAuditLogs: builder.query<any, void>({
+      query: () => '/finance/audit-logs',
+      transformResponse: (response: any) => {
+        return response?.data ?? response?.result ?? response ?? [];
+      },
+      providesTags: ['ActivityLogs'],
     }),
 
     updateSalarySlip: builder.mutation<any, { id: string | number; [key: string]: any }>({
       query: ({ id, ...payload }) => {
-        // Standardize user_id in payload if present
         const formattedPayload = {
           ...payload,
           ...(payload.userId || payload.user_id
             ? { user_id: payload.user_id || payload.userId }
             : {}),
         };
-
-        console.log(
-          `RTK Query Sending Update Body to Backend for Slip ID ${id}:`,
-          formattedPayload
-        );
-
         return {
           url: `/finance/salary-slips/${id}`,
-          method: 'PUT', // or 'PATCH' depending on your route setup
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: formattedPayload,
         };
       },
-      // Invalidates specific record as well as the main listing tag
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'SalarySlips', id },
         { type: 'SalarySlips', id: 'LIST' },
+        'ActivityLogs',
       ],
     }),
 
     deleteSalarySlip: builder.mutation<any, string | number>({
-      query: (id) => {
-        console.log(`RTK Query Sending Delete Request for Salary Slip ID: ${id}`);
-
-        return {
-          url: `/finance/salary-slips/${id}`,
-          method: 'DELETE',
-        };
-      },
-      // Invalidates the specific deleted item tag as well as the main listing tag
+      query: (id) => ({
+        url: `/finance/salary-slips/${id}`,
+        method: 'DELETE',
+      }),
       invalidatesTags: (_result, _error, id) => [
         { type: 'SalarySlips', id },
         { type: 'SalarySlips', id: 'LIST' },
+        'ActivityLogs',
       ],
     }),
   }),
@@ -293,14 +281,16 @@ export const {
   useCreateReimbursementMutation,
   useUpdateReimbursementStatusMutation,
   useDeleteReimbursementMutation,
-  useUpdateSalarySlipMutation,
-
-  useDeleteSalarySlipMutation,
 
   // Salary Slip Hooks
   useGetAllSalarySlipsQuery,
   useGetSalarySlipByIdQuery,
-  useLazyGetSalarySlipByIdQuery, // 👈 ADD THIS LINE HERE
+  useLazyGetSalarySlipByIdQuery,
   useGetSalarySlipsByEmployeeIdQuery,
   useCreateSalarySlipMutation,
+  useUpdateSalarySlipMutation,
+  useDeleteSalarySlipMutation,
+
+  // Audit Logs Hooks
+  useGetAuditLogsQuery,
 } = financeApiSlice;

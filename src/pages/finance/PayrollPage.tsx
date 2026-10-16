@@ -1,4 +1,4 @@
-import { Table, Tag, Dropdown, App, Modal } from 'antd';
+import { Table,  Dropdown, App, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   User,
@@ -22,6 +22,7 @@ import {
   useCreateSalarySlipMutation,
   useDeleteSalarySlipMutation,
   useUpdateSalarySlipMutation,
+  useGetAuditLogsQuery,
 } from '@/store/api/financeApiSlice';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import SalarySlipForm from './components/SalarySlipForm';
@@ -72,12 +73,13 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const yearStr = item.pay_period_year || 2026;
 
   const actualSlipNo = item.paySlipNo || item.pay_slip_no;
-  const fallbackSlipNo = `SLIP-${yearStr}${String(item.pay_period_month || '10').padStart(2, '0')}-${item.id}`;
+ 
 
   const basicSalary = Number(item.basic_salary || 0);
   const bonusVal = Number(item.bonus || 0);
   const netVal = Number(item.net_salary || 0);
   const monthYearStr = `${monthStr} ${yearStr}`;
+   const fallbackSlipNo = `SLIP-${item.empCode}-${yearStr} ${monthStr} `;
 
   return {
     ...item,
@@ -106,7 +108,7 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     lopDays: Number(item.leave_days || 0),
     paymentStatus: item.payment_status || 'paid',
     generatedOn: item.payment_date || item.created_at?.split('T')[0] || '',
-    createdBy: item.created_by_username || 'System', // 👈 Added missing property
+    createdBy: item.created_by_username || 'System',
     created_by_username: item.created_by_username || 'System',
     earnings: [
       { name: 'Basic Salary', amount: Number(item.basic_salary || 0) },
@@ -133,7 +135,16 @@ export default function PayrollPage() {
     data: rawData,
     isLoading: isFetching,
     isError,
+    refetch: refetchSlips, // 👈 Destructure refetch
   } = useGetAllSalarySlipsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  const { 
+    data: auditLogsData, 
+    isLoading: isLogsLoading,
+    refetch: refetchLogs, // 👈 Destructure refetch
+  } = useGetAuditLogsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 
@@ -144,7 +155,6 @@ export default function PayrollPage() {
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [filteredPayroll, setFilteredPayroll] = useState<PayrollRecord[]>([]);
   const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
 
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
@@ -165,7 +175,6 @@ export default function PayrollPage() {
         formatApiRecord(item)
       );
 
-      // Fixed: Sort properly by year then month
       formattedRecords.sort((a: PayrollRecord, b: PayrollRecord) => {
         const yearDiff = Number(b.payPeriodYear || 0) - Number(a.payPeriodYear || 0);
         if (yearDiff !== 0) return yearDiff;
@@ -186,51 +195,77 @@ export default function PayrollPage() {
         (item) =>
           item.employeeName?.toLowerCase().includes(query) ||
           item.employeeCode?.toLowerCase().includes(query) ||
-          item.department?.toLowerCase().includes(query)
-      );
-    }
-
-    if (statusFilter !== 'all') {
-      result = result.filter(
-        (item) => item.paymentStatus?.toLowerCase() === statusFilter.toLowerCase()
+          item.department?.toLowerCase().includes(query) ||
+          item.paySlipNo?.toLowerCase().includes(query)
       );
     }
 
     setFilteredPayroll(result);
-  }, [searchText, statusFilter, payroll]);
+  }, [searchText, payroll]);
 
   const downloadSalarySlip = async (record: PayrollRecord) => {
-    try {
-      message.loading({ content: 'Preparing document...', key: 'dl' });
-      setSelectedSlip(record);
+  try {
+    message.loading({ content: 'Preparing document...', key: 'dl' });
+    setSelectedSlip(record);
 
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      });
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      if (!hiddenPdfRef.current) throw new Error('Template container not ready');
-
-      const canvas = await html2canvas(hiddenPdfRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
-
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfWidth = 210;
-      const imageHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
-      pdf.save(`Salary-Slip-${record.employeeName.replace(/\s+/g, '_')}-${record.monthYear}.pdf`);
-
-      message.success({ content: 'Salary slip downloaded!', key: 'dl' });
-    } catch (err) {
-      console.error('PDF error:', err);
-      message.error({ content: 'Failed to download PDF.', key: 'dl' });
+    // 1. Force browser to finish layout & font glyph calculations
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    if (document.fonts) {
+      await document.fonts.ready;
     }
-  };
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    if (!hiddenPdfRef.current) throw new Error('Template container not ready');
+
+    // 2. Snapshot with letter rendering & clone bounds enforced
+    const canvas = await html2canvas(hiddenPdfRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      allowTaint: true,
+      windowWidth: 800,
+      onclone: (clonedDoc) => {
+        const clonedEl = clonedDoc.querySelector('.salary-statement-paper') as HTMLElement;
+        if (clonedEl) {
+          clonedEl.style.display = 'block';
+          clonedEl.style.position = 'relative';
+          clonedEl.style.top = '0';
+          clonedEl.style.left = '0';
+          clonedEl.style.margin = '0 auto';
+          clonedEl.style.boxSizing = 'border-box';
+        }
+      },
+    });
+
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    if (imgHeight > pdfHeight) {
+      const ratio = pdfHeight / imgHeight;
+      const adjustedWidth = imgWidth * ratio;
+      const adjustedHeight = pdfHeight;
+      const xOffset = (pdfWidth - adjustedWidth) / 2;
+
+      pdf.addImage(imgData, 'PNG', xOffset, 0, adjustedWidth, adjustedHeight);
+    } else {
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    }
+
+    pdf.save(`Salary-Slip-${record.employeeName.replace(/\s+/g, '_')}-${record.monthYear}.pdf`);
+    message.success({ content: 'Salary slip downloaded!', key: 'dl' });
+  } catch (err) {
+    console.error('PDF error:', err);
+    message.error({ content: 'Failed to download PDF.', key: 'dl' });
+  }
+};
 
   const handleFormSubmit = async (data: SalarySlipData) => {
     const key = 'salary-slip-action';
@@ -244,6 +279,7 @@ export default function PayrollPage() {
         await createSalarySlip(data as any).unwrap();
         message.success({ content: 'Salary slip recorded successfully!', key });
       }
+      await Promise.all([refetchSlips(), refetchLogs()]);
 
       setShowSalarySlipForm(false);
       setEditingRecord(null);
@@ -291,6 +327,15 @@ export default function PayrollPage() {
 
   const columns: ColumnsType<PayrollRecord> = [
     {
+      title: 'Slip No',
+      key: 'paySlipNo',
+      render: (_, record) => (
+        <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+          {record.paySlipNo}
+        </span>
+      ),
+    },
+    {
       title: 'Employee Details',
       key: 'employee',
       render: (_, record) => (
@@ -299,12 +344,7 @@ export default function PayrollPage() {
             <User size={16} />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-900">{record.employeeName}</span>
-              <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono font-semibold">
-                ID: #{record.employeeCode}
-              </span>
-            </div>
+            <span className="text-xs font-bold text-slate-900">{record.employeeName}</span>
             <span className="text-[11px] text-slate-500 font-medium">{record.position}</span>
           </div>
         </div>
@@ -340,17 +380,6 @@ export default function PayrollPage() {
             <span className="text-[10px] font-semibold text-rose-500">{record.lopDays} LOP</span>
           )}
         </div>
-      ),
-    },
-    {
-      title: 'Status',
-      key: 'status',
-      render: (_, record) => (
-        <Tag
-          color={record.paymentStatus.toLowerCase() === 'paid' ? 'success' : 'warning'}
-          className="uppercase font-bold text-[10px] rounded-md px-2 py-0.5">
-          {record.paymentStatus}
-        </Tag>
       ),
     },
     {
@@ -428,7 +457,59 @@ export default function PayrollPage() {
     },
   ];
 
+  const logColumns: ColumnsType<any> = [
+    {
+      title: 'Timestamp',
+      key: 'createdAt',
+      render: (_, record) => (
+        <span className="text-xs font-mono text-slate-600">
+          {new Date(record.created_at || record.createdAt).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => {
+        const actionType = record.action || '';
+        // const color = actionType.includes('CREATE')
+        //   ? 'success'
+        //   : actionType.includes('UPDATE')
+        //   ? 'processing'
+        //   : 'error';
+        return (
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700`}>
+            {actionType}
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Description',
+      key: 'description',
+      render: (_, record) => (
+        <span className="text-xs text-slate-800 font-medium">
+          {record.description || 'Payroll action performed.'}
+        </span>
+      ),
+    },
+    {
+      title: 'Admin / User',
+      key: 'username',
+      render: (_, record) => (
+        <span className="text-xs text-slate-600 font-semibold">
+          {record.username || 'System'}
+        </span>
+      ),
+    },
+  ];
+
   const isSubmitting = isCreating || isUpdating || isDeleting;
+  const rawLogsList = Array.isArray(auditLogsData?.data)
+    ? auditLogsData.data
+    : Array.isArray(auditLogsData)
+    ? auditLogsData
+    : [];
 
   return (
     <div className="flex flex-col gap-6 pb-20 max-w-7xl mx-auto p-4 sm:p-6">
@@ -441,21 +522,11 @@ export default function PayrollPage() {
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="text"
-            placeholder="Search employee, ID, dept..."
+            placeholder="Search slip no, employee, ID, dept..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 w-64 shadow-sm"
+            className="bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 w-72 shadow-sm"
           />
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-700 font-medium focus:outline-none focus:border-slate-400 shadow-sm">
-            <option value="all">All Statuses</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-          </select>
         </div>
 
         <button
@@ -480,6 +551,24 @@ export default function PayrollPage() {
         />
       </motion.div>
 
+      {/* 💡 Audit Logs Table at the Bottom */}
+      <div className="flex flex-col gap-3 mt-6">
+        <div>
+          <h3 className="font-bold text-base text-slate-900">Audit Logs</h3>
+          <p className="text-xs text-slate-500">History of salary slip updates, creations, and deletions</p>
+        </div>
+        <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <Table
+            columns={logColumns}
+            dataSource={rawLogsList}
+            loading={isLogsLoading}
+            rowKey={(record) => record.id || Math.random()}
+            locale={{ emptyText: 'No audit logs recorded yet.' }}
+            pagination={{ pageSize: 5 }}
+          />
+        </motion.div>
+      </div>
+
       {showSalarySlipForm && (
         <SalarySlipForm
           initialValues={editingRecord?.rawRecord || editingRecord || undefined}
@@ -495,7 +584,7 @@ export default function PayrollPage() {
       {showSlipModal && selectedSlip && (
         <div className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[900px] max-h-[95vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
               <h2 className="font-bold text-lg text-gray-900">
                 Salary Slip ({selectedSlip.employeeName} - {selectedSlip.monthYear})
               </h2>

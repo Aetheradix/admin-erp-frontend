@@ -303,6 +303,45 @@ const SalarySlipForm = ({
     };
   }, [searchTerm, fetchUsers]);
 
+const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
+  const parts = String(monthYearStr || '').trim().split(/[\s\/\-]+/).filter(Boolean);
+  const monthsList = [
+    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+  ];
+
+  // 1. Dynamic Fallback to current system date (e.g., today's date if empty)
+  const now = new Date();
+  let year = now.getFullYear();
+  let monthVal = now.getMonth() + 1;
+
+  // 2. Parse selected year and month dynamically from input
+  for (const part of parts) {
+    const num = Number(part);
+    if (!isNaN(num) && num >= 1900 && num <= 2100) {
+      year = num; // Dynamically sets the selected year (e.g., 2020)
+    } else {
+      const upper = part.toUpperCase();
+      const idx = monthsList.findIndex((m) => m === upper || m.startsWith(upper.slice(0, 3)));
+      if (idx !== -1) {
+        monthVal = idx + 1; // Dynamically sets selected month (e.g., August -> 08)
+      }
+    }
+  }
+
+  const formattedMonth = String(monthVal).padStart(2, '0');
+
+  // 3. Clean Employee Code (Strip duplicate 'EMP' prefix if present)
+  let rawCode = String(employeeCode || '').trim();
+  if (rawCode.toUpperCase().startsWith('EMP')) {
+    rawCode = rawCode.replace(/^EMP[-_]?/i, '');
+  }
+  const cleanEmpCode = rawCode || '001';
+
+  // 💡 Output Format: SLIP-EMP-{EmployeeCode}-{Year}{Month}
+  return `SLIP-EMP-${cleanEmpCode}-${year}${formattedMonth}`;
+};
+
   // Use a ref to ensure initialValues only populates the form once on mount
   const hasInitializedRef = useRef(false);
 
@@ -419,20 +458,23 @@ const SalarySlipForm = ({
             ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
           ];
 
+    // Generate proper professional slip number
+    const empCode = String(raw.employee_code || initialValues.employeeId || '');
+    const defaultMonthYear = `${monthVal} ${yearVal}`;
+    const generatedSlipNo = generateSlipNumber(empCode, defaultMonthYear);
+
     // 9. Update Form State
     setFormData({
       userId: Number(recipientId) || 0,
-      employeeId: String(raw.employee_code || initialValues.employeeId || ''),
+      employeeId: empCode,
       employeeName: String(empName || ''),
       position: String(raw.designation || initialValues.position || ''),
       department: String(initialValues.department || ''),
       accountNumber: String(raw.bank_account_number || initialValues.accountNumber || ''),
       payCycle: cycle as 'Bi-Weekly' | 'Monthly',
-      monthYear: `${monthVal} ${yearVal}`,
+      monthYear: defaultMonthYear,
       payPeriod: String(computedPayPeriod || ''),
-      paySlipNo: String(
-        raw.pay_slip_no || initialValues.paySlipNo || `SLIP-${initialValues.id || Date.now()}`
-      ),
+      paySlipNo: String(raw.pay_slip_no || initialValues.paySlipNo || generatedSlipNo), // 💡 Fixed here
       companyName: String(initialValues.companyName || 'AETHERADIX'),
       companyAddress: String(
         initialValues.companyAddress || 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
