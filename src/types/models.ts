@@ -35,6 +35,13 @@ export interface AttendanceStatus {
 
 export interface AttendanceRequest {
   id: string | number;
+  user_id?: number | string;
+  username?: string;
+  email?: string;
+  employee_code?: string;
+  department?: string;
+  designation?: string;
+  image_url?: string;
   type: string;
   status: 'Pending' | 'Approved' | 'Rejected' | string;
   reason: string;
@@ -42,6 +49,11 @@ export interface AttendanceRequest {
   end_date: string;
   applied_date?: string;
   admin_comment?: string;
+  approved_by?: number | string;
+  approver_name?: string;
+  approver_email?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AttendanceStatsData {

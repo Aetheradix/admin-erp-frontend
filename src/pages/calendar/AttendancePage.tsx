@@ -7,11 +7,14 @@ import { AttendanceCalendar } from './components/AttendanceCalendar';
 import { AttendancePlanner } from './components/AttendancePlanner';
 import { AttendanceRequestForm } from './components/AttendanceRequestForm';
 import { RecentRequests } from './components/RecentRequests';
+import { PendingApprovals } from './components/PendingApprovals';
+import { AttendanceDetailModal } from './components/AttendanceDetailModal';
 import { useAttendancePage } from './hooks/useAttendancePage';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { Globe, Lock, Check, Share2, ArrowLeft } from 'lucide-react';
+import type { AttendanceRequest } from '@/types/models';
 
 export function AttendancePage() {
   const { user } = useAuth();
@@ -19,9 +22,14 @@ export function AttendancePage() {
   const targetUser = searchParams.get('user');
 
   const [isPublic, setIsPublic] = useState(() => {
-    return localStorage.getItem('user_calendar_is_public') === 'true';
+    try {
+      return localStorage.getItem('user_calendar_is_public') === 'true';
+    } catch {
+      return false;
+    }
   });
   const [copied, setCopied] = useState(false);
+  const [selectedDetailRequest, setSelectedDetailRequest] = useState<AttendanceRequest | null>(null);
 
   const {
     isAdmin,
@@ -34,12 +42,28 @@ export function AttendancePage() {
     selectedDate,
     setSelectedDate,
     handleRequestSubmit,
+    handleApprove,
+    handleReject,
   } = useAttendancePage();
+
+  const displayedRequests = targetUser
+    ? requests.filter((r) => {
+        const query = targetUser.toLowerCase();
+        return (
+          (r.username || '').toLowerCase() === query ||
+          (r.email || '').toLowerCase().startsWith(query)
+        );
+      })
+    : calendarRequests;
 
   const handleTogglePublic = () => {
     const nextVal = !isPublic;
     setIsPublic(nextVal);
-    localStorage.setItem('user_calendar_is_public', String(nextVal));
+    try {
+      localStorage.setItem('user_calendar_is_public', String(nextVal));
+    } catch {
+      // Ignore storage errors
+    }
     showToast({
       severity: nextVal ? 'success' : 'info',
       summary: 'Calendar Visibility',
@@ -101,6 +125,7 @@ export function AttendancePage() {
         </div>
       )}
 
+      {/* Page Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <PageHeader
           title={targetUser ? `${targetUser}'s Schedule` : 'Attendance & Schedule'}
@@ -154,21 +179,70 @@ export function AttendancePage() {
 
       {!targetUser && <AttendanceStats />}
 
+      {/* Main Calendar & Daily Planner Layout */}
       <div className="flex flex-col xl:flex-row gap-8">
         <div className="flex-1">
           <AttendanceCalendar
             records={records}
-            requests={calendarRequests}
+            requests={displayedRequests}
             onDateSelect={setSelectedDate}
+            onRequestClick={setSelectedDetailRequest}
+            selectedDate={selectedDate}
           />
         </div>
         <div className="w-full xl:w-96">
-          <AttendancePlanner selectedDate={selectedDate} />
+          <AttendancePlanner
+            selectedDate={selectedDate}
+            requests={displayedRequests}
+            isAdmin={isAdmin}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onRequestClick={setSelectedDetailRequest}
+          />
         </div>
       </div>
 
-      {!isAdmin && <RecentRequests requests={requests} />}
+      {/* Dedicated Pending Approvals Section for Admin / Approvers */}
+      {isAdmin && !targetUser && (
+        <PendingApprovals
+          requests={requests}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onSelectRequest={setSelectedDetailRequest}
+        />
+      )}
 
+      {/* Recent Requests / History Section */}
+      <RecentRequests
+        requests={targetUser ? displayedRequests : requests}
+        onRequestClick={setSelectedDetailRequest}
+        title={
+          targetUser
+            ? `${targetUser}'s Requests History`
+            : isAdmin
+              ? 'All Team Requests History'
+              : 'Recent Requests'
+        }
+        subtitle={
+          targetUser
+            ? `Track the status and timeline of @${targetUser}'s applications`
+            : isAdmin
+              ? 'Chronological history of all employee WFH and Leave applications'
+              : 'Track the status and history of your WFH and Leave applications'
+        }
+      />
+
+      {/* Request Details & Action Modal */}
+      <AttendanceDetailModal
+        request={selectedDetailRequest}
+        visible={!!selectedDetailRequest}
+        onHide={() => setSelectedDetailRequest(null)}
+        isAdmin={isAdmin}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
+
+      {/* Submit Request Modal */}
       <Dialog
         visible={showRequestForm}
         onHide={() => setShowRequestForm(false)}
