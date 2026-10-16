@@ -284,7 +284,10 @@ export const EventCard = ({
         {event.button_type === 'Mandatory' ? (
           <Button
             variant="primary"
-            onClick={() => onRegister?.(event)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRegister?.(event);
+            }}
             disabled={isRegistering}
             className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
             <div className="flex items-center gap-1.5">
@@ -295,7 +298,8 @@ export const EventCard = ({
         ) : event.button_type === 'View Details' ? (
           <Button
             variant="secondary"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               if (event.event_link) {
                 window.open(event.event_link, '_blank', 'noopener,noreferrer');
               } else {
@@ -311,7 +315,10 @@ export const EventCard = ({
         ) : isRegistered ? (
           <Button
             variant="secondary"
-            onClick={() => onRegister?.(event)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRegister?.(event);
+            }}
             className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition-all cursor-pointer">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 size={15} />
@@ -321,7 +328,10 @@ export const EventCard = ({
         ) : (
           <Button
             variant="primary"
-            onClick={() => onRegister?.(event)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRegister?.(event);
+            }}
             disabled={isRegistering}
             className="w-full mt-2 h-11 rounded-2xl! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
             {isRegistering ? (

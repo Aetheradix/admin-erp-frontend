@@ -28,6 +28,7 @@ import {
   Tag,
   UserCheck,
   X,
+  AlertCircle,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { EventCard } from './components/EventCard';
@@ -88,7 +89,7 @@ const Events = () => {
   const activeCategory = filters.category || 'All';
 
   // Partition events into Upcoming vs Previous vs All
-  const { upcomingEvents, previousEvents, displayedEvents } = useMemo(() => {
+  const { upcomingEvents, previousEvents, displayedEvents, mandatoryUpcomingEvents } = useMemo(() => {
     const upcoming: ERPEvent[] = [];
     const previous: ERPEvent[] = [];
 
@@ -108,10 +109,13 @@ const Events = () => {
       currentList = previous;
     }
 
+    const mandatory = upcoming.filter((e) => e.button_type === 'Mandatory');
+
     return {
       upcomingEvents: upcoming,
       previousEvents: previous,
       displayedEvents: currentList,
+      mandatoryUpcomingEvents: mandatory,
     };
   }, [events, eventScope, localUpdateTick]);
 
@@ -159,6 +163,7 @@ const Events = () => {
   };
 
   const handleViewPass = (event: ERPEvent) => {
+    setShowDetailsModal(false);
     const passCode = `AETH-PASS-${String(event.id).slice(-4).toUpperCase() || 'VIP'}-${Math.floor(1000 + Math.random() * 9000)}`;
     const passData: EventPassData = {
       passCode,
@@ -264,6 +269,7 @@ const Events = () => {
         });
       }
 
+      setShowDetailsModal(false);
       setShowPassModal(true);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
@@ -361,6 +367,44 @@ const Events = () => {
             : undefined
         }
       />
+
+      {/* Mandatory Attendance Alert Banner */}
+      {mandatoryUpcomingEvents.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 px-6 rounded-3xl bg-amber-500/10 border-2 border-amber-500/30 shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-amber-500/30">
+              <AlertCircle size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white px-2 py-0.5 rounded-md">
+                  ⚠️ Company Broadcast
+                </span>
+                <span className="text-sm font-black text-amber-950 dark:text-amber-100">
+                  {mandatoryUpcomingEvents[0].title}
+                </span>
+              </div>
+              <p className="text-xs text-amber-900/80 dark:text-amber-300 font-medium mt-0.5">
+                Mandatory Attendance required for all employees on{' '}
+                {new Date(
+                  mandatoryUpcomingEvents[0].date || mandatoryUpcomingEvents[0].event_date
+                ).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                })}{' '}
+                ({mandatoryUpcomingEvents[0].time || 'Scheduled'}).
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => handleCardClick(mandatoryUpcomingEvents[0])}
+            className="rounded-2xl! text-xs font-black px-5 h-10 bg-amber-600 hover:bg-amber-700 text-white border-none shadow-md shadow-amber-600/20 whitespace-nowrap cursor-pointer">
+            View &amp; Confirm
+          </Button>
+        </div>
+      )}
 
       {/* Scope Selector: Upcoming vs Previous vs All */}
       <div className="flex flex-wrap items-center gap-3">

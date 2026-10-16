@@ -119,6 +119,7 @@ export interface ERPEvent {
   employee_status?: string;
   button_type?: 'Register Now' | 'Mandatory' | 'View Details' | string;
   event_link?: string;
+  broadcast?: boolean;
   start_time?: string;
   end_time?: string;
   status?: string;

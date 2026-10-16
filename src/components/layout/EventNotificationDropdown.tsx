@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Calendar, Clock, MapPin, ChevronRight, CheckCheck } from 'lucide-react';
+import { Bell, Calendar, Clock, MapPin, ChevronRight, CheckCheck, AlertCircle, ExternalLink } from 'lucide-react';
 import { useGetEventsQuery } from '@/store/api/eventSlice';
 import { useNavigate } from 'react-router-dom';
 import type { ERPEvent } from '@/types/models';
@@ -22,6 +22,7 @@ export function EventNotificationDropdown() {
   }, []);
 
   const unreadCount = events.length;
+  const hasMandatory = events.some((e: ERPEvent) => e.button_type === 'Mandatory');
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -32,7 +33,11 @@ export function EventNotificationDropdown() {
         className="relative w-13! h-13! rounded-pill! bg-surface-subtle! border border-border-subtle! hover:bg-surface-elevated! transition-all duration-150 flex items-center justify-center group cursor-pointer">
         <Bell size={18} className="text-muted group-hover:rotate-12 transition-transform" />
         {unreadCount > 0 && (
-          <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-white animate-pulse" />
+          <span
+            className={`absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full ring-2 ring-white animate-pulse ${
+              hasMandatory ? 'bg-amber-500 ring-amber-200' : 'bg-primary ring-white'
+            }`}
+          />
         )}
       </button>
 
@@ -55,49 +60,77 @@ export function EventNotificationDropdown() {
 
           <div className="max-h-80 overflow-y-auto divide-y divide-border-subtle/50">
             {events.length > 0 ? (
-              events.slice(0, 5).map((event: ERPEvent) => (
-                <div
-                  key={event.id}
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate('/events');
-                  }}
-                  className="p-4 hover:bg-surface-subtle/80 transition-colors cursor-pointer flex gap-3 group">
-                  <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <Calendar size={16} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-black text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-md">
-                        {event.category || 'Event'}
-                      </span>
-                      {event.date && (
-                        <span className="text-[10px] font-semibold text-muted">
-                          {new Date(event.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </span>
-                      )}
+              events.slice(0, 5).map((event: ERPEvent) => {
+                const isMandatory = event.button_type === 'Mandatory';
+                const isExternal = event.button_type === 'View Details';
+
+                return (
+                  <div
+                    key={event.id}
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate('/events');
+                    }}
+                    className={`p-4 transition-colors cursor-pointer flex gap-3 group ${
+                      isMandatory
+                        ? 'bg-amber-500/5 hover:bg-amber-500/10'
+                        : 'hover:bg-surface-subtle/80'
+                    }`}>
+                    <div
+                      className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${
+                        isMandatory
+                          ? 'bg-amber-500/15 text-amber-600'
+                          : isExternal
+                          ? 'bg-sky-500/15 text-sky-600'
+                          : 'bg-primary/10 text-primary'
+                      }`}>
+                      {isMandatory ? <AlertCircle size={16} /> : isExternal ? <ExternalLink size={15} /> : <Calendar size={16} />}
                     </div>
-                    <h5 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                      {event.title}
-                    </h5>
-                    <div className="flex items-center gap-3 mt-1 text-[10px] text-muted">
-                      {event.time && (
-                        <span className="flex items-center gap-1">
-                          <Clock size={10} /> {event.time}
-                        </span>
-                      )}
-                      {event.location && (
-                        <span className="flex items-center gap-1 truncate">
-                          <MapPin size={10} /> {event.location}
-                        </span>
-                      )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[9px] font-black text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-md">
+                            {event.category || 'Event'}
+                          </span>
+                          {isMandatory && (
+                            <span className="text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-600 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                              ⚠️ Mandatory
+                            </span>
+                          )}
+                          {isExternal && (
+                            <span className="text-[9px] font-black uppercase tracking-wider bg-sky-500/15 text-sky-600 border border-sky-300 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                              Webinar / Link
+                            </span>
+                          )}
+                        </div>
+                        {event.date && (
+                          <span className="text-[10px] font-semibold text-muted">
+                            {new Date(event.date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        )}
+                      </div>
+                      <h5 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                        {event.title}
+                      </h5>
+                      <div className="flex items-center gap-3 mt-1 text-[10px] text-muted">
+                        {event.time && (
+                          <span className="flex items-center gap-1">
+                            <Clock size={10} /> {event.time}
+                          </span>
+                        )}
+                        {event.location && (
+                          <span className="flex items-center gap-1 truncate">
+                            <MapPin size={10} /> {event.location}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="p-8 text-center text-muted flex flex-col items-center gap-2">
                 <CheckCheck size={24} className="text-muted/60" />

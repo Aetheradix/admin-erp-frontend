@@ -18,6 +18,7 @@ import {
   Loader2,
   Upload,
   PlusCircle,
+  Mail,
 } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 import { useUploadFileMutation } from '@/store/api/eventSlice';
@@ -202,6 +203,7 @@ export const EventForm = ({
     attendees: 0,
     button_type: 'Register Now',
     event_link: '',
+    broadcast: true,
     tags: [],
     image:
       'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
@@ -699,6 +701,35 @@ export const EventForm = ({
           <span className="text-[10px] text-muted font-medium">
             Zoom, Meet or external link
           </span>
+        </div>
+
+        {/* Instant Broadcast Notification Toggle */}
+        <div className="sm:col-span-2 pt-3 mt-1 border-t border-border-subtle/80 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+              <Mail size={15} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-black text-foreground flex items-center gap-1.5">
+                <span>Broadcast Event to All Employees</span>
+                <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-600 border border-emerald-300 px-1.5 py-0.2 rounded-md">
+                  Email &amp; Bell Alert
+                </span>
+              </span>
+              <span className="text-[11px] text-muted font-medium">
+                Sends an email invitation to all 18+ active employees and highlights this in their notification bell.
+              </span>
+            </div>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer ml-3 flex-shrink-0">
+            <input
+              type="checkbox"
+              checked={formData.broadcast !== false}
+              onChange={(e) => setFormData((prev) => ({ ...prev, broadcast: e.target.checked }))}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-xs"></div>
+          </label>
         </div>
       </div>
 
