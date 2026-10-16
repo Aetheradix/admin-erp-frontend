@@ -35,38 +35,27 @@ const LoginPage = () => {
     e.preventDefault();
 
     if (!email.trim()) {
-      showToast({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Email is required',
-        life: 3000,
-      });
+      showToast({ severity: 'error', summary: 'Error', detail: 'Email is required', life: 3000 });
       return;
     }
 
     if (!emailRegex.test(email)) {
-      showToast({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Please enter a valid email address',
-        life: 3000,
-      });
+      showToast({ severity: 'error', summary: 'Error', detail: 'Please enter a valid email address', life: 3000 });
       return;
     }
 
     if (!password.trim()) {
-      showToast({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Password is required',
-        life: 3000,
-      });
+      showToast({ severity: 'error', summary: 'Error', detail: 'Password is required', life: 3000 });
       return;
     }
 
     try {
       await authLogin({ email, password });
-      navigate('/');
+      // AuthContext sets user — re-read from localStorage to check onboarding state
+      const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      const needsOnboarding =
+        savedUser?.is_temporary_password === true || savedUser?.is_onboarded === false;
+      navigate(needsOnboarding ? '/auth/onboarding-setup' : '/');
     } catch (err: unknown) {
       console.error('Login failed', err);
       showToast({
@@ -255,11 +244,9 @@ const LoginPage = () => {
       )}
 
       <div className="mt-10 pt-10 border-t border-border-subtle text-center">
-        <p className="text-sm text-muted font-medium">
-          New to AetherERP?{' '}
-          <Link to="/signup" className="text-primary font-black hover:underline">
-            Get Beta Access
-          </Link>
+        <p className="text-xs text-muted font-medium">
+          Access is by administrator invitation only.{' '}
+          <span className="text-foreground font-black">Check your email for an invite.</span>
         </p>
       </div>
     </AuthLayout>

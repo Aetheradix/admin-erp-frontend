@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Select } from '@/components/ui/primitives/Select';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import { Calendar } from '@/components/ui/primitives/Calendar';
+import { AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 
 interface AttendanceRequestFormProps {
@@ -24,6 +25,13 @@ const REQUEST_TYPES = [
   { label: 'Holiday / Special', value: 'Holiday' },
 ];
 
+const formatLocalDate = (d: Date): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestFormProps) => {
   const [formData, setFormData] = useState({
     type: 'Work from home',
@@ -31,16 +39,33 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
     startDate: null as Date | null,
     endDate: null as Date | null,
   });
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleApply = () => {
-    if (!formData.startDate || !formData.reason) return;
+    setErrorMsg(null);
+    if (!formData.startDate) {
+      setErrorMsg('Please select a start date.');
+      return;
+    }
+    if (!formData.reason.trim()) {
+      setErrorMsg('Please provide a reason for your request.');
+      return;
+    }
+    if (formData.endDate && formData.endDate < formData.startDate) {
+      setErrorMsg('End date cannot be earlier than start date.');
+      return;
+    }
+
+    const startStr = formatLocalDate(formData.startDate);
+    const endStr = formData.endDate ? formatLocalDate(formData.endDate) : startStr;
+    const todayStr = formatLocalDate(new Date());
+
     onSubmit({
       ...formData,
-      startDate: formData.startDate.toISOString().split('T')[0],
-      endDate: formData.endDate
-        ? formData.endDate.toISOString().split('T')[0]
-        : formData.startDate.toISOString().split('T')[0],
-      appliedDate: new Date().toISOString().split('T')[0],
+      reason: formData.reason.trim(),
+      startDate: startStr,
+      endDate: endStr,
+      appliedDate: todayStr,
       status: 'Pending',
     });
   };
@@ -71,7 +96,15 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
           <FormField label="Start Date" required>
             <Calendar
               value={formData.startDate}
-              onChange={(e) => setFormData({ ...formData, startDate: e.value as Date })}
+              onChange={(e) => {
+                const newStart = e.value as Date;
+                setFormData((prev) => ({
+                  ...prev,
+                  startDate: newStart,
+                  endDate: prev.endDate && newStart && prev.endDate < newStart ? null : prev.endDate,
+                }));
+                setErrorMsg(null);
+              }}
               placeholder="Select start date"
               dateFormat="yy-mm-dd"
               minDate={new Date()}
@@ -81,7 +114,10 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
           <FormField label="End Date (Optional)">
             <Calendar
               value={formData.endDate}
-              onChange={(e) => setFormData({ ...formData, endDate: e.value as Date })}
+              onChange={(e) => {
+                setFormData({ ...formData, endDate: e.value as Date });
+                setErrorMsg(null);
+              }}
               placeholder="Select end date (if multiple days)"
               dateFormat="yy-mm-dd"
               minDate={formData.startDate || new Date()}
@@ -89,6 +125,13 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
           </FormField>
         </div>
       </div>
+
+      {errorMsg && (
+        <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-700 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+          <AlertCircle size={16} className="shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
         <Button

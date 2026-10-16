@@ -112,6 +112,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  /**
+   * Called after each onboarding step to persist new token + updated user fields.
+   * Does NOT re-fetch permissions (onboarded users will get them on next full login).
+   */
+  const updateUser = useCallback((partial: Partial<User>, newToken?: string) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...partial };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+    if (newToken) {
+      localStorage.setItem('token', newToken);
+    }
+  }, []);
+
   const logout = async () => {
     try {
       await logoutApi().unwrap();
@@ -180,6 +196,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         isLoading,
+        updateUser,
       }}>
       {children}
     </AuthContext.Provider>
