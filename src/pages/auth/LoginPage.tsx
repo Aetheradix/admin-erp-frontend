@@ -243,12 +243,12 @@ const LoginPage = () => {
         </form>
       )}
 
-      <div className="mt-10 pt-10 border-t border-border-subtle text-center">
+      {/* <div className="mt-10 pt-10 border-t border-border-subtle text-center">
         <p className="text-xs text-muted font-medium">
           Access is by administrator invitation only.{' '}
           <span className="text-foreground font-black">Check your email for an invite.</span>
         </p>
-      </div>
+      </div> */}
     </AuthLayout>
   );
 };
