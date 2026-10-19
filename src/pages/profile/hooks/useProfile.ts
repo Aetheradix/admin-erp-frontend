@@ -88,6 +88,7 @@ export const useProfile = () => {
     const name = authUser?.username || '';
     const email = authUser?.email || '';
 
+    const userRole = authUser?.role || 'User';
     const initialRoles = (authUserRecord?.roles as Array<{
       id: string;
       name: string;
@@ -95,13 +96,8 @@ export const useProfile = () => {
     }>) || [
       {
         id: '1',
-        name: authUser?.designation || (isAdmin ? 'Software Developer' : 'Employee'),
-        color: 'emerald',
-      },
-      {
-        id: '2',
-        name: (authUserRecord?.employee_type as string) || (isAdmin ? 'Admin' : 'Employee'),
-        color: 'amber',
+        name: userRole,
+        color: userRole === 'SuperAdmin' ? 'red' : userRole === 'Admin' ? 'blue' : 'emerald',
       },
     ];
 
@@ -129,7 +125,9 @@ export const useProfile = () => {
 
       country: (authUserRecord?.country as string) || '',
 
-      employeeType: (authUserRecord?.employee_type as string) || (isAdmin ? 'Admin' : 'Employee'),
+      employeeType:
+        (authUserRecord?.employee_type as string) ||
+        (authUser?.role === 'SuperAdmin' || authUser?.role === 'Admin' ? authUser.role : ''),
 
       tNumber: (authUserRecord?.t_number as string) || '',
 

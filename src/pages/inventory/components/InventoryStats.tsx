@@ -40,7 +40,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({
     {
       title: 'Total Assets',
       value: stats.totalItems,
-      subtitle: `$${Number(stats.totalValuation).toLocaleString()} Value`,
+      subtitle: `${Number(stats.totalValuation).toLocaleString()} Total Value`,
       icon: Package,
       gradient: 'from-blue-500/10 via-indigo-500/5 to-transparent',
       iconColor: 'text-indigo-600 ',

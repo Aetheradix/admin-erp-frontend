@@ -53,9 +53,12 @@ export const ProfileHeader = ({
                 <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
                   {user.name}
                 </h1>
-                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-extrabold uppercase tracking-wider">
-                  {user.employeeType}
-                </span>
+                {user.employeeType &&
+                  user.employeeType.toLowerCase() !== 'employee' && (
+                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-extrabold uppercase tracking-wider">
+                      {user.employeeType}
+                    </span>
+                  )}
               </div>
               <p className="text-sm font-semibold text-muted">
                 {user.designation} • {user.department}

@@ -3,8 +3,16 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
+import {
+  AlertCircle,
+  Briefcase,
+  Mail,
+  MapPin,
+  Save,
+  User,
+  X
+} from 'lucide-react';
 import { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
 
 export interface ProfileFormData {
   name: string;
@@ -80,32 +88,48 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
   };
 
   return (
-    <div className="flex flex-col gap-8 bg-surface-subtle/50 p-8 rounded-3xl border border-border-subtle">
-      <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
-        <div>
-          <h4 className="text-base font-black uppercase tracking-wider text-foreground">
-            Edit Profile Information
-          </h4>
-          <p className="text-xs text-muted font-medium mt-0.5">
-            Updated details are validated and recorded into the security audit history.
-          </p>
+    <div className="flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-5 border-b border-border-subtle">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <User size={20} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-foreground tracking-tight">
+              Edit Profile Information
+            </h3>
+            <p className="text-xs text-muted font-medium mt-0.5">
+              Update your personal credentials, contact matrix, and organizational details
+            </p>
+          </div>
         </div>
-        <span className="text-xs text-muted font-semibold hidden sm:inline">
-          Required fields marked with *
+        <span className="text-xs text-muted font-bold hidden sm:inline px-3 py-1 rounded-xl bg-surface-subtle border border-border-subtle">
+          * Required fields
         </span>
       </div>
 
       {Object.keys(errors).length > 0 && (
-        <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-center gap-3 text-xs text-error font-semibold">
-          <AlertCircle size={16} className="shrink-0" />
-          <span>Please correct the highlighted errors before saving changes.</span>
+        <div className="p-4 rounded-2xl bg-error/10 border border-error/20 flex items-center gap-3 text-xs text-error font-bold animate-in fade-in slide-in-from-top-1">
+          <AlertCircle size={18} className="shrink-0" />
+          <span>Please correct the highlighted fields before saving your profile.</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Full Name */}
-        <div className="flex flex-col gap-1">
-          <FormField label="Full Name" required id="profile-name">
+      {/* Section 1: Contact & Personal Details */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted">
+          <Mail size={14} className="text-primary" />
+          <span>Contact & Identity</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <FormField
+            label="Full Name"
+            required
+            id="profile-name"
+            error={errors.name}
+            className="mb-0">
             <Input
               id="profile-name"
               value={formData.name}
@@ -114,15 +138,16 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
                 if (errors.name) setErrors({ ...errors, name: '' });
               }}
               placeholder="Your full name"
-              className={errors.name ? 'border-error ring-1 ring-error/30' : ''}
+              className="h-11 rounded-xl"
             />
           </FormField>
-          {errors.name && <span className="text-[11px] text-error font-medium">{errors.name}</span>}
-        </div>
 
-        {/* Work Email Address */}
-        <div className="flex flex-col gap-1">
-          <FormField label="Work Email Address" required id="profile-email">
+          <FormField
+            label="Work Email Address"
+            required
+            id="profile-email"
+            error={errors.email}
+            className="mb-0">
             <Input
               id="profile-email"
               type="email"
@@ -131,18 +156,17 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
                 setFormData({ ...formData, email: e.target.value });
                 if (errors.email) setErrors({ ...errors, email: '' });
               }}
-              placeholder="email@example.com"
-              className={errors.email ? 'border-error ring-1 ring-error/30' : ''}
+              placeholder="name@company.com"
+              className="h-11 rounded-xl"
             />
           </FormField>
-          {errors.email && (
-            <span className="text-[11px] text-error font-medium">{errors.email}</span>
-          )}
-        </div>
 
-        {/* Contact No */}
-        <div className="flex flex-col gap-1">
-          <FormField label="Contact / Mobile" required id="profile-phone">
+          <FormField
+            label="Contact / Mobile"
+            required
+            id="profile-phone"
+            error={errors.contactNo}
+            className="mb-0">
             <Input
               id="profile-phone"
               value={formData.contactNo}
@@ -151,17 +175,26 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
                 if (errors.contactNo) setErrors({ ...errors, contactNo: '' });
               }}
               placeholder="+1 (555) 000-0000"
-              className={errors.contactNo ? 'border-error ring-1 ring-error/30' : ''}
+              className="h-11 rounded-xl font-mono"
             />
           </FormField>
-          {errors.contactNo && (
-            <span className="text-[11px] text-error font-medium">{errors.contactNo}</span>
-          )}
+        </div>
+      </div>
+
+      {/* Section 2: Role & Department */}
+      <div className="space-y-4 pt-2">
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted">
+          <Briefcase size={14} className="text-primary" />
+          <span>Role & Organizational Placement</span>
         </div>
 
-        {/* Designation / Role */}
-        <div className="flex flex-col gap-1">
-          <FormField label="Designation / Role" required id="profile-role">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <FormField
+            label="Designation / Role"
+            required
+            id="profile-role"
+            error={errors.designation}
+            className="mb-0">
             <Input
               id="profile-role"
               value={formData.designation}
@@ -169,18 +202,17 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
                 setFormData({ ...formData, designation: e.target.value });
                 if (errors.designation) setErrors({ ...errors, designation: '' });
               }}
-              placeholder="e.g. Lead Engineer"
-              className={errors.designation ? 'border-error ring-1 ring-error/30' : ''}
+              placeholder="e.g. SuperAdmin / Lead Architect"
+              className="h-11 rounded-xl"
             />
           </FormField>
-          {errors.designation && (
-            <span className="text-[11px] text-error font-medium">{errors.designation}</span>
-          )}
-        </div>
 
-        {/* Department */}
-        <div className="flex flex-col gap-1">
-          <FormField label="Department" required id="profile-dept">
+          <FormField
+            label="Department"
+            required
+            id="profile-dept"
+            error={errors.department}
+            className="mb-0">
             {departmentOptions.length > 0 ? (
               <Select
                 id="profile-dept"
@@ -191,6 +223,7 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
                   if (errors.department) setErrors({ ...errors, department: '' });
                 }}
                 placeholder="Select department"
+                className="h-11 rounded-xl"
               />
             ) : (
               <Input
@@ -201,70 +234,79 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
                   if (errors.department) setErrors({ ...errors, department: '' });
                 }}
                 placeholder="Department name"
-                className={errors.department ? 'border-error ring-1 ring-error/30' : ''}
+                className="h-11 rounded-xl"
               />
             )}
           </FormField>
-          {errors.department && (
-            <span className="text-[11px] text-error font-medium">{errors.department}</span>
-          )}
         </div>
-
-        {/* Address Field */}
-        <FormField label="Residential / Postal Address" id="profile-address">
-          <Input
-            id="profile-address"
-            value={formData.address || ''}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder="e.g. 100 Innovation Way, Suite 400"
-          />
-        </FormField>
-
-        {/* Work Location */}
-        <FormField label="Work Location / Office" id="profile-location">
-          <Input
-            id="profile-location"
-            value={formData.workLocation || ''}
-            onChange={(e) => setFormData({ ...formData, workLocation: e.target.value })}
-            placeholder="e.g. Headquarters / Plant"
-          />
-        </FormField>
-
-        {/* Company */}
-        <FormField label="Company Entity" id="profile-company">
-          <Input
-            id="profile-company"
-            value={formData.company || ''}
-            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            placeholder="e.g. AetherAdix Technologies"
-          />
-        </FormField>
-
-        {/* Country */}
-        <FormField label="Country" id="profile-country">
-          <Input
-            id="profile-country"
-            value={formData.country || ''}
-            onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-            placeholder="Country"
-          />
-        </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">
+      {/* Section 3: Workplace & Location */}
+      <div className="space-y-4 pt-2">
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-muted">
+          <MapPin size={14} className="text-primary" />
+          <span>Workplace & Location</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <FormField
+            label="Residential / Postal Address"
+            id="profile-address"
+            className="mb-0 md:col-span-2">
+            <Input
+              id="profile-address"
+              value={formData.address || ''}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="e.g. 100 Innovation Way, Suite 400"
+              className="h-11 rounded-xl"
+            />
+          </FormField>
+
+          <FormField label="Work Location / Office" id="profile-location" className="mb-0">
+            <Input
+              id="profile-location"
+              value={formData.workLocation || ''}
+              onChange={(e) => setFormData({ ...formData, workLocation: e.target.value })}
+              placeholder="e.g. HQ - Executive Wing"
+              className="h-11 rounded-xl"
+            />
+          </FormField>
+
+          <FormField label="Company Entity" id="profile-company" className="mb-0">
+            <Input
+              id="profile-company"
+              value={formData.company || ''}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              placeholder="e.g. Aetheradix Technologies"
+              className="h-11 rounded-xl"
+            />
+          </FormField>
+
+          <FormField label="Country" id="profile-country" className="mb-0">
+            <Input
+              id="profile-country"
+              value={formData.country || ''}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              placeholder="e.g. India / United States"
+              className="h-11 rounded-xl"
+            />
+          </FormField>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle mt-2">
         <Button
           variant="ghost"
           onClick={onCancel}
-          className="px-6 rounded-2xl font-bold text-muted"
-          aria-label="Cancel profile edits">
-          Cancel
+          className="px-6 h-11 rounded-xl font-bold text-muted hover:text-foreground">
+          <X size={15} className="mr-1" /> Cancel
         </Button>
         <Button
           variant="primary"
           onClick={handleSave}
-          className="px-8 h-11 rounded-2xl font-black tracking-wide shadow-md shadow-primary/20"
-          aria-label="Save profile changes">
-          Save Changes
+          className="px-8 h-11 rounded-xl font-black tracking-wide shadow-md shadow-primary/20 flex items-center gap-2">
+          <Save size={15} /> Save Changes
         </Button>
       </div>
     </div>
