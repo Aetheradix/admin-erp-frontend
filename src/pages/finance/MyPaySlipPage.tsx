@@ -279,22 +279,56 @@ const MyPaySlipPage = () => {
       await new Promise<void>((resolve) => {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
       });
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       if (!hiddenPdfRef.current) throw new Error('Template container not ready');
 
-      const canvas = await html2canvas(hiddenPdfRef.current, {
+      const targetEl =
+        (hiddenPdfRef.current.querySelector('.salary-statement-paper') as HTMLElement) ||
+        hiddenPdfRef.current;
+
+      const canvas = await html2canvas(targetEl, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 1000,
+        onclone: (clonedDoc) => {
+          const clonedEl = clonedDoc.querySelector('.salary-statement-paper') as HTMLElement;
+          if (clonedEl) {
+            clonedEl.style.display = 'block';
+            clonedEl.style.position = 'static';
+            clonedEl.style.margin = '0 auto';
+            clonedEl.style.overflow = 'visible';
+            clonedEl.style.boxSizing = 'border-box';
+          }
+        },
       });
 
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfWidth = 210;
-      const imageHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = 297;
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
+      if (imgHeight > pdfHeight) {
+        const ratio = pdfHeight / imgHeight;
+        const adjustedWidth = imgWidth * ratio;
+        const adjustedHeight = pdfHeight;
+        const xOffset = (pdfWidth - adjustedWidth) / 2;
+
+        pdf.addImage(imgData, 'PNG', xOffset, 0, adjustedWidth, adjustedHeight);
+      } else {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      }
+
       pdf.save(`Salary-Slip-${record.employeeName.replace(/\s+/g, '_')}-${record.monthYear}.pdf`);
 
       message.success({ content: 'Salary slip downloaded!', key: 'dl' });
@@ -619,9 +653,18 @@ const MyPaySlipPage = () => {
       )}
 
       {/* Off-screen render container for PDF downloading */}
-      <div className="fixed top-[-9999px] left-[-9999px] pointer-events-none opacity-0">
+      <div
+        style={{
+          position: 'fixed',
+          left: '-9999px',
+          top: 0,
+          width: '794px',
+          opacity: 1,
+          pointerEvents: 'none',
+          zIndex: -9999,
+        }}>
         {selectedSlip && (
-          <div ref={hiddenPdfRef} className="w-[800px] bg-white p-4">
+          <div ref={hiddenPdfRef} style={{ width: '794px', background: '#ffffff' }}>
             <SalarySlipTemplate data={selectedSlip} />
           </div>
         )}

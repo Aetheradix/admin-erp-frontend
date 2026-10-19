@@ -232,24 +232,55 @@ export const mapGuestPass = (pass: Record<string, unknown>): GuestPass => ({
   accessCode: String(pass.accessCode ?? pass.pass_code ?? ''),
 });
 
-export const mapStaffMember = (member: Record<string, unknown>): StaffMember => ({
-  id: member.id as string | number,
-  name: member.name ? String(member.name) : undefined,
-  username: member.username ? String(member.username) : undefined,
-  role: member.role ? String(member.role) : undefined,
-  designation: member.designation ? String(member.designation) : undefined,
-  department: String(member.department ?? ''),
-  email: String(member.email ?? ''),
-  phone: member.phone ? String(member.phone) : undefined,
-  contact_no: member.contact_no ? String(member.contact_no) : undefined,
-  status: normalizeStatus(String(member.status ?? 'Active')),
-  joinDate: member.joinDate ? String(member.joinDate) : undefined,
-  join_date: member.join_date ? String(member.join_date) : undefined,
-  image: member.image ? String(member.image) : undefined,
-  image_url: member.image_url ? String(member.image_url) : undefined,
-  skills: parseJsonArray(member.skills),
-  employee_id: member.employee_id ? String(member.employee_id) : undefined,
-});
+export const mapStaffMember = (member: Record<string, unknown>): StaffMember => {
+  const bankAcc =
+    member.bank_account_number ??
+    member.account_number ??
+    member.bank_account ??
+    member.accountNumber ??
+    member.bankAccount;
+
+  const baseSal =
+    member.base_salary ??
+    member.basic_salary ??
+    member.baseSalary ??
+    member.basicSalary ??
+    member.salary ??
+    member.base_pay ??
+    member.basePay;
+
+  return {
+    ...member,
+    id: member.id as string | number,
+    name: member.name ? String(member.name) : undefined,
+    username: member.username ? String(member.username) : undefined,
+    role: member.role ? String(member.role) : undefined,
+    designation: member.designation ? String(member.designation) : undefined,
+    department: String(member.department ?? ''),
+    email: String(member.email ?? ''),
+    phone: member.phone ? String(member.phone) : undefined,
+    contact_no: member.contact_no ? String(member.contact_no) : undefined,
+    status: normalizeStatus(String(member.status ?? 'Active')),
+    joinDate: member.joinDate ? String(member.joinDate) : undefined,
+    join_date: member.join_date ? String(member.join_date) : undefined,
+    image: member.image ? String(member.image) : undefined,
+    image_url: member.image_url ? String(member.image_url) : undefined,
+    skills: parseJsonArray(member.skills),
+    employee_id: member.employee_id ? String(member.employee_id) : undefined,
+    employee_code: member.employee_code
+      ? String(member.employee_code)
+      : member.employee_id
+        ? String(member.employee_id)
+        : undefined,
+    bank_account_number: bankAcc != null ? String(bankAcc) : undefined,
+    account_number: bankAcc != null ? String(bankAcc) : undefined,
+    accountNumber: bankAcc != null ? String(bankAcc) : undefined,
+    base_salary: baseSal != null ? Number(baseSal) : undefined,
+    basic_salary: baseSal != null ? Number(baseSal) : undefined,
+    baseSalary: baseSal != null ? Number(baseSal) : undefined,
+    salary: baseSal != null ? Number(baseSal) : undefined,
+  };
+};
 
 // export const mapProject = (project: Record<string, unknown>): Project => ({
 //   id: project.id as string | number,
