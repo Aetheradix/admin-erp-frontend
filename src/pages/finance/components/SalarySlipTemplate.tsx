@@ -191,10 +191,10 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
       boxSizing: 'border-box',
       fontFamily: 'Arial, Helvetica, sans-serif',
       position: 'relative',
-      overflow: 'hidden',
+      overflow: 'visible',
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale',
-      textRendering: 'optimizeLegibility',
+      textRendering: 'geometricPrecision',
     }}>
     <div
       className="paper-inner"
@@ -239,9 +239,10 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               style={{
                 margin: 0,
                 fontSize: '31px',
-                lineHeight: '0.95',
+                lineHeight: '1.15',
                 fontWeight: 900,
-                letterSpacing: '-1px',
+                letterSpacing: '-0.5px',
+                paddingBottom: '3px',
               }}>
               SALARY
             </h1>
@@ -251,9 +252,10 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               style={{
                 margin: '2px 0 7px',
                 fontSize: '27px',
-                lineHeight: '1',
+                lineHeight: '1.15',
                 fontWeight: 400,
-                letterSpacing: '-0.8px',
+                letterSpacing: '-0.5px',
+                paddingBottom: '3px',
               }}>
               STATEMENT
             </h2>
@@ -262,9 +264,11 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               className="header-title-month"
               style={{
                 fontSize: '12px',
+                lineHeight: '1.3',
                 fontWeight: 700,
                 letterSpacing: '0.4px',
                 color: '#444444',
+                paddingBottom: '2px',
               }}>
               {data.monthYear || 'JUNE 2026'}
             </div>
@@ -320,10 +324,11 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 style={{
                   margin: 0,
                   fontSize: '15px',
-                  lineHeight: '1.2',
+                  lineHeight: '1.3',
                   fontWeight: 800,
                   letterSpacing: '1px',
                   wordBreak: 'break-word',
+                  paddingBottom: '2px',
                 }}>
                 {data.companyName || 'A E T H E R A D I X'}
               </h3>
@@ -333,10 +338,11 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 style={{
                   margin: '7px 0 0',
                   fontSize: '9px',
-                  lineHeight: '1.45',
+                  lineHeight: '1.5',
                   color: '#555555',
                   whiteSpace: 'pre-line',
                   wordBreak: 'break-word',
+                  paddingBottom: '2px',
                 }}>
                 {data.companyAddress ||
                   'F-N 507, Crystal Tower, IBD Kings Park,\nBawadia Kalan, Bhopal, MP | 462039'}
@@ -371,24 +377,25 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
             style={{
               position: 'absolute',
               right: 0,
-              bottom: '-1px',
+              bottom: 0,
               background: '#111111',
               color: '#ffffff',
               minWidth: '200px',
-              height: '28px',
-              padding: '0 14px',
+              minHeight: '28px',
+              padding: '4px 14px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '7px',
               fontSize: '10px',
+              lineHeight: '1.3',
               boxSizing: 'border-box',
             }}>
-            <span className="ps-label" style={{ fontWeight: 400 }}>
+            <span className="ps-label" style={{ fontWeight: 400, lineHeight: '1.3' }}>
               Pay Slip No.
             </span>
-            <span className="ps-colon">:</span>
-            <span className="ps-value" style={{ fontWeight: 700 }}>
+            <span className="ps-colon" style={{ lineHeight: '1.3' }}>:</span>
+            <span className="ps-value" style={{ fontWeight: 700, lineHeight: '1.3' }}>
               {data.paySlipNo || '0626001'}
             </span>
           </div>
@@ -506,7 +513,7 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 background: '#111111',
                 color: '#ffffff',
                 minHeight: '51px',
-                padding: '0 15px',
+                padding: '6px 15px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -517,6 +524,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 style={{
                   fontSize: '13px',
                   fontWeight: 700,
+                  lineHeight: '1.3',
+                  paddingBottom: '2px',
                 }}>
                 Net Pay
               </span>
@@ -526,6 +535,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 style={{
                   fontSize: '15px',
                   fontWeight: 800,
+                  lineHeight: '1.3',
+                  paddingBottom: '2px',
                 }}>
                 {formatCurrency(netPay, currencySymbol)}
               </span>
@@ -562,7 +573,7 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
             style={{
               marginTop: '14px',
               border: '1px solid #d5d5d5',
-              padding: '10px 12px',
+              padding: '10px 12px 12px',
               background: '#fafafa',
               boxSizing: 'border-box',
             }}>
@@ -575,6 +586,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 textTransform: 'uppercase',
                 color: '#555555',
                 marginBottom: '5px',
+                lineHeight: '1.3',
+                paddingBottom: '1px',
               }}>
               Amount in Words:
             </span>
@@ -585,8 +598,9 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 display: 'block',
                 fontSize: '11px',
                 fontWeight: 600,
-                lineHeight: '1.4',
+                lineHeight: '1.45',
                 wordBreak: 'break-word',
+                paddingBottom: '3px',
               }}>
               {netPayInWords}
             </span>
@@ -614,7 +628,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               style={{
                 fontSize: '25px',
                 fontWeight: 800,
-                lineHeight: '1.1',
+                lineHeight: '1.25',
+                paddingBottom: '3px',
               }}>
               {formatCurrency(netPay, currencySymbol)}
             </div>
@@ -627,6 +642,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 color: '#bdbdbd',
                 textTransform: 'uppercase',
                 letterSpacing: '0.6px',
+                lineHeight: '1.3',
+                paddingBottom: '2px',
               }}>
               Total Net Pay
             </div>
@@ -678,21 +695,25 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 gridTemplateColumns: '112px 10px 1fr',
                 fontSize: '10px',
                 lineHeight: '1.5',
+                alignItems: 'start',
               }}>
               <span
                 className="sign-label"
                 style={{
                   color: '#555555',
+                  lineHeight: '1.5',
                 }}>
                 Authorized Signatory
               </span>
 
-              <span className="sign-colon">:</span>
+              <span className="sign-colon" style={{ lineHeight: '1.5' }}>:</span>
 
               <span
                 className="sign-value"
                 style={{
                   fontWeight: 700,
+                  lineHeight: '1.5',
+                  paddingBottom: '2px',
                 }}>
                 {data.authorizedSignatory || 'Seema Srivastava'}
                 <br />
@@ -701,6 +722,9 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                   style={{
                     color: '#555555',
                     fontWeight: 400,
+                    lineHeight: '1.5',
+                    display: 'inline-block',
+                    paddingBottom: '2px',
                   }}>
                   {data.signatoryRole || '(Director)'}
                 </small>
@@ -721,6 +745,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 className="hr-note-title"
                 style={{
                   fontWeight: 800,
+                  lineHeight: '1.45',
+                  paddingBottom: '1px',
                 }}>
                 HR Note :
               </span>
@@ -731,6 +757,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                   margin: '4px 0 0',
                   color: '#555555',
                   wordBreak: 'break-word',
+                  lineHeight: '1.5',
+                  paddingBottom: '2px',
                 }}>
                 {data.hrNote ||
                   'For any discrepancies, please contact the HR department within 3 working days.'}
@@ -758,25 +786,31 @@ function MetaItem({ label, value, bold = false }: MetaItemProps) {
       style={{
         display: 'grid',
         gridTemplateColumns: '92px 10px 1fr',
-        alignItems: 'baseline',
-        padding: '3px 0',
+        alignItems: 'center',
+        padding: '4px 0',
         fontSize: '10px',
+        lineHeight: '1.35',
+        boxSizing: 'border-box',
       }}>
       <span
         className="meta-label"
         style={{
           color: '#666666',
+          lineHeight: '1.35',
+          paddingBottom: '1px',
         }}>
         {label}
       </span>
 
-      <span className="meta-colon">:</span>
+      <span className="meta-colon" style={{ lineHeight: '1.35' }}>:</span>
 
       <span
         className={`meta-value ${bold ? 'font-bold' : ''}`}
         style={{
           fontWeight: bold ? 700 : 400,
           wordBreak: 'break-word',
+          lineHeight: '1.35',
+          paddingBottom: '1px',
         }}>
         {value || '-'}
       </span>
@@ -804,17 +838,19 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
       <div
         className="table-header-bar"
         style={{
-          height: '31px',
+          minHeight: '31px',
           background: '#111111',
           color: '#ffffff',
           display: 'flex',
           alignItems: 'center',
-          padding: '0 13px',
+          padding: '4px 13px',
           fontSize: '10px',
           fontWeight: 800,
           letterSpacing: '0.5px',
+          lineHeight: '1.3',
+          boxSizing: 'border-box',
         }}>
-        {title}
+        <span style={{ lineHeight: '1.3', paddingBottom: '1px' }}>{title}</span>
       </div>
 
       <div className="table-body">
@@ -823,22 +859,25 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
             key={item.id || `${title}-${item.name}-${index}`}
             className="table-row"
             style={{
-              height: '30px',
+              minHeight: '30px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '0 13px',
+              padding: '4px 13px',
               borderBottom: '1px solid #e5e5e5',
               boxSizing: 'border-box',
               fontSize: '10px',
+              lineHeight: '1.3',
             }}>
             <span
               className="item-name"
               style={{
-                overflow: 'hidden',
+                overflow: 'visible',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 paddingRight: '10px',
+                lineHeight: '1.3',
+                paddingBottom: '1px',
               }}>
               {item.name}
             </span>
@@ -848,6 +887,8 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
               style={{
                 flexShrink: 0,
                 fontWeight: item.name ? 600 : 400,
+                lineHeight: '1.3',
+                paddingBottom: '1px',
               }}>
               {item.name ? formatCurrency(item.amount, currencySymbol) : ''}
             </span>
@@ -862,14 +903,16 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 13px',
+          padding: '4px 13px',
           background: '#eeeeee',
           fontSize: '10px',
           fontWeight: 800,
+          lineHeight: '1.3',
+          boxSizing: 'border-box',
         }}>
-        <span className="total-label">{totalLabel}</span>
+        <span className="total-label" style={{ lineHeight: '1.3', paddingBottom: '1px' }}>{totalLabel}</span>
 
-        <span className="total-amount">{formatCurrency(total, currencySymbol)}</span>
+        <span className="total-amount" style={{ lineHeight: '1.3', paddingBottom: '1px' }}>{formatCurrency(total, currencySymbol)}</span>
       </div>
     </div>
   );
@@ -882,25 +925,32 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       style={{
         display: 'grid',
         gridTemplateColumns: '105px 10px 1fr',
-        alignItems: 'baseline',
-        minHeight: '25px',
+        alignItems: 'center',
+        minHeight: '26px',
+        padding: '3px 0',
         fontSize: '10px',
+        lineHeight: '1.35',
+        boxSizing: 'border-box',
       }}>
       <span
         className="detail-label"
         style={{
           color: '#555555',
+          lineHeight: '1.35',
+          paddingBottom: '1px',
         }}>
         {label}
       </span>
 
-      <span className="detail-colon">:</span>
+      <span className="detail-colon" style={{ lineHeight: '1.35' }}>:</span>
 
       <span
         className="detail-value"
         style={{
           fontWeight: 600,
           wordBreak: 'break-word',
+          lineHeight: '1.35',
+          paddingBottom: '1px',
         }}>
         {value || '-'}
       </span>
@@ -915,23 +965,27 @@ function DaysRow({ label, value }: { label: string; value: string }) {
       style={{
         display: 'grid',
         gridTemplateColumns: '65px 8px 1fr',
+        alignItems: 'center',
         fontSize: '9px',
-        lineHeight: '1.8',
+        lineHeight: '1.4',
+        padding: '2px 0',
       }}>
       <span
         className="days-label"
         style={{
           color: '#bbbbbb',
+          lineHeight: '1.4',
         }}>
         {label}
       </span>
 
-      <span className="days-colon">:</span>
+      <span className="days-colon" style={{ lineHeight: '1.4' }}>:</span>
 
       <span
         className="days-value"
         style={{
           fontWeight: 700,
+          lineHeight: '1.4',
         }}>
         {value}
       </span>
