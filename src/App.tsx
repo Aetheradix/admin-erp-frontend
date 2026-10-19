@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { ErrorBoundary } from '@/components/ui/composed/ErrorBoundary';
+import { initGlobalSyncListener } from '@/services/syncService';
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
@@ -49,6 +50,10 @@ const ProtectedApp = () => {
 };
 
 function App() {
+  useEffect(() => {
+    initGlobalSyncListener();
+  }, []);
+
   return (
     <ErrorBoundary fallbackTitle="Application Error Encountered">
       <Suspense fallback={<LoadingScreen />}>

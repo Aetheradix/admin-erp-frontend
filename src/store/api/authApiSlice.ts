@@ -178,6 +178,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      invalidatesTags: ['SystemAuditLogs'],
     }),
 
     completeOnboarding: builder.mutation<
@@ -194,7 +195,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ['User', 'SystemInvitations', 'SystemAuditLogs', 'ApprovalLogs'],
     }),
 
     getOnboardingStatus: builder.query<
@@ -202,6 +203,79 @@ export const authApiSlice = apiSlice.injectEndpoints({
       void
     >({
       query: () => '/auth/onboarding-status',
+    }),
+
+    // --- SYSTEM AUDIT LOGS (backend MySQL) ---
+    getSystemAuditLogs: builder.query<{ success: boolean; data: any[] }, void>({
+      query: () => '/audit-logs',
+      providesTags: ['SystemAuditLogs'],
+    }),
+
+    createSystemAuditLog: builder.mutation<{ success: boolean; data: any }, {
+      action: string;
+      category: string;
+      user?: string;
+      userEmail?: string;
+      target: string;
+      targetEmail?: string;
+      status?: string;
+      details?: string;
+      changes?: Array<{ field: string; from: any; to: any }>;
+    }>({
+      query: (data) => ({
+        url: '/audit-logs',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['SystemAuditLogs'],
+    }),
+
+    // --- SYSTEM INVITATIONS (backend MySQL) ---
+    getSystemInvitations: builder.query<{ success: boolean; data: any[] }, void>({
+      query: () => '/invitations',
+      providesTags: ['SystemInvitations'],
+    }),
+
+    createSystemInvitation: builder.mutation<{ success: boolean; data: any }, {
+      email: string;
+      name: string;
+      role: string;
+      department: string;
+      invitedBy?: { name: string; email: string; role: string };
+      customExpiryDays?: number;
+      tempPassword?: string;
+    }>({
+      query: (data) => ({
+        url: '/invitations',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['SystemInvitations', 'SystemAuditLogs'],
+    }),
+
+    revokeSystemInvitation: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/invitations/revoke/${id}`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['SystemInvitations', 'SystemAuditLogs'],
+    }),
+
+    resendSystemInvitation: builder.mutation<{ success: boolean; token?: string; tempPassword?: string }, string>({
+      query: (id) => ({
+        url: `/invitations/resend/${id}`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['SystemInvitations', 'SystemAuditLogs'],
+    }),
+
+    acceptSystemInvitation: builder.mutation<{ success: boolean }, { token: string; profile: any }>({
+      query: (data) => ({
+        url: '/invitations/accept',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['SystemInvitations', 'SystemAuditLogs', 'User', 'ApprovalLogs'],
     }),
   }),
 });
@@ -233,4 +307,13 @@ export const {
   useChangeTemporaryPasswordMutation,
   useCompleteOnboardingMutation,
   useGetOnboardingStatusQuery,
+  // System Audit Logs (backend)
+  useGetSystemAuditLogsQuery,
+  useCreateSystemAuditLogMutation,
+  // System Invitations (backend)
+  useGetSystemInvitationsQuery,
+  useCreateSystemInvitationMutation,
+  useRevokeSystemInvitationMutation,
+  useResendSystemInvitationMutation,
+  useAcceptSystemInvitationMutation,
 } = authApiSlice;

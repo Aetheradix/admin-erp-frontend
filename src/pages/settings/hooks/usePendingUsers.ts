@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   useGetPendingUsersQuery,
   useApproveAccountMutation,
@@ -15,14 +16,60 @@ export function usePendingUsers() {
     isLoading: isLoadingPending,
     isError: isPendingError,
     refetch: refetchPending,
-  } = useGetPendingUsersQuery();
+  } = useGetPendingUsersQuery(undefined, {
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   const {
     data: logsResponse,
     isLoading: isLoadingLogs,
     isError: isLogsError,
     refetch: refetchLogs,
-  } = useGetApprovalLogsQuery();
+  } = useGetApprovalLogsQuery(undefined, {
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+
+  // Cross-tab & instant event listeners for real-time auto-update
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel('aether_events');
+      channel.onmessage = () => {
+        refetchLogs();
+        refetchPending();
+      };
+    } catch {}
+
+    const handleStorage = (e: StorageEvent) => {
+      if (
+        e.key === 'aether_last_onboarding_sync' ||
+        e.key === 'aether_user_invitations' ||
+        e.key === 'aether_system_audit_logs'
+      ) {
+        refetchLogs();
+        refetchPending();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    const handleCustom = () => {
+      refetchLogs();
+      refetchPending();
+    };
+    window.addEventListener('aether_onboarding_completed', handleCustom);
+    window.addEventListener('aether_invitations_updated', handleCustom);
+    window.addEventListener('aether_audit_logs_updated', handleCustom);
+
+    return () => {
+      channel?.close();
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('aether_onboarding_completed', handleCustom);
+      window.removeEventListener('aether_invitations_updated', handleCustom);
+      window.removeEventListener('aether_audit_logs_updated', handleCustom);
+    };
+  }, [refetchLogs, refetchPending]);
 
   const [approveAccount, { isLoading: isApproving }] = useApproveAccountMutation();
   const [rejectAccount, { isLoading: isRejecting }] = useRejectAccountMutation();

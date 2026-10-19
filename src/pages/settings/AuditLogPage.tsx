@@ -1,5 +1,10 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
-import { getAuditLogs, getInvitations, type AuditLogEntry, type InvitationRecord } from '@/services/auditService';
+import { useAuth } from '@/hooks/useAuth';
+import type { AuditLogEntry, InvitationRecord } from '@/services/auditService';
+import {
+  useGetSystemAuditLogsQuery,
+  useGetSystemInvitationsQuery,
+} from '@/store/api/authApiSlice';
 import { Modal, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { motion } from 'framer-motion';
@@ -12,6 +17,7 @@ import {
   KeyRound,
   Lock,
   Mail,
+  RefreshCw,
   Search,
   Shield,
   Terminal,
@@ -19,7 +25,7 @@ import {
   UserPlus,
   Zap
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const statusColors: Record<string, string> = {
   Success: 'text-success bg-success/10 border-success/20',
@@ -47,8 +53,33 @@ interface JourneyStep {
   logEntry?: AuditLogEntry;
 }
 
-function buildJourney(invitation: InvitationRecord, logs: AuditLogEntry[]): JourneyStep[] {
+function buildJourney(
+  invitation: InvitationRecord,
+  logs: AuditLogEntry[],
+  currentAuthUser?: any
+): JourneyStep[] {
   const email = invitation.email.toLowerCase();
+
+  const fallbackAdminName = currentAuthUser?.username || currentAuthUser?.name || 'Hasmukh';
+  const fallbackAdminRole = currentAuthUser?.role || 'SuperAdmin';
+  const fallbackAdminEmail = currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+
+  const adminName =
+    invitation.invitedBy?.name &&
+    invitation.invitedBy.name !== 'Sarah Chen' &&
+    invitation.invitedBy.name !== 'Admin'
+      ? invitation.invitedBy.name
+      : fallbackAdminName;
+  const adminRole =
+    invitation.invitedBy?.role && invitation.invitedBy.role !== 'Admin'
+      ? invitation.invitedBy.role
+      : fallbackAdminRole;
+  const adminEmail =
+    invitation.invitedBy?.email &&
+    !invitation.invitedBy.email.includes('sarah') &&
+    !invitation.invitedBy.email.includes('admin@')
+      ? invitation.invitedBy.email
+      : fallbackAdminEmail;
 
   // Find relevant log entries for this email
   const inviteSentLog = logs.find(
@@ -85,7 +116,7 @@ function buildJourney(invitation: InvitationRecord, logs: AuditLogEntry[]): Jour
   return [
     {
       label: 'Invitation Dispatched',
-      description: `Admin sent invite with role ${invitation.role} (${invitation.department})`,
+      description: `Dispatched by Admin ${adminName} (${adminRole} · ${adminEmail}) to ${invitation.name || invitation.email} for role ${invitation.role} (${invitation.department})`,
       timestamp: invitation.invitedAt,
       status: 'done',
       icon: Mail,
@@ -138,9 +169,31 @@ const invStatusBadge: Record<string, string> = {
 };
 
 function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs: AuditLogEntry[] }) {
+  const { user: currentAuthUser } = useAuth();
   const [expanded, setExpanded] = useState(false);
-  const steps = buildJourney(invitation, logs);
+  const steps = buildJourney(invitation, logs, currentAuthUser);
   const doneCount = steps.filter((s) => s.status === 'done').length;
+
+  const fallbackAdminName = currentAuthUser?.username || 'Hasmukh';
+  const fallbackAdminRole = currentAuthUser?.role || 'SuperAdmin';
+  const fallbackAdminEmail = currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+
+  const adminName =
+    invitation.invitedBy?.name &&
+    invitation.invitedBy.name !== 'Sarah Chen' &&
+    invitation.invitedBy.name !== 'Admin'
+      ? invitation.invitedBy.name
+      : fallbackAdminName;
+  const adminRole =
+    invitation.invitedBy?.role && invitation.invitedBy.role !== 'Admin'
+      ? invitation.invitedBy.role
+      : fallbackAdminRole;
+  const adminEmail =
+    invitation.invitedBy?.email &&
+    !invitation.invitedBy.email.includes('sarah') &&
+    !invitation.invitedBy.email.includes('admin@')
+      ? invitation.invitedBy.email
+      : fallbackAdminEmail;
   const progress = Math.round((doneCount / steps.length) * 100);
 
   return (
@@ -160,19 +213,28 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-sm font-black text-foreground truncate">{invitation.name || invitation.email}</span>
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+              Role: {invitation.role}
+            </span>
             <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${invStatusBadge[invitation.status]}`}>
               {invitation.status}
             </span>
           </div>
-          <div className="text-[11px] text-muted truncate">{invitation.email}</div>
-          <div className="text-[10px] text-muted mt-0.5 flex items-center gap-3">
-            <span>Role: <strong className="text-foreground">{invitation.role}</strong></span>
-            <span>·</span>
-            <span>By: <strong className="text-foreground">{invitation.invitedBy.name}</strong></span>
-            <span>·</span>
-            <span>{new Date(invitation.invitedAt).toLocaleDateString()}</span>
+          <div className="text-[11px] text-muted truncate font-mono">{invitation.email} · {invitation.department}</div>
+          <div className="text-[11px] text-muted mt-1.5 flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1.5 bg-surface-subtle px-2.5 py-1 rounded-lg border border-border-subtle">
+              <span className="text-muted text-[10px] font-bold uppercase tracking-wider">Invited by:</span>
+              <strong className="text-foreground font-bold">{adminName}</strong>
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                {adminRole}
+              </span>
+              <span className="text-[10px] text-muted font-mono">({adminEmail})</span>
+            </span>
+            <span className="text-[10px] text-muted">
+              {new Date(invitation.invitedAt).toLocaleDateString()} at {new Date(invitation.invitedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
           </div>
         </div>
 
@@ -280,25 +342,32 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export function AuditLogPage() {
-  const [logs, setLogs] = useState<AuditLogEntry[]>(() => getAuditLogs());
-  const [invitations, setInvitations] = useState<InvitationRecord[]>(() => getInvitations());
+  const { user: currentAuthUser } = useAuth();
+  const activeAdminName = currentAuthUser?.username || 'Hasmukh';
+  const activeAdminRole = currentAuthUser?.role || 'SuperAdmin';
+  const activeAdminEmail = currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+  // ─── Backend-driven data (MySQL via RTK Query) ──────────────────────────────
+  const {
+    data: auditLogsResponse,
+    isLoading: isLoadingLogs,
+    isFetching: isFetchingLogs,
+    refetch: refetchLogs,
+  } = useGetSystemAuditLogsQuery();
+
+  const {
+    data: invitationsResponse,
+    isLoading: isLoadingInvitations,
+    refetch: refetchInvitations,
+  } = useGetSystemInvitationsQuery();
+
+  const logs: AuditLogEntry[] = (auditLogsResponse?.data ?? []) as AuditLogEntry[];
+  const invitations: InvitationRecord[] = (invitationsResponse?.data ?? []) as InvitationRecord[];
+
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
   const [activeView, setActiveView] = useState<'stream' | 'journey'>('stream');
-
-  // Live sync when audit logs update
-  useEffect(() => {
-    const handleLogUpdate = () => setLogs(getAuditLogs());
-    const handleInvUpdate = () => setInvitations(getInvitations());
-    window.addEventListener('aether_audit_logs_updated', handleLogUpdate);
-    window.addEventListener('aether_invitations_updated', handleInvUpdate);
-    return () => {
-      window.removeEventListener('aether_audit_logs_updated', handleLogUpdate);
-      window.removeEventListener('aether_invitations_updated', handleInvUpdate);
-    };
-  }, []);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((l) => {
@@ -329,6 +398,42 @@ export function AuditLogPage() {
     );
   }, [invitations, search]);
 
+  // Helper to find matching invitation for an audit record
+  const getMatchingInvitation = (record: AuditLogEntry): InvitationRecord | undefined => {
+    const targetEmail = record.targetEmail?.toLowerCase();
+    const userEmail = record.userEmail?.toLowerCase();
+    return invitations.find(
+      (inv) =>
+        (targetEmail && inv.email.toLowerCase() === targetEmail) ||
+        (userEmail && inv.email.toLowerCase() === userEmail) ||
+        (record.target && record.target.toLowerCase().includes(inv.email.toLowerCase()))
+    );
+  };
+
+  // Helper to resolve admin/initiator role
+  const getActorRole = (record: AuditLogEntry): string => {
+    if ((record as any).userRole) return (record as any).userRole;
+    if (
+      currentAuthUser &&
+      (record.userEmail?.toLowerCase() === currentAuthUser.email?.toLowerCase() ||
+        record.user?.toLowerCase() === currentAuthUser.username?.toLowerCase())
+    ) {
+      return currentAuthUser.role || 'SuperAdmin';
+    }
+    const inv = invitations.find(
+      (i) => i.invitedBy?.email?.toLowerCase() === record.userEmail?.toLowerCase()
+    );
+    if (inv?.invitedBy?.role && inv.invitedBy.role !== 'Admin') return inv.invitedBy.role;
+    if (
+      record.userEmail?.toLowerCase().includes('admin') ||
+      record.user?.toLowerCase().includes('admin')
+    ) {
+      return activeAdminRole;
+    }
+    if (record.category === 'invitation' || record.category === 'admin') return activeAdminRole;
+    return 'Staff';
+  };
+
   const columns: ColumnsType<AuditLogEntry> = [
     {
       title: 'Activity / Event',
@@ -353,28 +458,107 @@ export function AuditLogPage() {
       },
     },
     {
-      title: 'Actor (Initiator)',
+      title: 'Actor (Admin / Initiator)',
       key: 'actor',
-      render: (_, record) => (
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-surface-subtle flex items-center justify-center text-muted">
-            <User size={12} />
+      render: (_, record) => {
+        const inv = getMatchingInvitation(record);
+        const role = getActorRole(record);
+        const isAdminAction = record.category === 'invitation' || record.category === 'admin';
+        const isSelf =
+          currentAuthUser &&
+          (record.userEmail?.toLowerCase() === currentAuthUser.email?.toLowerCase() ||
+            record.user === currentAuthUser.username ||
+            record.user === 'Sarah Chen' ||
+            record.user === 'Admin');
+        const displayName = isSelf
+          ? activeAdminName
+          : isAdminAction &&
+            inv?.invitedBy?.name &&
+            inv.invitedBy.name !== 'Sarah Chen' &&
+            inv.invitedBy.name !== 'Admin'
+          ? inv.invitedBy.name
+          : record.user === 'Sarah Chen' || record.user === 'Admin'
+          ? activeAdminName
+          : record.user;
+        const displayEmail = isSelf
+          ? activeAdminEmail
+          : isAdminAction &&
+            inv?.invitedBy?.email &&
+            !inv.invitedBy.email.includes('sarah') &&
+            !inv.invitedBy.email.includes('admin@')
+          ? inv.invitedBy.email
+          : record.userEmail?.includes('sarah') || record.userEmail === 'admin@aetheradix.com'
+          ? activeAdminEmail
+          : record.userEmail;
+        const displayRole =
+          isAdminAction && inv?.invitedBy?.role && inv.invitedBy.role !== 'Admin'
+            ? inv.invitedBy.role
+            : role;
+
+        return (
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                isAdminAction ? 'bg-primary/10 text-primary' : 'bg-surface-subtle text-muted'
+              }`}>
+              {isAdminAction ? <Shield size={14} /> : <User size={14} />}
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-bold text-foreground">{displayName}</span>
+                <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                  {displayRole}
+                </span>
+              </div>
+              <span className="text-[10px] text-muted font-mono">{displayEmail}</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-foreground">{record.user}</span>
-            <span className="text-[10px] text-muted">{record.userEmail}</span>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
-      title: 'Target Entity',
+      title: 'Target (Invitee / Entity)',
       key: 'target',
-      render: (_, record) => (
-        <span className="px-2.5 py-1 bg-surface-subtle border border-border-subtle rounded-lg text-xs font-medium text-foreground tracking-wide">
-          {record.target}
-        </span>
-      ),
+      render: (_, record) => {
+        const inv = getMatchingInvitation(record);
+        const adminName =
+          inv?.invitedBy?.name &&
+          inv.invitedBy.name !== 'Sarah Chen' &&
+          inv.invitedBy.name !== 'Admin'
+            ? inv.invitedBy.name
+            : activeAdminName;
+        const adminRole =
+          inv?.invitedBy?.role && inv.invitedBy.role !== 'Admin'
+            ? inv.invitedBy.role
+            : activeAdminRole;
+
+        return (
+          <div className="flex flex-col gap-1 max-w-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="px-2 py-0.5 bg-surface-subtle border border-border-subtle rounded-lg text-xs font-semibold text-foreground tracking-wide">
+                {inv?.name || record.target}
+              </span>
+              {inv?.role && (
+                <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-accent/10 text-accent border border-accent/20">
+                  Role: {inv.role}
+                </span>
+              )}
+            </div>
+            {record.targetEmail && (
+              <span className="text-[10px] text-muted font-mono truncate">
+                {record.targetEmail} {inv?.department ? `• ${inv.department}` : ''}
+              </span>
+            )}
+            {/* Explicit Admin Name Badge */}
+            <div className="inline-flex items-center gap-1 text-[9.5px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/15 w-fit">
+              <Shield size={10} className="shrink-0" />
+              <span>Admin:</span>
+              <strong className="text-foreground">{adminName}</strong>
+              <span className="text-[8.5px] text-primary/80 uppercase">({adminRole})</span>
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: 'Timestamp',
@@ -422,17 +606,43 @@ export function AuditLogPage() {
 
   return (
     <div className="flex flex-col gap-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <PageHeader
-        title="Security & System Audit Log"
-        description="Immutable chronological record of invitations, onboarding journeys, authentication changes, and system administration events."
-        breadcrumbs={[
-          { label: 'Home', url: '/' },
-          { label: 'Settings', url: '/settings' },
-          { label: 'Audit Log' },
-        ]}
-      />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader
+          title="Security & System Audit Log"
+          description="Immutable chronological record of invitations, onboarding journeys, authentication changes, and system administration events."
+          breadcrumbs={[
+            { label: 'Home', url: '/' },
+            { label: 'Settings', url: '/settings' },
+            { label: 'Audit Log' },
+          ]}
+        />
+        <div className="flex items-center gap-2 pt-1 shrink-0">
+          {/* Live backend sync badge */}
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 text-success text-[10px] font-black uppercase tracking-wider">
+            <span className={`w-1.5 h-1.5 rounded-full bg-success ${isFetchingLogs ? 'animate-ping' : 'animate-pulse'}`} />
+            Live DB Sync
+          </span>
+          <button
+            onClick={() => { refetchLogs(); refetchInvitations(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-border-subtle text-muted text-xs font-bold hover:text-foreground hover:border-primary/30 transition-all cursor-pointer"
+            title="Refresh from database"
+          >
+            <RefreshCw size={13} className={isFetchingLogs ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Loading skeleton */}
+      {(isLoadingLogs || isLoadingInvitations) && (
+        <div className="flex items-center gap-3 text-sm text-muted">
+          <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          Loading audit data from database...
+        </div>
+      )}
 
       {/* View toggle */}
+
       <div className="flex items-center gap-3">
         <button
           onClick={() => setActiveView('stream')}
@@ -569,7 +779,7 @@ export function AuditLogPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: 'Total Invites', value: invitations.length, color: 'text-primary', bg: 'bg-primary/5' },
-              { label: 'Onboarded', value: invitations.filter((i) => i.status === 'accepted').length, color: 'text-success', bg: 'bg-success/5' },
+              { label: 'Accepted', value: invitations.filter((i) => i.status === 'accepted').length, color: 'text-success', bg: 'bg-success/5' },
               { label: 'Pending', value: invitations.filter((i) => i.status === 'pending').length, color: 'text-warning', bg: 'bg-warning/5' },
               { label: 'Expired / Revoked', value: invitations.filter((i) => i.status === 'expired' || i.status === 'revoked').length, color: 'text-error', bg: 'bg-error/5' },
             ].map((stat) => (
@@ -634,9 +844,69 @@ export function AuditLogPage() {
               </div>
             </div>
 
+            {/* Rich Admin & Invitee Attribution Box */}
+            {(() => {
+              const inv = getMatchingInvitation(selectedLog);
+              const actorRole = getActorRole(selectedLog);
+              return (
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 via-surface-subtle to-white border border-primary/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
+                      <UserPlus size={14} />
+                      Admin & Invitee Attribution
+                    </span>
+                    {inv?.status && (
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${invStatusBadge[inv.status]}`}>
+                        Status: {inv.status}
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {/* Admin Block */}
+                    <div className="p-3 rounded-xl bg-white border border-border-subtle space-y-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-muted block">
+                        Admin / Initiator
+                      </span>
+                      <div className="font-bold text-foreground flex items-center gap-1.5">
+                        {inv?.invitedBy?.name || selectedLog.user}
+                        <span className="px-1.5 py-0.2 rounded bg-primary/10 text-primary text-[9px] font-black uppercase border border-primary/20">
+                          {inv?.invitedBy?.role || actorRole}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-muted font-mono truncate">
+                        {inv?.invitedBy?.email || selectedLog.userEmail}
+                      </div>
+                    </div>
+
+                    {/* Invitee Block */}
+                    <div className="p-3 rounded-xl bg-white border border-border-subtle space-y-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-muted block">
+                        Invitee (Target User)
+                      </span>
+                      <div className="font-bold text-foreground flex items-center gap-1.5">
+                        {inv?.name || selectedLog.target}
+                        {inv?.role && (
+                          <span className="px-1.5 py-0.2 rounded bg-surface-subtle border border-border-subtle text-[9px] font-black uppercase">
+                            {inv.role}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-muted font-mono truncate">
+                        {inv?.email || selectedLog.targetEmail || selectedLog.target}
+                      </div>
+                      {inv?.department && (
+                        <div className="text-[10px] text-muted">Department: {inv.department}</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="space-y-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider text-muted">
-                Actor & Target
+                Audit Record Details
               </span>
               <div className="p-3 rounded-xl border border-border-subtle space-y-1.5">
                 <div className="flex justify-between">

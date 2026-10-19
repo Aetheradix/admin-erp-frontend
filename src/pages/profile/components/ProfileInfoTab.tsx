@@ -96,7 +96,7 @@ export const ProfileInfoTab = ({
           </div>
 
           {/* T-Number */}
-          <div className="flex flex-col gap-1">
+          {/* <div className="flex flex-col gap-1">
             <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
               T-Number
             </span>
@@ -104,7 +104,7 @@ export const ProfileInfoTab = ({
               <Phone size={14} className="text-muted" />
               {user.tNumber || 'Not specified'}
             </div>
-          </div>
+          </div> */}
 
           {/* Joined On */}
           <div className="flex flex-col gap-1">
@@ -129,14 +129,14 @@ export const ProfileInfoTab = ({
                 {user.country || 'Not specified'}
               </div>
             </div>
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
                 Cost Center
               </span>
               <div className="text-xs font-bold text-foreground">
                 {user.costCenter || 'Not specified'}
               </div>
-            </div>
+            </div> */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
                 Sub Organization
