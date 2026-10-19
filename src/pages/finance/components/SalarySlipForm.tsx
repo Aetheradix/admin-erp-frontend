@@ -15,6 +15,10 @@ import {
   Search,
 } from 'lucide-react';
 import { useGetUsersQuery } from '@/store/api/userSlice';
+import {
+  useGetAllSalarySlipsQuery,
+  useLazyGetSalarySlipByIdQuery,
+} from '@/store/api/financeApiSlice';
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
 import { useAuth } from '@/hooks/useAuth';
 import type { PayrollRecord } from '../PayrollPage';
@@ -45,6 +49,7 @@ export interface SalarySlipData {
   employeeName: string;
   position: string;
   accountNumber: string;
+  baseSalary?: number | string;
   total?: number;
   netSalary?: number;
 
@@ -221,6 +226,7 @@ const getInitialForm = (): SalarySlipData => {
     employeeName: '',
     position: '',
     accountNumber: '',
+    baseSalary: 0,
 
     paidDays: 15, // Default for 1st Bi-Weekly half
     lopDays: 0,
@@ -275,6 +281,8 @@ const SalarySlipForm = ({
   const { data: rtkUsersData, isLoading: isRtkLoading } = useGetUsersQuery(undefined, {
     skip: !!fetchUsers,
   });
+  const { data: allSalarySlipsData } = useGetAllSalarySlipsQuery();
+  const [getSlipsByEmpId] = useLazyGetSalarySlipByIdQuery();
 
   const [customUsersList, setCustomUsersList] = useState<any[]>([]);
   const [isCustomLoading, setIsCustomLoading] = useState<boolean>(false);
@@ -303,44 +311,44 @@ const SalarySlipForm = ({
     };
   }, [searchTerm, fetchUsers]);
 
-const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
-  const parts = String(monthYearStr || '').trim().split(/[\s\/\-]+/).filter(Boolean);
-  const monthsList = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
-  ];
+  const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
+    const parts = String(monthYearStr || '').trim().split(/[\s\/\-]+/).filter(Boolean);
+    const monthsList = [
+      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    ];
 
-  // 1. Dynamic Fallback to current system date (e.g., today's date if empty)
-  const now = new Date();
-  let year = now.getFullYear();
-  let monthVal = now.getMonth() + 1;
+    // 1. Dynamic Fallback to current system date (e.g., today's date if empty)
+    const now = new Date();
+    let year = now.getFullYear();
+    let monthVal = now.getMonth() + 1;
 
-  // 2. Parse selected year and month dynamically from input
-  for (const part of parts) {
-    const num = Number(part);
-    if (!isNaN(num) && num >= 1900 && num <= 2100) {
-      year = num; // Dynamically sets the selected year (e.g., 2020)
-    } else {
-      const upper = part.toUpperCase();
-      const idx = monthsList.findIndex((m) => m === upper || m.startsWith(upper.slice(0, 3)));
-      if (idx !== -1) {
-        monthVal = idx + 1; // Dynamically sets selected month (e.g., August -> 08)
+    // 2. Parse selected year and month dynamically from input
+    for (const part of parts) {
+      const num = Number(part);
+      if (!isNaN(num) && num >= 1900 && num <= 2100) {
+        year = num; // Dynamically sets the selected year (e.g., 2020)
+      } else {
+        const upper = part.toUpperCase();
+        const idx = monthsList.findIndex((m) => m === upper || m.startsWith(upper.slice(0, 3)));
+        if (idx !== -1) {
+          monthVal = idx + 1; // Dynamically sets selected month (e.g., August -> 08)
+        }
       }
     }
-  }
 
-  const formattedMonth = String(monthVal).padStart(2, '0');
+    const formattedMonth = String(monthVal).padStart(2, '0');
 
-  // 3. Clean Employee Code (Strip duplicate 'EMP' prefix if present)
-  let rawCode = String(employeeCode || '').trim();
-  if (rawCode.toUpperCase().startsWith('EMP')) {
-    rawCode = rawCode.replace(/^EMP[-_]?/i, '');
-  }
-  const cleanEmpCode = rawCode || '001';
+    // 3. Clean Employee Code (Strip duplicate 'EMP' prefix if present)
+    let rawCode = String(employeeCode || '').trim();
+    if (rawCode.toUpperCase().startsWith('EMP')) {
+      rawCode = rawCode.replace(/^EMP[-_]?/i, '');
+    }
+    const cleanEmpCode = rawCode || '001';
 
-  // 💡 Output Format: SLIP-EMP-{EmployeeCode}-{Year}{Month}
-  return `SLIP-EMP-${cleanEmpCode}-${year}${formattedMonth}`;
-};
+    // 💡 Output Format: SLIP-EMP-{EmployeeCode}-{Year}{Month}
+    return `SLIP-EMP-${cleanEmpCode}-${year}${formattedMonth}`;
+  };
 
   // Use a ref to ensure initialValues only populates the form once on mount
   const hasInitializedRef = useRef(false);
@@ -435,13 +443,13 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
       Array.isArray(initialValues.earnings) && initialValues.earnings.length > 0
         ? initialValues.earnings
         : [
-            { name: 'Basic Pay', amount: basePay },
-            ...(hraPay > 0 ? [{ name: 'HRA', amount: hraPay }] : []),
-            ...(specialPay > 0 ? [{ name: 'Special Allowance', amount: specialPay }] : []),
-            ...(conveyancePay > 0 ? [{ name: 'Conveyance', amount: conveyancePay }] : []),
-            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
-            ...(otherEarnPay > 0 ? [{ name: 'Other Earnings', amount: otherEarnPay }] : []),
-          ];
+          { name: 'Basic Pay', amount: basePay },
+          ...(hraPay > 0 ? [{ name: 'HRA', amount: hraPay }] : []),
+          ...(specialPay > 0 ? [{ name: 'Special Allowance', amount: specialPay }] : []),
+          ...(conveyancePay > 0 ? [{ name: 'Conveyance', amount: conveyancePay }] : []),
+          ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+          ...(otherEarnPay > 0 ? [{ name: 'Other Earnings', amount: otherEarnPay }] : []),
+        ];
 
     const pfDeduct = Number(raw.provident_fund || 0);
     const ptDeduct = Number(raw.professional_tax || 0);
@@ -452,11 +460,11 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
       Array.isArray(initialValues.deductions) && initialValues.deductions.length > 0
         ? initialValues.deductions
         : [
-            ...(pfDeduct > 0 ? [{ name: 'Provident Fund (PF)', amount: pfDeduct }] : []),
-            ...(ptDeduct > 0 ? [{ name: 'Professional Tax (PT)', amount: ptDeduct }] : []),
-            ...(tdsDeduct > 0 ? [{ name: 'TDS', amount: tdsDeduct }] : []),
-            ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
-          ];
+          ...(pfDeduct > 0 ? [{ name: 'Provident Fund (PF)', amount: pfDeduct }] : []),
+          ...(ptDeduct > 0 ? [{ name: 'Professional Tax (PT)', amount: ptDeduct }] : []),
+          ...(tdsDeduct > 0 ? [{ name: 'TDS', amount: tdsDeduct }] : []),
+          ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
+        ];
 
     // Generate proper professional slip number
     const empCode = String(raw.employee_code || initialValues.employeeId || '');
@@ -470,7 +478,15 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
       employeeName: String(empName || ''),
       position: String(raw.designation || initialValues.position || ''),
       department: String(initialValues.department || ''),
-      accountNumber: String(raw.bank_account_number || initialValues.accountNumber || ''),
+      accountNumber: String(
+        raw.bank_account_number ||
+        raw.bankAccountNumber ||
+        raw.account_number ||
+        raw.accountNumber ||
+        initialValues.accountNumber ||
+        ''
+      ),
+      baseSalary: basePay,
       payCycle: cycle as 'Bi-Weekly' | 'Monthly',
       monthYear: defaultMonthYear,
       payPeriod: String(computedPayPeriod || ''),
@@ -615,40 +631,162 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelectEmployee = (user: any) => {
+  const handleSelectEmployee = async (user: any) => {
     console.log('1. Clicked user object:', user);
 
-    const rawId = user.id || user.employee_code;
+    const rawId = user.id || user.employee_code || user.employee_id || user.employeeId;
     const numericId = Number(rawId);
     const resolvedName = getEmployeeName(user);
 
     setSearchTerm(resolvedName);
     setIsDropdownOpen(false);
 
-    // Parse base salary if available
-    const baseSalaryNum = Number(user.base_salary || 0);
+    // 1. Detect bank account from user object
+    let detectedAccount = String(
+      user.bank_account_number ||
+      user.account_number ||
+      user.accountNumber ||
+      user.bank_account ||
+      user.bankAccount ||
+      user.bank_acc_no ||
+      user.bankAccNo ||
+      ''
+    ).trim();
+
+    // 2. Detect base salary from user object
+    let detectedBaseSalary = Number(
+      user.base_salary ??
+      user.basic_salary ??
+      user.baseSalary ??
+      user.basicSalary ??
+      user.salary ??
+      user.base_pay ??
+      user.basePay ??
+      user.base_amount ??
+      user.baseAmount ??
+      0
+    );
+
+    // 3. Fallback: Search existing salary slips in cache
+    const allSlips = Array.isArray(allSalarySlipsData)
+      ? allSalarySlipsData
+      : Array.isArray(allSalarySlipsData?.data)
+        ? allSalarySlipsData.data
+        : [];
+
+    const findInSlips = (slipsList: any[]) => {
+      return slipsList.filter((slip: any) => {
+        const sUserId = slip.user_id ?? slip.userId;
+        const sEmpCode = String(slip.employee_code ?? slip.employeeCode ?? slip.employeeId ?? '').trim().toLowerCase();
+        const uId = String(rawId).trim().toLowerCase();
+        const uEmpCode = String(user.employee_code ?? user.employee_id ?? user.employeeId ?? '').trim().toLowerCase();
+        const sName = String(slip.username ?? slip.employee_name ?? slip.employeeName ?? '').trim().toLowerCase();
+        const uName = resolvedName.trim().toLowerCase();
+
+        return (
+          (sUserId && String(sUserId) === String(rawId)) ||
+          (sEmpCode && (sEmpCode === uId || (uEmpCode && sEmpCode === uEmpCode))) ||
+          (sName && uName && sName === uName)
+        );
+      });
+    };
+
+    const applyFromSlip = (slip: any) => {
+      if (!detectedAccount) {
+        detectedAccount = String(
+          slip.bank_account_number ||
+          slip.bankAccountNumber ||
+          slip.account_number ||
+          slip.accountNumber ||
+          ''
+        ).trim();
+      }
+      if (!detectedBaseSalary) {
+        const slipBasic =
+          slip.basic_salary ??
+          slip.basicSalary ??
+          slip.base ??
+          slip.base_amount ??
+          (Array.isArray(slip.earnings)
+            ? slip.earnings.find((e: any) => e.name?.toLowerCase().includes('basic'))?.amount
+            : undefined);
+        detectedBaseSalary = Number(slipBasic || 0);
+      }
+    };
+
+    const matchedSlips = findInSlips(allSlips);
+    if (matchedSlips.length > 0) {
+      const sorted = [...matchedSlips].sort((a: any, b: any) => Number(b.id || 0) - Number(a.id || 0));
+      applyFromSlip(sorted[0]);
+    }
+
+    const empCode = String(user.employee_code || user.employee_id || user.employeeId || user.id || '');
+    const currentMonthYear = formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
+    const generatedSlipNo = generateSlipNumber(empCode, currentMonthYear);
 
     setFormData((prev) => {
-      // Optionally update the first earning item (Basic Pay) if base_salary exists
       const updatedEarnings = [...prev.earnings];
-      if (baseSalaryNum > 0 && updatedEarnings.length > 0) {
-        updatedEarnings[0] = { ...updatedEarnings[0], amount: baseSalaryNum };
+      const basicIndex = updatedEarnings.findIndex((e) =>
+        e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
+      );
+
+      if (detectedBaseSalary > 0) {
+        if (basicIndex !== -1) {
+          updatedEarnings[basicIndex] = { ...updatedEarnings[basicIndex], amount: detectedBaseSalary };
+        } else if (updatedEarnings.length > 0) {
+          updatedEarnings[0] = { ...updatedEarnings[0], amount: detectedBaseSalary };
+        } else {
+          updatedEarnings.push({ name: 'Basic Pay', amount: detectedBaseSalary });
+        }
       }
 
       const updated = {
         ...prev,
         userId: isNaN(numericId) ? rawId : numericId,
-        employeeId: String(user.employee_code || user.id || ''),
+        employeeId: empCode,
         employeeName: resolvedName,
-        position: user.designation || user.role || '',
+        position: user.designation || user.role || user.position || '',
         department: user.department || '',
-        accountNumber: user.bank_account_number || '',
+        accountNumber: detectedAccount || '',
+        baseSalary: detectedBaseSalary > 0 ? detectedBaseSalary : (prev.baseSalary || ''),
+        paySlipNo: isEditing ? prev.paySlipNo : (generatedSlipNo || prev.paySlipNo),
         earnings: updatedEarnings,
       };
 
       console.log('2. New calculated formData state:', updated);
       return updated;
     });
+
+    // 4. Asynchronous check by employee ID if still missing either account or base salary
+    if ((!detectedAccount || !detectedBaseSalary) && rawId) {
+      try {
+        const res = await getSlipsByEmpId(rawId).unwrap();
+        const empSlips = Array.isArray(res) ? res : res?.data ? (Array.isArray(res.data) ? res.data : [res.data]) : [];
+        if (empSlips.length > 0) {
+          const newest = [...empSlips].sort((a: any, b: any) => Number(b.id || 0) - Number(a.id || 0))[0];
+          applyFromSlip(newest);
+
+          setFormData((prev) => {
+            const updatedEarnings = [...prev.earnings];
+            const bIdx = updatedEarnings.findIndex((e) =>
+              e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
+            );
+            if (detectedBaseSalary > 0 && bIdx !== -1 && updatedEarnings[bIdx].amount === 0) {
+              updatedEarnings[bIdx] = { ...updatedEarnings[bIdx], amount: detectedBaseSalary };
+            }
+
+            return {
+              ...prev,
+              accountNumber: prev.accountNumber || detectedAccount || '',
+              baseSalary: prev.baseSalary || (detectedBaseSalary > 0 ? detectedBaseSalary : ''),
+              earnings: updatedEarnings,
+            };
+          });
+        }
+      } catch {
+        // Fallback fetch error ignored
+      }
+    }
   };
 
   const clearEmployeeSearch = () => {
@@ -669,12 +807,26 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
 
   const updateEarning = (index: number, field: keyof EarningsItem, value: string | number) => {
     const updatedValue = field === 'amount' ? (value === '' ? 0 : Number(value)) : value;
-    setFormData((prev) => ({
-      ...prev,
-      earnings: prev.earnings.map((item, i) =>
+    setFormData((prev) => {
+      const updatedEarnings = prev.earnings.map((item, i) =>
         i === index ? { ...item, [field]: updatedValue } : item
-      ),
-    }));
+      );
+      let updatedBaseSalary = prev.baseSalary;
+      const isBasicItem =
+        prev.earnings[index]?.name.toLowerCase().includes('basic') ||
+        prev.earnings[index]?.name.toLowerCase().includes('base') ||
+        index === 0;
+
+      if (isBasicItem && field === 'amount') {
+        updatedBaseSalary = updatedValue === 0 ? '' : Number(updatedValue);
+      }
+
+      return {
+        ...prev,
+        baseSalary: updatedBaseSalary,
+        earnings: updatedEarnings,
+      };
+    });
   };
 
   const updateDeduction = (index: number, field: keyof DeductionItem, value: string | number) => {
@@ -762,7 +914,7 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
         'conveyance',
         'transport',
       ];
-      const basicSalary = findAmount(formData.earnings, ['basic']);
+      const basicSalary = findAmount(formData.earnings, ['basic']) || Number(formData.baseSalary || 0);
       const houseRentAllowance = findAmount(formData.earnings, ['hra', 'house rent']);
       const bonus = findAmount(formData.earnings, ['bonus', 'incentive']);
       const specialAllowance = findAmount(formData.earnings, ['special']);
@@ -951,9 +1103,8 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
                   <select
                     value={selectedMonth}
                     onChange={(e) => handleMonthChange(e.target.value)}
-                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
-                      errors.monthYear ? 'border-red-500' : 'border-gray-300'
-                    }`}>
+                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${errors.monthYear ? 'border-red-500' : 'border-gray-300'
+                      }`}>
                     {months.map((month: string) => (
                       <option key={month} value={month}>
                         {month}
@@ -970,9 +1121,8 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
                   <select
                     value={selectedYear}
                     onChange={(e) => handleYearChange(e.target.value)}
-                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
-                      errors.monthYear ? 'border-red-500' : 'border-gray-300'
-                    }`}>
+                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${errors.monthYear ? 'border-red-500' : 'border-gray-300'
+                      }`}>
                     {years.map((year) => (
                       <option key={year} value={year}>
                         {year}
@@ -1104,7 +1254,19 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
                       const name = getEmployeeName(user);
                       const empId = user.employeeId ?? user.id ?? user._id ?? 'N/A';
                       const role = user.position || user.designation || user.role || '';
-                      const account = user.accountNumber || user.bankAccount || '';
+                      const account =
+                        user.bank_account_number ||
+                        user.account_number ||
+                        user.accountNumber ||
+                        user.bank_account ||
+                        user.bankAccount ||
+                        '';
+                      const salary =
+                        user.base_salary ||
+                        user.basic_salary ||
+                        user.baseSalary ||
+                        user.salary ||
+                        '';
 
                       return (
                         <div
@@ -1117,7 +1279,9 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{name}</p>
                             <p className="text-xs text-gray-500">
-                              {role || 'Employee'} {account ? `• Acc: ${account}` : ''}
+                              {role || 'Employee'}
+                              {account ? ` • Acc: ${account}` : ''}
+                              {salary ? ` • ₹${Number(salary).toLocaleString('en-IN')}` : ''}
                             </p>
                           </div>
                           <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 font-mono font-medium">
@@ -1132,7 +1296,7 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
             </div>
 
             {/* Mapped Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
               <Input
                 label="Employee Name"
                 value={formData.employeeName}
@@ -1156,6 +1320,30 @@ const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
                 label="Bank Account Number"
                 value={formData.accountNumber}
                 onChange={(e) => updateField('accountNumber', e.target.value)}
+                placeholder="e.g. 123456789012"
+              />
+              <Input
+                label="Base Salary (₹)"
+                type="number"
+                value={formData.baseSalary ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? '' : Number(e.target.value);
+                  updateField('baseSalary', val);
+                  setFormData((prev) => {
+                    const updated = [...prev.earnings];
+                    const bIdx = updated.findIndex((item) =>
+                      item.name.toLowerCase().includes('basic') || item.name.toLowerCase().includes('base')
+                    );
+                    const numVal = Number(val || 0);
+                    if (bIdx !== -1) {
+                      updated[bIdx] = { ...updated[bIdx], amount: numVal };
+                    } else if (updated.length > 0) {
+                      updated[0] = { ...updated[0], amount: numVal };
+                    }
+                    return { ...prev, baseSalary: val, earnings: updated };
+                  });
+                }}
+                placeholder="e.g. 50000"
               />
             </div>
           </section>

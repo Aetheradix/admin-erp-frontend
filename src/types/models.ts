@@ -217,6 +217,17 @@ export interface StaffMember {
   image_url?: string;
   skills: string[];
   employee_id?: string;
+  employee_code?: string;
+  bank_account_number?: string;
+  account_number?: string;
+  accountNumber?: string;
+  bank_account?: string;
+  bankAccount?: string;
+  base_salary?: number | string;
+  basic_salary?: number | string;
+  baseSalary?: number | string;
+  basicSalary?: number | string;
+  salary?: number | string;
   password?: string;
 }
 
