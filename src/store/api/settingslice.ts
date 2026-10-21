@@ -35,7 +35,27 @@ export const settingSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Settings'],
     }),
+    getPayrollSettings: builder.query<any, void>({
+      query: () => '/settings/payroll',
+      transformResponse: (response: any) => response?.data ?? response,
+      providesTags: ['PayrollSettings'],
+    }),
+
+    updatePayrollSettings: builder.mutation<any, any>({
+      query: (data) => ({
+        url: '/settings/payroll',
+        method: 'PUT',
+        body: data,
+      }),
+      transformResponse: (response: any) => response?.data ?? response,
+      invalidatesTags: ['PayrollSettings', 'Settings'],
+    }),
   }),
 });
 
-export const { useGetAutoApproveQuery, useUpdateAutoApproveMutation } = settingSlice;
+export const {
+  useGetAutoApproveQuery,
+  useUpdateAutoApproveMutation,
+  useGetPayrollSettingsQuery,
+  useUpdatePayrollSettingsMutation,
+} = settingSlice;

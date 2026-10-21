@@ -14,6 +14,7 @@ import {
   Trash2,
   FileSpreadsheet,
   Filter,
+  Sparkles,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
@@ -25,12 +26,14 @@ import {
   useDeleteSalarySlipMutation,
   useUpdateSalarySlipMutation,
   useGetAuditLogsQuery,
+  useCreatePayrollAdjustmentMutation,
+  useGetPayrollAdjustmentsQuery,
 } from '@/store/api/financeApiSlice';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import SalarySlipForm from './components/SalarySlipForm';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
 import { getStoredPayrollSettings } from '@/types/payrollSettings';
-import type { SalarySlipData } from './components/SalarySlipTemplate';
+import type { SalarySlipData } from './components/SalarySlipForm';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 
 export interface PayrollRecord {
@@ -186,6 +189,10 @@ export default function PayrollPage() {
   const [createSalarySlip, { isLoading: isCreating }] = useCreateSalarySlipMutation();
   const [updateSalarySlip, { isLoading: isUpdating }] = useUpdateSalarySlipMutation();
   const [deleteSalarySlip, { isLoading: isDeleting }] = useDeleteSalarySlipMutation();
+  const [createAdjustment, { isLoading: isCreatingAdjustment }] = useCreatePayrollAdjustmentMutation();
+  const { refetch: refetchAdjustments } = useGetPayrollAdjustmentsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [filteredPayroll, setFilteredPayroll] = useState<PayrollRecord[]>([]);
@@ -331,18 +338,34 @@ export default function PayrollPage() {
         message.loading({ content: 'Updating salary slip...', key });
         await updateSalarySlip({ id: editingRecord.id, ...data }).unwrap();
         message.success({ content: 'Salary slip updated successfully!', key });
+      } else if (data.payrollType === 'Adjustment') {
+        message.loading({ content: 'Recording payroll adjustment...', key });
+        await createAdjustment({
+          userId: Number(data.userId || (data as any).user_id),
+          payrollType: 'adjustment',
+          adjustmentType: data.adjustmentType || 'wrong_rate',
+          adjustmentAmount: Number(data.adjustmentAmount || 0),
+          adjustmentReason: data.adjustmentReason || data.adjustmentNotes || 'Adjustment processed',
+          referencePeriod: data.referencePeriod || data.referencedPeriod || '',
+          referenceSalarySlipId: data.referenceSalarySlipId ? Number(data.referenceSalarySlipId) : undefined,
+          payFrequency: (data.payCycle || 'monthly').toLowerCase(),
+          month: (data as any).payPeriodMonth || (data as any).month || (new Date().getMonth() + 1),
+          year: (data as any).payPeriodYear || (data as any).year || new Date().getFullYear(),
+          cycleNumber: data.cyclePart || 1,
+        }).unwrap();
+        message.success({ content: 'Adjustment recorded and processed successfully!', key });
       } else {
         message.loading({ content: 'Saving salary slip...', key });
         await createSalarySlip(data as any).unwrap();
         message.success({ content: 'Salary slip recorded successfully!', key });
       }
-      await Promise.all([refetchSlips(), refetchLogs()]);
+      await Promise.all([refetchSlips(), refetchLogs(), refetchAdjustments()]);
 
       setShowSalarySlipForm(false);
       setEditingRecord(null);
     } catch (error: any) {
       message.error({
-        content: error?.data?.message || 'Failed to save salary slip.',
+        content: error?.data?.message || 'Failed to process payroll transaction.',
         key,
       });
     }
@@ -505,6 +528,11 @@ export default function PayrollPage() {
                 label: 'Tax Projection Sheet',
                 icon: <FileSpreadsheet size={15} className="text-emerald-600" />,
               },
+              {
+                key: 'adjustment',
+                label: 'Create Adjustment',
+                icon: <Sparkles size={15} className="text-amber-600" />,
+              },
               { key: 'edit', label: 'Edit Salary Slip', icon: <Edit3 size={15} /> },
               { key: 'download', label: 'Download PDF', icon: <Download size={15} /> },
               { type: 'divider' },
@@ -534,6 +562,21 @@ export default function PayrollPage() {
                   taxRegime: record.taxRegime || 'New Regime',
                 });
                 setShowTaxProjectionModal(true);
+              }
+              if (key === 'adjustment') {
+                setEditingRecord({
+                  ...record,
+                  payrollType: 'Adjustment',
+                  referencedPeriod: record.monthYear,
+                  rawRecord: {
+                    ...record,
+                    payrollType: 'Adjustment',
+                    referencedPeriod: record.monthYear,
+                    referenceSalarySlipId: record.id,
+                    userId: record.userId,
+                  },
+                });
+                setShowSalarySlipForm(true);
               }
               if (key === 'edit') {
                 handleEdit(record);
@@ -603,7 +646,7 @@ export default function PayrollPage() {
     },
   ];
 
-  const isSubmitting = isCreating || isUpdating || isDeleting;
+  const isSubmitting = isCreating || isUpdating || isDeleting || isCreatingAdjustment;
   const rawLogsList = Array.isArray(auditLogsData?.data)
     ? auditLogsData.data
     : Array.isArray(auditLogsData)

@@ -61,6 +61,128 @@ export interface CreateSalarySlipPayload {
   remarks?: string | null; // Maps to hrNote
 }
 
+export interface EmployeeCompensationPayload {
+  userId: number;
+  ctcAnnual: number;
+  taxRegime: 'new' | 'old' | string;
+  payFrequency?: string;
+  effectiveDate?: string;
+  isMidYearJoiner?: boolean;
+  previousEmployerGross?: number;
+  previousEmployerTds?: number;
+  previousEmployerPf?: number;
+  previousEmployerStandardDeduction?: number;
+  section80c?: number;
+  section80d?: number;
+  hraExemption?: number;
+}
+
+export interface TaxProjectionResponse {
+  employee?: {
+    name: string;
+    employeeCode: string;
+    department: string;
+    designation: string;
+    panNumber: string;
+  };
+  financialYear: string;
+  selectedRegime: string;
+  annualCompensation: {
+    ctcAnnual: number;
+    grossSalaryAnnual: number;
+    grossSalaryMonthly: number;
+    components: {
+      basicSalary: { annual: number; monthly: number };
+      houseRentAllowance: { annual: number; monthly: number };
+      specialAllowance: { annual: number; monthly: number };
+      [key: string]: { annual: number; monthly: number };
+    };
+    employerContributions: {
+      employerPf: { annual: number; monthly: number };
+      employerNps?: { annual: number; monthly: number };
+      [key: string]: { annual: number; monthly: number } | undefined;
+    };
+  };
+  expectedMonthlyPay: {
+    grossPay: number;
+    deductions: {
+      employeePf: number;
+      professionalTax: number;
+      incomeTaxTds: number;
+      totalDeductions: number;
+    };
+    netTakeHomePay: number;
+  };
+  taxCalculation: {
+    totalGrossIncome: number;
+    exemptionsAndDeductions: {
+      standardDeduction: number;
+      employerPf: number;
+      employerNps?: number;
+      totalDeductions: number;
+    };
+    netTaxableIncome: number;
+    slabs: Array<{
+      slab: string;
+      ratePercentage: string;
+      taxableAmount: number;
+      tax: number;
+    }>;
+    grossTaxBeforeRebate: number;
+    section87aRebate: number;
+    cessPercent: number;
+    cessAmount: number;
+    totalAnnualTax: number;
+    credits: {
+      previousEmployerTds: number;
+      currentEmployerYtdTds: number;
+      totalTdsAlreadyPaid: number;
+    };
+    netRemainingTax: number;
+    remainingPeriods: number;
+    projectedPeriodicTds: number;
+  };
+  regimeComparison: {
+    newRegime: { taxableIncome: number; annualTax: number };
+    oldRegime: { taxableIncome: number; annualTax: number };
+    recommendedRegime: string;
+    annualSavings: number;
+    explanation: string;
+  };
+  monthlySchedule: Array<{
+    sequence: number;
+    monthName: string;
+    year: number;
+    status: 'actual' | 'projected' | string;
+    grossPay: number;
+    basicSalary: number;
+    hra: number;
+    specialAllowance: number;
+    employeePf: number;
+    professionalTax: number;
+    incomeTaxTds: number;
+    totalDeductions: number;
+    netPay: number;
+    cumulativeGross: number;
+    cumulativeTds: number;
+    cumulativeNet: number;
+  }>;
+}
+
+export interface PayrollAdjustmentPayload {
+  userId: number;
+  payrollType?: 'adjustment' | string;
+  adjustmentType: string;
+  adjustmentAmount: number;
+  adjustmentReason: string;
+  referencePeriod?: string;
+  referenceSalarySlipId?: number;
+  payFrequency?: string;
+  month?: number;
+  year?: number;
+  cycleNumber?: number;
+}
+
 // Helper to normalize and map flat DB records into structured template data
 const mapSalarySlipResponse = (payload: any) => {
   const normalize = (slip: any) => {
@@ -271,6 +393,109 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         'ActivityLogs',
       ],
     }),
+
+    // Employee Compensation & Structure
+    getEmployeeCompensation: builder.query<any, string | number>({
+      query: (userId) => `/finance/employee-compensation/${userId}`,
+      transformResponse: (response: any) => response?.data ?? response,
+      providesTags: (_res, _err, userId) => [{ type: 'EmployeeCompensation', id: userId }],
+    }),
+
+    saveEmployeeCompensation: builder.mutation<any, Partial<EmployeeCompensationPayload>>({
+      query: (payload) => ({
+        url: `/finance/employee-compensation/${payload.userId || ''}`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      }),
+      transformResponse: (response: any) => response?.data ?? response,
+      invalidatesTags: (_res, _err, { userId }) => [
+        { type: 'EmployeeCompensation', id: userId },
+        'TaxProjection',
+      ],
+    }),
+
+    previewEmployeeCompensation: builder.mutation<any, { ctcAnnual: number }>({
+      query: (body) => ({
+        url: '/finance/employee-compensation/preview',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      }),
+      transformResponse: (response: any) => response?.data ?? response,
+    }),
+
+    // Tax Projection Sheets
+    getTaxProjection: builder.query<
+      TaxProjectionResponse,
+      { userId: string | number; financialYear?: string; regime?: string }
+    >({
+      query: ({ userId, financialYear, regime }) => {
+        const params = new URLSearchParams();
+        if (financialYear) params.append('financialYear', financialYear);
+        if (regime) params.append('regime', regime);
+        const q = params.toString();
+        return `/finance/tax-projection/${userId}${q ? `?${q}` : ''}`;
+      },
+      transformResponse: (response: any) => response?.data ?? response,
+      providesTags: (_res, _err, { userId }) => [{ type: 'TaxProjection', id: userId }],
+    }),
+
+    getMyTaxProjection: builder.query<
+      TaxProjectionResponse,
+      { financialYear?: string; regime?: string } | void
+    >({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args?.financialYear) params.append('financialYear', args.financialYear);
+        if (args?.regime) params.append('regime', args.regime);
+        const q = params.toString();
+        return `/finance/tax-projection/my${q ? `?${q}` : ''}`;
+      },
+      transformResponse: (response: any) => response?.data ?? response,
+      providesTags: ['TaxProjection'],
+    }),
+
+    simulateTaxProjection: builder.mutation<TaxProjectionResponse, any>({
+      query: (body) => ({
+        url: '/finance/tax-projection/simulate',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      }),
+      transformResponse: (response: any) => response?.data ?? response,
+    }),
+
+    // Payroll Adjustments
+    createPayrollAdjustment: builder.mutation<any, PayrollAdjustmentPayload>({
+      query: (payload) => ({
+        url: '/payroll/adjustments',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      }),
+      transformResponse: (response: any) => response?.data ?? response,
+      invalidatesTags: [
+        { type: 'SalarySlips', id: 'LIST' },
+        'PayrollAdjustments',
+        'ActivityLogs',
+      ],
+    }),
+
+    getPayrollAdjustments: builder.query<
+      any[],
+      { userId?: number | string; adjustmentType?: string } | void
+    >({
+      query: (params) => {
+        const search = new URLSearchParams();
+        if (params?.userId) search.append('userId', String(params.userId));
+        if (params?.adjustmentType) search.append('adjustmentType', params.adjustmentType);
+        const q = search.toString();
+        return `/payroll/adjustments${q ? `?${q}` : ''}`;
+      },
+      transformResponse: (response: any) => response?.data ?? response ?? [],
+      providesTags: ['PayrollAdjustments'],
+    }),
   }),
 });
 
@@ -293,4 +518,22 @@ export const {
 
   // Audit Logs Hooks
   useGetAuditLogsQuery,
-} = financeApiSlice;
+
+  // Employee Compensation Hooks
+  useGetEmployeeCompensationQuery,
+  useLazyGetEmployeeCompensationQuery,
+  useSaveEmployeeCompensationMutation,
+  usePreviewEmployeeCompensationMutation,
+
+  // Tax Projection Hooks
+  useGetTaxProjectionQuery,
+  useLazyGetTaxProjectionQuery,
+  useGetMyTaxProjectionQuery,
+  useLazyGetMyTaxProjectionQuery,
+  useSimulateTaxProjectionMutation,
+
+  // Payroll Adjustment Hooks
+  useCreatePayrollAdjustmentMutation,
+  useGetPayrollAdjustmentsQuery,
+  useLazyGetPayrollAdjustmentsQuery,
+} = financeApiSlice;

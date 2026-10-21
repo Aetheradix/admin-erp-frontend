@@ -83,6 +83,10 @@ export const apiSlice = createApi({
     'Inventory',
     'Channels',
     'ChatMessages',
+    'PayrollSettings',
+    'EmployeeCompensation',
+    'TaxProjection',
+    'PayrollAdjustments',
   ],
   endpoints: () => ({}),
 });
