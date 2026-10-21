@@ -228,6 +228,28 @@ export interface StaffMember {
   baseSalary?: number | string;
   basicSalary?: number | string;
   salary?: number | string;
+  total_compensation?: number | string;
+  totalCompensation?: number | string;
+  annual_ctc?: number | string;
+  annualCtc?: number | string;
+  tax_regime?: 'New Regime' | 'Old Regime';
+  taxRegime?: 'New Regime' | 'Old Regime';
+  is_mid_year_joiner?: boolean;
+  isMidYearJoiner?: boolean;
+  previous_employer_ytd?: {
+    grossPay?: number;
+    tdsDeducted?: number;
+    pfDeducted?: number;
+    ptDeducted?: number;
+  };
+  previousEmployerYtd?: {
+    grossPay?: number;
+    tdsDeducted?: number;
+    pfDeducted?: number;
+    ptDeducted?: number;
+  };
+  pan_number?: string;
+  panNumber?: string;
   password?: string;
 }
 

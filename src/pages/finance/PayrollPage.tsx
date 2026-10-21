@@ -1,4 +1,4 @@
-import { Table,  Dropdown, App, Modal } from 'antd';
+import { Table, Dropdown, App, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   User,
@@ -12,11 +12,13 @@ import {
   Edit3,
   Download,
   Trash2,
+  FileSpreadsheet,
+  Filter,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import {
   useGetAllSalarySlipsQuery,
   useCreateSalarySlipMutation,
@@ -26,6 +28,8 @@ import {
 } from '@/store/api/financeApiSlice';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import SalarySlipForm from './components/SalarySlipForm';
+import { TaxProjectionModal } from './components/TaxProjectionModal';
+import { getStoredPayrollSettings } from '@/types/payrollSettings';
 import type { SalarySlipData } from './components/SalarySlipTemplate';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 
@@ -42,6 +46,12 @@ export interface PayrollRecord {
   monthYear: string;
   paySlipNo: string;
   payPeriod: string;
+  payrollType?: 'Regular' | 'Adjustment';
+  adjustmentType?: string;
+  payCycle?: string;
+  taxRegime?: string;
+  totalCompensation?: number;
+  referencedPeriod?: string;
   companyName: string;
   companyAddress: string;
   employeeId: string;
@@ -73,13 +83,32 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const yearStr = item.pay_period_year || 2026;
 
   const actualSlipNo = item.paySlipNo || item.pay_slip_no;
- 
 
   const basicSalary = Number(item.basic_salary || 0);
   const bonusVal = Number(item.bonus || 0);
   const netVal = Number(item.net_salary || 0);
   const monthYearStr = `${monthStr} ${yearStr}`;
-   const fallbackSlipNo = `SLIP-${item.empCode}-${yearStr} ${monthStr} `;
+  const fallbackSlipNo = `SLIP-${item.empCode}-${yearStr} ${monthStr} `;
+
+  // Extract Payroll Type & Adjustments (from native field or serialized in remarks)
+  const isAdjustmentRemark = typeof item.remarks === 'string' && item.remarks.includes('[ADJUSTMENT');
+  const detectedPayrollType: 'Regular' | 'Adjustment' =
+    item.payroll_type || item.payrollType || (isAdjustmentRemark ? 'Adjustment' : 'Regular');
+
+  let detectedAdjType = item.adjustment_type || item.adjustmentType || '';
+  if (!detectedAdjType && isAdjustmentRemark) {
+    const afterPrefix = item.remarks.split('[ADJUSTMENT - ')[1];
+    if (afterPrefix) {
+      detectedAdjType = afterPrefix.split(']')[0].split('|')[0].trim();
+    }
+  }
+
+  const detectedCycle =
+    item.pay_cycle ||
+    item.payCycle ||
+    (item.pay_frequency
+      ? item.pay_frequency.charAt(0).toUpperCase() + item.pay_frequency.slice(1)
+      : 'Monthly');
 
   return {
     ...item,
@@ -90,7 +119,13 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     total: netVal,
     date: monthYearStr,
     monthYear: monthYearStr,
-    payPeriod: monthYearStr,
+    payPeriod: item.payPeriod || monthYearStr,
+    payrollType: detectedPayrollType,
+    adjustmentType: detectedAdjType,
+    payCycle: detectedCycle,
+    taxRegime: item.tax_regime || item.taxRegime || 'New Regime',
+    totalCompensation: Number(item.total_compensation || item.totalCompensation || 0),
+    referencedPeriod: item.referenced_period || item.referencedPeriod || '',
     companyName: 'AETHERADIX',
     companyAddress: 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP',
     employeeId: String(item.employee_code || item.user_id),
@@ -155,11 +190,17 @@ export default function PayrollPage() {
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [filteredPayroll, setFilteredPayroll] = useState<PayrollRecord[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'Regular' | 'Adjustment'>('ALL');
+  const [cycleFilter, setCycleFilter] = useState<string>('ALL');
 
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
   const [showSlipModal, setShowSlipModal] = useState(false);
+  const [showTaxProjectionModal, setShowTaxProjectionModal] = useState(false);
+  const [projectionEmployee, setProjectionEmployee] = useState<any | null>(null);
+
+  const companyPayrollSettings = useMemo(() => getStoredPayrollSettings(), []);
 
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
@@ -200,8 +241,19 @@ export default function PayrollPage() {
       );
     }
 
+    if (typeFilter !== 'ALL') {
+      result = result.filter((item) => (item.payrollType || 'Regular') === typeFilter);
+    }
+
+    if (cycleFilter !== 'ALL') {
+      result = result.filter((item) => {
+        const cycle = (item.payCycle || 'Monthly').toLowerCase();
+        return cycle === cycleFilter.toLowerCase();
+      });
+    }
+
     setFilteredPayroll(result);
-  }, [searchText, payroll]);
+  }, [searchText, payroll, typeFilter, cycleFilter]);
 
   const downloadSalarySlip = async (record: PayrollRecord) => {
     try {
@@ -376,6 +428,28 @@ export default function PayrollPage() {
       ),
     },
     {
+      title: 'Type & Cycle',
+      key: 'payrollType',
+      render: (_, record) => (
+        <div className="flex flex-col gap-1 items-start">
+          {record.payrollType === 'Adjustment' ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-md shadow-2xs">
+              Adjustment
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-md">
+              Regular
+            </span>
+          )}
+          <span className="text-[11px] text-slate-500 font-medium">
+            {record.payrollType === 'Adjustment' && record.adjustmentType
+              ? record.adjustmentType
+              : record.payCycle || 'Monthly'}
+          </span>
+        </div>
+      ),
+    },
+    {
       title: 'Days Worked',
       key: 'paidDays',
       render: (_, record) => (
@@ -426,6 +500,11 @@ export default function PayrollPage() {
           menu={{
             items: [
               { key: 'view', label: 'View Salary Slip', icon: <Eye size={15} /> },
+              {
+                key: 'taxProjection',
+                label: 'Tax Projection Sheet',
+                icon: <FileSpreadsheet size={15} className="text-emerald-600" />,
+              },
               { key: 'edit', label: 'Edit Salary Slip', icon: <Edit3 size={15} /> },
               { key: 'download', label: 'Download PDF', icon: <Download size={15} /> },
               { type: 'divider' },
@@ -440,6 +519,21 @@ export default function PayrollPage() {
               if (key === 'view') {
                 setSelectedSlip(record);
                 setShowSlipModal(true);
+              }
+              if (key === 'taxProjection') {
+                setProjectionEmployee({
+                  id: record.employeeId || record.userId,
+                  userId: record.userId,
+                  name: record.employeeName,
+                  employeeName: record.employeeName,
+                  employeeId: record.employeeId,
+                  department: record.department,
+                  designation: record.position,
+                  totalCompensation: record.totalCompensation || record.total * 12,
+                  annualCtc: record.totalCompensation || record.total * 12,
+                  taxRegime: record.taxRegime || 'New Regime',
+                });
+                setShowTaxProjectionModal(true);
               }
               if (key === 'edit') {
                 handleEdit(record);
@@ -523,25 +617,75 @@ export default function PayrollPage() {
         description="Company-wide employee compensation distribution history and generated slips."
       />
 
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="text"
             placeholder="Search slip no, employee, ID, dept..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 w-72 shadow-sm"
+            className="bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 w-64 shadow-xs"
           />
+
+          {/* Payroll Type Filter */}
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shadow-xs">
+            <Filter size={14} className="text-slate-400" />
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+              className="bg-transparent border-none text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+              <option value="ALL">All Payroll Types</option>
+              <option value="Regular">Regular Payroll</option>
+              <option value="Adjustment">Adjustments Only</option>
+            </select>
+          </div>
+
+          {/* Pay Cycle Filter */}
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shadow-xs">
+            <Calendar size={14} className="text-slate-400" />
+            <select
+              value={cycleFilter}
+              onChange={(e) => setCycleFilter(e.target.value)}
+              className="bg-transparent border-none text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+              <option value="ALL">All Pay Cycles</option>
+              <option value="Monthly">Monthly</option>
+              {companyPayrollSettings.enabledPayPeriods.semiMonthly && (
+                <option value="Semi-Monthly">Semi-Monthly</option>
+              )}
+              {companyPayrollSettings.enabledPayPeriods.biweekly && (
+                <option value="Bi-Weekly">Bi-Weekly</option>
+              )}
+              {companyPayrollSettings.enabledPayPeriods.weekly && (
+                <option value="Weekly">Weekly</option>
+              )}
+              {companyPayrollSettings.enabledPayPeriods.custom && (
+                <option value="Custom">Custom</option>
+              )}
+            </select>
+          </div>
         </div>
 
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={handleCreateNew}
-          className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-sm active:scale-95">
-          <Plus size={16} />
-          {isSubmitting ? 'Saving...' : 'Create Salary Slip'}
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              setProjectionEmployee(null);
+              setShowTaxProjectionModal(true);
+            }}
+            className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-50 transition shadow-xs active:scale-95">
+            <FileSpreadsheet size={15} className="text-emerald-600" />
+            Tax Projection Sheet
+          </button>
+
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleCreateNew}
+            className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-xs active:scale-95">
+            <Plus size={16} />
+            {isSubmitting ? 'Saving...' : 'Create Salary Slip'}
+          </button>
+        </div>
       </div>
 
       <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
@@ -631,6 +775,17 @@ export default function PayrollPage() {
           </div>
         )}
       </div>
+
+      {showTaxProjectionModal && (
+        <TaxProjectionModal
+          isOpen={showTaxProjectionModal}
+          onClose={() => {
+            setShowTaxProjectionModal(false);
+            setProjectionEmployee(null);
+          }}
+          initialEmployee={projectionEmployee}
+        />
+      )}
     </div>
   );
 }

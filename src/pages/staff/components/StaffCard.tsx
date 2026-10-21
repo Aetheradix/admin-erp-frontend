@@ -87,16 +87,16 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
           </span>
         </div>
 
-        {/* Department & Join Date */}
-        <div className="flex items-center gap-6 py-2 border-y border-border-subtle/50 w-full justify-center">
-          <div className="flex flex-col gap-1">
+        {/* Department & Join Date & Compensation */}
+        <div className="flex flex-wrap items-center gap-4 py-2 border-y border-border-subtle/50 w-full justify-center">
+          <div className="flex flex-col gap-0.5">
             <span className="text-[10px] font-black text-muted uppercase tracking-tighter">
               Department
             </span>
             <span className="text-xs font-bold text-foreground">{member.department}</span>
           </div>
           <div className="h-4 w-px bg-border-subtle/50" />
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             <span className="text-[10px] font-black text-muted uppercase tracking-tighter">
               Joined
             </span>
@@ -104,6 +104,31 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
               {member.join_date || member.joinDate}
             </span>
           </div>
+          {(member.totalCompensation || member.total_compensation || member.annualCtc) && (
+            <>
+              <div className="h-4 w-px bg-border-subtle/50" />
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-black text-muted uppercase tracking-tighter">
+                  Total CTC
+                </span>
+                <span className="text-xs font-black text-foreground font-mono">
+                  ₹{Number(member.totalCompensation || member.total_compensation || member.annualCtc).toLocaleString('en-IN')}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Tax Regime & Mid-Year Badge */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+            {member.taxRegime || member.tax_regime || 'New Regime'}
+          </span>
+          {(member.isMidYearJoiner || member.is_mid_year_joiner) && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+              Mid-Year Joiner
+            </span>
+          )}
         </div>
 
         {/* Skills Tags */}

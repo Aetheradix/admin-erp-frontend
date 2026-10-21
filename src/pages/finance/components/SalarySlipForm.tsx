@@ -12,7 +12,11 @@ import {
   UserCheck,
   Loader2,
   ChevronDown,
+  ChevronUp,
   Search,
+  Calculator,
+  FileSpreadsheet,
+  Sparkles,
 } from 'lucide-react';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import {
@@ -22,6 +26,9 @@ import {
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
 import { useAuth } from '@/hooks/useAuth';
 import type { PayrollRecord } from '../PayrollPage';
+import { getStoredPayrollSettings } from '@/types/payrollSettings';
+import { calculateTaxForEmployee, type TaxCalculationResult } from '@/utils/taxCalculation';
+import { TaxProjectionModal } from './TaxProjectionModal';
 
 import { Input } from '@/components/ui/composed/Input';
 export interface EarningsItem {
@@ -34,22 +41,35 @@ export interface DeductionItem {
   amount: number;
 }
 
+export type PayCycleOption = 'Monthly' | 'Semi-Monthly' | 'Bi-Weekly' | 'Weekly' | 'Custom';
+export type PayrollTypeOption = 'Regular' | 'Adjustment';
+
 export interface SalarySlipData {
   monthYear: string;
   paySlipNo: string;
   payPeriod: string;
-  payCycle?: 'Monthly' | 'Bi-Weekly'; // ADDED: Pay cycle selection
+  payCycle?: PayCycleOption;
+  payrollType?: PayrollTypeOption;
+  adjustmentType?: string;
+  referencedPeriod?: string;
+  adjustmentNotes?: string;
+  cyclePart?: number;
+  customStartDate?: string;
+  customEndDate?: string;
 
   companyName: string;
   companyAddress: string;
   department?: string | null;
 
-  userId: number | string; // ADDED: ID of logged-in user creating the slip
+  userId: number | string; // ID of logged-in user creating the slip
   employeeId: number | string; // ID of selected employee
   employeeName: string;
   position: string;
   accountNumber: string;
   baseSalary?: number | string;
+  totalCompensation?: number | string;
+  taxRegime?: 'New Regime' | 'Old Regime';
+  panNumber?: string;
   total?: number;
   netSalary?: number;
 
@@ -155,9 +175,20 @@ const formatDateFormatted = (date: Date): string => {
 const calculatePayPeriod = (
   monthName: string,
   yearStr: string,
-  cycle: 'Monthly' | 'Bi-Weekly' = 'Bi-Weekly',
-  periodPart: 1 | 2 = 1
+  cycle: PayCycleOption = 'Monthly',
+  periodPart: number = 1,
+  customStart?: string,
+  customEnd?: string
 ): string => {
+  if (cycle === 'Custom') {
+    if (customStart && customEnd) {
+      const s = new Date(customStart);
+      const e = new Date(customEnd);
+      return `${formatDateFormatted(s)} - ${formatDateFormatted(e)}`;
+    }
+    return 'Custom Pay Period';
+  }
+
   const months = [
     'JANUARY',
     'FEBRUARY',
@@ -178,15 +209,36 @@ const calculatePayPeriod = (
   const year = parseInt(yearStr, 10);
   const totalDays = getDaysInMonth(year, monthIndex);
 
+  if (cycle === 'Weekly') {
+    const part = Math.max(1, Math.min(5, periodPart));
+    const startDay = (part - 1) * 7 + 1;
+    const endDay = part === 5 ? totalDays : Math.min(totalDays, part * 7);
+    const startDate = new Date(year, monthIndex, startDay);
+    const endDate = new Date(year, monthIndex, endDay);
+    return `Week ${part}: ${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
+  }
+
   if (cycle === 'Bi-Weekly') {
     if (periodPart === 1) {
       const startDate = new Date(year, monthIndex, 1);
-      const endDate = new Date(year, monthIndex, 15);
+      const endDate = new Date(year, monthIndex, 14);
       return `${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
+    } else {
+      const startDate = new Date(year, monthIndex, 15);
+      const endDate = new Date(year, monthIndex, totalDays);
+      return `${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
+    }
+  }
+
+  if (cycle === 'Semi-Monthly') {
+    if (periodPart === 1) {
+      const startDate = new Date(year, monthIndex, 1);
+      const endDate = new Date(year, monthIndex, 15);
+      return `1st Half: ${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
     } else {
       const startDate = new Date(year, monthIndex, 16);
       const endDate = new Date(year, monthIndex, totalDays);
-      return `${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
+      return `2nd Half: ${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
     }
   }
 
@@ -197,26 +249,47 @@ const calculatePayPeriod = (
 };
 
 const getInitialForm = (): SalarySlipData => {
+  const storedSettings = getStoredPayrollSettings();
   const today = new Date();
   const year = today.getFullYear();
   const monthIndex = today.getMonth(); // 0 - 11
   const monthNameUpper = today.toLocaleString('en-US', { month: 'long' }).toUpperCase();
+  const totalDays = getDaysInMonth(year, monthIndex);
 
-  // 1. Dynamic Month & Year (e.g., "OCTOBER 2026")
+  // Default Pay Cycle from Master Settings
+  const defaultCycle: PayCycleOption =
+    storedSettings.defaultPayPeriod === 'semi-monthly'
+      ? 'Semi-Monthly'
+      : storedSettings.defaultPayPeriod === 'biweekly'
+        ? 'Bi-Weekly'
+        : storedSettings.defaultPayPeriod === 'weekly'
+          ? 'Weekly'
+          : storedSettings.defaultPayPeriod === 'custom'
+            ? 'Custom'
+            : 'Monthly';
+
   const monthYear = `${monthNameUpper} ${year}`;
-
-  // 2. Dynamic Pay Period (Bi-weekly Period 1 default: 01 - 15)
-  const payPeriod = calculatePayPeriod(monthNameUpper, String(year), 'Bi-Weekly', 1);
-
-  // 3. Dynamic Pay Slip Number (e.g., "1026-001" or timestamp-based sequence)
+  const payPeriod = calculatePayPeriod(monthNameUpper, String(year), defaultCycle, 1);
   const monthFormatted = String(monthIndex + 1).padStart(2, '0');
   const paySlipNo = `SLIP-${year}${monthFormatted}-${Math.floor(100 + Math.random() * 900)}`;
+
+  const defaultPaidDays =
+    defaultCycle === 'Weekly'
+      ? 7
+      : defaultCycle === 'Semi-Monthly' || defaultCycle === 'Bi-Weekly'
+        ? 15
+        : totalDays;
 
   return {
     monthYear,
     paySlipNo,
     payPeriod,
-    payCycle: 'Bi-Weekly',
+    payCycle: defaultCycle,
+    payrollType: 'Regular',
+    adjustmentType: '',
+    referencedPeriod: '',
+    adjustmentNotes: '',
+    cyclePart: 1,
 
     companyName: 'AETHERADIX',
     companyAddress: 'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039',
@@ -227,22 +300,25 @@ const getInitialForm = (): SalarySlipData => {
     position: '',
     accountNumber: '',
     baseSalary: 0,
+    totalCompensation: '',
+    taxRegime: storedSettings.defaultTaxRegime,
 
-    paidDays: 15, // Default for 1st Bi-Weekly half
+    paidDays: defaultPaidDays,
     lopDays: 0,
 
     generatedOn: getLocalSystemDate(),
 
     earnings: [
       { name: 'Basic Pay', amount: 0 },
-      { name: 'Allowance', amount: 0 },
-      { name: 'Overtime Pay', amount: 0 },
+      { name: 'House Rent Allowance (HRA)', amount: 0 },
+      { name: 'Special Allowance', amount: 0 },
       { name: 'Bonus', amount: 0 },
     ],
 
     deductions: [
-      { name: 'Professional Tax', amount: 0 },
-      { name: 'Contribution', amount: 0 },
+      { name: 'Provident Fund (PF)', amount: 0 },
+      { name: 'Professional Tax', amount: 200 },
+      { name: 'Income Tax (TDS)', amount: 0 },
       { name: 'Other Deductions', amount: 0 },
     ],
 
@@ -271,6 +347,14 @@ const SalarySlipForm = ({
   });
 
   const [biWeeklyPeriod, setBiWeeklyPeriod] = useState<1 | 2>(1);
+  const [cyclePeriodPart, setCyclePeriodPart] = useState<number>(1);
+  const [customStart, setCustomStart] = useState<string>('');
+  const [customEnd, setCustomEnd] = useState<string>('');
+  const [selectedEmployeeObj, setSelectedEmployeeObj] = useState<any>(null);
+  const [showTaxProjectionModal, setShowTaxProjectionModal] = useState<boolean>(false);
+  const [showTaxCalculator, setShowTaxCalculator] = useState<boolean>(true);
+  const companyPayrollSettings = useMemo(() => getStoredPayrollSettings(), []);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -556,20 +640,35 @@ const SalarySlipForm = ({
       currentMonthVal,
       selectedYear,
       formData.payCycle,
-      biWeeklyPeriod
+      cyclePeriodPart,
+      customStart,
+      customEnd
     );
     setFormData((prev) => ({ ...prev, monthYear: updatedMonthYear, payPeriod: newPayPeriod }));
   };
 
-  const handleCycleChange = (cycle: 'Monthly' | 'Bi-Weekly') => {
+  const handleCycleChange = (cycle: PayCycleOption) => {
     const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
     const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
     const monthIndex = months.indexOf(currentMonthVal.toUpperCase());
     const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
 
-    const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, cycle, biWeeklyPeriod);
-    const defaultPaidDays =
-      cycle === 'Bi-Weekly' ? (biWeeklyPeriod === 1 ? 15 : totalDays - 15) : totalDays;
+    const newPayPeriod = calculatePayPeriod(
+      currentMonthVal,
+      currentYearVal,
+      cycle,
+      cyclePeriodPart,
+      customStart,
+      customEnd
+    );
+    let defaultPaidDays = totalDays;
+    if (cycle === 'Weekly') {
+      defaultPaidDays = cyclePeriodPart === 5 ? Math.max(1, totalDays - 28) : 7;
+    } else if (cycle === 'Bi-Weekly') {
+      defaultPaidDays = cyclePeriodPart === 1 ? 14 : Math.max(1, totalDays - 14);
+    } else if (cycle === 'Semi-Monthly') {
+      defaultPaidDays = cyclePeriodPart === 1 ? 15 : Math.max(1, totalDays - 15);
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -579,22 +678,116 @@ const SalarySlipForm = ({
     }));
   };
 
-  const handleBiWeeklyPartChange = (part: 1 | 2) => {
-    setBiWeeklyPeriod(part);
+  const handlePeriodPartChange = (part: number) => {
+    setCyclePeriodPart(part);
+    if (part === 1 || part === 2) {
+      setBiWeeklyPeriod(part as 1 | 2);
+    }
     const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
-    // Added 'const' declaration here to prevent ReferenceError
     const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
     const monthIndex = months.indexOf(currentMonthVal.toUpperCase());
     const totalDays = getDaysInMonth(parseInt(currentYearVal, 10), monthIndex);
 
-    const newPayPeriod = calculatePayPeriod(currentMonthVal, currentYearVal, 'Bi-Weekly', part);
-    const defaultPaidDays = part === 1 ? 15 : totalDays - 15;
+    const newPayPeriod = calculatePayPeriod(
+      currentMonthVal,
+      currentYearVal,
+      formData.payCycle || 'Monthly',
+      part,
+      customStart,
+      customEnd
+    );
+    let defaultPaidDays = totalDays;
+    if (formData.payCycle === 'Weekly') {
+      defaultPaidDays = part === 5 ? Math.max(1, totalDays - 28) : 7;
+    } else if (formData.payCycle === 'Bi-Weekly') {
+      defaultPaidDays = part === 1 ? 14 : Math.max(1, totalDays - 14);
+    } else if (formData.payCycle === 'Semi-Monthly') {
+      defaultPaidDays = part === 1 ? 15 : Math.max(1, totalDays - 15);
+    }
 
     setFormData((prev) => ({
       ...prev,
+      cyclePart: part,
       payPeriod: newPayPeriod,
       paidDays: defaultPaidDays,
     }));
+  };
+
+  const handleCustomDatesChange = (start: string, end: string) => {
+    setCustomStart(start);
+    setCustomEnd(end);
+    const currentMonthVal = formData.monthYear?.split(' ')[0] || months[new Date().getMonth()];
+    const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
+
+    const newPayPeriod = calculatePayPeriod(
+      currentMonthVal,
+      currentYearVal,
+      'Custom',
+      1,
+      start,
+      end
+    );
+    let calculatedDays = 15;
+    if (start && end) {
+      const s = new Date(start);
+      const e = new Date(end);
+      const diffTime = Math.abs(e.getTime() - s.getTime());
+      calculatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      customStartDate: start,
+      customEndDate: end,
+      payPeriod: newPayPeriod,
+      paidDays: calculatedDays,
+    }));
+  };
+
+  // Live annual gross estimate for statutory tax calculation
+  const totalEarningsVal = formData.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const estimatedAnnualGross = useMemo(() => {
+    if (formData.totalCompensation && Number(formData.totalCompensation) > 0) {
+      return Number(formData.totalCompensation);
+    }
+    if (totalEarningsVal > 0) {
+      if (formData.payCycle === 'Weekly') return totalEarningsVal * 52;
+      if (formData.payCycle === 'Bi-Weekly') return totalEarningsVal * 26;
+      if (formData.payCycle === 'Semi-Monthly') return totalEarningsVal * 24;
+      return totalEarningsVal * 12;
+    }
+    return 0;
+  }, [formData.totalCompensation, totalEarningsVal, formData.payCycle]);
+
+  const liveTaxResult: TaxCalculationResult | null = useMemo(() => {
+    if (estimatedAnnualGross <= 0) return null;
+    return calculateTaxForEmployee({
+      annualGrossSalary: estimatedAnnualGross,
+      regime: formData.taxRegime || 'New Regime',
+      basicSalary: Number(formData.baseSalary) || Math.round(estimatedAnnualGross * 0.5),
+      isMidYearJoiner: Boolean(selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner),
+      previousEmployerYtd: selectedEmployeeObj?.previousEmployerYtd || selectedEmployeeObj?.previous_employer_ytd,
+    });
+  }, [estimatedAnnualGross, formData.taxRegime, formData.baseSalary, selectedEmployeeObj]);
+
+  const handleApplyTds = () => {
+    if (!liveTaxResult) return;
+    const tdsMonthly = liveTaxResult.projectedMonthlyTds;
+    setFormData((prev) => {
+      const updated = [...prev.deductions];
+      const idx = updated.findIndex(
+        (d) =>
+          d.name.toLowerCase().includes('tds') ||
+          d.name.toLowerCase().includes('income tax') ||
+          d.name.toLowerCase().includes('tax')
+      );
+      if (idx !== -1) {
+        updated[idx] = { ...updated[idx], amount: tdsMonthly };
+      } else {
+        updated.push({ name: 'Income Tax (TDS)', amount: tdsMonthly });
+      }
+      return { ...prev, deductions: updated };
+    });
   };
 
   // Extracted current month/year for select values
@@ -724,6 +917,22 @@ const SalarySlipForm = ({
     const currentMonthYear = formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
     const generatedSlipNo = generateSlipNumber(empCode, currentMonthYear);
 
+    const detectedTotalComp = Number(
+      user.totalCompensation ??
+      user.total_compensation ??
+      user.annualCtc ??
+      user.annual_ctc ??
+      0
+    );
+    const detectedRegime = (user.taxRegime || user.tax_regime || 'New Regime') as 'New Regime' | 'Old Regime';
+    const detectedPan = String(user.panNumber || user.pan_number || '');
+
+    if (!detectedBaseSalary && detectedTotalComp > 0) {
+      detectedBaseSalary = Math.round((detectedTotalComp / 12) * 0.5);
+    }
+
+    setSelectedEmployeeObj(user);
+
     setFormData((prev) => {
       const updatedEarnings = [...prev.earnings];
       const basicIndex = updatedEarnings.findIndex((e) =>
@@ -749,6 +958,9 @@ const SalarySlipForm = ({
         department: user.department || '',
         accountNumber: detectedAccount || '',
         baseSalary: detectedBaseSalary > 0 ? detectedBaseSalary : (prev.baseSalary || ''),
+        totalCompensation: detectedTotalComp > 0 ? detectedTotalComp : (prev.totalCompensation || ''),
+        taxRegime: detectedRegime,
+        panNumber: detectedPan || prev.panNumber,
         paySlipNo: isEditing ? prev.paySlipNo : (generatedSlipNo || prev.paySlipNo),
         earnings: updatedEarnings,
       };
@@ -959,10 +1171,24 @@ const SalarySlipForm = ({
         payPeriodMonth: payPeriodMonth,
         pay_period_year: payPeriodYear,
         payPeriodYear: payPeriodYear,
-        pay_frequency: (formData.payCycle || 'biweekly').toLowerCase(),
-        payFrequency: (formData.payCycle || 'biweekly').toLowerCase(),
-        cycle_number: biWeeklyPeriod || 1,
-        cycleNumber: biWeeklyPeriod || 1,
+        pay_frequency: (formData.payCycle || 'monthly').toLowerCase(),
+        payFrequency: (formData.payCycle || 'monthly').toLowerCase(),
+        cycle_number: formData.cyclePart || biWeeklyPeriod || 1,
+        cycleNumber: formData.cyclePart || biWeeklyPeriod || 1,
+
+        // Payroll Type & Adjustments (Mistake / Rate / Tax correction)
+        payroll_type: formData.payrollType || 'Regular',
+        payrollType: formData.payrollType || 'Regular',
+        adjustment_type: formData.adjustmentType || null,
+        adjustmentType: formData.adjustmentType || null,
+        referenced_period: formData.referencedPeriod || null,
+        referencedPeriod: formData.referencedPeriod || null,
+        adjustment_notes: formData.adjustmentNotes || null,
+        adjustmentNotes: formData.adjustmentNotes || null,
+        tax_regime: formData.taxRegime || 'New Regime',
+        taxRegime: formData.taxRegime || 'New Regime',
+        total_compensation: formData.totalCompensation || null,
+        totalCompensation: formData.totalCompensation || null,
 
         // 3. Attendance Details
         days_worked: paidDays,
@@ -1013,8 +1239,14 @@ const SalarySlipForm = ({
         paymentStatus: 'paid',
         payment_date: formData.generatedOn || new Date().toISOString().split('T')[0],
         paymentDate: formData.generatedOn || new Date().toISOString().split('T')[0],
-        remarks: formData.hrNote || null,
-        hr_note: formData.hrNote || null,
+        remarks:
+          formData.payrollType === 'Adjustment'
+            ? `[ADJUSTMENT - ${formData.adjustmentType || 'Correction'}${formData.referencedPeriod ? ` | Ref: ${formData.referencedPeriod}` : ''}] ${formData.adjustmentNotes || ''} ${formData.hrNote || ''}`.trim()
+            : formData.hrNote || null,
+        hr_note:
+          formData.payrollType === 'Adjustment'
+            ? `[ADJUSTMENT - ${formData.adjustmentType || 'Correction'}${formData.referencedPeriod ? ` | Ref: ${formData.referencedPeriod}` : ''}] ${formData.adjustmentNotes || ''} ${formData.hrNote || ''}`.trim()
+            : formData.hrNote || null,
       };
 
       await onCreate(payload);
@@ -1057,6 +1289,138 @@ const SalarySlipForm = ({
               </div>
             )}
 
+            {/* Payroll Type Banner */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                    Payroll Type
+                  </span>
+                  <p className="text-xs text-slate-500">
+                    Choose standard recurring cycle payroll or an adjustment to rectify past mistakes.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 bg-slate-200/80 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => updateField('payrollType', 'Regular')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      (formData.payrollType || 'Regular') === 'Regular'
+                        ? 'bg-black text-white shadow-xs'
+                        : 'text-slate-600 hover:text-black'
+                    }`}>
+                    Regular Payroll
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField('payrollType', 'Adjustment');
+                      if (!formData.adjustmentType) updateField('adjustmentType', 'Salary Rate Discrepancy');
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      formData.payrollType === 'Adjustment'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-black'
+                    }`}>
+                    Payroll with Adjustments
+                  </button>
+                </div>
+              </div>
+
+              {formData.payrollType === 'Adjustment' && (
+                <div className="mt-4 pt-4 border-t border-slate-200/80 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Adjustment Reason / Category <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.adjustmentType || 'Salary Rate Discrepancy'}
+                      onChange={(e) => updateField('adjustmentType', e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black">
+                      <option value="Salary Rate Discrepancy">Wrong Rate / Increment Arrears</option>
+                      <option value="Tax Correction (TDS)">Tax Deducted Too Little or Too Much (TDS Correction)</option>
+                      <option value="Overpayment Recovery">Overpayment Recovery / Clawback</option>
+                      <option value="Leave / LOP Discrepancy">Leave / LOP Attendance Correction</option>
+                      <option value="Custom Adjustment">Custom Past Discrepancy Correction</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Referenced Past Pay Period / Slip #
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.referencedPeriod || ''}
+                      onChange={(e) => updateField('referencedPeriod', e.target.value)}
+                      placeholder="e.g. SLIP-EMP-001-202608 / August 2026"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Adjustment Explanation / Note
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.adjustmentNotes || ''}
+                      onChange={(e) => updateField('adjustmentNotes', e.target.value)}
+                      placeholder="e.g. Rate corrected from 45,000 to 50,000 for August"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+
+                  <div className="md:col-span-3 flex flex-wrap items-center gap-2 pt-1 text-xs">
+                    <span className="text-slate-500 font-semibold text-[11px]">Quick Insert:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          earnings: [
+                            ...prev.earnings,
+                            { name: `Arrears Adjustment (${formData.referencedPeriod || 'Past Period'})`, amount: 5000 },
+                          ],
+                        }));
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold transition">
+                      + Add Arrears Earning
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          deductions: [
+                            ...prev.deductions,
+                            { name: `TDS Correction (${formData.referencedPeriod || 'Past Period'})`, amount: 1500 },
+                          ],
+                        }));
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold transition">
+                      + Add TDS Adjustment
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          deductions: [
+                            ...prev.deductions,
+                            { name: `Overpayment Clawback (${formData.referencedPeriod || 'Past Period'})`, amount: 3000 },
+                          ],
+                        }));
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold transition">
+                      + Add Clawback Deduction
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Slip Details */}
             <section>
               <SectionTitle
@@ -1071,27 +1435,94 @@ const SalarySlipForm = ({
                     Pay Cycle <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={formData.payCycle || 'Bi-Weekly'}
-                    onChange={(e) => handleCycleChange(e.target.value as 'Monthly' | 'Bi-Weekly')}
+                    value={formData.payCycle || 'Monthly'}
+                    onChange={(e) => handleCycleChange(e.target.value as PayCycleOption)}
                     className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
-                    <option value="Bi-Weekly">Bi-Weekly</option>
-                    <option value="Monthly">Monthly</option>
+                    {companyPayrollSettings.enabledPayPeriods.monthly && <option value="Monthly">Monthly</option>}
+                    {companyPayrollSettings.enabledPayPeriods.semiMonthly && (
+                      <option value="Semi-Monthly">Semi-Monthly (Twice/Mo)</option>
+                    )}
+                    {companyPayrollSettings.enabledPayPeriods.biweekly && (
+                      <option value="Bi-Weekly">Bi-Weekly (14-Day Cycle)</option>
+                    )}
+                    {companyPayrollSettings.enabledPayPeriods.weekly && (
+                      <option value="Weekly">Weekly (7-Day Cycle)</option>
+                    )}
+                    {companyPayrollSettings.enabledPayPeriods.custom && (
+                      <option value="Custom">Custom Date Range</option>
+                    )}
                   </select>
                 </div>
 
-                {/* Bi-Weekly Period Half Selector (Visible only when Bi-Weekly) */}
+                {/* Sub-selector for cycles */}
+                {formData.payCycle === 'Weekly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Week Period <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={cyclePeriodPart}
+                      onChange={(e) => handlePeriodPartChange(Number(e.target.value))}
+                      className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
+                      <option value={1}>Week 1 (01 - 07)</option>
+                      <option value={2}>Week 2 (08 - 14)</option>
+                      <option value={3}>Week 3 (15 - 21)</option>
+                      <option value={4}>Week 4 (22 - 28)</option>
+                      <option value={5}>Week 5 (29 - End)</option>
+                    </select>
+                  </div>
+                )}
+
                 {formData.payCycle === 'Bi-Weekly' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Pay Period Half <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={biWeeklyPeriod}
-                      onChange={(e) => handleBiWeeklyPartChange(Number(e.target.value) as 1 | 2)}
+                      value={cyclePeriodPart}
+                      onChange={(e) => handlePeriodPartChange(Number(e.target.value))}
+                      className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
+                      <option value={1}>1st Half (01 - 14)</option>
+                      <option value={2}>2nd Half (15 - End)</option>
+                    </select>
+                  </div>
+                )}
+
+                {formData.payCycle === 'Semi-Monthly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Semi-Monthly Half <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={cyclePeriodPart}
+                      onChange={(e) => handlePeriodPartChange(Number(e.target.value))}
                       className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
                       <option value={1}>1st Half (01 - 15)</option>
                       <option value={2}>2nd Half (16 - End)</option>
                     </select>
+                  </div>
+                )}
+
+                {formData.payCycle === 'Custom' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                      <input
+                        type="date"
+                        value={customStart}
+                        onChange={(e) => handleCustomDatesChange(e.target.value, customEnd)}
+                        className="w-full rounded-xl border border-gray-300 px-2 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                      <input
+                        type="date"
+                        value={customEnd}
+                        onChange={(e) => handleCustomDatesChange(customStart, e.target.value)}
+                        className="w-full rounded-xl border border-gray-300 px-2 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -1346,6 +1777,52 @@ const SalarySlipForm = ({
                 placeholder="e.g. 50000"
               />
             </div>
+
+            {/* Statutory Tax & Total Compensation Details */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-3.5 bg-gray-50/80 rounded-xl border border-gray-200">
+              <Input
+                label="Annual Total Comp / CTC (₹)"
+                type="number"
+                value={formData.totalCompensation ?? ''}
+                onChange={(e) => updateField('totalCompensation', e.target.value)}
+                placeholder="e.g. 1200000"
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tax Regime
+                </label>
+                <select
+                  value={formData.taxRegime || 'New Regime'}
+                  onChange={(e) => updateField('taxRegime', e.target.value as 'New Regime' | 'Old Regime')}
+                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
+                  <option value="New Regime">New Regime (Standard ₹75k, Nil up to ₹12L)</option>
+                  <option value="Old Regime">Old Regime (Exemptions 80C/80D/HRA, Nil up to ₹5L)</option>
+                </select>
+              </div>
+              <Input
+                label="PAN Number"
+                value={formData.panNumber || ''}
+                onChange={(e) => updateField('panNumber', e.target.value.toUpperCase())}
+                placeholder="e.g. ABCDE1234F"
+              />
+            </div>
+
+            {Boolean(selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner) && (
+              <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between text-xs text-amber-900">
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={15} className="text-amber-600 flex-shrink-0" />
+                  <span>
+                    <strong>Mid-Year Joiner Detected:</strong> Previous Employer YTD Gross: ₹{Number(
+                      selectedEmployeeObj?.previousEmployerYtd?.grossSalary ||
+                      selectedEmployeeObj?.previous_employer_ytd?.grossSalary || 0
+                    ).toLocaleString('en-IN')}, TDS Credited: ₹{Number(
+                      selectedEmployeeObj?.previousEmployerYtd?.tdsDeducted ||
+                      selectedEmployeeObj?.previous_employer_ytd?.tdsDeducted || 0
+                    ).toLocaleString('en-IN')}. Cumulative tax slabs and credits are active.
+                  </span>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Days & Attendance Section */}
@@ -1470,6 +1947,89 @@ const SalarySlipForm = ({
               </div>
             </div>
 
+            {/* Statutory Tax & Projected TDS Widget */}
+            <div className="mt-4 rounded-2xl bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-yellow-50/30 border border-amber-200 overflow-hidden shadow-xs">
+              <div className="p-4 flex flex-wrap items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-200">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-amber-500 text-white rounded-xl shadow-xs">
+                    <Calculator size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                      Statutory Tax & TDS Computation ({formData.taxRegime || 'New Regime'})
+                      {Boolean(selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner) && (
+                        <span className="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold">
+                          Mid-Year Joiner
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-xs text-gray-600">
+                      Est. Annual CTC: ₹{Number(estimatedAnnualGross).toLocaleString('en-IN')} • Taxable: ₹{Number(liveTaxResult?.netTaxableIncome || 0).toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTaxProjectionModal(true)}
+                    className="px-3 py-1.5 text-xs font-semibold bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5 shadow-xs">
+                    <FileSpreadsheet size={14} className="text-emerald-600" />
+                    Tax Projection Sheet
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyTds}
+                    disabled={!liveTaxResult || liveTaxResult.projectedMonthlyTds === 0}
+                    className="px-3 py-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition flex items-center gap-1.5 shadow-xs disabled:opacity-40">
+                    <Sparkles size={14} />
+                    Apply TDS (₹{Number(liveTaxResult?.projectedMonthlyTds || 0).toLocaleString('en-IN')})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowTaxCalculator(!showTaxCalculator)}
+                    className="p-1.5 text-gray-500 hover:text-black rounded-lg transition"
+                    title={showTaxCalculator ? 'Collapse Tax Details' : 'Expand Tax Details'}>
+                    {showTaxCalculator ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {showTaxCalculator && liveTaxResult && (
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Standard Deduction</span>
+                      <p className="text-sm font-bold text-gray-800 mt-0.5">₹{liveTaxResult.standardDeduction.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Total Annual Tax</span>
+                      <p className="text-sm font-bold text-gray-800 mt-0.5">₹{liveTaxResult.totalAnnualTax.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Cess (4%)</span>
+                      <p className="text-sm font-bold text-gray-800 mt-0.5">₹{liveTaxResult.healthAndEducationCess.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div className="p-3 bg-amber-100/60 rounded-xl border border-amber-200 shadow-2xs">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-900">Projected Monthly TDS</span>
+                      <p className="text-sm font-extrabold text-amber-700 font-mono mt-0.5">
+                        ₹{liveTaxResult.projectedMonthlyTds.toLocaleString('en-IN')}/mo
+                      </p>
+                    </div>
+                  </div>
+
+                  {liveTaxResult.rebate87A > 0 && (
+                    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+                      <Sparkles size={14} className="text-emerald-600 flex-shrink-0" />
+                      <span>
+                        <strong>Section 87A Zero-Tax Rebate Applied:</strong> Taxable income is within the ₹{formData.taxRegime === 'Old Regime' ? '5,00,000' : '12,00,000'} statutory threshold. Net tax payable is ₹0.
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Net Salary Banner */}
             <div className="mt-4 p-4 rounded-2xl bg-black text-white flex justify-between items-center">
               <div>
@@ -1505,6 +2065,27 @@ const SalarySlipForm = ({
           </div>
         </form>
       </div>
+
+      {showTaxProjectionModal && (
+        <TaxProjectionModal
+          isOpen={showTaxProjectionModal}
+          onClose={() => setShowTaxProjectionModal(false)}
+          initialEmployee={
+            selectedEmployeeObj || {
+              id: formData.employeeId,
+              name: formData.employeeName,
+              employeeName: formData.employeeName,
+              employeeId: formData.employeeId,
+              department: formData.department,
+              designation: formData.position,
+              totalCompensation: Number(formData.totalCompensation) || estimatedAnnualGross,
+              annualCtc: Number(formData.totalCompensation) || estimatedAnnualGross,
+              taxRegime: formData.taxRegime,
+              panNumber: formData.panNumber,
+            }
+          }
+        />
+      )}
     </div>
   );
 };
