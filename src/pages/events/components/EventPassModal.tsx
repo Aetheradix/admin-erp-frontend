@@ -28,7 +28,7 @@ export const EventPassModal = ({ isOpen, onClose, passData }: EventPassModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg bg-zinc-950 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         {/* Top Header */}
         <div className="relative p-6 bg-linear-to-r from-primary/20 via-primary/10 to-transparent border-b border-white/10 flex items-center justify-between">

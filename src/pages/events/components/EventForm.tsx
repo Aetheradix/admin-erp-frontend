@@ -1,6 +1,4 @@
-import { useUploadImageMutation } from '@/store/api/uploadSlice';
-import { resolveImageUrl, cleanUploadPath } from '@/utils/imageUrl';
-import { FileUpload } from '@/components/ui/composed/FileUpload';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import { FormField } from '@/components/ui/composed/FormField';
 import { Button } from '@/components/ui/primitives/Button';
 import { Calendar } from '@/components/ui/primitives/Calendar';
@@ -20,6 +18,7 @@ import {
   Loader2,
   Upload,
   PlusCircle,
+  Mail,
 } from 'lucide-react';
 import type { ERPEvent } from '@/types/models';
 import { useUploadFileMutation } from '@/store/api/eventSlice';
@@ -130,10 +129,11 @@ export const EventForm = ({
   onCancel,
   availableCategories,
 }: EventFormProps) => {
-  const [uploadImage, { isLoading: isUploadingImage }] = useUploadImageMutation();
-  const [uploadFile] = useUploadFileMutation();
+  const [uploadFile, { isLoading: isUploadingImage }] = useUploadFileMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newTagInput, setNewTagInput] = useState('');
+
+  const STANDARD_STATUSES = ['Upcoming', 'Active', 'Completed', 'Inactive'];
 
   const baseCategoryList = useMemo(() => {
     const list =
@@ -154,6 +154,34 @@ export const EventForm = ({
       : ''
   );
 
+  const [selectedStatusType, setSelectedStatusType] = useState<string>(() => {
+    const st = initialData?.status;
+    if (!st) return 'Upcoming';
+    const match = STANDARD_STATUSES.find((s) => s.toLowerCase() === st.toLowerCase());
+    return match || 'Custom';
+  });
+
+  const [customStatusInput, setCustomStatusInput] = useState<string>(() => {
+    const st = initialData?.status;
+    if (!st) return '';
+    const isStd = STANDARD_STATUSES.some((s) => s.toLowerCase() === st.toLowerCase());
+    return isStd ? '' : st;
+  });
+
+  const handleStatusSelection = (val: string) => {
+    setSelectedStatusType(val);
+    if (val !== 'Custom') {
+      setFormData((prev) => ({ ...prev, status: val }));
+    } else {
+      setFormData((prev) => ({ ...prev, status: customStatusInput.trim() || 'Custom' }));
+    }
+  };
+
+  const handleCustomStatusChange = (val: string) => {
+    setCustomStatusInput(val);
+    setFormData((prev) => ({ ...prev, status: val.trim() || 'Custom' }));
+  };
+
   const categoryOptions = useMemo(() => {
     const opts = baseCategoryList.map((cat) => ({ label: cat, value: cat }));
     return [...opts, { label: 'Other (Enter Custom)', value: 'Other' }];
@@ -170,10 +198,12 @@ export const EventForm = ({
     location: '',
     organizer: '',
     author_department: '',
+    status: 'Upcoming',
     employee_status: 'Active',
     attendees: 0,
     button_type: 'Register Now',
     event_link: '',
+    broadcast: true,
     tags: [],
     image:
       'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
@@ -228,6 +258,8 @@ export const EventForm = ({
           event_date: rawDate,
           start_time: startTime || '10:00 AM',
           end_time: endTime || '01:00 PM',
+          status: initialData.status || 'Upcoming',
+          max_participants: initialData.max_participants,
           employee_status: initialData.employee_status || 'Active',
         });
 
@@ -239,6 +271,16 @@ export const EventForm = ({
         } else {
           setSelectedCategoryType('Other');
           setCustomCategoryInput(initialCat);
+        }
+
+        const rawStatus = initialData.status || 'Upcoming';
+        const stdMatch = STANDARD_STATUSES.find((s) => s.toLowerCase() === rawStatus.toLowerCase());
+        if (stdMatch) {
+          setSelectedStatusType(stdMatch);
+          setCustomStatusInput('');
+        } else {
+          setSelectedStatusType('Custom');
+          setCustomStatusInput(rawStatus);
         }
       });
     }
@@ -259,6 +301,8 @@ export const EventForm = ({
   };
 
   const applyTemplate = (preset: (typeof TEMPLATE_PRESETS)[0]) => {
+    setSelectedStatusType('Upcoming');
+    setCustomStatusInput('');
     setFormData((prev) => ({
       ...prev,
       title: preset.title,
@@ -271,18 +315,34 @@ export const EventForm = ({
       start_time: preset.start_time,
       end_time: preset.end_time,
       max_participants: preset.max_participants,
+      status: 'Upcoming',
       image: preset.image,
     }));
   };
 
   const handleAddTag = () => {
-    const trimmed = newTagInput.trim();
-    if (!trimmed) return;
+    const raw = newTagInput.trim();
+    if (!raw) return;
+    const tokens = raw
+      .split(/[,]+/)
+      .map((t) => t.trim().replace(/^#/, ''))
+      .filter((t) => t.length > 0);
+    if (tokens.length === 0) return;
+
     const currentTags = formData.tags || [];
-    if (!currentTags.includes(trimmed)) {
-      setFormData((prev) => ({ ...prev, tags: [...currentTags, trimmed] }));
-    }
+    const merged = Array.from(new Set([...currentTags, ...tokens]));
+    setFormData((prev) => ({ ...prev, tags: merged }));
     setNewTagInput('');
+  };
+
+  const handleToggleTag = (tag: string) => {
+    const clean = tag.replace(/^#/, '').trim();
+    const current = formData.tags || [];
+    if (current.includes(clean)) {
+      setFormData((prev) => ({ ...prev, tags: current.filter((t) => t !== clean) }));
+    } else {
+      setFormData((prev) => ({ ...prev, tags: [...current, clean] }));
+    }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
@@ -365,7 +425,7 @@ export const EventForm = ({
         {/* Live Banner Preview */}
         <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-zinc-900 border border-border-subtle group/banner">
           <img
-            src={formData.image || formData.image_url}
+            src={resolveImageUrl(formData.image || formData.image_url || '') || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=60'}
             alt="Event banner preview"
             className="w-full h-full object-cover group-hover/banner:scale-105 transition-transform duration-500"
             onError={(e) => {
@@ -443,100 +503,52 @@ export const EventForm = ({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Initial Joined Count" id="event-attendees">
-              <Input
-                id="event-attendees"
-                type="number"
-                value={formData.attendees?.toString() || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, attendees: parseInt(e.target.value, 10) || 0 })
-                }
-                placeholder="0"
-              />
-            </FormField>
-            <FormField label="Max Capacity (Limit)" id="event-max-capacity">
-              <Input
-                id="event-max-capacity"
-                type="number"
-                value={formData.max_participants?.toString() || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, max_participants: parseInt(e.target.value, 10) || undefined })
-                }
-                placeholder="e.g. 50"
-              />
-            </FormField>
-          </div>
-
-          {/* Action Button Type & External Link */}
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Button Action Type" id="event-button-type">
+          {/* Event Status — Dropdown + optional Manual input */}
+          <div className="flex flex-col gap-2.5 p-4 rounded-2xl bg-surface-subtle/70 border border-border-subtle">
+            <FormField label="Event Status" id="event-status">
               <Select
-                id="event-button-type"
-                options={buttonTypeOptions}
-                value={formData.button_type || 'Register Now'}
-                onChange={(e) => setFormData({ ...formData, button_type: e.value })}
+                id="event-status"
+                options={[
+                  { label: 'Upcoming', value: 'Upcoming' },
+                  { label: 'Active', value: 'Active' },
+                  { label: 'Completed', value: 'Completed' },
+                  { label: 'Inactive', value: 'Inactive' },
+                  { label: 'Other', value: 'Other' },
+                ]}
+                value={selectedStatusType}
+                onChange={(e) => handleStatusSelection(e.value)}
               />
             </FormField>
-            <FormField label="Registration / External URL" id="event-link">
-              <Input
-                id="event-link"
-                value={formData.event_link || ''}
-                onChange={(e) => setFormData({ ...formData, event_link: e.target.value })}
-                placeholder="https://... (Optional)"
-              />
-            </FormField>
-          </div>
 
-          {/* Tags Management */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-muted">
-              Event Tags & Dynamic Filters
-            </label>
-            <div className="flex gap-2">
-              <Input
-                id="event-new-tag"
-                value={newTagInput}
-                onChange={(e) => setNewTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddTag();
-                  }
-                }}
-                placeholder="Add tag (e.g. AI, Q4, AllHands)..."
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleAddTag}
-                className="rounded-xl! px-4! text-xs font-bold gap-1 cursor-pointer">
-                <Plus size={14} /> Add
-              </Button>
-            </div>
-            {formData.tags && formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-1">
-                {formData.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl border border-primary/20">
-                    <span>#{tag}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="hover:text-rose-500 cursor-pointer ml-1 p-0.5 rounded-full hover:bg-black/10">
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))}
+            {/* Custom text input — only shown when Manual is selected */}
+            {selectedStatusType === 'Other' && (
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-border-subtle/80 animate-in fade-in slide-in-from-top-2 duration-200">
+                <label
+                  htmlFor="custom-status-input"
+                  className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5"
+                >
+                  <PlusCircle size={13} />
+                  <span>Add  Status</span>
+                </label>
+                <Input
+                  id="custom-status-input"
+                  value={customStatusInput}
+                  onChange={(e) => handleCustomStatusChange(e.target.value)}
+                  placeholder="e.g. Postponed, Draft, Registrations Full…"
+                  className="bg-white! border-primary/40! focus:border-primary! ring-primary/20!"
+                  autoFocus
+                />
+                <span className="text-[11px] text-muted font-medium">
+                  This status will appear live on the event card badge.
+                </span>
               </div>
             )}
           </div>
         </div>
 
+        {/* Right Column: Schedule, Location, Host & Capacity */}
         <div className="flex flex-col gap-5">
-          <FormField label="Date" required id="event-date">
+          <FormField label="Event Date" required id="event-date">
             <Calendar
               id="event-date"
               value={
@@ -564,7 +576,7 @@ export const EventForm = ({
                   }));
                 }
               }}
-              placeholder="Select date"
+              placeholder="Select event date"
               dateFormat="yy-mm-dd"
             />
           </FormField>
@@ -590,7 +602,7 @@ export const EventForm = ({
                     time: str && prev.end_time ? `${str} - ${prev.end_time}` : str || prev.time,
                   }));
                 }}
-                placeholder="Select start time"
+                placeholder="Start time"
                 className="w-full h-11 rounded-xl border border-border-subtle bg-white font-medium hover:border-primary/50 focus:border-primary shadow-xs"
               />
             </FormField>
@@ -614,7 +626,7 @@ export const EventForm = ({
                     time: prev.start_time && str ? `${prev.start_time} - ${str}` : str || prev.time,
                   }));
                 }}
-                placeholder="Select end time"
+                placeholder="End time"
                 className="w-full h-11 rounded-xl border border-border-subtle bg-white font-medium hover:border-primary/50 focus:border-primary shadow-xs"
               />
             </FormField>
@@ -625,7 +637,7 @@ export const EventForm = ({
               id="event-location"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="Executive Suite / Innovation Lab / Remote"
+              placeholder="e.g. SFA Technologies, 2nd Floor / Remote"
             />
           </FormField>
 
@@ -648,79 +660,154 @@ export const EventForm = ({
             </FormField>
           </div>
 
-          {/* Banner Upload */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-muted">
-              Event Banner
-            </label>
-            <div className="relative aspect-video w-full rounded-2xl border-2 border-dashed border-border-subtle bg-surface-subtle overflow-hidden flex items-center justify-center group hover:border-primary/50 transition-all">
-              {formData.image ? (
-                <>
-                  <img
-                    src={resolveImageUrl(formData.image)}
-                    alt="Cover"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-lg">
-                      Change Banner
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center gap-1 text-center p-4">
-                  <span className="text-xs font-bold text-foreground">Click to upload banner</span>
-                  <span className="text-[10px] text-muted uppercase">
-                    JPG, PNG, WebP (Max 10MB)
-                  </span>
-                </div>
-              )}
-              <FileUpload
-                mode="basic"
-                auto
-                accept="image/*"
-                maxFileSize={10485760}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                onUpload={async (e) => {
-                  if (e.files && e.files[0]) {
-                    try {
-                      const res = await uploadImage({
-                        file: e.files[0],
-                        category: 'events',
-                      }).unwrap();
-                      const serverUrl = res.data?.url ? cleanUploadPath(res.data.url) : '';
-                      if (serverUrl) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          image: serverUrl,
-                          image_url: serverUrl,
-                        }));
-                      }
-                    } catch (err) {
-                      console.error('Event banner upload failed:', err);
-                    }
-                  }
-                }}
-              />
-              {isUploadingImage && (
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center z-10">
-                  <span className="text-xs font-black text-primary animate-pulse uppercase tracking-widest">
-                    Uploading image...
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <FormField label="Organizer" id="event-organizer">
+          <FormField label="Max Capacity (Limit)" id="event-max-capacity">
             <Input
-              id="event-organizer"
-              value={formData.organizer}
-              onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
-              placeholder="Department or Team name"
+              id="event-max-capacity"
+              type="number"
+              value={formData.max_participants?.toString() || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, max_participants: parseInt(e.target.value, 10) || undefined })
+              }
+              placeholder="e.g. 50 (Leave empty for unlimited attendance)"
             />
           </FormField>
         </div>
+      </div>
+
+      {/* Button Action Type & URL — full width */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-surface-subtle/70 border border-border-subtle">
+        <div className="flex flex-col gap-1">
+          <FormField label="Button Action Type" id="event-button-type">
+            <Select
+              id="event-button-type"
+              options={buttonTypeOptions}
+              value={formData.button_type || 'Register Now'}
+              onChange={(e) => setFormData({ ...formData, button_type: e.value })}
+            />
+          </FormField>
+          <span className="text-[10px] text-muted font-medium">
+            Button attendees see on event card
+          </span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <FormField label="Registration / External URL" id="event-link">
+            <Input
+              id="event-link"
+              value={formData.event_link || ''}
+              onChange={(e) => setFormData({ ...formData, event_link: e.target.value })}
+              placeholder="https://... (Optional link)"
+            />
+          </FormField>
+          <span className="text-[10px] text-muted font-medium">
+            Zoom, Meet or external link
+          </span>
+        </div>
+
+        {/* Instant Broadcast Notification Toggle */}
+        <div className="sm:col-span-2 pt-3 mt-1 border-t border-border-subtle/80 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+              <Mail size={15} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-black text-foreground flex items-center gap-1.5">
+                <span>Broadcast Event to All Employees</span>
+                <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-600 border border-emerald-300 px-1.5 py-0.2 rounded-md">
+                  Email &amp; Bell Alert
+                </span>
+              </span>
+              <span className="text-[11px] text-muted font-medium">
+                Sends an email invitation to all 18+ active employees and highlights this in their notification bell.
+              </span>
+            </div>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer ml-3 flex-shrink-0">
+            <input
+              type="checkbox"
+              checked={formData.broadcast !== false}
+              onChange={(e) => setFormData((prev) => ({ ...prev, broadcast: e.target.checked }))}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-xs"></div>
+          </label>
+        </div>
+      </div>
+
+      {/* Tags — full width below the grid */}
+      <div className="flex flex-col gap-2 p-4 rounded-2xl bg-surface-subtle/70 border border-border-subtle">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+            Event Tags &amp; Dynamic Filters
+          </label>
+          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+            Multi-tag supported (use comma)
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <Input
+            id="event-new-tag"
+            value={newTagInput}
+            onChange={(e) => setNewTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                handleAddTag();
+              }
+            }}
+            placeholder="Type multiple tags e.g. Payroll, Tech, Annual — press Enter or comma to add"
+            className="flex-1 bg-white!"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleAddTag}
+            className="rounded-xl! px-4! text-xs font-bold gap-1 cursor-pointer bg-white!">
+            <Plus size={14} /> Add
+          </Button>
+        </div>
+
+        {/* Quick Tag Suggestions */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[10px] font-bold text-muted uppercase tracking-wider mr-1">
+            Suggestions:
+          </span>
+          {['Payroll', 'Finance', 'Tech', 'Workshop', 'AllHands', 'Culture', 'HR'].map((sug) => {
+            const isAdded = (formData.tags || []).includes(sug);
+            return (
+              <button
+                key={sug}
+                type="button"
+                onClick={() => handleToggleTag(sug)}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                  isAdded
+                    ? 'bg-primary text-white border-primary shadow-xs'
+                    : 'bg-white hover:bg-primary/10 text-muted hover:text-primary border-border-subtle'
+                }`}
+              >
+                #{sug}
+              </button>
+            );
+          })}
+        </div>
+
+        {formData.tags && formData.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border-subtle/80">
+            {formData.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl border border-primary/20 shadow-xs">
+                <span>#{tag}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="hover:text-rose-500 cursor-pointer p-0.5 rounded-full hover:bg-black/10 transition-colors"
+                  title="Remove tag">
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-subtle">

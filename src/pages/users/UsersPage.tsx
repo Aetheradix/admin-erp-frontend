@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import {
@@ -38,15 +38,15 @@ import {
   useSendInvitationMutation,
   useGenerateInvitationMutation,
   useGetApprovalLogsQuery,
+  useGetSystemInvitationsQuery,
+  useGetSystemAuditLogsQuery,
+  useCreateSystemInvitationMutation,
+  useRevokeSystemInvitationMutation,
+  useResendSystemInvitationMutation,
 } from '@/store/api/authApiSlice';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import type { UserRole } from '@/config/navItems';
 import {
-  getInvitations,
-  createInvitation,
-  revokeInvitation,
-  resendInvitation,
-  getAuditLogs,
   recordAuditLog,
   type InvitationRecord,
   type AuditLogEntry,
@@ -222,6 +222,20 @@ export function UsersPage() {
   const [updateStaff] = useUpdateStaffMutation();
   const [deleteUser] = useDeleteUserMutation();
 
+  // Backend invitation & audit log hooks
+  const {
+    data: invitationsResponse,
+    refetch: refetchInvitations,
+  } = useGetSystemInvitationsQuery();
+  const {
+    data: auditLogsResponse,
+    refetch: refetchAuditLogs,
+  } = useGetSystemAuditLogsQuery();
+
+  const [createSystemInvitation] = useCreateSystemInvitationMutation();
+  const [revokeSystemInvitation] = useRevokeSystemInvitationMutation();
+  const [resendSystemInvitation] = useResendSystemInvitationMutation();
+
   // --- LOCAL STATE ---
   const [localUsers, setLocalUsers] = useState<UserRecord[]>(initialUsers);
   const [search, setSearch] = useState('');
@@ -229,14 +243,13 @@ export function UsersPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
-  // Invitations Audit Log state
-  const [invitations, setInvitations] = useState<InvitationRecord[]>(() => getInvitations());
+  // Invitations & Audit Logs from backend
+  const invitations: InvitationRecord[] = (invitationsResponse?.data ?? []) as InvitationRecord[];
+  const auditLogs: AuditLogEntry[] = (auditLogsResponse?.data ?? []) as AuditLogEntry[];
+
   const [invitationFilter, setInvitationFilter] = useState<
     'all' | 'pending' | 'accepted' | 'expired' | 'revoked'
   >('all');
-
-  // System Audit Logs state
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => getAuditLogs());
 
   // Invite Result Modal
   const [inviteResult, setInviteResult] = useState<{
@@ -295,20 +308,6 @@ export function UsersPage() {
     targetUser: null,
     targetInvitation: null,
   });
-
-  // Listen for changes in audit service
-  useEffect(() => {
-    const handleInvUpdate = () => setInvitations(getInvitations());
-    const handleLogUpdate = () => setAuditLogs(getAuditLogs());
-
-    window.addEventListener('aether_invitations_updated', handleInvUpdate);
-    window.addEventListener('aether_audit_logs_updated', handleLogUpdate);
-
-    return () => {
-      window.removeEventListener('aether_invitations_updated', handleInvUpdate);
-      window.removeEventListener('aether_audit_logs_updated', handleLogUpdate);
-    };
-  }, []);
 
   const TABS = [
     'All Users',
@@ -413,44 +412,40 @@ export function UsersPage() {
     }
 
     try {
-      // 1. Create invitation record in audit logging service
       const adminActor = {
-        name: currentAuthUser?.username || 'Sarah Chen',
-        email: currentAuthUser?.email || 'sarah.chen@aetheradix.com',
+        name: (currentAuthUser?.username || 'Hasmukh').trim(),
+        email: currentAuthUser?.email || 'hasmukh.arx@gmail.com',
         role: currentAuthUser?.role || 'SuperAdmin',
       };
 
-      const { invitation, link: auditLink } = createInvitation({
-        email: form.email,
-        name: form.name,
-        role: form.role,
-        department: form.department,
-        invitedBy: adminActor,
-      });
+      // 1. Create invitation in backend MySQL
+      let serverLink = `${window.location.origin}/auth/onboarding?email=${encodeURIComponent(form.email)}`;
+      let serverPass = `Aether@${Math.floor(100000 + Math.random() * 900000)}!`;
 
-      let serverLink = auditLink;
-      let serverPass = invitation.tempPassword || 'Aether@Temp2026!';
-
-      // 2. Try backend invitation API
       try {
-        const res = await generateInvitation({
+        const res = await createSystemInvitation({
           email: form.email,
+          name: form.name,
           role: form.role,
+          department: form.department,
+          invitedBy: adminActor,
         }).unwrap();
-        if (res.link) serverLink = res.link;
-        if (res.tempPass) serverPass = res.tempPass;
+        if (res.data?.token) {
+          serverLink = `${window.location.origin}/auth/onboarding?token=${encodeURIComponent(res.data.token)}&email=${encodeURIComponent(form.email)}`;
+        }
+        if (res.data?.invitation?.tempPassword) serverPass = res.data.invitation.tempPassword;
       } catch {
+        // Fallback: try legacy backend invitation endpoint
         try {
-          await sendInvitation({
-            email: form.email,
-            role: form.role as UserRole,
-          }).unwrap();
+          const res = await generateInvitation({ email: form.email, role: form.role }).unwrap();
+          if (res.link) serverLink = res.link;
+          if (res.tempPass) serverPass = res.tempPass;
         } catch {
-          // Graceful fallback for offline demo
+          try { await sendInvitation({ email: form.email, role: form.role as UserRole }).unwrap(); } catch {}
         }
       }
 
-      // 3. Register in staff list if needed
+      // 2. Register in staff list
       try {
         await createStaff({
           name: form.name,
@@ -460,40 +455,22 @@ export function UsersPage() {
           status: 'Active',
         }).unwrap();
       } catch {
-        const initials = form.name
-          .split(' ')
-          .map((w) => w[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2);
-        const newUser: UserRecord = {
-          id: Date.now(),
-          name: form.name,
-          email: form.email,
-          role: form.role,
-          department: form.department,
-          status: 'Active',
-          avatar: initials,
+        const initials = form.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+        setLocalUsers((prev) => [{
+          id: Date.now(), name: form.name, email: form.email, role: form.role,
+          department: form.department, status: 'Active', avatar: initials,
           createdAt: new Date().toISOString().split('T')[0],
-        };
-        setLocalUsers((prev) => [newUser, ...prev]);
+        }, ...prev]);
       }
 
-      // Show result modal with complete onboarding link
-      setInviteResult({
-        open: true,
-        email: form.email,
-        role: form.role,
-        link: serverLink,
-        tempPass: serverPass,
-      });
-
-      message.success(`Audit log recorded and invitation dispatched to ${form.email}`);
+      setInviteResult({ open: true, email: form.email, role: form.role, link: serverLink, tempPass: serverPass });
+      message.success(`Invitation dispatched to ${form.email} and saved in the database.`);
       setShowForm(false);
       setForm(emptyForm);
-      setInvitations(getInvitations());
       refetchUsers();
       refetchLogs();
+      refetchAuditLogs?.();
+      refetchInvitations();
     } catch (err: any) {
       message.error(err?.data?.message || 'Failed to dispatch invitation');
     }
@@ -513,37 +490,38 @@ export function UsersPage() {
     setTimeout(() => setCopiedPass(false), 2500);
   };
 
-  // Resend / Renew invitation handler
-  const handleResendInvitation = (inv: InvitationRecord) => {
-    const adminActor = {
-      name: currentAuthUser?.username || 'Sarah Chen',
-      email: currentAuthUser?.email || 'sarah.chen@aetheradix.com',
-    };
-
-    const result = resendInvitation(inv.id, adminActor);
-    if (result.success && result.link) {
-      navigator.clipboard.writeText(result.link);
-      message.success(`Invitation renewed for ${inv.email}! New onboarding link copied.`);
-      setInvitations(getInvitations());
-    } else {
-      message.error('Failed to renew invitation.');
+  // Resend / Renew invitation handler (backend API)
+  const handleResendInvitation = async (inv: InvitationRecord) => {
+    try {
+      const result = await resendSystemInvitation(inv.id).unwrap();
+      if (result.success) {
+        const newLink = result.token
+          ? `${window.location.origin}/auth/onboarding?token=${encodeURIComponent(result.token)}&email=${encodeURIComponent(inv.email)}`
+          : `${window.location.origin}/auth/onboarding?email=${encodeURIComponent(inv.email)}`;
+        navigator.clipboard.writeText(newLink).catch(() => {});
+        message.success(`Invitation renewed for ${inv.email}! New onboarding link copied.`);
+        refetchInvitations();
+        refetchAuditLogs();
+      } else {
+        message.error('Failed to renew invitation.');
+      }
+    } catch {
+      message.error('Failed to renew invitation — please try again.');
     }
   };
 
-  // Execute Revoke Invitation
-  const handleExecuteRevokeInvitation = () => {
+  // Execute Revoke Invitation (backend API)
+  const handleExecuteRevokeInvitation = async () => {
     if (!confirmModal.targetInvitation) return;
     const inv = confirmModal.targetInvitation;
 
-    const adminActor = {
-      name: currentAuthUser?.username || 'Sarah Chen',
-      email: currentAuthUser?.email || 'sarah.chen@aetheradix.com',
-    };
-
-    const ok = revokeInvitation(inv.id, adminActor);
-    if (ok) {
+    try {
+      await revokeSystemInvitation(inv.id).unwrap();
       message.warning(`Invitation for ${inv.email} has been revoked and access invalidated.`);
-      setInvitations(getInvitations());
+      refetchInvitations();
+      refetchAuditLogs();
+    } catch {
+      message.error('Failed to revoke invitation — please try again.');
     }
     setConfirmModal({ open: false, type: 'offboard', targetInvitation: null });
   };
@@ -885,13 +863,32 @@ export function UsersPage() {
     {
       title: 'Invited By (Admin)',
       key: 'invitedBy',
-      render: (_, record) => (
-        <div className="flex flex-col">
-          <span className="text-xs font-bold text-foreground">{record.invitedBy.name}</span>
-          <span className="text-[11px] text-muted">{record.invitedBy.email}</span>
-          <span className="text-[10px] text-primary/80 font-semibold">{record.invitedBy.role}</span>
-        </div>
-      ),
+      render: (_, record) => {
+        const invName =
+          record.invitedBy?.name &&
+          record.invitedBy.name !== 'Sarah Chen' &&
+          record.invitedBy.name !== 'Admin'
+            ? record.invitedBy.name
+            : (currentAuthUser?.username || 'Hasmukh').trim();
+        const invEmail =
+          record.invitedBy?.email &&
+          !record.invitedBy.email.includes('sarah') &&
+          !record.invitedBy.email.includes('admin@')
+            ? record.invitedBy.email
+            : currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+        const invRole =
+          record.invitedBy?.role && record.invitedBy.role !== 'Admin'
+            ? record.invitedBy.role
+            : currentAuthUser?.role || 'SuperAdmin';
+
+        return (
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-foreground">{invName}</span>
+            <span className="text-[11px] text-muted">{invEmail}</span>
+            <span className="text-[10px] text-primary/80 font-semibold">{invRole}</span>
+          </div>
+        );
+      },
     },
     {
       title: 'Sent Date & Time',

@@ -6,7 +6,11 @@ export const leaveSlice = apiSlice.injectEndpoints({
     getLeaves: builder.query<AttendanceRequest[], void>({
       query: () => '/leaves',
       providesTags: ['Leaves'],
-      transformResponse: (response: { data: AttendanceRequest[] }) => response.data,
+      transformResponse: (response: unknown) => {
+        if (Array.isArray(response)) return response as AttendanceRequest[];
+        const data = (response as { data?: AttendanceRequest[] })?.data;
+        return Array.isArray(data) ? data : [];
+      },
     }),
     getLeaveStats: builder.query<{ total: number; used: number; remaining: number }, void>({
       query: () => '/leaves/stats',
@@ -19,7 +23,7 @@ export const leaveSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: leaveData,
       }),
-      invalidatesTags: ['Leaves'],
+      invalidatesTags: ['Leaves', 'Attendance'],
     }),
     updateLeaveStatus: builder.mutation<
       AttendanceRequest,
@@ -30,7 +34,7 @@ export const leaveSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { status, comment },
       }),
-      invalidatesTags: ['Leaves'],
+      invalidatesTags: ['Leaves', 'Attendance'],
     }),
 
     deleteLeaveRequest: builder.mutation<{ success: boolean }, string | number>({

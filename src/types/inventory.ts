@@ -13,6 +13,7 @@ export interface InventoryItem {
   location?: string | null;
   purchase_date?: string | null;
   purchase_cost: number;
+  currency?: string | null;
   condition_status: InventoryCondition;
   image_url?: string | null;
   assigned_to?: number | null;

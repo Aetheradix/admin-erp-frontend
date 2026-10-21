@@ -1,13 +1,15 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { ErrorBoundary } from '@/components/ui/composed/ErrorBoundary';
+import { initGlobalSyncListener } from '@/services/syncService';
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/auth/SignupPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const AdminApproval = lazy(() => import('@/pages/auth/AdminApproval'));
 const OnboardingPage = lazy(() => import('@/pages/auth/OnboardingPage'));
+const PostLoginOnboarding = lazy(() => import('@/pages/auth/PostLoginOnboarding'));
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const AppFeature = lazy(() => import('@/pages/index'));
 
@@ -25,7 +27,7 @@ const LoadingScreen = () => (
 );
 
 const ProtectedApp = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -35,10 +37,23 @@ const ProtectedApp = () => {
     return <Navigate to="/auth/login" replace />;
   }
 
+  // If user is mid-onboarding (temp password not changed OR profile incomplete)
+  // redirect to the dedicated onboarding screen instead of the main app
+  const needsOnboarding =
+    user?.is_temporary_password === true || user?.is_onboarded === false;
+
+  if (needsOnboarding) {
+    return <Navigate to="/auth/onboarding-setup" replace />;
+  }
+
   return <AppLayout />;
 };
 
 function App() {
+  useEffect(() => {
+    initGlobalSyncListener();
+  }, []);
+
   return (
     <ErrorBoundary fallbackTitle="Application Error Encountered">
       <Suspense fallback={<LoadingScreen />}>
@@ -48,6 +63,8 @@ function App() {
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/auth/approve-admin" element={<AdminApproval />} />
           <Route path="/auth/onboarding" element={<OnboardingPage />} />
+          {/* Post-login mandatory onboarding (temp password → profile) */}
+          <Route path="/auth/onboarding-setup" element={<PostLoginOnboarding />} />
 
           {/* Redirects for convenience */}
           <Route path="/login" element={<Navigate to="/auth/login" replace />} />
@@ -71,3 +88,4 @@ function App() {
 }
 
 export default App;
+

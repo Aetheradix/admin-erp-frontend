@@ -4,6 +4,8 @@
  * profile edits, password updates, and system-wide security actions.
  */
 
+import { API_URL } from '@/config/env';
+import { broadcastSync } from './syncService';
 export interface InvitationRecord {
   id: string;
   email: string;
@@ -55,14 +57,32 @@ const AUDIT_LOGS_STORAGE_KEY = 'aether_system_audit_logs';
 // Default initial seeded invitations to illustrate complete audit history
 const SEEDED_INVITATIONS: InvitationRecord[] = [
   {
+    id: 'inv-deedee',
+    email: 'deedee@yopmail.com',
+    name: 'DeeDee User',
+    role: 'Employee',
+    department: 'Operations',
+    invitedBy: {
+      name: 'Hasmukh',
+      email: 'hasmukh.arx@gmail.com',
+      role: 'SuperAdmin',
+    },
+    invitedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'accepted',
+    token: 'tok_deedee_onboarded',
+    acceptedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    resendCount: 0,
+  },
+  {
     id: 'inv-101',
     email: 'marcus.vance@aetheradix.com',
     name: 'Marcus Vance',
     role: 'Employee',
     department: 'Engineering',
     invitedBy: {
-      name: 'Sarah Chen',
-      email: 'sarah.chen@aetheradix.com',
+      name: 'Hasmukh',
+      email: 'hasmukh.arx@gmail.com',
       role: 'SuperAdmin',
     },
     invitedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -79,8 +99,8 @@ const SEEDED_INVITATIONS: InvitationRecord[] = [
     role: 'Manager',
     department: 'Design',
     invitedBy: {
-      name: 'Sarah Chen',
-      email: 'sarah.chen@aetheradix.com',
+      name: 'Hasmukh',
+      email: 'hasmukh.arx@gmail.com',
       role: 'SuperAdmin',
     },
     invitedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -124,8 +144,8 @@ const SEEDED_INVITATIONS: InvitationRecord[] = [
     token: 'tok_contractor_revoked',
     revokedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
     revokedBy: {
-      name: 'Sarah Chen',
-      email: 'sarah.chen@aetheradix.com',
+      name: 'Hasmukh',
+      email: 'hasmukh.arx@gmail.com',
     },
   },
 ];
@@ -133,11 +153,60 @@ const SEEDED_INVITATIONS: InvitationRecord[] = [
 // Default initial seeded audit logs
 const SEEDED_AUDIT_LOGS: AuditLogEntry[] = [
   {
+    id: 'log-deedee-1',
+    action: 'User Invitation Dispatched',
+    category: 'invitation',
+    user: 'Hasmukh',
+    userEmail: 'hasmukh.arx@gmail.com',
+    target: 'DeeDee User (deedee@yopmail.com)',
+    targetEmail: 'deedee@yopmail.com',
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    ip: '192.168.1.45',
+    status: 'Success',
+    details:
+      'Dispatched onboarding email invitation to deedee@yopmail.com with role Employee in Operations department.',
+  },
+  {
+    id: 'log-deedee-2',
+    action: 'Temporary Password Changed',
+    category: 'security',
+    user: 'DeeDee User',
+    userEmail: 'deedee@yopmail.com',
+    target: 'deedee@yopmail.com (Account Security)',
+    targetEmail: 'deedee@yopmail.com',
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    ip: '192.168.1.105',
+    status: 'Success',
+    details:
+      'Invited user successfully changed temporary password. Single-use credential invalidated. Onboarding step 1 of 2 complete.',
+  },
+  {
+    id: 'log-deedee-3',
+    action: 'Onboarding Completed — Profile Activated',
+    category: 'invitation',
+    user: 'DeeDee User',
+    userEmail: 'deedee@yopmail.com',
+    target: 'DeeDee User (Account)',
+    targetEmail: 'deedee@yopmail.com',
+    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    ip: '192.168.1.105',
+    status: 'Success',
+    details:
+      'User completed mandatory onboarding. Profile details submitted and account fully activated. Department: Operations, Designation: Operations Coordinator.',
+    changes: [
+      { field: 'Full Name', from: '(not set)', to: 'DeeDee User' },
+      { field: 'Contact Number', from: '(not set)', to: '+1 (555) 234-5678' },
+      { field: 'Department', from: '(not set)', to: 'Operations' },
+      { field: 'Designation', from: '(not set)', to: 'Operations Coordinator' },
+      { field: 'Onboarding Status', from: 'Incomplete', to: 'Fully Activated' },
+    ],
+  },
+  {
     id: 'log-101',
     action: 'User Invitation Dispatched',
     category: 'invitation',
-    user: 'Sarah Chen',
-    userEmail: 'sarah.chen@aetheradix.com',
+    user: 'Hasmukh',
+    userEmail: 'hasmukh.arx@gmail.com',
     target: 'marcus.vance@aetheradix.com',
     targetEmail: 'marcus.vance@aetheradix.com',
     timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -163,8 +232,8 @@ const SEEDED_AUDIT_LOGS: AuditLogEntry[] = [
     id: 'log-103',
     action: 'User Invitation Revoked',
     category: 'invitation',
-    user: 'Sarah Chen',
-    userEmail: 'sarah.chen@aetheradix.com',
+    user: 'Hasmukh',
+    userEmail: 'hasmukh.arx@gmail.com',
     target: 'contractor.guest@external.com',
     targetEmail: 'contractor.guest@external.com',
     timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
@@ -176,8 +245,8 @@ const SEEDED_AUDIT_LOGS: AuditLogEntry[] = [
     id: 'log-104',
     action: 'Password Changed',
     category: 'security',
-    user: 'Sarah Chen',
-    userEmail: 'sarah.chen@aetheradix.com',
+    user: 'Hasmukh',
+    userEmail: 'hasmukh.arx@gmail.com',
     target: 'Account Security Credentials',
     timestamp: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
     ip: '192.168.1.45',
@@ -204,8 +273,15 @@ const SEEDED_AUDIT_LOGS: AuditLogEntry[] = [
 
 // Helper to notify all listening components that audit logs or invitations changed
 const notifyChange = (event: 'invitations' | 'audit_logs') => {
+  broadcastSync(event);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(`aether_${event}_updated`));
+    try {
+      const ch = new BroadcastChannel('aether_events');
+      ch.postMessage({ type: `aether_${event}_updated`, timestamp: Date.now() });
+      ch.close();
+    } catch {}
+    localStorage.setItem('aether_last_onboarding_sync', Date.now().toString());
   }
 };
 
@@ -231,6 +307,12 @@ export function getInvitations(): InvitationRecord[] {
       }
       return inv;
     });
+
+    // Ensure deedee@yopmail.com is present for monitoring demo
+    if (!list.some((inv) => inv.email.toLowerCase() === 'deedee@yopmail.com')) {
+      list = [SEEDED_INVITATIONS[0], ...list];
+      updated = true;
+    }
 
     if (updated || !raw) {
       localStorage.setItem(INVITATIONS_STORAGE_KEY, JSON.stringify(list));
@@ -470,20 +552,21 @@ export function acceptInvitation(
   const target = invitations.find(
     (i) => i.token === token || i.email.toLowerCase() === completedProfile.email.toLowerCase()
   );
-  if (!target) return false;
+  if (target) {
+    const updatedList = invitations.map((inv) => {
+      if (inv.id === target.id) {
+        return {
+          ...inv,
+          status: 'accepted' as const,
+          acceptedAt: new Date().toISOString(),
+        };
+      }
+      return inv;
+    });
 
-  const updatedList = invitations.map((inv) => {
-    if (inv.id === target.id) {
-      return {
-        ...inv,
-        status: 'accepted' as const,
-        acceptedAt: new Date().toISOString(),
-      };
-    }
-    return inv;
-  });
-
-  localStorage.setItem(INVITATIONS_STORAGE_KEY, JSON.stringify(updatedList));
+    localStorage.setItem(INVITATIONS_STORAGE_KEY, JSON.stringify(updatedList));
+    notifyChange('invitations');
+  }
 
   // Record audit log
   recordAuditLog({
@@ -497,7 +580,24 @@ export function acceptInvitation(
     details: `User completed onboarding wizard and set credentials for role ${completedProfile.role}.`,
   });
 
-  notifyChange('invitations');
+  // Dual-write: Call backend MySQL /invitations/accept
+  try {
+    const authToken = localStorage.getItem('token');
+    fetch(`${API_URL}/invitations/accept`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      },
+      body: JSON.stringify({
+        token,
+        profile: completedProfile,
+      }),
+    }).catch(() => {});
+  } catch {
+    // Ignore error
+  }
+
   return true;
 }
 
@@ -511,7 +611,22 @@ export function getAuditLogs(): AuditLogEntry[] {
       localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(SEEDED_AUDIT_LOGS));
       return SEEDED_AUDIT_LOGS;
     }
-    return JSON.parse(raw);
+    let list: AuditLogEntry[] = JSON.parse(raw);
+    const hasDeedee = list.some(
+      (l) =>
+        l.targetEmail?.toLowerCase() === 'deedee@yopmail.com' ||
+        l.userEmail?.toLowerCase() === 'deedee@yopmail.com'
+    );
+    if (!hasDeedee) {
+      const deedeeLogs = SEEDED_AUDIT_LOGS.filter(
+        (l) =>
+          l.targetEmail?.toLowerCase() === 'deedee@yopmail.com' ||
+          l.userEmail?.toLowerCase() === 'deedee@yopmail.com'
+      );
+      list = [...deedeeLogs, ...list];
+      localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(list));
+    }
+    return list;
   } catch {
     return SEEDED_AUDIT_LOGS;
   }
@@ -519,6 +634,7 @@ export function getAuditLogs(): AuditLogEntry[] {
 
 /**
  * Record a new audit log entry
+ * Dual-write: localStorage (instant local sync) + backend MySQL (persistent)
  */
 export function recordAuditLog(entry: {
   action: string;
@@ -549,9 +665,38 @@ export function recordAuditLog(entry: {
     changes: entry.changes,
   };
 
+  // Local storage (for instant tab-level sync)
   const updatedLogs = [newLog, ...logs];
   localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(updatedLogs));
-
   notifyChange('audit_logs');
+
+  // Background POST to backend MySQL (fire-and-forget)
+  try {
+    const token = localStorage.getItem('token');
+    fetch(`${API_URL}/audit-logs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        action: newLog.action,
+        category: newLog.category,
+        user: newLog.user,
+        userEmail: newLog.userEmail,
+        target: newLog.target,
+        targetEmail: newLog.targetEmail,
+        status: newLog.status,
+        details: newLog.details,
+        changes: newLog.changes,
+        ip: newLog.ip,
+      }),
+    }).catch(() => {
+      // Silently ignore network errors — local log already recorded
+    });
+  } catch {
+    // No-op — backend persistence is best-effort
+  }
+
   return newLog;
 }

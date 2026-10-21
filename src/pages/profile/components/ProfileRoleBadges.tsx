@@ -25,9 +25,18 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
     }
   };
 
+  // Filter out redundant 'Employee' badge if user already has an admin/superadmin role
+  const visibleRoles = roles.filter(
+    (role) =>
+      !(
+        role.name.toLowerCase() === 'employee' &&
+        roles.some((r) => ['superadmin', 'admin', 'hradmin'].includes(r.name.toLowerCase()))
+      )
+  );
+
   return (
     <div className="flex items-center gap-2 flex-wrap mt-1">
-      {roles.map((role) => (
+      {visibleRoles.map((role) => (
         <span
           key={role.id}
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle border border-border-subtle text-xs font-bold text-foreground shadow-2xs hover:border-primary/40 transition-all">

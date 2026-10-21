@@ -198,11 +198,17 @@ function ApprovalPage() {
 
       {/* SECTION 3: APPROVAL/REJECTION AUDIT LOG TABLE */}
       <div className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
-        <div className="p-6 border-b border-border-subtle">
-          <h2 className="text-lg font-black text-foreground">Approval Logs</h2>
-          <p className="text-xs text-muted-foreground">
-            Audit history of approved and rejected user accounts.
-          </p>
+        <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-lg font-black text-foreground">Approval Logs</h2>
+              {/* <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Auto-Sync
+              </span> */}
+            </div>
+            
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -220,43 +226,105 @@ function ApprovalPage() {
             <tbody className="divide-y divide-border-subtle text-xs">
               {!Array.isArray(logs) || logs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                  <td colSpan={5} className="p-6 text-center text-muted-foreground">
                     No approval logs available.
                   </td>
                 </tr>
               ) : (
-                logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-surface-subtle/40 transition-all">
-                    <td className="p-4">
-                      <div className="font-bold text-foreground">
-                        {log.targetUser?.name ?? 'N/A'}
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">
-                        {log.targetUser?.email}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                          log.action === 'APPROVED'
-                            ? 'bg-green-500/10 text-green-600 border border-green-500/20'
-                            : 'bg-red-500/10 text-red-600 border border-red-500/20'
-                        }`}>
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="p-4 font-medium text-foreground">
-                      {log.assignedRole ? log.assignedRole : '—'}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-semibold text-foreground">
-                        {log.actionBy?.name ?? 'System'}
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">{log.actionBy?.email}</div>
-                    </td>
-                    <td className="p-4 text-muted-foreground">{log.timestamp}</td>
-                  </tr>
-                ))
+                logs.map((log) => {
+                  const targetName =
+                    log.targetUser?.name ||
+                    (log as any).target_user_name ||
+                    log.targetUser?.email ||
+                    (log as any).target_user_email ||
+                    'N/A';
+                  const targetEmail =
+                    log.targetUser?.email || (log as any).target_user_email || '';
+                  const role =
+                    log.assignedRole || (log as any).assigned_role || '—';
+                  const actionRaw = (
+                    log.action ||
+                    (log as any).action ||
+                    'INVITATION_SENT'
+                  ).toUpperCase();
+                  const actorName =
+                    log.actionBy?.name || (log as any).action_by_name || 'System';
+                  const actorEmail =
+                    log.actionBy?.email || (log as any).action_by_email || '';
+
+                  const rawDate = log.timestamp || (log as any).created_at;
+                  let formattedDate = '—';
+                  if (rawDate) {
+                    const parsed = new Date(rawDate);
+                    if (!isNaN(parsed.getTime())) {
+                      formattedDate = parsed.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      });
+                    }
+                  }
+
+                  let badgeStyle = 'bg-primary/10 text-primary border border-primary/20';
+                  let displayAction = actionRaw.replace(/_/g, ' ');
+                  if (actionRaw === 'APPROVED') {
+                    badgeStyle = 'bg-green-500/10 text-green-600 border border-green-500/20';
+                    displayAction = 'Approved';
+                  } else if (actionRaw === 'REJECTED') {
+                    badgeStyle = 'bg-red-500/10 text-red-600 border border-red-500/20';
+                    displayAction = 'Rejected';
+                  } else if (
+                    actionRaw === 'INVITATION' ||
+                    actionRaw === 'INVITATION_SENT' ||
+                    actionRaw === 'INVITED'
+                  ) {
+                    badgeStyle = 'bg-blue-500/10 text-blue-600 border border-blue-500/20';
+                    displayAction = 'Invitation';
+                  } else if (actionRaw === 'PENDING') {
+                    badgeStyle = 'bg-amber-500/10 text-amber-600 border border-amber-500/20';
+                    displayAction = 'Pending';
+                  }
+
+                  return (
+                    <tr key={log.id} className="hover:bg-surface-subtle/40 transition-all">
+                      <td className="p-4">
+                        <div className="font-bold text-foreground">
+                          {targetName}
+                        </div>
+                        {targetEmail && (
+                          <div className="text-muted-foreground text-[11px]">
+                            {targetEmail}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider inline-block ${badgeStyle}`}>
+                          {displayAction}
+                        </span>
+                      </td>
+                      <td className="p-4 font-medium text-foreground">
+                        {role}
+                      </td>
+                      <td className="p-4">
+                        <div className="font-semibold text-foreground">
+                          {actorName}
+                        </div>
+                        {actorEmail && (
+                          <div className="text-muted-foreground text-[11px]">
+                            {actorEmail}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4 text-muted-foreground font-medium">
+                        {formattedDate}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

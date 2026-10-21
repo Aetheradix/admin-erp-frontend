@@ -143,6 +143,8 @@ export const mapEvent = (event: Record<string, unknown>): ERPEvent => {
     start_time: event.start_time ? String(event.start_time) : undefined,
     end_time: event.end_time ? String(event.end_time) : undefined,
     max_participants: event.max_participants ? Number(event.max_participants) : undefined,
+    button_type: (event.button_type as ERPEvent['button_type']) || 'Register Now',
+    event_link: event.event_link ? String(event.event_link) : undefined,
     status: event.status ? String(event.status) : undefined,
     registered_users: Array.isArray(event.registered_users)
       ? event.registered_users.map(String)
