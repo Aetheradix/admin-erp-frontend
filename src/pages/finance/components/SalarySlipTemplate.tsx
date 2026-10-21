@@ -42,6 +42,9 @@ export interface SalarySlipData {
   watermarkText?: string;
   netPayInWords?: string;
   total?: number; // ADD THIS LINE TO RESOLVE TS2339
+  payrollType?: 'Regular' | 'Adjustment';
+  adjustmentType?: string;
+  referencedPeriod?: string;
 }
 
 export interface SalarySlipTemplateProps {
@@ -272,6 +275,27 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               }}>
               {data.monthYear || 'JUNE 2026'}
             </div>
+
+            {data.payrollType === 'Adjustment' && (
+              <div
+                style={{
+                  display: 'inline-block',
+                  fontSize: '9px',
+                  fontWeight: 800,
+                  background: '#FEF3C7',
+                  color: '#92400E',
+                  border: '1px solid #FCD34D',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginTop: '4px',
+                  width: 'fit-content',
+                }}>
+                Adjustment Slip • {data.adjustmentType || 'Correction'}
+                {data.referencedPeriod ? ` (${data.referencedPeriod})` : ''}
+              </div>
+            )}
           </div>
 
           {/* RIGHT: LOGO + COMPANY */}

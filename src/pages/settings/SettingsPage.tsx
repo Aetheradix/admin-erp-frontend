@@ -13,6 +13,7 @@ import { NotificationSettingsSection } from './components/sections/NotificationS
 import { AppearanceSettingsSection } from './components/sections/AppearanceSettingsSection';
 import { AdvancedSettingsSection } from './components/sections/AdvancedSettingsSection';
 import { DangerZoneSection } from './components/sections/DangerZoneSection';
+import { PayrollSettingsSection } from './components/sections/PayrollSettingsSection';
 
 export function SettingsPage() {
   const { t } = useTranslation();
@@ -99,6 +100,10 @@ export function SettingsPage() {
           onAutoArchiveChange={updateAutoArchive}
           onOpenTokenModal={() => setTokenModalVisible(true)}
         />
+
+        <div className="col-span-1 lg:col-span-2">
+          <PayrollSettingsSection />
+        </div>
 
         <DangerZoneSection onCacheReset={handleCacheReset} />
       </div>
