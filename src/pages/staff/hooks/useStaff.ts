@@ -8,6 +8,7 @@ import {
   useDeleteUserMutation,
 } from '@/store/api/userSlice';
 import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
+import { useSaveEmployeeCompensationMutation } from '@/store/api/financeApiSlice';
 import { useStaffFilters } from './useStaffFilters';
 import type { StaffMember } from '@/types/models';
 
@@ -17,6 +18,7 @@ export const useStaff = () => {
   const [updateStaff] = useUpdateStaffMutation();
   const [deleteStaff] = useDeleteUserMutation();
   const [promoteToAdmin] = usePromoteToAdminMutation();
+  const [saveEmployeeCompensation] = useSaveEmployeeCompensationMutation();
 
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
@@ -127,6 +129,7 @@ export const useStaff = () => {
         pan_number: data.panNumber || data.pan_number,
       };
 
+      let savedUserId = editingMember?.id;
       if (editingMember) {
         await updateStaff({ id: editingMember.id, ...payload }).unwrap();
         showToast({
@@ -136,7 +139,8 @@ export const useStaff = () => {
           life: 3000,
         });
       } else {
-        await createStaff(payload).unwrap();
+        const createRes: any = await createStaff(payload).unwrap();
+        savedUserId = createRes?.id || createRes?.data?.id || createRes?.user?.id;
         showToast({
           severity: 'success',
           summary: 'Success',
@@ -144,6 +148,32 @@ export const useStaff = () => {
           life: 3000,
         });
       }
+
+      // Also sync dedicated Employee Compensation endpoint if compensation entered
+      if (savedUserId && data.totalCompensation) {
+        try {
+          await saveEmployeeCompensation({
+            userId: Number(savedUserId),
+            ctcAnnual: Number(data.totalCompensation),
+            taxRegime: String(data.taxRegime || '').toLowerCase().includes('old') ? 'old' : 'new',
+            payFrequency: (data.payFrequency || 'monthly').toLowerCase(),
+            effectiveDate: data.effectiveDate || data.joinDate || new Date().toISOString().split('T')[0],
+            isMidYearJoiner: Boolean(data.isMidYearJoiner),
+            previousEmployerGross: Number(data.previousEmployerYtd?.grossPay || 0),
+            previousEmployerTds: Number(data.previousEmployerYtd?.tdsDeducted || 0),
+            previousEmployerPf: Number(data.previousEmployerYtd?.pfDeducted || 0),
+            previousEmployerStandardDeduction: Number(
+              data.previousEmployerStandardDeduction || data.previousEmployerYtd?.standardDeduction || 0
+            ),
+            section80c: Number(data.section80c || 0),
+            section80d: Number(data.section80d || 0),
+            hraExemption: Number(data.hraExemption || 0),
+          }).unwrap();
+        } catch (compErr) {
+          console.warn('Could not sync to dedicated compensation endpoint:', compErr);
+        }
+      }
+
       setShowForm(false);
     } catch (err: unknown) {
       console.error('Operation failed', err);

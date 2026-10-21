@@ -12,6 +12,7 @@ import {
   Calendar,
   Sparkles,
   Download,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
@@ -24,6 +25,7 @@ import {
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
+import { TaxProjectionModal } from './components/TaxProjectionModal';
 
 
 export interface PayrollRecord {
@@ -240,6 +242,7 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
 const MyPaySlipPage = () => {
   const [search, setSearch] = useState('');
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
+  const [showTaxProjection, setShowTaxProjection] = useState(false);
 
   // Extract user details directly from useAuth hook
   const { user } = useAuth();
@@ -502,24 +505,34 @@ const MyPaySlipPage = () => {
           </div>
         </div>
 
-        {/* Search Field */}
-        <div className="relative w-full md:w-80">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search slip no, month, amount..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-slate-800 focus:bg-white transition-all shadow-inner"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              aria-label="Clear search">
-              <X size={14} />
-            </button>
-          )}
+        {/* Actions & Search Field */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowTaxProjection(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-2xl text-xs font-bold hover:bg-slate-800 transition shadow-sm active:scale-95 shrink-0">
+            <FileSpreadsheet size={15} className="text-emerald-400" />
+            My Tax Projection
+          </button>
+
+          <div className="relative w-full sm:w-72">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search slip no, month, amount..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-slate-800 focus:bg-white transition-all shadow-inner"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                aria-label="Clear search">
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -669,6 +682,15 @@ const MyPaySlipPage = () => {
           </div>
         )}
       </div>
+
+      {showTaxProjection && (
+        <TaxProjectionModal
+          isOpen={showTaxProjection}
+          onClose={() => setShowTaxProjection(false)}
+          isSelfService={true}
+          initialEmployee={user}
+        />
+      )}
     </div>
   );
 }

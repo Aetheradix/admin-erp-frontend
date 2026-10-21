@@ -22,6 +22,8 @@ import { useGetUsersQuery } from '@/store/api/userSlice';
 import {
   useGetAllSalarySlipsQuery,
   useLazyGetSalarySlipByIdQuery,
+  useLazyGetEmployeeCompensationQuery,
+  usePreviewEmployeeCompensationMutation,
 } from '@/store/api/financeApiSlice';
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
 import { useAuth } from '@/hooks/useAuth';
@@ -51,7 +53,11 @@ export interface SalarySlipData {
   payCycle?: PayCycleOption;
   payrollType?: PayrollTypeOption;
   adjustmentType?: string;
+  adjustmentAmount?: number;
+  adjustmentReason?: string;
   referencedPeriod?: string;
+  referencePeriod?: string;
+  referenceSalarySlipId?: number | string;
   adjustmentNotes?: string;
   cyclePart?: number;
   customStartDate?: string;
@@ -286,8 +292,12 @@ const getInitialForm = (): SalarySlipData => {
     payPeriod,
     payCycle: defaultCycle,
     payrollType: 'Regular',
-    adjustmentType: '',
+    adjustmentType: 'wrong_rate',
+    adjustmentAmount: 0,
+    adjustmentReason: '',
     referencedPeriod: '',
+    referencePeriod: '',
+    referenceSalarySlipId: '',
     adjustmentNotes: '',
     cyclePart: 1,
 
@@ -367,6 +377,8 @@ const SalarySlipForm = ({
   });
   const { data: allSalarySlipsData } = useGetAllSalarySlipsQuery();
   const [getSlipsByEmpId] = useLazyGetSalarySlipByIdQuery();
+  const [fetchCompensation, { isLoading: isFetchingCompensation }] = useLazyGetEmployeeCompensationQuery();
+  const [previewCompensation, { isLoading: isPreviewingCompensation }] = usePreviewEmployeeCompensationMutation();
 
   const [customUsersList, setCustomUsersList] = useState<any[]>([]);
   const [isCustomLoading, setIsCustomLoading] = useState<boolean>(false);
@@ -1001,6 +1013,118 @@ const SalarySlipForm = ({
     }
   };
 
+  const handleAutoPopulateCompensation = async () => {
+    const rawId = formData.userId || formData.employeeId;
+    const numericId = Number(rawId);
+    const validId = !isNaN(numericId) && numericId > 0 ? numericId : rawId;
+
+    if (!validId && !formData.totalCompensation) {
+      alert('Please select an employee or enter Total Compensation (CTC) first.');
+      return;
+    }
+
+    try {
+      let compData: any = null;
+      if (validId) {
+        try {
+          const res = await fetchCompensation(validId).unwrap();
+          compData = res?.data || res;
+        } catch (fetchErr) {
+          console.warn('Compensation fetch error:', fetchErr);
+        }
+      }
+
+      if ((!compData || !compData.components) && formData.totalCompensation) {
+        const ctcNum = Number(formData.totalCompensation);
+        if (ctcNum > 0) {
+          try {
+            const previewRes = await previewCompensation({ ctcAnnual: ctcNum }).unwrap();
+            compData = previewRes?.data || previewRes;
+          } catch (previewErr) {
+            console.warn('Compensation preview error:', previewErr);
+          }
+        }
+      }
+
+      if (compData) {
+        const basicMonthly = Math.round(
+          Number(
+            compData.components?.basicSalary?.monthly ??
+              compData.basicSalaryMonthly ??
+              compData.basicSalary ??
+              (compData.ctcAnnual ? (compData.ctcAnnual * 0.4) / 12 : 0)
+          )
+        );
+
+        const hraMonthly = Math.round(
+          Number(
+            compData.components?.houseRentAllowance?.monthly ??
+              compData.hraMonthly ??
+              compData.hra ??
+              (basicMonthly ? basicMonthly * 0.5 : 0)
+          )
+        );
+
+        const specialMonthly = Math.round(
+          Number(
+            compData.components?.specialAllowance?.monthly ??
+              compData.specialAllowanceMonthly ??
+              compData.specialAllowance ??
+              0
+          )
+        );
+
+        const pfMonthly = Math.round(
+          Number(
+            compData.expectedMonthlyPay?.deductions?.employeePf ??
+              compData.employeeContributions?.employeePf?.monthly ??
+              compData.employeePf ??
+              (basicMonthly ? basicMonthly * 0.12 : 0)
+          )
+        );
+
+        const ptMonthly = Math.round(
+          Number(compData.expectedMonthlyPay?.deductions?.professionalTax ?? 200)
+        );
+
+        const tdsMonthly = Math.round(
+          Number(
+            compData.expectedMonthlyPay?.deductions?.incomeTaxTds ??
+              compData.taxCalculation?.projectedPeriodicTds ??
+              0
+          )
+        );
+
+        const newEarnings: EarningsItem[] = [
+          { name: 'Basic Pay', amount: basicMonthly || 0 },
+          { name: 'House Rent Allowance (HRA)', amount: hraMonthly || 0 },
+          ...(specialMonthly > 0 ? [{ name: 'Special Allowance', amount: specialMonthly }] : []),
+        ];
+
+        const newDeductions: DeductionItem[] = [
+          { name: 'Provident Fund (PF)', amount: pfMonthly || 0 },
+          { name: 'Professional Tax', amount: ptMonthly || 200 },
+          ...(tdsMonthly > 0
+            ? [{ name: 'Income Tax (TDS)', amount: tdsMonthly }]
+            : [{ name: 'Income Tax (TDS)', amount: 0 }]),
+        ];
+
+        setFormData((prev) => ({
+          ...prev,
+          baseSalary: basicMonthly || prev.baseSalary,
+          taxRegime:
+            compData.taxRegime === 'old' || compData.taxRegime === 'Old Regime'
+              ? 'Old Regime'
+              : 'New Regime',
+          earnings: newEarnings,
+          deductions: newDeductions,
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to auto-populate compensation:', err);
+    }
+  };
+
   const clearEmployeeSearch = () => {
     setSearchTerm('');
     setIsDropdownOpen(true);
@@ -1181,10 +1305,18 @@ const SalarySlipForm = ({
         payrollType: formData.payrollType || 'Regular',
         adjustment_type: formData.adjustmentType || null,
         adjustmentType: formData.adjustmentType || null,
-        referenced_period: formData.referencedPeriod || null,
-        referencedPeriod: formData.referencedPeriod || null,
-        adjustment_notes: formData.adjustmentNotes || null,
-        adjustmentNotes: formData.adjustmentNotes || null,
+        adjustment_amount: Number(formData.adjustmentAmount || 0),
+        adjustmentAmount: Number(formData.adjustmentAmount || 0),
+        adjustment_reason: formData.adjustmentReason || formData.adjustmentNotes || null,
+        adjustmentReason: formData.adjustmentReason || formData.adjustmentNotes || null,
+        reference_period: formData.referencePeriod || formData.referencedPeriod || null,
+        referencePeriod: formData.referencePeriod || formData.referencedPeriod || null,
+        referenced_period: formData.referencePeriod || formData.referencedPeriod || null,
+        referencedPeriod: formData.referencePeriod || formData.referencedPeriod || null,
+        reference_salary_slip_id: formData.referenceSalarySlipId ? Number(formData.referenceSalarySlipId) : null,
+        referenceSalarySlipId: formData.referenceSalarySlipId ? Number(formData.referenceSalarySlipId) : null,
+        adjustment_notes: formData.adjustmentReason || formData.adjustmentNotes || null,
+        adjustmentNotes: formData.adjustmentReason || formData.adjustmentNotes || null,
         tax_regime: formData.taxRegime || 'New Regime',
         taxRegime: formData.taxRegime || 'New Regime',
         total_compensation: formData.totalCompensation || null,
@@ -1332,89 +1464,139 @@ const SalarySlipForm = ({
                 <div className="mt-4 pt-4 border-t border-slate-200/80 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Adjustment Reason / Category <span className="text-red-500">*</span>
+                      Adjustment Type <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={formData.adjustmentType || 'Salary Rate Discrepancy'}
+                      value={formData.adjustmentType || 'wrong_rate'}
                       onChange={(e) => updateField('adjustmentType', e.target.value)}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black">
-                      <option value="Salary Rate Discrepancy">Wrong Rate / Increment Arrears</option>
-                      <option value="Tax Correction (TDS)">Tax Deducted Too Little or Too Much (TDS Correction)</option>
-                      <option value="Overpayment Recovery">Overpayment Recovery / Clawback</option>
-                      <option value="Leave / LOP Discrepancy">Leave / LOP Attendance Correction</option>
-                      <option value="Custom Adjustment">Custom Past Discrepancy Correction</option>
+                      <option value="wrong_rate">Wrong Rate / Arrears (wrong_rate)</option>
+                      <option value="tax_correction">Tax Deducted Discrepancy / Refund (tax_correction)</option>
+                      <option value="overpayment">Clawback / Overpayment Recovery (overpayment)</option>
+                      <option value="underpayment">Underpayment (underpayment)</option>
+                      <option value="arrears">Arrears Payment (arrears)</option>
+                      <option value="other">Other Past Correction (other)</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Referenced Past Pay Period / Slip #
+                      Adjustment Amount (₹) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        value={formData.adjustmentAmount ?? ''}
+                        onChange={(e) => {
+                          const val = Number(e.target.value || 0);
+                          updateField('adjustmentAmount', val);
+                        }}
+                        placeholder="e.g. 10000 or -5000"
+                        className="w-full rounded-xl border border-slate-300 pl-7 pr-3 py-2 text-xs bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-black"
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                      Positive adds to gross, negative recovers overpayment.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Reference Period
                     </label>
                     <input
                       type="text"
-                      value={formData.referencedPeriod || ''}
-                      onChange={(e) => updateField('referencedPeriod', e.target.value)}
-                      placeholder="e.g. SLIP-EMP-001-202608 / August 2026"
+                      value={formData.referencePeriod || formData.referencedPeriod || ''}
+                      onChange={(e) => {
+                        updateField('referencePeriod', e.target.value);
+                        updateField('referencedPeriod', e.target.value);
+                      }}
+                      placeholder="e.g. April 2026 or Cycle #1"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Adjustment Reason (Audit Log) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.adjustmentReason || formData.adjustmentNotes || ''}
+                      onChange={(e) => {
+                        updateField('adjustmentReason', e.target.value);
+                        updateField('adjustmentNotes', e.target.value);
+                      }}
+                      placeholder="e.g. Corrected past basic salary underpayment from April cycle"
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Adjustment Explanation / Note
+                      Reference Slip ID (Optional)
                     </label>
                     <input
-                      type="text"
-                      value={formData.adjustmentNotes || ''}
-                      onChange={(e) => updateField('adjustmentNotes', e.target.value)}
-                      placeholder="e.g. Rate corrected from 45,000 to 50,000 for August"
-                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black"
+                      type="number"
+                      value={formData.referenceSalarySlipId || ''}
+                      onChange={(e) => updateField('referenceSalarySlipId', e.target.value)}
+                      placeholder="e.g. 32"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-mono font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
 
                   <div className="md:col-span-3 flex flex-wrap items-center gap-2 pt-1 text-xs">
-                    <span className="text-slate-500 font-semibold text-[11px]">Quick Insert:</span>
+                    <span className="text-slate-500 font-semibold text-[11px]">Quick Apply to Slip Breakdown:</span>
                     <button
                       type="button"
                       onClick={() => {
+                        const amt = Math.abs(formData.adjustmentAmount || 10000);
+                        updateField('adjustmentAmount', amt);
+                        updateField('adjustmentType', 'wrong_rate');
                         setFormData((prev) => ({
                           ...prev,
                           earnings: [
                             ...prev.earnings,
-                            { name: `Arrears Adjustment (${formData.referencedPeriod || 'Past Period'})`, amount: 5000 },
+                            { name: `Arrears Adjustment (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`, amount: amt },
                           ],
                         }));
                       }}
                       className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold transition">
-                      + Add Arrears Earning
+                      + Add Arrears Earning (+₹{Math.abs(formData.adjustmentAmount || 10000).toLocaleString('en-IN')})
                     </button>
                     <button
                       type="button"
                       onClick={() => {
+                        const amt = Math.abs(formData.adjustmentAmount || 1500);
+                        updateField('adjustmentType', 'tax_correction');
                         setFormData((prev) => ({
                           ...prev,
                           deductions: [
                             ...prev.deductions,
-                            { name: `TDS Correction (${formData.referencedPeriod || 'Past Period'})`, amount: 1500 },
+                            { name: `TDS Correction (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`, amount: amt },
                           ],
                         }));
                       }}
                       className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold transition">
-                      + Add TDS Adjustment
+                      + Add Tax Correction
                     </button>
                     <button
                       type="button"
                       onClick={() => {
+                        const amt = Math.abs(formData.adjustmentAmount || 5000);
+                        updateField('adjustmentAmount', -amt);
+                        updateField('adjustmentType', 'overpayment');
                         setFormData((prev) => ({
                           ...prev,
                           deductions: [
                             ...prev.deductions,
-                            { name: `Overpayment Clawback (${formData.referencedPeriod || 'Past Period'})`, amount: 3000 },
+                            { name: `Overpayment Clawback (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`, amount: amt },
                           ],
                         }));
                       }}
                       className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold transition">
-                      + Add Clawback Deduction
+                      + Add Clawback Recovery (-₹{Math.abs(formData.adjustmentAmount || 5000).toLocaleString('en-IN')})
                     </button>
                   </div>
                 </div>
@@ -1855,9 +2037,24 @@ const SalarySlipForm = ({
               {/* Earnings */}
               <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200">
                 <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-                  <span className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-                    <IndianRupee size={16} className="text-emerald-600" /> Earnings
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                      <IndianRupee size={16} className="text-emerald-600" /> Earnings
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAutoPopulateCompensation}
+                      disabled={isFetchingCompensation || isPreviewingCompensation}
+                      title="Auto-fetch and populate salary structure from employee's stored compensation or CTC"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition disabled:opacity-50">
+                      {isFetchingCompensation || isPreviewingCompensation ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <Sparkles size={12} className="text-emerald-600" />
+                      )}
+                      Auto-Populate
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={addEarning}

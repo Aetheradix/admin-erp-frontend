@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   X,
   FileSpreadsheet,
@@ -7,13 +7,11 @@ import {
   Calculator,
   User,
   ShieldCheck,
-  // TrendingDown,
   Info,
   Calendar,
-  // Building,
-  // CreditCard,
-  // Layers,
   Sparkles,
+  Wallet,
+  Loader2,
 } from 'lucide-react';
 import {
   calculateTaxForEmployee,
@@ -24,20 +22,27 @@ import {
   type RegimeComparison,
 } from '@/utils/taxCalculation';
 import { useGetUsersQuery } from '@/store/api/userSlice';
-// import { formatCurrency } from '@/utils/currency';
+import {
+  useGetTaxProjectionQuery,
+  useGetMyTaxProjectionQuery,
+  useSimulateTaxProjectionMutation,
+  type TaxProjectionResponse,
+} from '@/store/api/financeApiSlice';
 
 export interface TaxProjectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialEmployee?: any;
+  isSelfService?: boolean;
 }
 
 export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
   isOpen,
   onClose,
   initialEmployee,
+  isSelfService = false,
 }) => {
-  const { data: usersData } = useGetUsersQuery();
+  const { data: usersData } = useGetUsersQuery(undefined, { skip: isSelfService });
   const usersList: any[] = useMemo(() => {
     if (Array.isArray(usersData)) return usersData;
     if (usersData && Array.isArray((usersData as any).data)) return (usersData as any).data;
@@ -84,9 +89,9 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
       currentEmployee.base ||
       currentEmployee.salary;
     if (baseSalary && Number(baseSalary) > 0) {
-      return Number(baseSalary) * 12 * 2; // rough monthly -> CTC estimate
+      return Number(baseSalary) * 12 * 2;
     }
-    return 1200000; // Default ₹12,00,000 for demonstration
+    return 1200000;
   }, [currentEmployee]);
 
   // Form State
@@ -108,7 +113,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
   const [prevPf, setPrevPf] = useState<number>(Number(prevYtd.pfDeducted || 0));
 
   // Sync when currentEmployee changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentEmployee) {
       const ctc =
         currentEmployee.totalCompensation ||
@@ -119,7 +124,8 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
         setAnnualGross(Number(ctc));
       }
       if (currentEmployee.taxRegime || currentEmployee.tax_regime) {
-        setActiveRegime((currentEmployee.taxRegime || currentEmployee.tax_regime) as TaxRegime);
+        const r = currentEmployee.taxRegime || currentEmployee.tax_regime;
+        setActiveRegime(r === 'old' || r === 'Old Regime' ? 'Old Regime' : 'New Regime');
       }
       const isMid = Boolean(currentEmployee.isMidYearJoiner ?? currentEmployee.is_mid_year_joiner);
       setIsMidYearJoiner(isMid);
@@ -130,11 +136,38 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     }
   }, [currentEmployee]);
 
-  // Calculations
+  // Backend API Queries
+  const targetUserId = isSelfService ? undefined : (selectedUserId || currentEmployee?.id);
+  const regimeParam = activeRegime === 'Old Regime' ? 'old' : 'new';
+
+  const { data: adminProjectionData, isFetching: isFetchingAdminProj } = useGetTaxProjectionQuery(
+    {
+      userId: targetUserId!,
+      financialYear,
+      regime: regimeParam,
+    },
+    { skip: !isOpen || isSelfService || !targetUserId }
+  );
+
+  const { data: myProjectionData, isFetching: isFetchingMyProj } = useGetMyTaxProjectionQuery(
+    { financialYear, regime: regimeParam },
+    { skip: !isOpen || !isSelfService }
+  );
+
+  const [simulateTax, { data: simulatedData }] = useSimulateTaxProjectionMutation();
+
+  // Active projection payload from API
+  const activeBackendData: TaxProjectionResponse | undefined = useMemo(() => {
+    if (simulatedData) return simulatedData;
+    if (isSelfService) return myProjectionData;
+    return adminProjectionData;
+  }, [simulatedData, isSelfService, myProjectionData, adminProjectionData]);
+
+  // Fallback / Instant local calculations
   const taxParams = useMemo(() => {
     return {
       annualGrossSalary: annualGross,
-      basicSalary: Math.round(annualGross * 0.5),
+      basicSalary: Math.round(annualGross * 0.4),
       regime: activeRegime,
       deduction80C,
       deduction80D,
@@ -146,14 +179,14 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     };
   }, [annualGross, activeRegime, deduction80C, deduction80D, hraExemption, isMidYearJoiner, prevGross, prevTds, prevPf]);
 
-  const taxResult: TaxCalculationResult = useMemo(() => {
+  const clientTaxResult: TaxCalculationResult = useMemo(() => {
     return calculateTaxForEmployee(taxParams);
   }, [taxParams]);
 
-  const comparison: RegimeComparison = useMemo(() => {
+  const clientComparison: RegimeComparison = useMemo(() => {
     return compareRegimes({
       annualGrossSalary: annualGross,
-      basicSalary: Math.round(annualGross * 0.5),
+      basicSalary: Math.round(annualGross * 0.4),
       deduction80C,
       deduction80D,
       hraExemption,
@@ -164,14 +197,97 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     });
   }, [annualGross, deduction80C, deduction80D, hraExemption, isMidYearJoiner, prevGross, prevTds, prevPf]);
 
-  // Monthly Projection Schedule (April to March)
-  const monthlySchedule = useMemo(() => {
+  // Trigger backend simulator when parameters change
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      simulateTax({
+        annualGrossSalary: annualGross,
+        regime: regimeParam,
+        financialYear,
+        section80c: deduction80C,
+        section80d: deduction80D,
+        hraExemption,
+        isMidYearJoiner,
+        previousEmployerGross: prevGross,
+        previousEmployerTds: prevTds,
+        previousEmployerPf: prevPf,
+      }).catch(() => {
+        // Silently use client fallback
+      });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [annualGross, regimeParam, deduction80C, deduction80D, hraExemption, isMidYearJoiner, prevGross, prevTds, prevPf, isOpen, simulateTax]);
+
+  // Extract display metrics (prioritizing backend when available)
+  const totalGrossIncome =
+    activeBackendData?.taxCalculation?.totalGrossIncome ?? clientTaxResult.totalCumulativeGross;
+  const netTaxableIncome =
+    activeBackendData?.taxCalculation?.netTaxableIncome ?? clientTaxResult.netTaxableIncome;
+  const totalAnnualTax =
+    activeBackendData?.taxCalculation?.totalAnnualTax ?? clientTaxResult.totalAnnualTax;
+  const projectedPeriodicTds =
+    activeBackendData?.taxCalculation?.projectedPeriodicTds ?? clientTaxResult.projectedMonthlyTds;
+  const standardDeduction =
+    activeBackendData?.taxCalculation?.exemptionsAndDeductions?.standardDeduction ??
+    clientTaxResult.standardDeduction;
+  const totalExemptions =
+    activeBackendData?.taxCalculation?.exemptionsAndDeductions?.totalDeductions ??
+    clientTaxResult.totalExemptionsAndDeductions;
+
+  // Expected monthly pay card
+  const expectedMonthlyPay = activeBackendData?.expectedMonthlyPay ?? {
+    grossPay: Math.round(annualGross / 12),
+    deductions: {
+      employeePf: Math.round((annualGross * 0.4 * 0.12) / 12),
+      professionalTax: 200,
+      incomeTaxTds: projectedPeriodicTds,
+      totalDeductions: Math.round((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds),
+    },
+    netTakeHomePay: Math.round(
+      annualGross / 12 - ((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds)
+    ),
+  };
+
+  // Regime comparison
+  const comparison = activeBackendData?.regimeComparison
+    ? {
+        recommendedRegime:
+          activeBackendData.regimeComparison.recommendedRegime === 'old'
+            ? ('Old Regime' as TaxRegime)
+            : ('New Regime' as TaxRegime),
+        taxDifference: activeBackendData.regimeComparison.annualSavings,
+        savingsMessage: activeBackendData.regimeComparison.explanation,
+      }
+    : clientComparison;
+
+  // Monthly Schedule (12 months from backend or client generator)
+  const monthlyScheduleRows = useMemo(() => {
+    if (activeBackendData?.monthlySchedule && activeBackendData.monthlySchedule.length > 0) {
+      return activeBackendData.monthlySchedule.map((row) => ({
+        monthName: row.monthName,
+        year: row.year,
+        status: row.status,
+        basicSalary: row.basicSalary,
+        hra: row.hra,
+        otherAllowances: row.specialAllowance,
+        grossPay: row.grossPay,
+        pfDeduction: row.employeePf,
+        professionalTax: row.professionalTax,
+        projectedTds: row.incomeTaxTds,
+        netTakeHome: row.netPay,
+        cumulativeGross: row.cumulativeGross,
+        cumulativeTds: row.cumulativeTds,
+      }));
+    }
+
     return generateMonthlyProjectionSchedule(
       annualGross,
-      taxResult.totalAnnualTax,
-      isMidYearJoiner ? 7 : 1 // Mid-year joiner assumed October (month 7) or custom
+      totalAnnualTax,
+      isMidYearJoiner ? 7 : 1
     );
-  }, [annualGross, taxResult.totalAnnualTax, isMidYearJoiner]);
+  }, [activeBackendData, annualGross, totalAnnualTax, isMidYearJoiner]);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -182,21 +298,34 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
   if (!isOpen) return null;
 
   const empName =
+    activeBackendData?.employee?.name ||
     currentEmployee?.employeeName ||
     currentEmployee?.username ||
     currentEmployee?.name ||
-    'Selected Employee';
+    'Employee';
   const empCode =
+    activeBackendData?.employee?.employeeCode ||
     currentEmployee?.employeeCode ||
     currentEmployee?.employee_code ||
     currentEmployee?.employeeId ||
     currentEmployee?.id ||
     'EMP-001';
-  const designation = currentEmployee?.position || currentEmployee?.designation || currentEmployee?.role || 'Specialist';
-  const panNumber = currentEmployee?.panNumber || currentEmployee?.pan_number || 'ABCDE1234F';
+  const designation =
+    activeBackendData?.employee?.designation ||
+    currentEmployee?.position ||
+    currentEmployee?.designation ||
+    currentEmployee?.role ||
+    'Specialist';
+  const panNumber =
+    activeBackendData?.employee?.panNumber ||
+    currentEmployee?.panNumber ||
+    currentEmployee?.pan_number ||
+    'ABCDE1234F';
+
+  const isDataLoading = isFetchingAdminProj || isFetchingMyProj;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-white w-full max-w-6xl max-h-[94vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="px-6 py-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
@@ -210,6 +339,16 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                 <span className="text-[11px] font-bold bg-white/10 text-white/90 px-2 py-0.5 rounded border border-white/10">
                   FY {financialYear}
                 </span>
+                {isDataLoading && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
+                    <Loader2 size={13} className="animate-spin" /> Loading...
+                  </span>
+                )}
+                {isSelfService && (
+                  <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
+                    Self-Service
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-400">
                 Annual tax projection for <span className="text-white font-bold">{empName}</span> ({empCode}) • Monthly TDS & statutory exemptions.
@@ -241,22 +380,28 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
             {/* Employee Switcher */}
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                <User size={14} className="text-primary" /> Select Employee
+                <User size={14} className="text-primary" /> Employee Profile
               </label>
-              <select
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary">
-                {usersList.map((u) => {
-                  const name = u.username || u.name || u.employeeName || 'Staff';
-                  const code = u.employee_code || u.employeeId || u.id;
-                  return (
-                    <option key={u.id} value={u.id}>
-                      {name} ({code})
-                    </option>
-                  );
-                })}
-              </select>
+              {!isSelfService ? (
+                <select
+                  value={selectedUserId}
+                  onChange={(e) => setSelectedUserId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary">
+                  {usersList.map((u) => {
+                    const name = u.username || u.name || u.employeeName || 'Staff';
+                    const code = u.employee_code || u.employeeId || u.id;
+                    return (
+                      <option key={u.id} value={u.id}>
+                        {name} ({code})
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <div className="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800">
+                  {empName} ({empCode})
+                </div>
+              )}
               <span className="text-[11px] text-slate-500 mt-1 block">
                 {designation} • PAN: <span className="font-mono font-bold">{panNumber}</span>
               </span>
@@ -290,24 +435,26 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveRegime('New Regime')}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold transition border ${activeRegime === 'New Regime'
-                    ? 'bg-primary text-white border-primary shadow-xs'
-                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                    }`}>
+                  className={`py-2 px-2 rounded-xl text-xs font-bold transition border ${
+                    activeRegime === 'New Regime'
+                      ? 'bg-primary text-white border-primary shadow-xs'
+                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                  }`}>
                   New Regime (12L Nil)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveRegime('Old Regime')}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold transition border ${activeRegime === 'Old Regime'
-                    ? 'bg-primary text-white border-primary shadow-xs'
-                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                    }`}>
+                  className={`py-2 px-2 rounded-xl text-xs font-bold transition border ${
+                    activeRegime === 'Old Regime'
+                      ? 'bg-primary text-white border-primary shadow-xs'
+                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                  }`}>
                   Old Regime (80C/HRA)
                 </button>
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">
-                Standard Deduction: ₹{taxResult.standardDeduction.toLocaleString('en-IN')}
+                Standard Deduction: ₹{standardDeduction.toLocaleString('en-IN')}
               </span>
             </div>
           </div>
@@ -343,55 +490,93 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
             )}
           </div>
 
-          {/* Key Metrics KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                Total Annual Gross
-              </span>
-              <span className="text-lg font-black text-slate-900 font-mono mt-1 block">
-                ₹{taxResult.totalCumulativeGross.toLocaleString('en-IN')}
-              </span>
+          {/* Expected Monthly Take-Home Pay & KPI Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Expected Monthly Pay Card */}
+            <div className="p-4 rounded-2xl bg-emerald-500 text-white shadow-xs md:col-span-2 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-emerald-100 uppercase tracking-wider flex items-center gap-1.5">
+                    <Wallet size={13} /> Expected Monthly Take-Home Pay
+                  </span>
+                  <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded">
+                    Net Take-Home
+                  </span>
+                </div>
+                <span className="text-2xl font-black font-mono">
+                  ₹{Number(expectedMonthlyPay.netTakeHomePay || 0).toLocaleString('en-IN', { maximumFractionDigits: 1 })}
+                </span>
+                <span className="text-[11px] text-emerald-100 block mt-0.5">
+                  Gross Pay: ₹{Number(expectedMonthlyPay.grossPay || 0).toLocaleString('en-IN')} / month
+                </span>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-emerald-400/40 grid grid-cols-3 gap-2 text-[10px]">
+                <div>
+                  <span className="text-emerald-100 block">PF (12%)</span>
+                  <span className="font-mono font-bold">
+                    ₹{Number(expectedMonthlyPay.deductions?.employeePf || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-emerald-100 block">Prof. Tax</span>
+                  <span className="font-mono font-bold">
+                    ₹{Number(expectedMonthlyPay.deductions?.professionalTax || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-emerald-100 block">Projected TDS</span>
+                  <span className="font-mono font-bold">
+                    ₹{Number(expectedMonthlyPay.deductions?.incomeTaxTds || projectedPeriodicTds).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Gross Income */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Total Annual Gross
+                </span>
+                <span className="text-lg font-black text-slate-900 font-mono mt-1 block">
+                  ₹{Number(totalGrossIncome).toLocaleString('en-IN')}
+                </span>
+              </div>
               {isMidYearJoiner && prevGross > 0 && (
-                <span className="text-[10px] font-medium text-slate-500 block mt-0.5">
-                  Includes ₹{prevGross.toLocaleString('en-IN')} previous employer
+                <span className="text-[10px] font-medium text-slate-500 block mt-1">
+                  Includes ₹{prevGross.toLocaleString('en-IN')} prev. employer
                 </span>
               )}
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                Exemptions & Deductions
-              </span>
-              <span className="text-lg font-black text-emerald-600 font-mono mt-1 block">
-                ₹{taxResult.totalExemptionsAndDeductions.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[10px] font-medium text-slate-500 block mt-0.5">
-                Standard ₹{taxResult.standardDeduction.toLocaleString('en-IN')} + PF/NPS
-              </span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                Net Taxable Income
-              </span>
-              <span className="text-lg font-black text-indigo-900 font-mono mt-1 block">
-                ₹{taxResult.netTaxableIncome.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[10px] font-medium text-slate-500 block mt-0.5">
-                Subject to slab progression
+            {/* Exemptions & Deductions */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Exemptions & Deductions
+                </span>
+                <span className="text-lg font-black text-emerald-600 font-mono mt-1 block">
+                  ₹{Number(totalExemptions).toLocaleString('en-IN')}
+                </span>
+              </div>
+              <span className="text-[10px] font-medium text-slate-500 block mt-1">
+                Standard ₹{standardDeduction.toLocaleString('en-IN')} + PF/NPS
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-xs">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Projected Monthly TDS
-              </span>
-              <span className="text-xl font-black text-white font-mono mt-1 block">
-                ₹{taxResult.projectedMonthlyTds.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[10px] font-medium text-slate-400 block mt-0.5">
-                Annual Tax: ₹{taxResult.totalAnnualTax.toLocaleString('en-IN')}
+            {/* Net Annual Tax Liability */}
+            <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Total Annual Tax
+                </span>
+                <span className="text-xl font-black text-white font-mono mt-1 block">
+                  ₹{Number(totalAnnualTax).toLocaleString('en-IN')}
+                </span>
+              </div>
+              <span className="text-[10px] font-medium text-slate-400 block mt-1">
+                Monthly TDS: ₹{Number(projectedPeriodicTds).toLocaleString('en-IN')}
               </span>
             </div>
           </div>
@@ -405,7 +590,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                   <Calculator size={15} className="text-primary" /> Progressive Slabs ({activeRegime})
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  Effective Tax Rate: {taxResult.effectiveTaxRate}%
+                  Taxable Income: ₹{Number(netTaxableIncome).toLocaleString('en-IN')}
                 </span>
               </div>
 
@@ -420,20 +605,27 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                    {taxResult.slabs.map((slab, i) => (
-                      <tr key={i} className={slab.taxAmount > 0 ? 'bg-slate-50/50' : ''}>
-                        <td className="py-2">{slab.slabLabel}</td>
-                        <td className="py-2 text-right font-mono font-bold text-slate-600">
-                          {Math.round(slab.rate * 100)}%
-                        </td>
-                        <td className="py-2 text-right font-mono">
-                          ₹{slab.taxableInSlab.toLocaleString('en-IN')}
-                        </td>
-                        <td className="py-2 text-right font-mono font-bold text-slate-900">
-                          ₹{slab.taxAmount.toLocaleString('en-IN')}
-                        </td>
-                      </tr>
-                    ))}
+                    {(activeBackendData?.taxCalculation?.slabs || clientTaxResult.slabs).map((slab: any, i: number) => {
+                      const slabLabel = slab.slab || slab.slabLabel;
+                      const rateText = slab.ratePercentage || `${Math.round((slab.rate || 0) * 100)}%`;
+                      const taxable = slab.taxableAmount ?? slab.taxableInSlab ?? 0;
+                      const taxVal = slab.tax ?? slab.taxAmount ?? 0;
+
+                      return (
+                        <tr key={i} className={taxVal > 0 ? 'bg-slate-50/50' : ''}>
+                          <td className="py-2">{slabLabel}</td>
+                          <td className="py-2 text-right font-mono font-bold text-slate-600">
+                            {rateText}
+                          </td>
+                          <td className="py-2 text-right font-mono">
+                            ₹{Number(taxable).toLocaleString('en-IN')}
+                          </td>
+                          <td className="py-2 text-right font-mono font-bold text-slate-900">
+                            ₹{Number(taxVal).toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                   <tfoot className="border-t-2 border-slate-200 text-slate-900 text-xs font-bold">
                     <tr>
@@ -441,16 +633,16 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                         Gross Tax before Rebate:
                       </td>
                       <td className="py-2 text-right font-mono">
-                        ₹{taxResult.baseTaxBeforeRebate.toLocaleString('en-IN')}
+                        ₹{Number(activeBackendData?.taxCalculation?.grossTaxBeforeRebate ?? clientTaxResult.baseTaxBeforeRebate).toLocaleString('en-IN')}
                       </td>
                     </tr>
-                    {taxResult.rebate87A > 0 && (
+                    {((activeBackendData?.taxCalculation?.section87aRebate ?? clientTaxResult.rebate87A) > 0) && (
                       <tr className="text-emerald-600">
                         <td colSpan={3} className="py-1">
                           Less: Rebate u/s 87A:
                         </td>
                         <td className="py-1 text-right font-mono">
-                          - ₹{taxResult.rebate87A.toLocaleString('en-IN')}
+                          - ₹{Number(activeBackendData?.taxCalculation?.section87aRebate ?? clientTaxResult.rebate87A).toLocaleString('en-IN')}
                         </td>
                       </tr>
                     )}
@@ -459,7 +651,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                         Add: Health & Education Cess (4%):
                       </td>
                       <td className="py-1 text-right font-mono">
-                        + ₹{taxResult.healthAndEducationCess.toLocaleString('en-IN')}
+                        + ₹{Number(activeBackendData?.taxCalculation?.cessAmount ?? clientTaxResult.healthAndEducationCess).toLocaleString('en-IN')}
                       </td>
                     </tr>
                     <tr className="border-t border-slate-200 text-sm font-black">
@@ -467,7 +659,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                         Total Annual Tax Liability:
                       </td>
                       <td className="py-2 text-right font-mono text-primary">
-                        ₹{taxResult.totalAnnualTax.toLocaleString('en-IN')}
+                        ₹{Number(totalAnnualTax).toLocaleString('en-IN')}
                       </td>
                     </tr>
                     {isMidYearJoiner && prevTds > 0 && (
@@ -476,18 +668,10 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                           Less: Previous Employer TDS Credit:
                         </td>
                         <td className="py-1 text-right font-mono">
-                          - ₹{prevTds.toLocaleString('en-IN')}
+                          - ₹{Number(prevTds).toLocaleString('en-IN')}
                         </td>
                       </tr>
                     )}
-                    <tr className="border-t border-slate-200 text-xs font-bold">
-                      <td colSpan={3} className="py-1.5 text-slate-800">
-                        Balance Tax Payable by Company:
-                      </td>
-                      <td className="py-1.5 text-right font-mono">
-                        ₹{taxResult.netRemainingTaxPayable.toLocaleString('en-IN')}
-                      </td>
-                    </tr>
                   </tfoot>
                 </table>
               </div>
@@ -509,21 +693,21 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                   <div className="flex justify-between items-center py-1 border-b border-slate-100">
                     <span className="text-slate-600">Standard Deduction (Statutory)</span>
                     <span className="font-mono font-bold text-slate-900">
-                      ₹{taxResult.standardDeduction.toLocaleString('en-IN')}
+                      ₹{Number(standardDeduction).toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1 border-b border-slate-100">
                     <span className="text-slate-600">Employer PF Contribution (Exempt)</span>
                     <span className="font-mono font-bold text-slate-900">
-                      ₹{taxResult.employerPfDeduction.toLocaleString('en-IN')}
+                      ₹{Number(activeBackendData?.annualCompensation?.employerContributions?.employerPf?.annual ?? clientTaxResult.employerPfDeduction).toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1 border-b border-slate-100">
                     <span className="text-slate-600">Section 80CCD(2) Employer NPS</span>
                     <span className="font-mono font-bold text-slate-900">
-                      ₹{taxResult.employerNpsDeduction.toLocaleString('en-IN')}
+                      ₹{Number(activeBackendData?.annualCompensation?.employerContributions?.employerNps?.annual ?? clientTaxResult.employerNpsDeduction).toLocaleString('en-IN')}
                     </span>
                   </div>
 
@@ -570,8 +754,9 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                     <User size={13} className="text-indigo-600" /> Mid-Year Joiner YTD Status
                   </span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${isMidYearJoiner ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-600'
-                      }`}>
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      isMidYearJoiner ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-600'
+                    }`}>
                     {isMidYearJoiner ? 'Mid-Year Joiner' : 'Full Year'}
                   </span>
                 </div>
@@ -624,7 +809,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500 font-bold bg-slate-50/70">
                     <th className="py-2.5 px-3">Month</th>
-                    <th className="py-2.5 px-3 text-right">Basic (50%)</th>
+                    <th className="py-2.5 px-3 text-right">Basic (40%)</th>
                     <th className="py-2.5 px-3 text-right">HRA</th>
                     <th className="py-2.5 px-3 text-right">Allowances</th>
                     <th className="py-2.5 px-3 text-right font-black text-slate-900">Gross Pay</th>
@@ -635,34 +820,39 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                  {monthlySchedule.map((row) => (
-                    <tr key={row.monthIndex} className="hover:bg-slate-50/60 transition">
-                      <td className="py-2 px-3 font-semibold text-slate-900">
-                        {row.monthName}
+                  {monthlyScheduleRows.map((row: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-slate-50/60 transition">
+                      <td className="py-2 px-3 font-semibold text-slate-900 flex items-center gap-1.5">
+                        <span>{row.monthName}</span>
+                        {row.status === 'actual' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded">
+                            Paid
+                          </span>
+                        )}
                       </td>
                       <td className="py-2 px-3 text-right font-mono">
-                        ₹{row.basicSalary.toLocaleString('en-IN')}
+                        ₹{Number(row.basicSalary || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono">
-                        ₹{row.hra.toLocaleString('en-IN')}
+                        ₹{Number(row.hra || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono">
-                        ₹{row.otherAllowances.toLocaleString('en-IN')}
+                        ₹{Number(row.otherAllowances || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                        ₹{row.grossPay.toLocaleString('en-IN')}
+                        ₹{Number(row.grossPay || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono text-slate-600">
-                        ₹{row.pfDeduction.toLocaleString('en-IN')}
+                        ₹{Number(row.pfDeduction || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono text-slate-600">
-                        ₹{row.professionalTax.toLocaleString('en-IN')}
+                        ₹{Number(row.professionalTax || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono font-bold text-primary">
-                        ₹{row.projectedTds.toLocaleString('en-IN')}
+                        ₹{Number(row.projectedTds || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-3 text-right font-mono font-black text-emerald-600">
-                        ₹{row.netTakeHome.toLocaleString('en-IN')}
+                        ₹{Number(row.netTakeHome || 0).toLocaleString('en-IN')}
                       </td>
                     </tr>
                   ))}
@@ -671,28 +861,28 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                   <tr>
                     <td className="py-2.5 px-3">ANNUAL TOTALS</td>
                     <td className="py-2.5 px-3 text-right font-mono">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.basicSalary, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.basicSalary || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.hra, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.hra || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.otherAllowances, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.otherAllowances || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.grossPay, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.grossPay || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-slate-700">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.pfDeduction, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.pfDeduction || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-slate-700">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.professionalTax, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.professionalTax || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-primary">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.projectedTds, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.projectedTds || 0), 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-2.5 px-3 text-right font-mono text-emerald-600">
-                      ₹{monthlySchedule.reduce((s, r) => s + r.netTakeHome, 0).toLocaleString('en-IN')}
+                      ₹{monthlyScheduleRows.reduce((s: number, r: any) => s + Number(r.netTakeHome || 0), 0).toLocaleString('en-IN')}
                     </td>
                   </tr>
                 </tfoot>
