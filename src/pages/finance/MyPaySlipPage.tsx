@@ -26,6 +26,7 @@ import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
+import { generateSlipNumber } from '@/utils/payroll';
 
 
 export interface PayrollRecord {
@@ -195,7 +196,10 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
   const actualSlipNo = String(
     findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'payslipNo']) || ''
   );
-  const fallbackSlipNo = `SLIP-${rawYear || '2026'}${String(rawMonth || '10').padStart(2, '0')}-${findDeepValue(item, ['id']) || Date.now()}`;
+  const rawEmpCode = String(
+    findDeepValue(item, ['employee_code', 'employeeCode', 'employee_id', 'employeeId', 'user_id']) || userId || '001'
+  );
+  const fallbackSlipNo = generateSlipNumber(rawEmpCode, monthYear);
 
   return {
     id: Number(findDeepValue(item, ['id']) || Date.now()),

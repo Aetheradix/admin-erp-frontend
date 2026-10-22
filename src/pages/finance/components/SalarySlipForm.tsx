@@ -33,6 +33,8 @@ import { calculateTaxForEmployee, type TaxCalculationResult } from '@/utils/taxC
 import { TaxProjectionModal } from './TaxProjectionModal';
 
 import { Input } from '@/components/ui/composed/Input';
+import { generateSlipNumber } from '@/utils/payroll';
+export { generateSlipNumber } from '@/utils/payroll';
 export interface EarningsItem {
   name: string;
   amount: number;
@@ -276,8 +278,7 @@ const getInitialForm = (): SalarySlipData => {
 
   const monthYear = `${monthNameUpper} ${year}`;
   const payPeriod = calculatePayPeriod(monthNameUpper, String(year), defaultCycle, 1);
-  const monthFormatted = String(monthIndex + 1).padStart(2, '0');
-  const paySlipNo = `SLIP-${year}${monthFormatted}-${Math.floor(100 + Math.random() * 900)}`;
+  const paySlipNo = generateSlipNumber('EMP-001', monthYear);
 
   const defaultPaidDays =
     defaultCycle === 'Weekly'
@@ -407,44 +408,6 @@ const SalarySlipForm = ({
     };
   }, [searchTerm, fetchUsers]);
 
-  const generateSlipNumber = (employeeCode: string, monthYearStr: string) => {
-    const parts = String(monthYearStr || '').trim().split(/[\s\/\-]+/).filter(Boolean);
-    const monthsList = [
-      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
-    ];
-
-    // 1. Dynamic Fallback to current system date (e.g., today's date if empty)
-    const now = new Date();
-    let year = now.getFullYear();
-    let monthVal = now.getMonth() + 1;
-
-    // 2. Parse selected year and month dynamically from input
-    for (const part of parts) {
-      const num = Number(part);
-      if (!isNaN(num) && num >= 1900 && num <= 2100) {
-        year = num; // Dynamically sets the selected year (e.g., 2020)
-      } else {
-        const upper = part.toUpperCase();
-        const idx = monthsList.findIndex((m) => m === upper || m.startsWith(upper.slice(0, 3)));
-        if (idx !== -1) {
-          monthVal = idx + 1; // Dynamically sets selected month (e.g., August -> 08)
-        }
-      }
-    }
-
-    const formattedMonth = String(monthVal).padStart(2, '0');
-
-    // 3. Clean Employee Code (Strip duplicate 'EMP' prefix if present)
-    let rawCode = String(employeeCode || '').trim();
-    if (rawCode.toUpperCase().startsWith('EMP')) {
-      rawCode = rawCode.replace(/^EMP[-_]?/i, '');
-    }
-    const cleanEmpCode = rawCode || '001';
-
-    // 💡 Output Format: SLIP-EMP-{EmployeeCode}-{Year}{Month}
-    return `SLIP-EMP-${cleanEmpCode}-${year}${formattedMonth}`;
-  };
 
   // Use a ref to ensure initialValues only populates the form once on mount
   const hasInitializedRef = useRef(false);
@@ -642,7 +605,27 @@ const SalarySlipForm = ({
       formData.payCycle,
       biWeeklyPeriod
     );
-    setFormData((prev) => ({ ...prev, monthYear: updatedMonthYear, payPeriod: newPayPeriod }));
+    setFormData((prev) => {
+      const empCode =
+        prev.employeeId ||
+        (selectedEmployeeObj
+          ? String(
+              selectedEmployeeObj.employee_code ||
+                selectedEmployeeObj.employee_id ||
+                selectedEmployeeObj.employeeId ||
+                selectedEmployeeObj.id ||
+                ''
+            )
+          : '');
+      const updatedSlipNo =
+        !isEditing && empCode ? generateSlipNumber(empCode, updatedMonthYear) : prev.paySlipNo;
+      return {
+        ...prev,
+        monthYear: updatedMonthYear,
+        payPeriod: newPayPeriod,
+        paySlipNo: updatedSlipNo,
+      };
+    });
   };
 
   const handleYearChange = (selectedYear: string) => {
@@ -656,7 +639,27 @@ const SalarySlipForm = ({
       customStart,
       customEnd
     );
-    setFormData((prev) => ({ ...prev, monthYear: updatedMonthYear, payPeriod: newPayPeriod }));
+    setFormData((prev) => {
+      const empCode =
+        prev.employeeId ||
+        (selectedEmployeeObj
+          ? String(
+              selectedEmployeeObj.employee_code ||
+                selectedEmployeeObj.employee_id ||
+                selectedEmployeeObj.employeeId ||
+                selectedEmployeeObj.id ||
+                ''
+            )
+          : '');
+      const updatedSlipNo =
+        !isEditing && empCode ? generateSlipNumber(empCode, updatedMonthYear) : prev.paySlipNo;
+      return {
+        ...prev,
+        monthYear: updatedMonthYear,
+        payPeriod: newPayPeriod,
+        paySlipNo: updatedSlipNo,
+      };
+    });
   };
 
   const handleCycleChange = (cycle: PayCycleOption) => {
