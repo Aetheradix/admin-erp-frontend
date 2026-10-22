@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
 import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { recordAuditLog } from '@/services/auditService';
+import { getEmployeeProfile } from '@/services/employeeProfileService';
 
 export interface ManagerInfo {
   name: string;
@@ -22,6 +24,7 @@ export interface TeamMemberInfo {
 }
 
 export interface ProfileUserData {
+  id?: number | string;
   name: string;
   designation: string;
   employeeId: string;
@@ -82,6 +85,19 @@ export const useProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showElevationDialog, setShowElevationDialog] = useState(false);
 
+  const { data: dbUsers = [] } = useGetUsersQuery();
+
+  const currentDbUser = useMemo(() => {
+    if (!authUser || !dbUsers || dbUsers.length === 0) return null;
+    return (
+      dbUsers.find(
+        (u) =>
+          (authUser.email && u.email?.toLowerCase().trim() === authUser.email.toLowerCase().trim()) ||
+          (authUser.id && String(u.id) === String(authUser.id))
+      ) || null
+    );
+  }, [authUser, dbUsers]);
+
   const authUserRecord = authUser as unknown as Record<string, unknown> | null;
 
   const [user, setUser] = useState<ProfileUserData>(() => {
@@ -101,11 +117,39 @@ export const useProfile = () => {
       },
     ];
 
+    const emp = (email ? getEmployeeProfile(email) : null) ?? (authUser?.id ? getEmployeeProfile(authUser.id) : null);
+    let resolvedEmployeeId =
+      (emp?.employeeId && emp.employeeId !== 'N/A' && emp.employeeId !== 'NA')
+        ? emp.employeeId
+        : (authUser?.employee_id && authUser.employee_id !== 'N/A' && authUser.employee_id !== 'NA')
+          ? authUser.employee_id
+          : (authUser?.employee_code && authUser.employee_code !== 'N/A')
+            ? authUser.employee_code
+            : (authUser?.employeeId && authUser.employeeId !== 'N/A')
+              ? authUser.employeeId
+              : null;
+
+    if (!resolvedEmployeeId) {
+      try {
+        const staffStr = localStorage.getItem('aether_staff_list');
+        if (staffStr) {
+          const staffList = JSON.parse(staffStr);
+          const found = staffList.find((s: any) =>
+            (email && s.email?.toLowerCase() === email.toLowerCase()) ||
+            (authUser?.id && String(s.id) === String(authUser.id))
+          );
+          if (found && (found.employee_id || found.employee_code || found.employeeId)) {
+            resolvedEmployeeId = found.employee_id || found.employee_code || found.employeeId;
+          }
+        }
+      } catch {}
+    }
+
     return {
       name,
       designation: authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
 
-      employeeId: authUser?.employee_id || 'N/A',
+      employeeId: resolvedEmployeeId || 'N/A',
 
       email,
 
@@ -178,23 +222,36 @@ export const useProfile = () => {
     if (!authUser) return;
 
     const record = authUser as unknown as Record<string, unknown>;
+    const emp = (authUser.email ? getEmployeeProfile(authUser.email) : null) ?? (authUser.id ? getEmployeeProfile(authUser.id) : null);
+    const resolvedEmployeeId =
+      (currentDbUser?.employee_code && currentDbUser.employee_code !== 'N/A' && currentDbUser.employee_code !== 'NA')
+        ? currentDbUser.employee_code
+        : (currentDbUser?.employee_id && currentDbUser.employee_id !== 'N/A' && currentDbUser.employee_id !== 'NA')
+          ? currentDbUser.employee_id
+          : (authUser.employee_id && authUser.employee_id !== 'N/A' && authUser.employee_id !== 'NA')
+            ? authUser.employee_id
+            : (authUser.employee_code && authUser.employee_code !== 'N/A' && authUser.employee_code !== 'NA')
+              ? authUser.employee_code
+              : (emp?.employeeId && emp.employeeId !== 'N/A' && emp.employeeId !== 'NA')
+                ? emp.employeeId
+                : null;
 
     setUser((prev) => ({
       ...prev,
 
       name: authUser.username || prev.name,
 
-      designation: authUser.designation || prev.designation,
+      designation: currentDbUser?.designation || authUser.designation || prev.designation,
 
-      employeeId: authUser.employee_id || prev.employeeId,
+      employeeId: resolvedEmployeeId || prev.employeeId,
 
       email: authUser.email || prev.email,
 
-      contactNo: authUser.contact_number || prev.contactNo,
+      contactNo: currentDbUser?.contact_no || currentDbUser?.phone || authUser.contact_number || prev.contactNo,
 
       image: authUser.image_url || prev.image,
 
-      department: authUser.department || prev.department,
+      department: currentDbUser?.department || authUser.department || prev.department,
 
       joinDate: authUser.join_date || prev.joinDate,
 
@@ -225,7 +282,47 @@ export const useProfile = () => {
 
       teamMembers: (record.team_members as TeamMemberInfo[]) ?? prev.teamMembers,
     }));
-  }, [authUser]);
+  }, [authUser, currentDbUser]);
+
+  /**
+   * Real-time sync when employee profile or ID is updated
+   */
+  useEffect(() => {
+    const syncEmployeeProfile = () => {
+      const emp = (authUser?.email ? getEmployeeProfile(authUser.email) : null) ?? (authUser?.id ? getEmployeeProfile(authUser.id) : null);
+      let newId = (emp?.employeeId && emp.employeeId !== 'N/A' && emp.employeeId !== 'NA') ? emp.employeeId : null;
+      if (!newId) {
+        try {
+          const staffStr = localStorage.getItem('aether_staff_list');
+          if (staffStr) {
+            const staffList = JSON.parse(staffStr);
+            const found = staffList.find((s: any) =>
+              (authUser?.email && s.email?.toLowerCase() === authUser.email.toLowerCase()) ||
+              (authUser?.id && String(s.id) === String(authUser.id))
+            );
+            if (found && (found.employee_id || found.employee_code || found.employeeId)) {
+              newId = found.employee_id || found.employee_code || found.employeeId;
+            }
+          }
+        } catch {}
+      }
+      if (newId) {
+        setUser((prev) => ({
+          ...prev,
+          employeeId: newId,
+        }));
+      }
+    };
+
+    window.addEventListener('aether_employee_profiles_updated', syncEmployeeProfile);
+    window.addEventListener('auth_user_updated', syncEmployeeProfile);
+    window.addEventListener('storage', syncEmployeeProfile);
+    return () => {
+      window.removeEventListener('aether_employee_profiles_updated', syncEmployeeProfile);
+      window.removeEventListener('auth_user_updated', syncEmployeeProfile);
+      window.removeEventListener('storage', syncEmployeeProfile);
+    };
+  }, [authUser?.email, authUser?.id]);
 
   /**
    * Toggle Auto Approve.

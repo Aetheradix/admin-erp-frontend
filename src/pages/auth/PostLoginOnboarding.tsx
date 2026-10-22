@@ -241,13 +241,28 @@ export default function PostLoginOnboarding() {
               <span className="font-bold text-foreground">{department}</span>
             </div>
           </div>
-          <Button
-            variant="primary"
-            label="Go to Dashboard"
-            icon="pi pi-arrow-right"
-            onClick={handleGoToDashboard}
-            className="w-full h-12 rounded-xl! font-bold! shadow-lg shadow-primary/20"
-          />
+          <div className="flex flex-col gap-3 w-full">
+            <Button
+              variant="primary"
+              label="Complete Profile"
+              icon="pi pi-check"
+              onClick={() => {
+                sessionStorage.setItem('newly_invited_user_onboarded', 'true');
+                navigate('/profile-completion', { replace: true });
+              }}
+              className="w-full h-12 rounded-xl! font-bold! shadow-lg shadow-primary/20"
+            />
+            <Button
+              variant="ghost"
+              label="Go to Dashboard"
+              icon="pi pi-arrow-right"
+              onClick={() => {
+                sessionStorage.setItem('newly_invited_user_onboarded', 'true');
+                handleGoToDashboard();
+              }}
+              className="w-full h-10 rounded-xl! font-semibold! text-muted hover:text-foreground"
+            />
+          </div>
         </motion.div>
       </AuthLayout>
     );

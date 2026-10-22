@@ -28,6 +28,8 @@ const InventoryModule = lazy(() => import('@/pages/inventory'));
 const ResourceBookingModule = lazy(() => import('@/pages/resourcebooking'));
 const Forbidden403Page = lazy(() => import('@/pages/error/Forbidden403Page'));
 const ChannelsModule = lazy(() => import('@/pages/channels'));
+const EmployeeProfileModule = lazy(() => import('@/pages/employee-profile'));
+const HiringTeamModule = lazy(() => import('@/pages/hiring-team'));
 
 const ContentLoadingFallback = () => (
   <div className="w-full h-64 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
@@ -224,6 +226,8 @@ const AppFeature = () => {
         />
         <Route path="/rulebook/*" element={<RulebookModule />} />
         <Route path="/channels/*" element={<ChannelsModule />} />
+        <Route path="/profile-completion" element={<EmployeeProfileModule fullPage={true} />} />
+        <Route path="/hiring-team/*" element={<HiringTeamModule />} />
         <Route path="/settings/*" element={<SettingsModule />} />
         <Route path="/403" element={<Forbidden403Page />} />
       </Routes>

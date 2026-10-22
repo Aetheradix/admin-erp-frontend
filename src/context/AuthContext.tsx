@@ -165,10 +165,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const customEvent = e as CustomEvent<User>;
       if (customEvent.detail) {
         setUser(customEvent.detail);
+      } else {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          try {
+            setUser(JSON.parse(raw));
+          } catch {}
+        }
       }
     };
     window.addEventListener('aether_user_updated', handleUserUpdate);
-    return () => window.removeEventListener('aether_user_updated', handleUserUpdate);
+    window.addEventListener('auth_user_updated', handleUserUpdate);
+    return () => {
+      window.removeEventListener('aether_user_updated', handleUserUpdate);
+      window.removeEventListener('auth_user_updated', handleUserUpdate);
+    };
   }, []);
 
   useEffect(() => {

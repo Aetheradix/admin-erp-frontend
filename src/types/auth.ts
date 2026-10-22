@@ -26,6 +26,8 @@ export interface User {
   image_url?: string;
   designation?: string;
   employee_id?: string;
+  employee_code?: string;
+  employeeId?: string;
   contact_number?: string;
   department?: string;
   join_date?: string;

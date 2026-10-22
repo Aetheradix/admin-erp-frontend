@@ -76,7 +76,16 @@ export const ProfileHeader = ({
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   Available
                 </span>
-                <span>ID: {user.employeeId}</span>
+                <span className="flex items-center gap-1.5 font-medium text-muted">
+                  <span>ID:</span>
+                  {user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA' ? (
+                    <span className="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 text-[11px]">
+                      {user.employeeId}
+                    </span>
+                  ) : (
+                    <span className="text-muted italic">Not Assigned</span>
+                  )}
+                </span>
               </div>
             </div>
           </div>

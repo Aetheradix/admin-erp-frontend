@@ -20,7 +20,11 @@ export const OverviewTab = ({ user }: OverviewTabProps) => {
             </div>
             <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
               <span className="text-muted font-bold">Employee ID</span>
-              <span className="font-extrabold text-foreground">{user.employeeId}</span>
+              <span className="font-extrabold text-foreground">
+                {user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA'
+                  ? user.employeeId
+                  : <span className="text-muted italic text-xs">Not Assigned</span>}
+              </span>
             </div>
             <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
               <span className="text-muted font-bold">Designation</span>

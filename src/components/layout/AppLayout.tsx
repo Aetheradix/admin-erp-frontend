@@ -1,8 +1,8 @@
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/sidebar/Sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
 import { Toast } from '@/components/ui/composed/Toast';
 import { CursorGlow } from '@/components/ui/composed/CursorGlow';
@@ -10,10 +10,19 @@ import { useAppSelector } from '@/store/hooks';
 import { selectAccentColor, selectDarkMode, selectDensity } from '@/store/slices/settingsSlice';
 
 import { GeminiAiDrawer } from '@/components/ui/composed/GeminiAiDrawer';
-import { Sparkles, Calendar, ChevronRight, X } from 'lucide-react';
+import { Sparkles, Calendar, ChevronRight, X, FileText, AlertTriangle } from 'lucide-react';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { useGetEventsQuery } from '@/store/api/eventSlice';
 import { PageAccessGuard } from '@/components/layout/PageAccessGuard';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  getEmployeeProfile,
+  getFormConfiguration,
+  calculateCompletionPercentage,
+  type ProfileCompletionData,
+} from '@/services/employeeProfileService';
+import EmployeeProfileCompletion from '@/pages/employee-profile/EmployeeProfileCompletion';
+import { NewUserWelcomeModal } from '@/components/ui/composed/NewUserWelcomeModal';
 
 function hexToRgb(hex: string) {
   const clean = hex.replace('#', '');
@@ -27,10 +36,58 @@ function hexToRgb(hex: string) {
 
 export default function AppLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
+  const [showProfileBanner, setShowProfileBanner] = useState(true);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+  const [profileRefresh, setProfileRefresh] = useState(0);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  useEffect(() => {
+    const handleUpdate = () => setProfileRefresh((p) => p + 1);
+    window.addEventListener('aether_employee_profiles_updated', handleUpdate);
+    window.addEventListener('auth_user_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('aether_employee_profiles_updated', handleUpdate);
+      window.removeEventListener('auth_user_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  // Check employee profile completion state
+  const empProfile = useMemo<ProfileCompletionData | null>(() => {
+    if (!user) return null;
+    // Try email first (profiles are stored by email in seeded/localStorage data)
+    const byEmail = user.email ? getEmployeeProfile(user.email) : null;
+    return byEmail ?? (user.id ? getEmployeeProfile(user.id) : null);
+  }, [user?.id, user?.email, isProfileModalOpen, profileRefresh]);
+
+  const formConfig = useMemo(() => getFormConfiguration(), []);
+
+  const profilePct = useMemo(() => {
+    return calculateCompletionPercentage(empProfile, formConfig);
+  }, [empProfile, formConfig]);
+
+  const isProfileIncomplete =
+    empProfile === null ||
+    empProfile.status === 'incomplete' ||
+    empProfile.status === 'in_progress' ||
+    empProfile.status === 'changes_required';
+
+  // ONLY show welcome popup for newly invited users coming from onboarding flow!
+  useEffect(() => {
+    const isNewlyInvited = sessionStorage.getItem('newly_invited_user_onboarded') === 'true';
+    const isDismissed = sessionStorage.getItem('new_user_welcome_dismissed') === 'true';
+
+    if (user && isNewlyInvited && !isDismissed && location.pathname !== '/profile-completion') {
+      setIsWelcomeModalOpen(true);
+    }
+  }, [user, location.pathname]);
 
   const { data: events = [] } = useGetEventsQuery();
   const activeEvent = events.length > 0 ? events[0] : null;
@@ -172,6 +229,66 @@ export default function AppLayout() {
           </div>
         )}
 
+        {/* Profile Completion Notification Banner */}
+        {showProfileBanner && isProfileIncomplete && location.pathname !== '/profile-completion' && (
+          <div
+            className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${
+              empProfile?.status === 'changes_required'
+                ? 'bg-warning/10 border-warning/30 text-warning'
+                : 'bg-primary/10 border-primary/20 text-foreground'
+            }`}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                  empProfile?.status === 'changes_required'
+                    ? 'bg-warning/20 text-warning'
+                    : 'bg-primary/20 text-primary'
+                }`}
+              >
+                {empProfile?.status === 'changes_required' ? (
+                  <AlertTriangle size={13} />
+                ) : (
+                  <FileText size={13} />
+                )}
+              </div>
+              <div className="text-xs font-semibold truncate flex items-center gap-2">
+                <span className="font-black uppercase text-[10px] tracking-wider px-2 py-0.5 rounded-md bg-white/60">
+                  {empProfile?.status === 'changes_required' ? 'Revisions Required' : 'Onboarding Profile'}
+                </span>
+                <span className="truncate">
+                  {empProfile?.status === 'changes_required'
+                    ? empProfile.reviewNotes || 'The hiring team requested updates to your submitted onboarding documents.'
+                    : `Your employee profile is ${profilePct}% complete. Please submit mandatory bank & identity details.`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(true)}
+                className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${
+                  empProfile?.status === 'changes_required'
+                    ? 'bg-warning text-white hover:bg-warning/90'
+                    : 'bg-primary text-white hover:bg-primary/90'
+                }`}
+              >
+                <span>{empProfile?.status === 'changes_required' ? 'Fix Now' : 'Complete Profile'}</span>
+                <ChevronRight size={12} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowProfileBanner(false)}
+                className="text-muted hover:text-foreground p-1 rounded-lg transition-colors"
+                aria-label="Dismiss profile banner"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
           <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
             <PageAccessGuard>
@@ -180,6 +297,27 @@ export default function AppLayout() {
           </div>
         </main>
       </div>
+
+      {/* Welcome Modal for Newly Invited User */}
+      <NewUserWelcomeModal
+        visible={isWelcomeModalOpen}
+        userName={user?.username || 'Team Member'}
+        userEmail={user?.email}
+        userRole={user?.role}
+        department={user?.department}
+        onClose={() => {
+          setIsWelcomeModalOpen(false);
+          sessionStorage.setItem('new_user_welcome_dismissed', 'true');
+        }}
+      />
+
+      {/* On-Demand Profile Completion Modal */}
+      {isProfileModalOpen && (
+        <EmployeeProfileCompletion
+          fullPage={false}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

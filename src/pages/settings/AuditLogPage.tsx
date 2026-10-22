@@ -511,6 +511,15 @@ export function AuditLogPage() {
                 </span>
               </div>
               <span className="text-[10px] text-muted font-mono">{displayEmail}</span>
+              {inv?.invitedBy && (
+                <div className="inline-flex items-center gap-1 text-[9.5px] text-muted mt-1 bg-surface-subtle/80 px-2 py-0.5 rounded border border-border-subtle w-fit">
+                  <span>Invited by:</span>
+                  <strong className="text-foreground">{inv.invitedBy.name}</strong>
+                  <span className="px-1 py-0.2 rounded text-[8.5px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                    {inv.invitedBy.role}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         );
