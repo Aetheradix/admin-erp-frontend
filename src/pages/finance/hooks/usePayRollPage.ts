@@ -5,6 +5,7 @@ import {
 } from '@/store/api/financeApiSlice';
 import type { CreateSalarySlipPayload } from '@/store/api/financeApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { generateSlipNumber } from '@/utils/payroll';
 
 export interface BreakdownItem {
   name: string;
@@ -114,7 +115,13 @@ export const usePayrollPage = () => {
         total: netSalary,
         date: monthYear,
         payPeriod: item.pay_period || item.payPeriod || monthYear,
-        paySlipNo: item.pay_slip_no || item.paySlipNo || `SLIP-${item.id}`,
+        paySlipNo:
+          item.pay_slip_no ||
+          item.paySlipNo ||
+          generateSlipNumber(
+            item.employee_code || item.employee_id || item.employeeId || item.user_id,
+            monthYear
+          ),
         accountNumber: item.account_number || item.accountNumber || 'N/A',
         paidDays: Number(item.paid_days || item.paidDays || 0),
         lopDays: Number(item.lop_days || item.lopDays || 0),
