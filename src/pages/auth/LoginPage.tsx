@@ -55,6 +55,9 @@ const LoginPage = () => {
       const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
       const needsOnboarding =
         savedUser?.is_temporary_password === true || savedUser?.is_onboarded === false;
+      if (needsOnboarding) {
+        sessionStorage.setItem('newly_invited_user_onboarded', 'true');
+      }
       navigate(needsOnboarding ? '/auth/onboarding-setup' : '/');
     } catch (err: unknown) {
       console.error('Login failed', err);

@@ -49,8 +49,8 @@ export default function PostLoginOnboarding() {
   // --- Step 2: Complete Profile ---
   const [fullName, setFullName] = useState(user?.username || '');
   const [contactNo, setContactNo] = useState(user?.contact_number || '');
-  const [department, setDepartment] = useState(user?.department || 'Engineering');
-  const [designation, setDesignation] = useState(user?.designation || '');
+  const department = user?.department || 'Engineering';
+  const designation = user?.designation || '';
 
   const [changeTemporaryPassword, { isLoading: isChangingPwd }] = useChangeTemporaryPasswordMutation();
   const [completeOnboarding, { isLoading: isCompletingOnboarding }] = useCompleteOnboardingMutation();
@@ -241,13 +241,28 @@ export default function PostLoginOnboarding() {
               <span className="font-bold text-foreground">{department}</span>
             </div>
           </div>
-          <Button
-            variant="primary"
-            label="Go to Dashboard"
-            icon="pi pi-arrow-right"
-            onClick={handleGoToDashboard}
-            className="w-full h-12 rounded-xl! font-bold! shadow-lg shadow-primary/20"
-          />
+          <div className="flex flex-col gap-3 w-full">
+            <Button
+              variant="primary"
+              label="Complete Profile"
+              icon="pi pi-check"
+              onClick={() => {
+                sessionStorage.setItem('newly_invited_user_onboarded', 'true');
+                navigate('/profile-completion', { replace: true });
+              }}
+              className="w-full h-12 rounded-xl! font-bold! shadow-lg shadow-primary/20"
+            />
+            <Button
+              variant="ghost"
+              label="Go to Dashboard"
+              icon="pi pi-arrow-right"
+              onClick={() => {
+                sessionStorage.setItem('newly_invited_user_onboarded', 'true');
+                handleGoToDashboard();
+              }}
+              className="w-full h-10 rounded-xl! font-semibold! text-muted hover:text-foreground"
+            />
+          </div>
         </motion.div>
       </AuthLayout>
     );
@@ -482,27 +497,6 @@ export default function PostLoginOnboarding() {
                 className="h-12 rounded-xl!"
               />
             </FormField>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label="Department" id="onboarding-dept">
-                <Input
-                  id="onboarding-dept"
-                  placeholder="e.g. Engineering"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="h-12 rounded-xl!"
-                />
-              </FormField>
-              <FormField label="Job Title" id="onboarding-designation">
-                <Input
-                  id="onboarding-designation"
-                  placeholder="e.g. Software Engineer"
-                  value={designation}
-                  onChange={(e) => setDesignation(e.target.value)}
-                  className="h-12 rounded-xl!"
-                />
-              </FormField>
-            </div>
 
             <div className="flex items-center gap-3 pt-2">
               <Button

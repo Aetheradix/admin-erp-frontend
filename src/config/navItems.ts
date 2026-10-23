@@ -155,6 +155,8 @@ import {
   Package,
   Settings,
   Share2,
+  UserCheck,
+  FileText,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -199,6 +201,14 @@ export const navItems: NavItem[] = [
     description: 'Attendance Center',
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee', 'FinanceAdmin'],
   },
+  {
+    label: 'Complete Profile',
+    path: '/profile-completion',
+    icon: FileText,
+    category: 'OVERVIEW',
+    description: 'Personal, bank & identity verification',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+  },
 
   // ─────────────────────────────────────────────
   // MANAGEMENT
@@ -234,6 +244,26 @@ export const navItems: NavItem[] = [
       {
         label: 'Employee Directory',
         path: '/staff',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+    ],
+  },
+  {
+    label: 'Hiring & Onboarding',
+    path: '/hiring-team',
+    icon: UserCheck,
+    category: 'MANAGEMENT',
+    description: 'Profile approvals & dynamic form builder',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+    children: [
+      {
+        label: 'Profile Submissions',
+        path: '/hiring-team',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+      },
+      {
+        label: 'Form Builder',
+        path: '/hiring-team/form-builder',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
     ],

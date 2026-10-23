@@ -85,6 +85,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('erp_roles_list', JSON.stringify(roleList));
         localStorage.setItem('erp_team_scopes', JSON.stringify(scopes));
         localStorage.setItem('erp_is_superadmin', String(superadmin));
+
+        if (result.data.user) {
+          setUser((prev) => {
+            const updated = {
+              ...(prev || {}),
+              ...result.data.user,
+              employeeId: result.data.user.employee_code || result.data.user.employeeId || (prev as any)?.employeeId,
+              employee_id: result.data.user.employee_code || result.data.user.employee_id || (prev as any)?.employee_id,
+            };
+            try {
+              localStorage.setItem('user', JSON.stringify(updated));
+            } catch {}
+            return updated as User;
+          });
+        }
       }
     } catch (err) {
       console.warn('[RBAC] Could not fetch permissions from /me/permissions:', err);
@@ -165,10 +180,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const customEvent = e as CustomEvent<User>;
       if (customEvent.detail) {
         setUser(customEvent.detail);
+      } else {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          try {
+            setUser(JSON.parse(raw));
+          } catch {}
+        }
       }
     };
     window.addEventListener('aether_user_updated', handleUserUpdate);
-    return () => window.removeEventListener('aether_user_updated', handleUserUpdate);
+    window.addEventListener('auth_user_updated', handleUserUpdate);
+    return () => {
+      window.removeEventListener('aether_user_updated', handleUserUpdate);
+      window.removeEventListener('auth_user_updated', handleUserUpdate);
+    };
   }, []);
 
   useEffect(() => {

@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { recordAuditLog } from '@/services/auditService';
+import { getEmployeeProfile } from '@/services/employeeProfileService';
 
 export interface ManagerInfo {
   name: string;
@@ -23,6 +25,7 @@ export interface TeamMemberInfo {
 }
 
 export interface ProfileUserData {
+  id?: number | string;
   name: string;
   designation: string;
   employeeId: string;
@@ -129,6 +132,19 @@ export const useProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showElevationDialog, setShowElevationDialog] = useState(false);
 
+  const { data: dbUsers = [] } = useGetUsersQuery();
+
+  const currentDbUser = useMemo(() => {
+    if (!authUser || !dbUsers || dbUsers.length === 0) return null;
+    return (
+      dbUsers.find(
+        (u) =>
+          (authUser.email && u.email?.toLowerCase().trim() === authUser.email.toLowerCase().trim()) ||
+          (authUser.id && String(u.id) === String(authUser.id))
+      ) || null
+    );
+  }, [authUser, dbUsers]);
+
   const authUserRecord = authUser as unknown as Record<string, unknown> | null;
 
   const [user, setUser] = useState<ProfileUserData>(() => {
@@ -152,8 +168,9 @@ export const useProfile = () => {
     const initialId = resolveEmployeeId(authUser, authUserRecord);
 
     return {
-      name,
-      designation: authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
+      id: authUser?.id,
+      name: emp?.personal?.fullName || name,
+      designation: currentDbUser?.designation || emp?.designation || authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
 
       employeeId: initialId,
 
@@ -161,17 +178,18 @@ export const useProfile = () => {
 
       email,
 
-      contactNo: authUser?.contact_number || '',
+      contactNo: emp?.personal?.contactNumber || currentDbUser?.contact_no || currentDbUser?.phone || authUser?.contact_number || '',
 
-      department: authUser?.department || '',
+      department: currentDbUser?.department || emp?.department || authUser?.department || '',
 
       joinDate: authUser?.join_date || '',
 
       image:
+        emp?.profilePictureUrl ||
         authUser?.image_url ||
         `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name || 'User')}`,
 
-      workLocation: (authUserRecord?.work_location as string) || '',
+      workLocation: (authUserRecord?.work_location as string) || emp?.department || '',
 
       company: (authUserRecord?.company as string) || '',
 
@@ -193,7 +211,7 @@ export const useProfile = () => {
 
       workHours: (authUserRecord?.work_hours as string) || 'Standard Hours',
 
-      address: (authUserRecord?.address as string) || '',
+      address: (authUserRecord?.address as string) || emp?.personal?.currentAddress || emp?.personal?.permanentAddress || '',
 
       /**
        * This gets updated from useGetAutoApproveQuery()
@@ -236,7 +254,7 @@ export const useProfile = () => {
     setUser((prev) => ({
       ...prev,
 
-      name: authUser.username || prev.name,
+      id: authUser.id ?? prev.id,
 
       designation: authUser.designation || (isAdmin ? 'Administrator' : prev.designation),
 
@@ -246,15 +264,15 @@ export const useProfile = () => {
 
       email: authUser.email || prev.email,
 
-      contactNo: authUser.contact_number || prev.contactNo,
+      contactNo: emp?.personal?.contactNumber || currentDbUser?.contact_no || currentDbUser?.phone || authUser.contact_number || prev.contactNo,
 
-      image: authUser.image_url || prev.image,
+      image: emp?.profilePictureUrl || authUser.image_url || prev.image,
 
-      department: authUser.department || prev.department,
+      department: currentDbUser?.department || emp?.department || authUser.department || prev.department,
 
       joinDate: authUser.join_date || prev.joinDate,
 
-      workLocation: (record.work_location as string) ?? prev.workLocation,
+      workLocation: (record.work_location as string) || emp?.department || prev.workLocation,
 
       company: (record.company as string) ?? prev.company,
 
@@ -273,7 +291,7 @@ export const useProfile = () => {
       lastSeen: (record.last_seen as string) ?? prev.lastSeen,
 
       workHours: (record.work_hours as string) ?? prev.workHours,
-      address: (record.address as string) ?? prev.address,
+      address: (record.address as string) || emp?.personal?.currentAddress || emp?.personal?.permanentAddress || prev.address,
 
       manager: (record.manager as ManagerInfo) ?? prev.manager,
 

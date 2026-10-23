@@ -11,6 +11,7 @@ import {
   acceptInvitation,
   type InvitationRecord,
 } from '@/services/auditService';
+import { ensureEmployeeProfileExists } from '@/services/employeeProfileService';
 import {
   ShieldCheck,
   Eye,
@@ -176,6 +177,20 @@ export default function OnboardingPage() {
       } catch {
         // Ignore
       }
+
+      // Initialize/Update employee profile so Hiring Team can monitor onboarding progress
+      ensureEmployeeProfileExists(
+        newUser.id,
+        email,
+        fullName,
+        invitationStatus.invitation.role,
+        department,
+        {
+          contactNumber: contactNo,
+          currentAddress: fullAddress,
+          permanentAddress: fullAddress,
+        }
+      );
 
       showToast({
         severity: 'success',

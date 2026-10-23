@@ -51,6 +51,7 @@ import {
   type InvitationRecord,
   type AuditLogEntry,
 } from '@/services/auditService';
+import { ensureEmployeeProfileExists } from '@/services/employeeProfileService';
 
 export interface UserRecord {
   id: number | string;
@@ -462,6 +463,9 @@ export function UsersPage() {
           createdAt: new Date().toISOString().split('T')[0],
         }, ...prev]);
       }
+
+      // Initialize employee onboarding tracking profile so Hiring Team immediately monitors them
+      ensureEmployeeProfileExists(Date.now(), form.email, form.name, form.role, form.department);
 
       setInviteResult({ open: true, email: form.email, role: form.role, link: serverLink, tempPass: serverPass });
       message.success(`Invitation dispatched to ${form.email} and saved in the database.`);
