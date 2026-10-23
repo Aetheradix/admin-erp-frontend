@@ -10,7 +10,7 @@ import { showToast } from '@/components/ui/composed/Toast.utils';
 import {
   getEmployeeProfile, saveEmployeeProfile, updateProfileSection,
   submitProfileForReview, getFormConfiguration, calculateCompletionPercentage,
-  getIncompleteRequiredSections,
+  getIncompleteRequiredSections, syncProfilesFromBackend,
   type ProfileCompletionData, type ProfileStatus, type FormSectionConfig,
 } from '@/services/employeeProfileService';
 import { PersonalDetailsSection } from './components/PersonalDetailsSection';
@@ -56,9 +56,10 @@ export default function EmployeeProfileCompletion({ onClose, fullPage = false }:
   // Load profile and form configuration
   useEffect(() => {
     if (!user) return;
-    const savedProfile = getEmployeeProfile(user.id);
     const config = getFormConfiguration();
     setFormConfig(config);
+
+    const savedProfile = (user.email ? getEmployeeProfile(user.email) : null) ?? getEmployeeProfile(user.id);
 
     if (savedProfile) {
       setProfile(savedProfile);
@@ -67,7 +68,8 @@ export default function EmployeeProfileCompletion({ onClose, fullPage = false }:
       const newProfile: ProfileCompletionData = {
         userId: user.id,
         userEmail: user.email,
-        status: 'incomplete',
+        status: (user.employee_id || user.employee_code || user.employeeId) ? 'id_assigned' : 'incomplete',
+        employeeId: user.employee_id || user.employee_code || user.employeeId,
         lastSavedAt: new Date().toISOString(),
         completedSections: {},
         personal: {
@@ -81,6 +83,12 @@ export default function EmployeeProfileCompletion({ onClose, fullPage = false }:
       setProfile(newProfile);
       saveEmployeeProfile(newProfile);
     }
+
+    // Sync from backend
+    syncProfilesFromBackend().then(() => {
+      const fresh = (user.email ? getEmployeeProfile(user.email) : null) ?? getEmployeeProfile(user.id);
+      if (fresh) setProfile(fresh);
+    });
   }, [user]);
 
   const completionPercentage = useMemo(() =>

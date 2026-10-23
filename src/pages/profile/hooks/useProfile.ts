@@ -146,24 +146,26 @@ export const useProfile = () => {
     }
 
     return {
-      name,
-      designation: authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
+      id: authUser?.id,
+      name: emp?.personal?.fullName || name,
+      designation: currentDbUser?.designation || emp?.designation || authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
 
-      employeeId: resolvedEmployeeId || 'N/A',
+      employeeId: resolvedEmployeeId || emp?.employeeId || 'N/A',
 
       email,
 
-      contactNo: authUser?.contact_number || '',
+      contactNo: emp?.personal?.contactNumber || currentDbUser?.contact_no || currentDbUser?.phone || authUser?.contact_number || '',
 
-      department: authUser?.department || '',
+      department: currentDbUser?.department || emp?.department || authUser?.department || '',
 
       joinDate: authUser?.join_date || '',
 
       image:
+        emp?.profilePictureUrl ||
         authUser?.image_url ||
         `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name || 'User')}`,
 
-      workLocation: (authUserRecord?.work_location as string) || '',
+      workLocation: (authUserRecord?.work_location as string) || emp?.department || '',
 
       company: (authUserRecord?.company as string) || '',
 
@@ -185,7 +187,7 @@ export const useProfile = () => {
 
       workHours: (authUserRecord?.work_hours as string) || 'Standard Hours',
 
-      address: (authUserRecord?.address as string) || '',
+      address: (authUserRecord?.address as string) || emp?.personal?.currentAddress || emp?.personal?.permanentAddress || '',
 
       /**
        * This gets updated from useGetAutoApproveQuery()
@@ -228,34 +230,36 @@ export const useProfile = () => {
         ? currentDbUser.employee_code
         : (currentDbUser?.employee_id && currentDbUser.employee_id !== 'N/A' && currentDbUser.employee_id !== 'NA')
           ? currentDbUser.employee_id
-          : (authUser.employee_id && authUser.employee_id !== 'N/A' && authUser.employee_id !== 'NA')
-            ? authUser.employee_id
-            : (authUser.employee_code && authUser.employee_code !== 'N/A' && authUser.employee_code !== 'NA')
-              ? authUser.employee_code
-              : (emp?.employeeId && emp.employeeId !== 'N/A' && emp.employeeId !== 'NA')
-                ? emp.employeeId
+          : (emp?.employeeId && emp.employeeId !== 'N/A' && emp.employeeId !== 'NA')
+            ? emp.employeeId
+            : (authUser.employee_id && authUser.employee_id !== 'N/A' && authUser.employee_id !== 'NA')
+              ? authUser.employee_id
+              : (authUser.employee_code && authUser.employee_code !== 'N/A' && authUser.employee_code !== 'NA')
+                ? authUser.employee_code
                 : null;
 
     setUser((prev) => ({
       ...prev,
 
-      name: authUser.username || prev.name,
+      id: authUser.id ?? prev.id,
 
-      designation: currentDbUser?.designation || authUser.designation || prev.designation,
+      name: emp?.personal?.fullName || authUser.username || prev.name,
 
-      employeeId: resolvedEmployeeId || prev.employeeId,
+      designation: currentDbUser?.designation || emp?.designation || authUser.designation || prev.designation,
+
+      employeeId: resolvedEmployeeId || emp?.employeeId || prev.employeeId,
 
       email: authUser.email || prev.email,
 
-      contactNo: currentDbUser?.contact_no || currentDbUser?.phone || authUser.contact_number || prev.contactNo,
+      contactNo: emp?.personal?.contactNumber || currentDbUser?.contact_no || currentDbUser?.phone || authUser.contact_number || prev.contactNo,
 
-      image: authUser.image_url || prev.image,
+      image: emp?.profilePictureUrl || authUser.image_url || prev.image,
 
-      department: currentDbUser?.department || authUser.department || prev.department,
+      department: currentDbUser?.department || emp?.department || authUser.department || prev.department,
 
       joinDate: authUser.join_date || prev.joinDate,
 
-      workLocation: (record.work_location as string) ?? prev.workLocation,
+      workLocation: (record.work_location as string) || emp?.department || prev.workLocation,
 
       company: (record.company as string) ?? prev.company,
 
@@ -274,7 +278,7 @@ export const useProfile = () => {
       lastSeen: (record.last_seen as string) ?? prev.lastSeen,
 
       workHours: (record.work_hours as string) ?? prev.workHours,
-      address: (record.address as string) ?? prev.address,
+      address: (record.address as string) || emp?.personal?.currentAddress || emp?.personal?.permanentAddress || prev.address,
 
       manager: (record.manager as ManagerInfo) ?? prev.manager,
 

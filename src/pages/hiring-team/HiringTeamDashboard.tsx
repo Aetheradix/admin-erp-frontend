@@ -337,10 +337,20 @@ export default function HiringTeamDashboard() {
     ['superadmin', 'admin', 'hradmin', 'hr', 'hiringmanager', 'hiringteam'].includes(normalizedUserRole) ||
     ['SuperAdmin', 'Admin', 'HrAdmin'].includes(userRole);
 
-  // Initial sync from backend database
+  // Initial sync from backend database and periodic polling
   useEffect(() => {
     syncProfilesFromBackend();
+    const interval = setInterval(() => {
+      syncProfilesFromBackend();
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (dbUsers && dbUsers.length > 0) {
+      syncProfilesFromBackend();
+    }
+  }, [dbUsers]);
 
   // Listen to cross-module employee profile and invitation updates
   useEffect(() => {

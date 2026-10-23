@@ -1176,12 +1176,104 @@ export async function syncProfilesFromBackend(): Promise<void> {
                 (Boolean(bp.userEmail) && p.userEmail?.toLowerCase() === bp.userEmail.toLowerCase())
             );
             if (idx >= 0) {
-              merged[idx] = { ...merged[idx], ...bp };
+              merged[idx] = {
+                ...merged[idx],
+                ...bp,
+                status: bp.status || merged[idx].status,
+                employeeId: bp.employeeId || merged[idx].employeeId,
+                role: bp.role || merged[idx].role,
+                department: bp.department || merged[idx].department,
+                designation: bp.designation || merged[idx].designation,
+                completedSections: {
+                  ...(merged[idx].completedSections || {}),
+                  ...(bp.completedSections || {}),
+                },
+                personal: (merged[idx].personal || bp.personal) ? {
+                  fullName: bp.personal?.fullName || merged[idx].personal?.fullName || '',
+                  email: bp.personal?.email || merged[idx].personal?.email || bp.userEmail || merged[idx].userEmail || '',
+                  ...(merged[idx].personal || {}),
+                  ...(bp.personal || {}),
+                } : undefined,
+                bank: bp.bank || merged[idx].bank,
+                identity: bp.identity || merged[idx].identity,
+                employment: (bp.employment && bp.employment.length > 0) ? bp.employment : merged[idx].employment,
+                education: (bp.education && bp.education.length > 0) ? bp.education : merged[idx].education,
+                certifications: (bp.certifications && bp.certifications.length > 0) ? bp.certifications : merged[idx].certifications,
+                documents: (bp.documents && bp.documents.length > 0) ? bp.documents : merged[idx].documents,
+              };
             } else {
               merged.push(bp);
             }
           }
           localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(merged));
+          notifyChange('employee_profiles');
+        }
+      }
+    } catch {}
+
+    // 1b. Also sync current user's own profile from /employee-profile/me
+    try {
+      const meRes = await fetch(`${API_URL}/employee-profile/me`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (meRes.ok) {
+        const meJson = await meRes.json();
+        const meProfile: ProfileCompletionData = meJson.data || meJson;
+        if (meProfile && (meProfile.userId || meProfile.userEmail)) {
+          const local = getAllEmployeeProfiles();
+          const merged = [...local];
+          const idx = merged.findIndex(
+            (p) =>
+              String(p.userId) === String(meProfile.userId) ||
+              (Boolean(meProfile.userEmail) && p.userEmail?.toLowerCase() === meProfile.userEmail.toLowerCase())
+          );
+          if (idx >= 0) {
+            merged[idx] = {
+              ...merged[idx],
+              ...meProfile,
+              status: meProfile.status || merged[idx].status,
+              employeeId: meProfile.employeeId || merged[idx].employeeId,
+              completedSections: {
+                ...(merged[idx].completedSections || {}),
+                ...(meProfile.completedSections || {}),
+              },
+              personal: (merged[idx].personal || meProfile.personal) ? {
+                fullName: meProfile.personal?.fullName || merged[idx].personal?.fullName || '',
+                email: meProfile.personal?.email || merged[idx].personal?.email || meProfile.userEmail || merged[idx].userEmail || '',
+                ...(merged[idx].personal || {}),
+                ...(meProfile.personal || {}),
+              } : undefined,
+              bank: meProfile.bank || merged[idx].bank,
+              identity: meProfile.identity || merged[idx].identity,
+            };
+          } else {
+            merged.push(meProfile);
+          }
+          localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(merged));
+
+          // Also update logged-in user in localStorage if matching
+          try {
+            const curUserRaw = localStorage.getItem('user');
+            if (curUserRaw) {
+              const curUser = JSON.parse(curUserRaw);
+              if (
+                String(curUser.id) === String(meProfile.userId) ||
+                (meProfile.userEmail && curUser.email?.toLowerCase() === meProfile.userEmail.toLowerCase())
+              ) {
+                if (meProfile.employeeId && (!curUser.employee_code || curUser.employee_code === 'N/A')) {
+                  curUser.employee_code = meProfile.employeeId;
+                  curUser.employee_id = meProfile.employeeId;
+                  curUser.employeeId = meProfile.employeeId;
+                  localStorage.setItem('user', JSON.stringify(curUser));
+                  window.dispatchEvent(new CustomEvent('auth_user_updated'));
+                }
+              }
+            }
+          } catch {}
+
           notifyChange('employee_profiles');
         }
       }

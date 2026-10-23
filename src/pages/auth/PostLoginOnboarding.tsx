@@ -49,8 +49,8 @@ export default function PostLoginOnboarding() {
   // --- Step 2: Complete Profile ---
   const [fullName, setFullName] = useState(user?.username || '');
   const [contactNo, setContactNo] = useState(user?.contact_number || '');
-  const [department, setDepartment] = useState(user?.department || 'Engineering');
-  const [designation, setDesignation] = useState(user?.designation || '');
+  const department = user?.department || 'Engineering';
+  const designation = user?.designation || '';
 
   const [changeTemporaryPassword, { isLoading: isChangingPwd }] = useChangeTemporaryPasswordMutation();
   const [completeOnboarding, { isLoading: isCompletingOnboarding }] = useCompleteOnboardingMutation();
@@ -497,27 +497,6 @@ export default function PostLoginOnboarding() {
                 className="h-12 rounded-xl!"
               />
             </FormField>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label="Department" id="onboarding-dept">
-                <Input
-                  id="onboarding-dept"
-                  placeholder="e.g. Engineering"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="h-12 rounded-xl!"
-                />
-              </FormField>
-              <FormField label="Job Title" id="onboarding-designation">
-                <Input
-                  id="onboarding-designation"
-                  placeholder="e.g. Software Engineer"
-                  value={designation}
-                  onChange={(e) => setDesignation(e.target.value)}
-                  className="h-12 rounded-xl!"
-                />
-              </FormField>
-            </div>
 
             <div className="flex items-center gap-3 pt-2">
               <Button

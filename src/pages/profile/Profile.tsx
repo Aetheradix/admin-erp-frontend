@@ -15,7 +15,9 @@ import {
   getFormConfiguration,
   calculateCompletionPercentage,
   getIncompleteRequiredSections,
+  syncProfilesFromBackend,
 } from '@/services/employeeProfileService';
+import { useGetMyProfileCompletionQuery } from '@/store/api/employeeProfileApiSlice';
 import { FileCheck, ShieldCheck, KeyRound, ChevronRight } from 'lucide-react';
 
 const Profile = () => {
@@ -33,9 +35,17 @@ const Profile = () => {
     isLoadingAutoApprove,
   } = useProfile();
 
+  const { data: myProfileRes } = useGetMyProfileCompletionQuery(undefined, {
+    pollingInterval: 10000,
+  });
+
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [profileRefresh, setProfileRefresh] = useState(0);
+
+  useEffect(() => {
+    syncProfilesFromBackend();
+  }, []);
 
   useEffect(() => {
     const handleUpdate = () => setProfileRefresh((p) => p + 1);
@@ -50,17 +60,17 @@ const Profile = () => {
   }, []);
 
   const empProfile = useMemo(() => {
+    if (myProfileRes?.data) return myProfileRes.data;
     if (!user) return null;
-    // Try email first (most profiles are stored by email), fallback to numeric id
     const byEmail = user.email ? getEmployeeProfile(user.email) : null;
     return byEmail ?? (user.id ? getEmployeeProfile(user.id) : null);
-  }, [user?.id, user?.email, profileRefresh]);
+  }, [myProfileRes, user?.id, user?.email, profileRefresh]);
 
   const effectiveUser = useMemo(() => {
-    let id = (user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA')
-      ? user.employeeId
-      : (empProfile?.employeeId && empProfile.employeeId !== 'N/A' && empProfile.employeeId !== 'NA')
-        ? empProfile.employeeId
+    let id = (empProfile?.employeeId && empProfile.employeeId !== 'N/A' && empProfile.employeeId !== 'NA')
+      ? empProfile.employeeId
+      : (user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA')
+        ? user.employeeId
         : null;
 
     // Last resort: check staff list directly
@@ -83,8 +93,10 @@ const Profile = () => {
     return {
       ...user,
       employeeId: id || 'N/A',
+      address: user.address || empProfile?.personal?.currentAddress || empProfile?.personal?.permanentAddress || '',
+      contactNo: user.contactNo || empProfile?.personal?.contactNumber || '',
     };
-  }, [user, empProfile?.employeeId]);
+  }, [user, empProfile]);
 
   const formConfig = useMemo(() => getFormConfiguration(), []);
 
@@ -204,6 +216,7 @@ const Profile = () => {
           {activeTab === 'profile' && (
             <ProfileInfoTab
               user={effectiveUser}
+              empProfile={empProfile}
               isEditing={isEditing}
               onStartEdit={() => setIsEditing(true)}
               onElevationClick={() => setShowElevationDialog(true)}
@@ -212,7 +225,7 @@ const Profile = () => {
 
           {activeTab === 'organization' && <OrganizationTab user={effectiveUser} />}
 
-          {activeTab === 'overview' && <OverviewTab user={effectiveUser} />}
+          {activeTab === 'overview' && <OverviewTab user={effectiveUser} empProfile={empProfile} />}
         </>
       )}
 
