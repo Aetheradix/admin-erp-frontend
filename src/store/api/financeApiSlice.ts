@@ -352,12 +352,94 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }, 'ActivityLogs'],
     }),
 
-    getAuditLogs: builder.query<any, void>({
-      query: () => '/finance/audit-logs',
+    // Salary Slip Audit Logs (Activity Logs)
+    getSalarySlipAuditLogs: builder.query<any, void>({
+      query: () => '/finance/audit-logs?type=salary_slip',
       transformResponse: (response: any) => {
         return response?.data ?? response?.result ?? response ?? [];
       },
       providesTags: ['ActivityLogs'],
+    }),
+
+    // Invoice Audit Logs (Dedicated query for Invoice operations)
+    getInvoiceAuditLogs: builder.query<any, void>({
+      query: () => '/finance/invoices/audit-logs',
+      transformResponse: (response: any) => {
+        const list = response?.data ?? response?.result ?? response ?? [];
+        return Array.isArray(list) ? list : [];
+      },
+      providesTags: ['InvoiceAuditLogs'],
+    }),
+
+    createInvoiceAuditLog: builder.mutation<
+      any,
+      {
+        action: string;
+        description: string;
+        invoiceId?: string;
+        username?: string;
+        client?: string;
+        amount?: number;
+      }
+    >({
+      query: (data) => ({
+        url: '/finance/invoices/audit-logs',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: data,
+      }),
+      invalidatesTags: ['InvoiceAuditLogs'],
+    }),
+
+    // Generic Audit Logs query (supports ?type=invoice or ?type=salary_slip)
+    getAuditLogs: builder.query<any, string | void>({
+      query: (type) => `/finance/audit-logs${type ? `?type=${encodeURIComponent(type)}` : ''}`,
+      transformResponse: (response: any) => {
+        return response?.data ?? response?.result ?? response ?? [];
+      },
+      providesTags: ['ActivityLogs'],
+    }),
+
+    // Invoices CRUD Endpoints
+    getInvoices: builder.query<any[], void>({
+      query: () => '/finance/invoices',
+      transformResponse: (response: any) => {
+        const data = response?.data ?? response ?? [];
+        return Array.isArray(data) ? data : [];
+      },
+      providesTags: ['Invoices'],
+    }),
+
+    getInvoiceDetails: builder.query<any, string | number>({
+      query: (id) => `/finance/invoices/${id}`,
+      transformResponse: (response: any) => response?.data ?? response,
+      providesTags: (_result, _error, id) => [{ type: 'Invoices', id }],
+    }),
+
+    createInvoice: builder.mutation<any, FormData | Record<string, any>>({
+      query: (body) => ({
+        url: '/finance/invoices',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Invoices', 'InvoiceAuditLogs'],
+    }),
+
+    updateInvoice: builder.mutation<any, { id: string | number; [key: string]: any }>({
+      query: ({ id, ...body }) => ({
+        url: `/finance/invoices/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Invoices', 'InvoiceAuditLogs'],
+    }),
+
+    deleteInvoice: builder.mutation<any, string | number>({
+      query: (id) => ({
+        url: `/finance/invoices/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Invoices', 'InvoiceAuditLogs'],
     }),
 
     updateSalarySlip: builder.mutation<any, { id: string | number; [key: string]: any }>({
@@ -518,6 +600,18 @@ export const {
 
   // Audit Logs Hooks
   useGetAuditLogsQuery,
+  useGetSalarySlipAuditLogsQuery,
+  useGetInvoiceAuditLogsQuery,
+  useLazyGetInvoiceAuditLogsQuery,
+  useCreateInvoiceAuditLogMutation,
+
+  // Invoice CRUD Hooks
+  useGetInvoicesQuery,
+  useLazyGetInvoicesQuery,
+  useGetInvoiceDetailsQuery,
+  useCreateInvoiceMutation,
+  useUpdateInvoiceMutation,
+  useDeleteInvoiceMutation,
 
   // Employee Compensation Hooks
   useGetEmployeeCompensationQuery,

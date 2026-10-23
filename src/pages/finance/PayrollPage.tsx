@@ -25,12 +25,12 @@ import {
   useCreateSalarySlipMutation,
   useDeleteSalarySlipMutation,
   useUpdateSalarySlipMutation,
-  useGetAuditLogsQuery,
+  useGetSalarySlipAuditLogsQuery,
   useCreatePayrollAdjustmentMutation,
   useGetPayrollAdjustmentsQuery,
 } from '@/store/api/financeApiSlice';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
-import SalarySlipForm from './components/SalarySlipForm';
+import SalarySlipForm, { generateSlipNumber } from './components/SalarySlipForm';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
 import { getStoredPayrollSettings } from '@/types/payrollSettings';
 import type { SalarySlipData } from './components/SalarySlipForm';
@@ -82,8 +82,9 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
   ];
   
-  const monthStr = monthNames[(item.pay_period_month || 1) - 1];
-  const yearStr = item.pay_period_year || 2026;
+  const monthIdx = (Number(item.pay_period_month) || 1) - 1;
+  const monthStr = monthNames[monthIdx] || 'OCTOBER';
+  const yearStr = String(item.pay_period_year || 2026);
 
   const actualSlipNo = item.paySlipNo || item.pay_slip_no;
 
@@ -91,7 +92,8 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const bonusVal = Number(item.bonus || 0);
   const netVal = Number(item.net_salary || 0);
   const monthYearStr = `${monthStr} ${yearStr}`;
-  const fallbackSlipNo = `SLIP-${item.empCode}-${yearStr} ${monthStr} `;
+  const empCode = String(item.employee_code || item.employeeCode || item.employee_id || item.user_id || '001');
+  const fallbackSlipNo = generateSlipNumber(empCode, monthYearStr);
 
   // Extract Payroll Type & Adjustments (from native field or serialized in remarks)
   const isAdjustmentRemark = typeof item.remarks === 'string' && item.remarks.includes('[ADJUSTMENT');
@@ -182,7 +184,7 @@ export default function PayrollPage() {
     data: auditLogsData, 
     isLoading: isLogsLoading,
     refetch: refetchLogs, // 👈 Destructure refetch
-  } = useGetAuditLogsQuery(undefined, {
+  } = useGetSalarySlipAuditLogsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 

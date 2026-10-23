@@ -27,12 +27,24 @@ export interface User {
   designation?: string;
   employee_id?: string;
   employee_code?: string;
-  employeeId?: string;
+  employeeCode?: string;
   contact_number?: string;
   department?: string;
   join_date?: string;
   roles?: string[];
   permissions?: string[];
+  work_location?: string;
+  workLocation?: string;
+  address?: string;
+  company?: string;
+  country?: string;
+  employee_type?: string;
+  employeeType?: string;
+  sub_organization?: string;
+  subOrganization?: string;
+  status_text?: string;
+  last_seen?: string;
+  work_hours?: string;
   /** Onboarding fields – present for invited users */
   is_temporary_password?: boolean;
   is_onboarded?: boolean;

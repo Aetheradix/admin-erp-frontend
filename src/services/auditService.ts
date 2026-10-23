@@ -35,7 +35,7 @@ export interface InvitationRecord {
 export interface AuditLogEntry {
   id: string;
   action: string;
-  category: 'invitation' | 'profile' | 'security' | 'user_management' | 'admin';
+  category: 'invitation' | 'profile' | 'security' | 'user_management' | 'admin' | 'invoice' | 'finance';
   user: string;
   userEmail: string;
   target: string;
@@ -638,7 +638,7 @@ export function getAuditLogs(): AuditLogEntry[] {
  */
 export function recordAuditLog(entry: {
   action: string;
-  category: 'invitation' | 'profile' | 'security' | 'user_management' | 'admin';
+  category: AuditLogEntry['category'];
   user: string;
   userEmail: string;
   target: string;

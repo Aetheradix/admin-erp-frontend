@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  Mail, Phone, MapPin, Building, Globe, Edit3, Clock, Calendar,
-  CreditCard, Shield, GraduationCap, Briefcase, Award, CheckCircle2,
-  ChevronRight, User, HeartHandshake,
-  Hash, Landmark, FileText, Eye, EyeOff, ShieldCheck,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Building, Globe, Edit3, Clock, Calendar, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import type { ProfileUserData } from '../hooks/useProfile';
 import type { ProfileCompletionData } from '@/services/employeeProfileService';
@@ -62,7 +56,7 @@ export const ProfileInfoTab = ({
       <div className="bg-surface-subtle/50 p-6 sm:p-8 rounded-3xl border border-border-subtle flex flex-col gap-6 shadow-xs">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-2">
-            <Mail size={16} className="text-primary" /> Contact & Residence Matrix
+            <Mail size={16} className="text-primary" /> Contact & Identification
           </h3>
           <div className="flex items-center gap-3">
             <Link
@@ -84,6 +78,17 @@ export const ProfileInfoTab = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Employee Code */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
+              Employee Code
+            </span>
+            <div className="text-xs font-bold text-foreground flex items-center gap-2 font-mono">
+              <BadgeCheck size={14} className="text-primary" />
+              {user.employeeCode || user.employeeId || 'Not specified'}
+            </div>
+          </div>
+
           {/* Email */}
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
