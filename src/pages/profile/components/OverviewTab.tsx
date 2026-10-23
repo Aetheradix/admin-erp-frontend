@@ -19,9 +19,15 @@ export const OverviewTab = ({ user }: OverviewTabProps) => {
               <span className="font-extrabold text-foreground">{user.name}</span>
             </div>
             <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
-              <span className="text-muted font-bold">Employee ID</span>
-              <span className="font-extrabold text-foreground">{user.employeeId}</span>
+              <span className="text-muted font-bold">Employee Code</span>
+              <span className="font-extrabold text-foreground font-mono">{user.employeeCode || user.employeeId}</span>
             </div>
+            {user.employeeId && user.employeeId !== user.employeeCode && (
+              <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
+                <span className="text-muted font-bold">Employee ID</span>
+                <span className="font-extrabold text-foreground">{user.employeeId}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
               <span className="text-muted font-bold">Designation</span>
               <span className="font-extrabold text-primary">{user.designation}</span>

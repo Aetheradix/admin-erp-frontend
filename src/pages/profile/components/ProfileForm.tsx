@@ -20,6 +20,8 @@ export interface ProfileFormData {
   contactNo: string;
   department: string;
   designation: string;
+  employeeCode?: string;
+  employeeId?: string;
   workLocation?: string;
   company?: string;
   country?: string;
@@ -123,7 +125,20 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
           <span>Contact & Identity</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <FormField
+            label="Employee Code"
+            id="profile-code"
+            className="mb-0">
+            <Input
+              id="profile-code"
+              value={formData.employeeCode || formData.employeeId || 'N/A'}
+              disabled
+              title="Employee Code is managed by system administrators"
+              className="h-11 rounded-xl font-mono bg-surface-subtle opacity-75 cursor-not-allowed"
+            />
+          </FormField>
+
           <FormField
             label="Full Name"
             required
