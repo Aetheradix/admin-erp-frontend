@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Building, Globe, Edit3, Clock, Calendar, BadgeCheck } from 'lucide-react';
+import {
+  Mail, Phone, MapPin, Building, Globe, Edit3, Clock, Calendar, BadgeCheck,
+  CreditCard, Shield, GraduationCap, Briefcase, Award, CheckCircle2,
+  ChevronRight, User, HeartHandshake,
+  Hash, Landmark, FileText, Eye, EyeOff, ShieldCheck,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/primitives/Button';
 import type { ProfileUserData } from '../hooks/useProfile';
 import type { ProfileCompletionData } from '@/services/employeeProfileService';

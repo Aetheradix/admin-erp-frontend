@@ -91,6 +91,8 @@ export const apiSlice = createApi({
     'SystemInvitations',
     'InvoiceAuditLogs',
     'Invoices',
+    'EmployeeProfile',
+    'ProfileFormConfig',
   ],
   endpoints: () => ({}),
 });

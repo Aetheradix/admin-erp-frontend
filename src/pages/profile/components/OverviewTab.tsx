@@ -8,7 +8,6 @@ interface OverviewTabProps {
 }
 
 export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
-  const hasId = user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA';
   const hasBank = Boolean(empProfile?.bank?.bankName);
   const hasIdentity = Boolean(empProfile?.identity?.panNumber || empProfile?.identity?.aadhaarNumber);
 

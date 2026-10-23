@@ -3,7 +3,6 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
-import { useGetUsersQuery } from '@/store/api/userSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { recordAuditLog } from '@/services/auditService';
 import { getEmployeeProfile } from '@/services/employeeProfileService';
@@ -143,6 +142,11 @@ export const useProfile = () => {
           (authUser.id && String(u.id) === String(authUser.id))
       ) || null
     );
+  }, [authUser, dbUsers]);
+
+  const emp = useMemo(() => {
+    if (!authUser) return null;
+    return getEmployeeProfile(authUser.id) || getEmployeeProfile(authUser.email) || null;
   }, [authUser, dbUsers]);
 
   const authUserRecord = authUser as unknown as Record<string, unknown> | null;

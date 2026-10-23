@@ -68,8 +68,8 @@ export default function EmployeeProfileCompletion({ onClose, fullPage = false }:
       const newProfile: ProfileCompletionData = {
         userId: user.id,
         userEmail: user.email,
-        status: (user.employee_id || user.employee_code || user.employeeId) ? 'id_assigned' : 'incomplete',
-        employeeId: user.employee_id || user.employee_code || user.employeeId,
+        status: (user.employee_id || user.employee_code) ? 'id_assigned' : 'incomplete',
+        employeeId: user.employee_id || user.employee_code,
         lastSavedAt: new Date().toISOString(),
         completedSections: {},
         personal: {
