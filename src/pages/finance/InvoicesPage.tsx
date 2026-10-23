@@ -11,7 +11,12 @@ import {
 
 import { useUploadInvoiceMutation } from '@/store/api/uploadSlice';
 import { useFulfillOrderAndDeductStockMutation } from '@/store/api/inventorySlice';
-import { useGetAuditLogsQuery } from '@/store/api/financeApiSlice';
+import {
+  useGetInvoiceAuditLogsQuery,
+  useCreateInvoiceAuditLogMutation,
+  useDeleteInvoiceMutation,
+} from '@/store/api/financeApiSlice';
+import { recordAuditLog as recordSystemAuditLog } from '@/services/auditService';
 import { useAuth } from '@/hooks/useAuth';
 
 import InvoiceTemplate from './components/InvoiceTemplate';
@@ -208,12 +213,15 @@ export function InvoicesPage() {
   const currentUserName = user?.username || 'Admin';
 
   const {
-    data: backendAuditLogsData,
+    data: backendInvoiceAuditLogsData,
     isLoading: isLogsLoading,
     refetch: refetchLogs,
-  } = useGetAuditLogsQuery(undefined, {
+  } = useGetInvoiceAuditLogsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+
+  const [createInvoiceAuditLogApi] = useCreateInvoiceAuditLogMutation();
+  const [deleteInvoiceApi] = useDeleteInvoiceMutation();
 
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
     try {
@@ -274,29 +282,56 @@ export function InvoicesPage() {
     }
   }, [localAuditLogs]);
 
-  // Combined Audit Logs (local invoice events + backend finance audit logs)
+  // Combined Audit Logs (local invoice events + backend invoice audit logs)
   const combinedAuditLogs = useMemo(() => {
-    const rawBackendLogs = Array.isArray(backendAuditLogsData?.data)
-      ? backendAuditLogsData.data
-      : Array.isArray(backendAuditLogsData)
-      ? backendAuditLogsData
+    const rawBackendLogs = Array.isArray(backendInvoiceAuditLogsData?.data)
+      ? backendInvoiceAuditLogsData.data
+      : Array.isArray(backendInvoiceAuditLogsData)
+      ? backendInvoiceAuditLogsData
       : [];
 
-    const formattedBackendLogs = rawBackendLogs.map((item: any) => ({
-      id: String(item.id || item._id || Math.random()),
-      action: String(item.action || 'FINANCE_ACTION'),
-      description: String(item.description || item.details || 'Finance transaction recorded.'),
-      username: String(item.username || item.user || 'System'),
-      createdAt: String(item.created_at || item.createdAt || new Date().toISOString()),
-    }));
+    // Strictly filter out any salary slip / payroll logs if backend returned mixed records
+    const isSalarySlipLog = (item: any) => {
+      const act = String(item.action || '').toUpperCase();
+      const desc = String(item.description || item.details || '').toLowerCase();
+      const cat = String(item.category || '').toLowerCase();
+      return (
+        cat === 'salary_slip' ||
+        cat === 'payroll' ||
+        act.includes('SALARY_SLIP') ||
+        act.includes('PAYSLIP') ||
+        act.includes('PAYROLL') ||
+        desc.includes('salary slip') ||
+        desc.includes('payslip') ||
+        desc.includes('payroll')
+      );
+    };
 
-    const merged = [...localAuditLogs, ...formattedBackendLogs];
+    const formattedBackendLogs: InvoiceAuditLog[] = rawBackendLogs
+      .filter((item: any) => !isSalarySlipLog(item))
+      .map((item: any) => ({
+        id: String(item.id || item._id || Math.random()),
+        action: String(item.action || 'INVOICE_ACTION'),
+        description: String(item.description || item.details || 'Invoice transaction recorded.'),
+        username: String(item.username || item.user || 'System'),
+        createdAt: String(item.created_at || item.createdAt || new Date().toISOString()),
+      }));
+
+    // Deduplicate by ID
+    const existingIds = new Set(localAuditLogs.map((l) => l.id));
+    const uniqueBackend = formattedBackendLogs.filter((l) => !existingIds.has(l.id));
+
+    const merged = [...localAuditLogs, ...uniqueBackend];
     // Sort descending by date
     merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return merged;
-  }, [localAuditLogs, backendAuditLogsData]);
+  }, [localAuditLogs, backendInvoiceAuditLogsData]);
 
-  const recordAuditLog = (action: string, description: string) => {
+  const recordAuditLog = (
+    action: string,
+    description: string,
+    extra?: { invoiceId?: string; client?: string; amount?: number }
+  ) => {
     const newLog: InvoiceAuditLog = {
       id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       action,
@@ -305,6 +340,29 @@ export function InvoicesPage() {
       createdAt: new Date().toISOString(),
     };
     setLocalAuditLogs((prev) => [newLog, ...prev]);
+
+    // Send to dedicated backend invoice audit logs endpoint via mutation
+    createInvoiceAuditLogApi({
+      action,
+      description,
+      invoiceId: extra?.invoiceId,
+      client: extra?.client,
+      amount: extra?.amount,
+      username: currentUserName,
+    }).catch(() => {
+      // Backend best-effort
+    });
+
+    // Also record in centralized system audit logs with 'invoice' category
+    recordSystemAuditLog({
+      action,
+      category: 'invoice',
+      user: currentUserName,
+      userEmail: user?.email || '',
+      target: description,
+      status: 'Success',
+      details: description,
+    });
   };
 
   // Filtered invoices by search text & status
@@ -452,7 +510,8 @@ export function InvoicesPage() {
       // Record Audit Log
       recordAuditLog(
         'CREATE_INVOICE',
-        `Created invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN')})`
+        `Created invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN')})`,
+        { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount }
       );
 
       refetchLogs();
@@ -511,12 +570,18 @@ export function InvoicesPage() {
       okType: 'danger',
       cancelText: 'Cancel',
       maskClosable: true,
-      onOk: () => {
+      onOk: async () => {
         setInvoices((prev) => prev.filter((item) => item.id !== invoice.id));
         recordAuditLog(
           'DELETE_INVOICE',
-          `Deleted invoice ${invoice.id} for ${invoice.client} (₹${Number(invoice.amount || 0).toLocaleString('en-IN')})`
+          `Deleted invoice ${invoice.id} for ${invoice.client} (₹${Number(invoice.amount || 0).toLocaleString('en-IN')})`,
+          { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount }
         );
+        try {
+          await deleteInvoiceApi(invoice.id).unwrap();
+        } catch {
+          // Backend delete best-effort
+        }
         refetchLogs();
         message.success(`Invoice ${invoice.id} deleted successfully.`);
       },
@@ -545,7 +610,11 @@ export function InvoicesPage() {
           anchor.remove();
           window.URL.revokeObjectURL(url);
 
-          recordAuditLog('DOWNLOAD_INVOICE', `Downloaded invoice PDF for ${invoice.id}`);
+          recordAuditLog('DOWNLOAD_INVOICE', `Downloaded invoice PDF for ${invoice.id}`, {
+            invoiceId: invoice.id,
+            client: invoice.client,
+            amount: invoice.amount,
+          });
           message.success({
             content: 'Invoice downloaded successfully.',
             key: 'invoice-download',
@@ -566,7 +635,11 @@ export function InvoicesPage() {
       anchor.remove();
       window.URL.revokeObjectURL(url);
 
-      recordAuditLog('DOWNLOAD_INVOICE', `Generated & downloaded invoice PDF for ${invoice.id}`);
+      recordAuditLog('DOWNLOAD_INVOICE', `Generated & downloaded invoice PDF for ${invoice.id}`, {
+        invoiceId: invoice.id,
+        client: invoice.client,
+        amount: invoice.amount,
+      });
       message.success({
         content: 'Invoice downloaded successfully.',
         key: 'invoice-download',
@@ -692,10 +765,10 @@ export function InvoicesPage() {
         />
       </motion.div>
 
-      {/* 💡 Audit Logs Table at the Bottom - Matching Payroll Page exactly */}
+      {/* 💡 Dedicated Invoice Audit Logs Table */}
       <div className="flex flex-col gap-3 mt-6">
         <div>
-          <h3 className="font-bold text-base text-slate-900">Audit Logs</h3>
+          <h3 className="font-bold text-base text-slate-900">Invoice Audit Logs</h3>
           <p className="text-xs text-slate-500">History of invoice updates, creations, and deletions</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
@@ -705,7 +778,7 @@ export function InvoicesPage() {
             loading={isLogsLoading}
             rowKey={(record) => String(record.id || record._id || Math.random())}
             pagination={{ pageSize: 5 }}
-            locale={{ emptyText: 'No audit logs found.' }}
+            locale={{ emptyText: 'No invoice audit logs found.' }}
           />
         </div>
       </div>

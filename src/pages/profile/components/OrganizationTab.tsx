@@ -92,7 +92,9 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
               <div className="flex flex-col">
                 <span className="text-sm font-black text-foreground">{user.name} (You)</span>
                 <span className="text-xs font-bold text-primary">{user.designation}</span>
-                <span className="text-[10px] font-semibold text-muted">{user.department}</span>
+                <span className="text-[10px] font-semibold text-muted">
+                  {user.department} • Code: {user.employeeCode || user.employeeId}
+                </span>
               </div>
             </div>
             <span className="px-3 py-1 rounded-full bg-primary text-white text-[10px] font-extrabold uppercase">

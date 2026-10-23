@@ -25,7 +25,7 @@ import {
   useCreateSalarySlipMutation,
   useDeleteSalarySlipMutation,
   useUpdateSalarySlipMutation,
-  useGetAuditLogsQuery,
+  useGetSalarySlipAuditLogsQuery,
   useCreatePayrollAdjustmentMutation,
   useGetPayrollAdjustmentsQuery,
 } from '@/store/api/financeApiSlice';
@@ -184,7 +184,7 @@ export default function PayrollPage() {
     data: auditLogsData, 
     isLoading: isLogsLoading,
     refetch: refetchLogs, // 👈 Destructure refetch
-  } = useGetAuditLogsQuery(undefined, {
+  } = useGetSalarySlipAuditLogsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 

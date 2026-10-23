@@ -71,12 +71,17 @@ export const ProfileHeader = ({
                 onRemoveRole={onRemoveRole}
               />
 
-              <div className="flex items-center gap-4 text-xs font-medium text-muted mt-1">
+              <div className="flex items-center gap-3 text-xs font-medium text-muted mt-1 flex-wrap">
                 <span className="flex items-center gap-1.5 text-success font-semibold">
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   Available
                 </span>
-                <span>ID: {user.employeeId}</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-primary/10 text-primary font-mono font-bold border border-primary/20">
+                  Code: {user.employeeCode || user.employeeId}
+                </span>
+                {user.employeeId && user.employeeId !== user.employeeCode && (
+                  <span className="text-muted">ID: {user.employeeId}</span>
+                )}
               </div>
             </div>
           </div>
