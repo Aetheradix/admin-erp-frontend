@@ -7,6 +7,9 @@ import {
   Calendar as CalendarIcon,
   Sun,
   Zap,
+  MapPin,
+  Home,
+  Building,
 } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import {
@@ -179,6 +182,7 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
             <tr className="border-b border-border-subtle bg-surface-subtle/40 text-[10px] font-black uppercase text-muted tracking-widest">
               <th className="py-4 px-6">Date</th>
               <th className="py-4 px-6">Status</th>
+              <th className="py-4 px-6">Mode & Geo</th>
               <th className="py-4 px-6">Check In</th>
               <th className="py-4 px-6">Check Out</th>
               <th className="py-4 px-6">Breaks</th>
@@ -195,6 +199,25 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                 className="hover:bg-surface-subtle/80 transition-colors cursor-pointer">
                 <td className="py-4 px-6 text-foreground font-black">{formatDate(r.date)}</td>
                 <td className="py-4 px-6">{getStatusBadge(r.status)}</td>
+                <td className="py-4 px-6">
+                  <div className="flex flex-col gap-1 items-start">
+                    {r.is_wfh || r.work_mode === 'wfh' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-[10px] border border-indigo-500/20">
+                        <Home size={11} /> WFH
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 font-black text-[10px] border border-emerald-500/20">
+                        <Building size={11} /> Office
+                      </span>
+                    )}
+                    {r.check_in_location && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted truncate max-w-[130px]">
+                        <MapPin size={10} className="text-primary shrink-0" />
+                        {r.check_in_location}
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td className="py-4 px-6 text-foreground">{r.checkIn || '---'}</td>
                 <td className="py-4 px-6 text-foreground">{r.checkOut || '---'}</td>
                 <td className="py-4 px-6 text-amber-500">
@@ -226,7 +249,7 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
 
             {filteredRecords.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-muted font-bold">
+                <td colSpan={9} className="py-12 text-center text-muted font-bold">
                   No attendance records found matching filters.
                 </td>
               </tr>

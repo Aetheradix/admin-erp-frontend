@@ -23,6 +23,16 @@ export interface AttendanceRecord {
   checkIn?: string;
   checkOut?: string;
   status?: string;
+  work_mode?: 'office' | 'wfh' | 'field';
+  is_wfh?: boolean;
+  check_in_latitude?: number | null;
+  check_in_longitude?: number | null;
+  check_in_location?: string | null;
+  check_out_latitude?: number | null;
+  check_out_longitude?: number | null;
+  check_out_location?: string | null;
+  device_info?: string | null;
+  remark?: string | null;
 }
 
 export interface AttendanceStatus {
@@ -31,6 +41,17 @@ export interface AttendanceStatus {
   activeBreak?: BreakRecord | null;
   lastAction?: string | null;
   dbStatus?: string | null;
+  work_mode?: 'office' | 'wfh' | 'field';
+  is_wfh?: boolean;
+  check_in_latitude?: number | null;
+  check_in_longitude?: number | null;
+  check_in_location?: string | null;
+  check_out_latitude?: number | null;
+  check_out_longitude?: number | null;
+  check_out_location?: string | null;
+  record?: AttendanceRecord | null;
+  total_break_minutes?: number;
+  breaks?: BreakRecord[];
 }
 
 export interface AttendanceRequest {
@@ -67,10 +88,57 @@ export interface BreakRecord {
   id: number;
   attendance_id: number;
   user_id: number;
+  break_type?: string | null;
+  date?: string | null;
   break_start: string | null;
   break_end: string | null;
   duration: number | null; // minutes
-  remark: string | null;
+  status?: 'IN_PROGRESS' | 'COMPLETED' | string | null;
+  break_note: string | null;
+  break_status_message?: string | null;
+}
+
+export interface ActiveBreakInfo {
+  id: number;
+  break_type: string;
+  break_start: string;
+  break_note: string | null;
+  break_status_message: string | null;
+  max_allowed_minutes: number;
+  elapsed_minutes: number;
+  remaining_minutes: number;
+  is_over_time: boolean;
+  expected_end_time: string | null;
+}
+
+export interface TeamMemberAvailability {
+  user_id: number;
+  employee_code?: string;
+  name: string;
+  email: string;
+  department: string;
+  designation: string;
+  role?: string;
+  avatar?: string | null;
+  availability_status: 'AVAILABLE' | 'ON_BREAK' | 'CHECKED_OUT' | 'OFFLINE';
+  availability_label: string;
+  status_message: string;
+  check_in_time?: string | null;
+  check_out_time?: string | null;
+  active_break?: ActiveBreakInfo | null;
+}
+
+export interface TeamAvailabilityResponse {
+  summary: {
+    total: number;
+    on_break: number;
+    available: number;
+    checked_out: number;
+    offline: number;
+  };
+  active_breaks: TeamMemberAvailability[];
+  members: TeamMemberAvailability[];
+  timestamp: string;
 }
 
 export interface Career {

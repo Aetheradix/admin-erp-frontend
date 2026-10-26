@@ -12,9 +12,17 @@ import {
   Smile,
   Meh,
   Frown,
+  MapPin,
+  Home,
+  Building,
+  RefreshCw,
+  Navigation,
+  Zap,
+  MessageSquare,
 } from 'lucide-react';
 import { formatTime, formatFullDate } from '@/utils/date';
 import type { AttendanceStatus } from '@/types/models';
+import type { GeoLocationState } from '../hooks/useAttendance';
 
 interface TodayAttendanceSummaryProps {
   time: Date;
@@ -24,7 +32,7 @@ interface TodayAttendanceSummaryProps {
   isSubmittingMood: boolean;
   isBreakLoading: boolean;
   handleAttendance: () => void;
-  handleBreak: () => void;
+  handleBreak: (breakTypeOrRemark?: string, customRemark?: string) => void;
   logMood: (score: number, label: string) => void;
   liveWorkingTime: string;
   checkInTimeDisplay: string;
@@ -33,7 +41,15 @@ interface TodayAttendanceSummaryProps {
   netWorkingDisplay: string;
   isLate: boolean;
   lateDurationDisplay: string;
+  earlyDurationDisplay: string;
+  punctualityStatus: 'late' | 'on-time' | 'early' | 'unknown';
   shiftTimingDisplay: string;
+  workMode: 'office' | 'wfh';
+  setWorkMode: (mode: 'office' | 'wfh') => void;
+  geoLocation: GeoLocationState;
+  requestGeoLocation: () => void;
+  breakNote: string;
+  setBreakNote: (v: string) => void;
 }
 
 const MOODS = [
@@ -61,10 +77,19 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
   netWorkingDisplay,
   isLate,
   lateDurationDisplay,
+  earlyDurationDisplay,
+  punctualityStatus,
   shiftTimingDisplay,
+  workMode,
+  setWorkMode,
+  geoLocation,
+  requestGeoLocation,
+  breakNote,
+  setBreakNote,
 }) => {
   const isCheckedIn = status?.status === 'checked-in';
   const isOnBreak = !!status?.onBreak;
+  const isWfhCheckedIn = Boolean(status?.is_wfh || status?.work_mode === 'wfh');
 
   const getStatusBadge = () => {
     if (isOnBreak) {
@@ -75,9 +100,18 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
       );
     }
     if (isCheckedIn) {
+      if (isWfhCheckedIn) {
+        return (
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-500 font-black text-xs uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+            <Home size={14} /> WFH (REMOTE)
+          </span>
+        );
+      }
       return (
         <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-black text-xs uppercase tracking-widest">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" /> IN OFFICE
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <Building size={14} /> IN OFFICE
         </span>
       );
     }
@@ -102,6 +136,12 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                 Today's Attendance
               </h2>
               {getStatusBadge()}
+              {isCheckedIn && status?.check_in_location && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-subtle border border-border-subtle text-foreground/80 font-bold text-[11px]">
+                  <MapPin size={12} className="text-primary" />
+                  {status.check_in_location}
+                </span>
+              )}
             </div>
             <p className="text-xs font-bold text-muted mt-0.5">{formatFullDate(time)}</p>
           </div>
@@ -120,7 +160,7 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Left Column: Action Control Hub */}
+        {/* Left Column: Action Control Hub (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col justify-between gap-4 bg-surface-subtle/50 p-5 rounded-[28px] border border-border-subtle">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted">
@@ -131,6 +171,91 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
             </span>
           </div>
 
+          {/* Work Mode Toggle: Office vs WFH */}
+          <div className="flex flex-col gap-2 p-3 bg-surface-elevated rounded-2xl border border-border-subtle">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-muted">
+                Work Location Mode
+              </span>
+              {isCheckedIn ? (
+                <span className="text-[10px] font-bold text-primary">Locked (Active Shift)</span>
+              ) : (
+                <span className="text-[10px] font-bold text-muted">Select before Punch</span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={isCheckedIn}
+                onClick={() => setWorkMode('office')}
+                className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  workMode === 'office'
+                    ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                    : 'bg-surface-subtle border border-transparent text-muted hover:text-foreground'
+                } ${isCheckedIn ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                <Building size={14} />
+                <span>In-Office</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isCheckedIn}
+                onClick={() => setWorkMode('wfh')}
+                className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  workMode === 'wfh'
+                    ? 'bg-indigo-500/15 border border-indigo-500/40 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'bg-surface-subtle border border-transparent text-muted hover:text-foreground'
+                } ${isCheckedIn ? 'opacity-80 cursor-not-allowed' : ''}`}>
+                <Home size={14} />
+                <span>WFH</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Real-Time Geo-Tagging Status Indicator */}
+          <div className="p-3 bg-surface-elevated rounded-2xl border border-border-subtle flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Navigation size={13} className="text-primary animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-muted">
+                  Geo-Tag Verification
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={requestGeoLocation}
+                disabled={geoLocation.isFetching}
+                title="Refresh GPS Coordinates"
+                className="text-muted hover:text-primary transition-colors p-1 rounded-lg cursor-pointer">
+                <RefreshCw size={12} className={geoLocation.isFetching ? 'animate-spin text-primary' : ''} />
+              </button>
+            </div>
+
+            {geoLocation.latitude && geoLocation.longitude ? (
+              <div className="flex items-center justify-between text-[11px] font-bold text-foreground">
+                <span className="flex items-center gap-1 text-emerald-500">
+                  <CheckCircle2 size={12} />
+                  GPS Tagged: {geoLocation.latitude.toFixed(4)}°, {geoLocation.longitude.toFixed(4)}°
+                </span>
+                {geoLocation.accuracy && (
+                  <span className="text-[10px] text-muted">±{Math.round(geoLocation.accuracy)}m</span>
+                )}
+              </div>
+            ) : geoLocation.error ? (
+              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500">
+                <AlertTriangle size={12} />
+                <span>{geoLocation.error}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-[11px] font-bold text-muted">
+                <MapPin size={12} />
+                <span>Detecting location...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Check-In / Check-Out Buttons */}
           <div className="flex flex-col gap-3">
             <Button
               variant={isCheckedIn ? 'ghost' : 'primary'}
@@ -145,27 +270,117 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               disabled={isLoading || isOnBreak}>
               {isCheckedIn ? <LogOut size={18} /> : <LogIn size={18} />}
               <span className="font-black tracking-wider uppercase">
-                {isCheckedIn ? 'Check Out' : 'Check In'}
+                {isCheckedIn
+                  ? 'Check Out'
+                  : workMode === 'wfh'
+                  ? 'Check In (WFH)'
+                  : 'Check In (Office)'}
               </span>
             </Button>
 
+          {/* Break Action Hub */}
+          <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-surface-elevated border border-border-subtle">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-muted flex items-center gap-1.5">
+                <Coffee size={12} className={isOnBreak ? 'text-amber-500 animate-pulse' : 'text-primary'} />
+                Break Management
+              </span>
+              {isOnBreak ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-[9px] font-black uppercase tracking-wider animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  IN PROGRESS
+                </span>
+              ) : isCheckedIn ? (
+                <span className="text-[10px] font-bold text-muted">Ready</span>
+              ) : (
+                <span className="text-[10px] font-bold text-muted">Punch in first</span>
+              )}
+            </div>
+
+            {/* Active break status card */}
+            {isOnBreak && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-600 dark:text-amber-400">
+                    {status?.activeBreak?.break_type || (status?.activeBreak?.break_note ? `${status.activeBreak.break_note} Break` : 'Break In Progress')}
+                  </span>
+                  <span className="text-[10px] font-black text-amber-600 dark:text-amber-400">
+                    {totalBreakDisplay}
+                  </span>
+                </div>
+                {status?.activeBreak?.break_note && (
+                  <div className="flex items-start gap-1.5 text-[11px] font-bold text-foreground bg-white/70 dark:bg-surface-subtle/80 px-2 py-1 rounded-lg">
+                    <MessageSquare size={12} className="shrink-0 mt-0.5 text-amber-500" />
+                    <span>{status.activeBreak.break_note}</span>
+                  </div>
+                )}
+                {status?.activeBreak?.break_start && (
+                  <span className="text-[9px] font-bold text-muted">
+                    Started at: {new Date(status.activeBreak.break_start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* When NOT on break: Quick Presets + Reason Input */}
+            {!isOnBreak && isCheckedIn && (
+              <div className="flex flex-col gap-2">
+                {/* Quick 1-Click Break Presets */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    disabled={isBreakLoading}
+                    onClick={() => handleBreak('Tea Break', breakNote || 'Tea Break')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-surface-subtle hover:bg-amber-500/15 border border-border-subtle hover:border-amber-500/40 text-[11px] font-bold text-foreground transition-all cursor-pointer">
+                    <Coffee size={13} className="text-amber-500" />
+                    <span>Tea Break</span>
+                    <span className="text-[9px] text-muted">(15m)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isBreakLoading}
+                    onClick={() => handleBreak('Lunch Break', breakNote || 'Lunch Break')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-surface-subtle hover:bg-amber-500/15 border border-border-subtle hover:border-amber-500/40 text-[11px] font-bold text-foreground transition-all cursor-pointer">
+                    <Coffee size={13} className="text-amber-500" />
+                    <span>Lunch Break</span>
+                    <span className="text-[9px] text-muted">(45m)</span>
+                  </button>
+                </div>
+
+                {/* Custom Remark Input */}
+                <div className="flex flex-col gap-1">
+                  <input
+                    type="text"
+                    value={breakNote}
+                    onChange={(e) => setBreakNote(e.target.value)}
+                    placeholder="Custom break reason (optional)..."
+                    maxLength={80}
+                    className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Primary Break Action Button */}
             <Button
               variant={isOnBreak ? 'ghost' : 'secondary'}
-              aria-label={isOnBreak ? 'End Break' : 'Take Break'}
-              className={`w-full h-12 rounded-2xl! text-xs shadow-sm ${
+              aria-label={isOnBreak ? 'End Break' : 'Start Break'}
+              className={`w-full h-11 rounded-2xl! text-xs shadow-sm ${
                 isOnBreak
-                  ? 'border-2 border-amber-500/40! text-amber-500 bg-amber-500/5'
+                  ? 'border-2 border-amber-500! text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
                   : 'bg-surface-elevated border border-border-subtle hover:border-primary/40'
               } flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer`}
-              onClick={handleBreak}
+              onClick={() => handleBreak(breakNote || 'Break')}
               loading={isBreakLoading}
               disabled={isBreakLoading || !isCheckedIn}>
-              <Coffee size={16} className={isOnBreak ? 'text-amber-500' : 'text-muted'} />
+              <Coffee size={15} className={isOnBreak ? 'text-amber-500 animate-pulse' : 'text-muted'} />
               <span className="font-black tracking-wider uppercase">
-                {isOnBreak ? 'End Break' : 'Take Break'}
+                {isOnBreak ? 'End Break' : 'Start Break'}
               </span>
             </Button>
           </div>
+          </div>{/* end flex-col gap-3 */}
 
           {/* Integrated Mood Selector */}
           <div className="pt-3 border-t border-border-subtle/50">
@@ -202,16 +417,30 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
         {/* Right Column: Live Shift Metrics Cards (8 Cols) */}
         <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-3.5">
           {/* Card 1: Check-in Time */}
-          <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
+          <div className={`p-4 rounded-[22px] border flex flex-col justify-between transition-all ${
+            isLate
+              ? 'bg-amber-500/5 border-amber-500/25'
+              : 'bg-surface-subtle border-border-subtle'
+          }`}>
             <div className="flex items-center justify-between text-muted">
               <span className="text-[10px] font-black uppercase tracking-wider">Check In</span>
-              <LogIn size={15} className="text-primary" />
+              <LogIn size={15} className={isLate ? 'text-amber-500' : 'text-primary'} />
             </div>
             <div className="mt-2.5">
-              <span className="text-lg font-black text-foreground block">{checkInTimeDisplay}</span>
-              <span className="text-[9px] font-bold text-muted mt-0.5 block">
-                First Punch Today
-              </span>
+              <span className={`text-lg font-black block ${
+                isLate ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'
+              }`}>{checkInTimeDisplay}</span>
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                {isLate ? (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-500 uppercase tracking-wide">
+                    <AlertTriangle size={9} /> LATE · {lateDurationDisplay}
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-bold text-muted">
+                    {isWfhCheckedIn ? 'Work From Home' : 'First Punch Today'}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -229,32 +458,60 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
             </div>
           </div>
 
-          {/* Card 3: Late Status */}
-          <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">
-            <div className="flex items-center justify-between text-muted">
-              <span className="text-[10px] font-black uppercase tracking-wider">Punctuality</span>
-              {isLate ? (
-                <AlertTriangle size={15} className="text-warning" />
-              ) : (
-                <CheckCircle2 size={15} className="text-success" />
-              )}
-            </div>
-            <div className="mt-2.5">
-              {isLate ? (
-                <div>
-                  <span className="text-sm font-black text-warning block">LATE</span>
-                  <span className="text-[9px] font-bold text-warning/80 mt-0.5 block">
-                    {lateDurationDisplay}
-                  </span>
+          {/* Card 3: Punctuality — 3 States: late / on-time / early */}
+          {(() => {
+            const cardConfig = {
+              late: {
+                bg: 'bg-amber-500/5',
+                border: 'border-amber-500/25',
+                icon: <AlertTriangle size={15} className="text-amber-500" />,
+                label: 'LATE',
+                labelColor: 'text-amber-500',
+                sub: lateDurationDisplay,
+                subColor: 'text-amber-400',
+              },
+              'on-time': {
+                bg: 'bg-emerald-500/5',
+                border: 'border-emerald-500/20',
+                icon: <CheckCircle2 size={15} className="text-emerald-500" />,
+                label: 'ON TIME',
+                labelColor: 'text-emerald-500',
+                sub: 'Within shift window',
+                subColor: 'text-muted',
+              },
+              early: {
+                bg: 'bg-blue-500/5',
+                border: 'border-blue-500/20',
+                icon: <Zap size={15} className="text-blue-500" />,
+                label: 'EARLY',
+                labelColor: 'text-blue-500',
+                sub: earlyDurationDisplay,
+                subColor: 'text-blue-400',
+              },
+              unknown: {
+                bg: 'bg-surface-subtle',
+                border: 'border-border-subtle',
+                icon: <Clock size={15} className="text-muted" />,
+                label: '—',
+                labelColor: 'text-muted',
+                sub: 'Not checked in',
+                subColor: 'text-muted',
+              },
+            };
+            const cfg = cardConfig[punctualityStatus];
+            return (
+              <div className={`${cfg.bg} p-4 rounded-[22px] border ${cfg.border} flex flex-col justify-between transition-all`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-muted">Punctuality</span>
+                  {cfg.icon}
                 </div>
-              ) : (
-                <div>
-                  <span className="text-sm font-black text-success block">ON TIME</span>
-                  <span className="text-[9px] font-bold text-muted mt-0.5 block">Shift Window</span>
+                <div className="mt-2.5">
+                  <span className={`text-sm font-black block ${cfg.labelColor}`}>{cfg.label}</span>
+                  <span className={`text-[9px] font-bold mt-0.5 block ${cfg.subColor}`}>{cfg.sub}</span>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            );
+          })()}
 
           {/* Card 4: Live Session Timer */}
           <div className="bg-surface-subtle p-4 rounded-[22px] border border-border-subtle flex flex-col justify-between">

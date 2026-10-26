@@ -5,7 +5,10 @@ import { AttendanceInsights } from './components/AttendanceInsights';
 import { AttendanceCalendarGrid } from './components/AttendanceCalendarGrid';
 import { DailyTimelineCard } from './components/DailyTimelineCard';
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable';
-import { Clock, Calendar as CalendarIcon, BarChart3 } from 'lucide-react';
+import { TeamAvailabilityCard } from './components/TeamAvailabilityCard';
+import { CompactTeamBreakBanner } from './components/CompactTeamBreakBanner';
+import { useGetTeamAvailabilityQuery } from '@/store/api/attendanceSlice';
+import { Clock, Calendar as CalendarIcon, BarChart3, Users } from 'lucide-react';
 
 const MONTH_NAMES = [
   'January',
@@ -23,7 +26,12 @@ const MONTH_NAMES = [
 ];
 
 export const CheckInPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'today' | 'calendar' | 'history'>('today');
+  const [activeTab, setActiveTab] = useState<'today' | 'team' | 'calendar' | 'history'>('today');
+
+  const { data: teamData } = useGetTeamAvailabilityQuery(undefined, {
+    pollingInterval: 10000,
+  });
+  const onBreakCount = teamData?.summary?.on_break ?? 0;
 
   const {
     time,
@@ -42,6 +50,8 @@ export const CheckInPage: React.FC = () => {
     monthRecords,
     monthSummary,
     selectedDayRecord,
+    breakNote,
+    setBreakNote,
     liveWorkingTime,
     checkInTimeDisplay,
     checkOutTimeDisplay,
@@ -49,7 +59,13 @@ export const CheckInPage: React.FC = () => {
     netWorkingDisplay,
     isLate,
     lateDurationDisplay,
+    earlyDurationDisplay,
+    punctualityStatus,
     shiftTimingDisplay,
+    workMode,
+    setWorkMode,
+    geoLocation,
+    requestGeoLocation,
   } = useAttendance();
 
   const selectedMonthName = MONTH_NAMES[currentMonth.getMonth()];
@@ -81,6 +97,22 @@ export const CheckInPage: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('team')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === 'team'
+                ? 'bg-primary text-white shadow-md'
+                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+            }`}>
+            <Users size={15} />
+            <span>Team Availability</span>
+            {onBreakCount > 0 && (
+              <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-black animate-pulse shadow-xs">
+                {onBreakCount}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setActiveTab('calendar')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'calendar'
@@ -104,6 +136,9 @@ export const CheckInPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Top Compact Live Team Break Presence Banner */}
+      <CompactTeamBreakBanner onViewTeamTab={() => setActiveTab('team')} />
+
       {/* Tab 1: Today's Punch & Timeline */}
       {activeTab === 'today' && (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -124,18 +159,22 @@ export const CheckInPage: React.FC = () => {
             netWorkingDisplay={netWorkingDisplay}
             isLate={isLate}
             lateDurationDisplay={lateDurationDisplay}
+            earlyDurationDisplay={earlyDurationDisplay}
+            punctualityStatus={punctualityStatus}
             shiftTimingDisplay={shiftTimingDisplay}
+            workMode={workMode}
+            setWorkMode={setWorkMode}
+            geoLocation={geoLocation}
+            requestGeoLocation={requestGeoLocation}
+            breakNote={breakNote}
+            setBreakNote={setBreakNote}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-7 xl:col-span-8">
               <DailyTimelineCard
-                selectedDate={new Date()}
-                record={monthRecords.find(
-                  (r) =>
-                    r.date ===
-                    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`
-                )}
+                selectedDate={time}
+                record={selectedDayRecord}
               />
             </div>
             <div className="lg:col-span-5 xl:col-span-4">
@@ -146,6 +185,13 @@ export const CheckInPage: React.FC = () => {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tab: Dedicated Team Availability & Break Status */}
+      {activeTab === 'team' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <TeamAvailabilityCard />
         </div>
       )}
 
