@@ -420,7 +420,7 @@ export function InvoicesPage() {
   const [uploadInvoice, { isLoading: isUploadingPdf }] = useUploadInvoiceMutation();
   const [fulfillOrderAndDeductStock] = useFulfillOrderAndDeductStockMutation();
 
-  const { invoicePdfRef, pdfInvoice, generateInvoicePDF } = useInvoicePdf();
+  const { invoicePdfRef, pdfInvoice, generateInvoicePDF, downloadInvoicePDF } = useInvoicePdf();
 
   // Persist invoices whenever updated
   useEffect(() => {
@@ -932,43 +932,40 @@ export function InvoicesPage() {
 
       const invoiceUrl = invoice.data?.invoiceUrl;
 
+      // 1. Try remote invoice URL if present, with safe fallback on CORS / network / 404 failure
       if (invoiceUrl) {
-        const response = await fetch(invoiceUrl);
-        if (response.ok) {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = `${invoice.id}.pdf`;
-          document.body.appendChild(anchor);
-          anchor.click();
-          anchor.remove();
-          window.URL.revokeObjectURL(url);
+        try {
+          const response = await fetch(invoiceUrl);
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = `${invoice.id}.pdf`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            window.URL.revokeObjectURL(url);
 
-          recordAuditLog('DOWNLOAD_INVOICE', `Downloaded invoice PDF for ${invoice.id}`, {
-            invoiceId: invoice.id,
-            client: invoice.client,
-            amount: invoice.amount,
-          });
-          message.success({
-            content: 'Invoice downloaded successfully.',
-            key: 'invoice-download',
-          });
-          return;
+            recordAuditLog('DOWNLOAD_INVOICE', `Downloaded invoice PDF for ${invoice.id}`, {
+              invoiceId: invoice.id,
+              client: invoice.client,
+              amount: invoice.amount,
+            });
+            message.success({
+              content: 'Invoice downloaded successfully.',
+              key: 'invoice-download',
+            });
+            return;
+          }
+        } catch (fetchErr) {
+          console.warn('Remote invoice fetch failed, falling back to local generation:', fetchErr);
         }
       }
 
-      // Fallback: Generate PDF dynamically on-the-fly using the invoice form data
+      // 2. Client-side dynamic PDF generation (html2canvas with jsPDF vector fallback)
       const formData = getInvoiceFormData(invoice);
-      const blob = await generateInvoicePDF(formData);
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `${invoice.id}.pdf`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
+      await downloadInvoicePDF(formData, `${invoice.id}.pdf`);
 
       recordAuditLog('DOWNLOAD_INVOICE', `Generated & downloaded invoice PDF for ${invoice.id}`, {
         invoiceId: invoice.id,
@@ -1200,19 +1197,20 @@ export function InvoicesPage() {
         </div>
       </Modal>
 
-      {/* Hidden container used by html2canvas for PDF export */}
-      {pdfInvoice && (
-        <div
-          style={{
-            position: 'fixed',
-            left: '-10000px',
-            top: 0,
-            width: '794px',
-            background: '#ffffff',
-          }}>
-          <InvoiceTemplate ref={invoicePdfRef} invoice={pdfInvoice} />
-        </div>
-      )}
+      {/* Offscreen container used by html2canvas for PDF export */}
+      <div
+        id="invoice-pdf-hidden-container"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '794px',
+          opacity: 0,
+          pointerEvents: 'none',
+          zIndex: -9999,
+        }}>
+        {pdfInvoice && <InvoiceTemplate ref={invoicePdfRef} invoice={pdfInvoice} />}
+      </div>
     </div>
   );
 }
