@@ -32,7 +32,7 @@ interface TodayAttendanceSummaryProps {
   isSubmittingMood: boolean;
   isBreakLoading: boolean;
   handleAttendance: () => void;
-  handleBreak: (remark?: string) => void;
+  handleBreak: (breakTypeOrRemark?: string, customRemark?: string) => void;
   logMood: (score: number, label: string) => void;
   liveWorkingTime: string;
   checkInTimeDisplay: string;

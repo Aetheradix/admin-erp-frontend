@@ -95,6 +95,50 @@ export interface BreakRecord {
   duration: number | null; // minutes
   status?: 'IN_PROGRESS' | 'COMPLETED' | string | null;
   break_note: string | null;
+  break_status_message?: string | null;
+}
+
+export interface ActiveBreakInfo {
+  id: number;
+  break_type: string;
+  break_start: string;
+  break_note: string | null;
+  break_status_message: string | null;
+  max_allowed_minutes: number;
+  elapsed_minutes: number;
+  remaining_minutes: number;
+  is_over_time: boolean;
+  expected_end_time: string | null;
+}
+
+export interface TeamMemberAvailability {
+  user_id: number;
+  employee_code?: string;
+  name: string;
+  email: string;
+  department: string;
+  designation: string;
+  role?: string;
+  avatar?: string | null;
+  availability_status: 'AVAILABLE' | 'ON_BREAK' | 'CHECKED_OUT' | 'OFFLINE';
+  availability_label: string;
+  status_message: string;
+  check_in_time?: string | null;
+  check_out_time?: string | null;
+  active_break?: ActiveBreakInfo | null;
+}
+
+export interface TeamAvailabilityResponse {
+  summary: {
+    total: number;
+    on_break: number;
+    available: number;
+    checked_out: number;
+    offline: number;
+  };
+  active_breaks: TeamMemberAvailability[];
+  members: TeamMemberAvailability[];
+  timestamp: string;
 }
 
 export interface Career {

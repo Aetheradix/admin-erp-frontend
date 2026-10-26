@@ -3,6 +3,7 @@ import type {
   AttendanceStatus,
   BreakRecord,
   AttendanceStatsData,
+  TeamAvailabilityResponse,
 } from '@/types/models';
 import { apiSlice } from './apiSlice';
 import { mapAttendanceRecord } from './mappers';
@@ -143,7 +144,7 @@ export const attendanceSlice = apiSlice.injectEndpoints({
 
     takeBreak: builder.mutation<
       { success: boolean; message: string; data: BreakRecord },
-      { break_note?: string; break_type?: string; type?: string } | void
+      { break_note?: string; break_type?: string; type?: string; break_status_message?: string } | void
     >({
       query: (body) => ({
         url: '/attendance/break/start',
@@ -160,6 +161,20 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Attendance'],
     }),
+
+    getTeamAvailability: builder.query<
+      TeamAvailabilityResponse,
+      { department?: string; status?: string; search?: string } | void
+    >({
+      query: (params) => ({
+        url: '/attendance/team-availability',
+        params: params || {},
+      }),
+      transformResponse: (response: { success: boolean; data: TeamAvailabilityResponse } | TeamAvailabilityResponse) => {
+        return (response as { data: TeamAvailabilityResponse })?.data ?? response;
+      },
+      providesTags: ['Attendance'],
+    }),
   }),
 });
 
@@ -171,4 +186,5 @@ export const {
   useGetAttendanceStatsQuery,
   useEndBreakMutation,
   useTakeBreakMutation,
+  useGetTeamAvailabilityQuery,
 } = attendanceSlice;

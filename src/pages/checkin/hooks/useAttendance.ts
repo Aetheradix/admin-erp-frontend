@@ -472,10 +472,13 @@ export const useAttendance = () => {
           break_note = trimmed;
         }
 
-        console.log('[useAttendance] takeBreak payload:', { break_type, break_note });
+        const effectiveNote = break_note || break_type;
+        const break_status_message = customRemark || breakNote || (effectiveNote.toLowerCase().includes(break_type.toLowerCase()) ? effectiveNote : `${break_type}: ${effectiveNote}`);
+        console.log('[useAttendance] takeBreak payload:', { break_type, break_note: effectiveNote, break_status_message });
         const res = await takeBreak({
           break_type,
-          break_note: break_note || break_type,
+          break_note: effectiveNote,
+          break_status_message,
         }).unwrap();
         setBreakNote('');
         showToast({
