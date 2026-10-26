@@ -42,7 +42,9 @@ export const RecentRequests = ({
   subtitle = 'Track the status and history of WFH and Leave applications',
 }: RecentRequestsProps) => {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>(
+    'all'
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
@@ -124,9 +126,7 @@ export const RecentRequests = ({
               {requests.length} Total
             </span>
           </div>
-          <span className="text-xs font-bold text-muted italic">
-            {subtitle}
-          </span>
+          <span className="text-xs font-bold text-muted italic">{subtitle}</span>
         </div>
 
         {/* View Toggle */}
@@ -276,7 +276,9 @@ export const RecentRequests = ({
                             <CalendarIcon size={12} className="text-primary shrink-0" />
                             <span>
                               {request.start_date ? formatDate(request.start_date) : '---'}
-                              {!isSingleDay && request.end_date ? ` to ${formatDate(request.end_date)}` : ''}
+                              {!isSingleDay && request.end_date
+                                ? ` to ${formatDate(request.end_date)}`
+                                : ''}
                             </span>
                           </div>
                           <span className="text-[10px] text-muted font-bold ml-4">
@@ -350,8 +352,7 @@ export const RecentRequests = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedRequests.map((request) => {
             const isSingleDay =
-              !request.end_date ||
-              formatDate(request.end_date) === formatDate(request.start_date);
+              !request.end_date || formatDate(request.end_date) === formatDate(request.start_date);
 
             return (
               <div
@@ -392,7 +393,9 @@ export const RecentRequests = ({
                       <CalendarIcon size={12} className="text-primary/70 shrink-0" />
                       <span>
                         {request.start_date ? formatDate(request.start_date) : '---'}
-                        {!isSingleDay && request.end_date ? ` - ${formatDate(request.end_date)}` : ''}
+                        {!isSingleDay && request.end_date
+                          ? ` - ${formatDate(request.end_date)}`
+                          : ''}
                       </span>
                     </div>
                     <span className="px-2 py-0.5 rounded-md bg-surface-subtle text-muted text-[9px] font-black">
@@ -429,8 +432,8 @@ export const RecentRequests = ({
         <div className="flex items-center justify-between pt-4 border-t border-border-subtle/50 text-xs">
           <span className="text-muted font-bold">
             Showing {(currentPage - 1) * pageSize + 1} to{' '}
-            {Math.min(currentPage * pageSize, filteredRequests.length)} of{' '}
-            {filteredRequests.length} entries
+            {Math.min(currentPage * pageSize, filteredRequests.length)} of {filteredRequests.length}{' '}
+            entries
           </span>
 
           <div className="flex items-center gap-2">

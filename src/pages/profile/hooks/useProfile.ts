@@ -138,7 +138,8 @@ export const useProfile = () => {
     return (
       dbUsers.find(
         (u) =>
-          (authUser.email && u.email?.toLowerCase().trim() === authUser.email.toLowerCase().trim()) ||
+          (authUser.email &&
+            u.email?.toLowerCase().trim() === authUser.email.toLowerCase().trim()) ||
           (authUser.id && String(u.id) === String(authUser.id))
       ) || null
     );
@@ -174,7 +175,11 @@ export const useProfile = () => {
     return {
       id: authUser?.id,
       name: emp?.personal?.fullName || name,
-      designation: currentDbUser?.designation || emp?.designation || authUser?.designation || (isAdmin ? 'Administrator' : 'Staff Member'),
+      designation:
+        currentDbUser?.designation ||
+        emp?.designation ||
+        authUser?.designation ||
+        (isAdmin ? 'Administrator' : 'Staff Member'),
 
       employeeId: initialId,
 
@@ -182,7 +187,12 @@ export const useProfile = () => {
 
       email,
 
-      contactNo: emp?.personal?.contactNumber || currentDbUser?.contact_no || currentDbUser?.phone || authUser?.contact_number || '',
+      contactNo:
+        emp?.personal?.contactNumber ||
+        currentDbUser?.contact_no ||
+        currentDbUser?.phone ||
+        authUser?.contact_number ||
+        '',
 
       department: currentDbUser?.department || emp?.department || authUser?.department || '',
 
@@ -215,7 +225,11 @@ export const useProfile = () => {
 
       workHours: (authUserRecord?.work_hours as string) || 'Standard Hours',
 
-      address: (authUserRecord?.address as string) || emp?.personal?.currentAddress || emp?.personal?.permanentAddress || '',
+      address:
+        (authUserRecord?.address as string) ||
+        emp?.personal?.currentAddress ||
+        emp?.personal?.permanentAddress ||
+        '',
 
       /**
        * This gets updated from useGetAutoApproveQuery()
@@ -268,11 +282,17 @@ export const useProfile = () => {
 
       email: authUser.email || prev.email,
 
-      contactNo: emp?.personal?.contactNumber || currentDbUser?.contact_no || currentDbUser?.phone || authUser.contact_number || prev.contactNo,
+      contactNo:
+        emp?.personal?.contactNumber ||
+        currentDbUser?.contact_no ||
+        currentDbUser?.phone ||
+        authUser.contact_number ||
+        prev.contactNo,
 
       image: emp?.profilePictureUrl || authUser.image_url || prev.image,
 
-      department: currentDbUser?.department || emp?.department || authUser.department || prev.department,
+      department:
+        currentDbUser?.department || emp?.department || authUser.department || prev.department,
 
       joinDate: authUser.join_date || prev.joinDate,
 
@@ -295,7 +315,11 @@ export const useProfile = () => {
       lastSeen: (record.last_seen as string) ?? prev.lastSeen,
 
       workHours: (record.work_hours as string) ?? prev.workHours,
-      address: (record.address as string) || emp?.personal?.currentAddress || emp?.personal?.permanentAddress || prev.address,
+      address:
+        (record.address as string) ||
+        emp?.personal?.currentAddress ||
+        emp?.personal?.permanentAddress ||
+        prev.address,
 
       manager: (record.manager as ManagerInfo) ?? prev.manager,
 

@@ -39,8 +39,7 @@ const ProtectedApp = () => {
 
   // If user is mid-onboarding (temp password not changed OR profile incomplete)
   // redirect to the dedicated onboarding screen instead of the main app
-  const needsOnboarding =
-    user?.is_temporary_password === true || user?.is_onboarded === false;
+  const needsOnboarding = user?.is_temporary_password === true || user?.is_onboarded === false;
 
   if (needsOnboarding) {
     return <Navigate to="/auth/onboarding-setup" replace />;
@@ -88,4 +87,3 @@ function App() {
 }
 
 export default App;
-

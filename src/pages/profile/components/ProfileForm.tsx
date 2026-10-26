@@ -3,15 +3,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
-import {
-  AlertCircle,
-  Briefcase,
-  Mail,
-  MapPin,
-  Save,
-  User,
-  X
-} from 'lucide-react';
+import { AlertCircle, Briefcase, Mail, MapPin, Save, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 export interface ProfileFormData {
@@ -126,10 +118,7 @@ export const ProfileForm = ({ initialData, onSave, onCancel }: ProfileFormProps)
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <FormField
-            label="Employee Code"
-            id="profile-code"
-            className="mb-0">
+          <FormField label="Employee Code" id="profile-code" className="mb-0">
             <Input
               id="profile-code"
               value={formData.employeeCode || formData.employeeId || 'N/A'}

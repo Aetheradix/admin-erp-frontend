@@ -55,8 +55,7 @@ export function NewUserWelcomeModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-border-subtle z-10"
-        >
+          className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-border-subtle z-10">
           {/* Header Banner with celebratory gradient */}
           <div className="relative p-8 bg-gradient-to-br from-primary via-primary/95 to-primary-hover text-white overflow-hidden">
             <div className="absolute -right-8 -top-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -69,8 +68,7 @@ export function NewUserWelcomeModal({
               type="button"
               onClick={onClose}
               className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors"
-              aria-label="Close welcome modal"
-            >
+              aria-label="Close welcome modal">
               <X size={16} />
             </button>
 
@@ -84,7 +82,8 @@ export function NewUserWelcomeModal({
               Welcome, {userName}! 🎉
             </h2>
             <p className="text-xs sm:text-sm text-white/80 mt-1.5 leading-relaxed max-w-md">
-              Your account has been set up via invitation. Complete your employee profile to submit your identity documents, bank details, and activate your official credentials.
+              Your account has been set up via invitation. Complete your employee profile to submit
+              your identity documents, bank details, and activate your official credentials.
             </p>
           </div>
 
@@ -96,9 +95,7 @@ export function NewUserWelcomeModal({
                 <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
                   User Name
                 </span>
-                <span className="font-bold text-foreground truncate block mt-0.5">
-                  {userName}
-                </span>
+                <span className="font-bold text-foreground truncate block mt-0.5">{userName}</span>
               </div>
               <div>
                 <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
@@ -112,17 +109,13 @@ export function NewUserWelcomeModal({
                 <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
                   Assigned Role
                 </span>
-                <span className="font-bold text-primary block mt-0.5">
-                  {userRole}
-                </span>
+                <span className="font-bold text-primary block mt-0.5">{userRole}</span>
               </div>
               <div>
                 <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
                   Department
                 </span>
-                <span className="font-bold text-foreground block mt-0.5">
-                  {department}
-                </span>
+                <span className="font-bold text-foreground block mt-0.5">{department}</span>
               </div>
             </div>
 
@@ -156,8 +149,7 @@ export function NewUserWelcomeModal({
               <button
                 type="button"
                 onClick={handleCompleteProfile}
-                className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary/90 transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-2"
-              >
+                className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary/90 transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-2">
                 <FileCheck size={16} />
                 <span>Complete Profile Now</span>
                 <ChevronRight size={14} />
@@ -166,8 +158,7 @@ export function NewUserWelcomeModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:w-auto py-3.5 px-6 rounded-2xl border border-border-subtle bg-white text-muted hover:text-foreground text-xs font-bold transition-all"
-              >
+                className="w-full sm:w-auto py-3.5 px-6 rounded-2xl border border-border-subtle bg-white text-muted hover:text-foreground text-xs font-bold transition-all">
                 I'll Do This Later
               </button>
             </div>

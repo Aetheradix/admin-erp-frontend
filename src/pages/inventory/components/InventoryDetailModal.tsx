@@ -18,7 +18,7 @@ import {
   Sparkles,
   Tag,
   UserCheck,
-  Wrench
+  Wrench,
 } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -26,8 +26,8 @@ interface InventoryDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   item:
-  | (InventoryItem & { auditLogs?: InventoryAuditLog[]; bookings?: InventoryBookingRecord[] })
-  | null;
+    | (InventoryItem & { auditLogs?: InventoryAuditLog[]; bookings?: InventoryBookingRecord[] })
+    | null;
   onEdit?: (item: InventoryItem) => void;
   onAssign?: (item: InventoryItem) => void;
   onUnassign?: (item: InventoryItem) => void;
@@ -179,29 +179,32 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('overview')}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${activeTab === 'overview'
-                ? 'bg-primary text-white shadow-xs'
-                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-                }`}>
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                activeTab === 'overview'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+              }`}>
               Overview & Specifications
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('bookings')}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'bookings'
-                ? 'bg-primary text-white shadow-xs'
-                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-                }`}>
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'bookings'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+              }`}>
               <CalendarCheck size={14} />
               <span>Reservations ({item.bookings?.length || 0})</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('audits')}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === 'audits'
-                ? 'bg-primary text-white shadow-xs'
-                : 'text-muted hover:text-foreground hover:bg-surface-subtle'
-                }`}>
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'audits'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'text-muted hover:text-foreground hover:bg-surface-subtle'
+              }`}>
               <History size={14} />
               <span>Audit History ({item.auditLogs?.length || 0})</span>
             </button>
@@ -240,9 +243,7 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
                     <span className="text-muted block text-[10px] font-bold uppercase tracking-wider">
                       Purchase Date
                     </span>
-                    <span className="font-bold text-foreground">
-                      {item.purchase_date || '—'}
-                    </span>
+                    <span className="font-bold text-foreground">{item.purchase_date || '—'}</span>
                   </div>
 
                   <div className="p-3 rounded-xl bg-surface border border-border-subtle/60 flex flex-col gap-1">
@@ -292,8 +293,7 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
                         {item.assigned_user_name}
                       </span>
                       <span className="text-[11px] text-muted font-bold block truncate">
-                        {item.assigned_user_email} &bull;{' '}
-                        {item.assigned_user_department || 'Staff'}
+                        {item.assigned_user_email} &bull; {item.assigned_user_department || 'Staff'}
                       </span>
                       {item.assigned_date && (
                         <span className="text-[10px] text-muted font-medium mt-0.5 block">
@@ -308,9 +308,7 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
                       <UserCheck size={16} />
                     </div>
                     <div>
-                      <span className="text-foreground font-bold block">
-                        Unassigned Asset
-                      </span>
+                      <span className="text-foreground font-bold block">Unassigned Asset</span>
                       <span className="text-[11px] text-muted block">
                         Available in inventory pool for assignment
                       </span>
@@ -366,12 +364,13 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
                         </div>
                       </div>
                       <span
-                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border ${b.status === 'confirmed'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : b.status === 'pending'
-                            ? 'bg-amber-50 text-amber-700 border-amber-200'
-                            : 'bg-slate-50 text-slate-700 border-slate-200'
-                          }`}>
+                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border ${
+                          b.status === 'confirmed'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : b.status === 'pending'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-slate-50 text-slate-700 border-slate-200'
+                        }`}>
                         {b.status}
                       </span>
                     </div>
@@ -422,7 +421,9 @@ export const InventoryDetailModal: React.FC<InventoryDetailModalProps> = ({
               ) : (
                 <div className="p-8 text-center rounded-2xl bg-surface-subtle/50 border border-dashed border-border-subtle">
                   <History size={28} className="mx-auto text-muted mb-2" />
-                  <p className="text-xs font-bold text-muted">No audit history found for this item.</p>
+                  <p className="text-xs font-bold text-muted">
+                    No audit history found for this item.
+                  </p>
                 </div>
               )}
             </div>

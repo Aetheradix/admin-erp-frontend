@@ -29,7 +29,9 @@ export function AttendancePage() {
     }
   });
   const [copied, setCopied] = useState(false);
-  const [selectedDetailRequest, setSelectedDetailRequest] = useState<AttendanceRequest | null>(null);
+  const [selectedDetailRequest, setSelectedDetailRequest] = useState<AttendanceRequest | null>(
+    null
+  );
 
   const {
     isAdmin,

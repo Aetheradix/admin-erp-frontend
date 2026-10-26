@@ -207,7 +207,6 @@ function ApprovalPage() {
                 Live Auto-Sync
               </span> */}
             </div>
-            
           </div>
         </div>
 
@@ -238,19 +237,15 @@ function ApprovalPage() {
                     log.targetUser?.email ||
                     (log as any).target_user_email ||
                     'N/A';
-                  const targetEmail =
-                    log.targetUser?.email || (log as any).target_user_email || '';
-                  const role =
-                    log.assignedRole || (log as any).assigned_role || '—';
+                  const targetEmail = log.targetUser?.email || (log as any).target_user_email || '';
+                  const role = log.assignedRole || (log as any).assigned_role || '—';
                   const actionRaw = (
                     log.action ||
                     (log as any).action ||
                     'INVITATION_SENT'
                   ).toUpperCase();
-                  const actorName =
-                    log.actionBy?.name || (log as any).action_by_name || 'System';
-                  const actorEmail =
-                    log.actionBy?.email || (log as any).action_by_email || '';
+                  const actorName = log.actionBy?.name || (log as any).action_by_name || 'System';
+                  const actorEmail = log.actionBy?.email || (log as any).action_by_email || '';
 
                   const rawDate = log.timestamp || (log as any).created_at;
                   let formattedDate = '—';
@@ -291,13 +286,9 @@ function ApprovalPage() {
                   return (
                     <tr key={log.id} className="hover:bg-surface-subtle/40 transition-all">
                       <td className="p-4">
-                        <div className="font-bold text-foreground">
-                          {targetName}
-                        </div>
+                        <div className="font-bold text-foreground">{targetName}</div>
                         {targetEmail && (
-                          <div className="text-muted-foreground text-[11px]">
-                            {targetEmail}
-                          </div>
+                          <div className="text-muted-foreground text-[11px]">{targetEmail}</div>
                         )}
                       </td>
                       <td className="p-4">
@@ -306,22 +297,14 @@ function ApprovalPage() {
                           {displayAction}
                         </span>
                       </td>
-                      <td className="p-4 font-medium text-foreground">
-                        {role}
-                      </td>
+                      <td className="p-4 font-medium text-foreground">{role}</td>
                       <td className="p-4">
-                        <div className="font-semibold text-foreground">
-                          {actorName}
-                        </div>
+                        <div className="font-semibold text-foreground">{actorName}</div>
                         {actorEmail && (
-                          <div className="text-muted-foreground text-[11px]">
-                            {actorEmail}
-                          </div>
+                          <div className="text-muted-foreground text-[11px]">{actorEmail}</div>
                         )}
                       </td>
-                      <td className="p-4 text-muted-foreground font-medium">
-                        {formattedDate}
-                      </td>
+                      <td className="p-4 text-muted-foreground font-medium">{formattedDate}</td>
                     </tr>
                   );
                 })

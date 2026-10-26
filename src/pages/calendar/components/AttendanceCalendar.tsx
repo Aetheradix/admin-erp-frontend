@@ -238,7 +238,10 @@ export function AttendanceCalendar({
                         const showBelow = rect.top < 240;
                         setHoveredTooltip({
                           request: req,
-                          x: Math.min(Math.max(rect.left + rect.width / 2, 160), window.innerWidth - 160),
+                          x: Math.min(
+                            Math.max(rect.left + rect.width / 2, 160),
+                            window.innerWidth - 160
+                          ),
                           y: showBelow ? rect.bottom + 8 : rect.top - 8,
                           showBelow,
                         });
@@ -251,7 +254,9 @@ export function AttendanceCalendar({
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1 truncate">
                           {getDayTypeIcon(req.type)}
-                          <span className="truncate">{req.username ? req.username.split(' ')[0] : req.type}</span>
+                          <span className="truncate">
+                            {req.username ? req.username.split(' ')[0] : req.type}
+                          </span>
                         </div>
                         <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', statusInfo.dot)} />
                       </div>
@@ -318,7 +323,8 @@ export function AttendanceCalendar({
               <span>
                 {formatDate(hoveredTooltip.request.start_date)}
                 {hoveredTooltip.request.end_date &&
-                formatDate(hoveredTooltip.request.end_date) !== formatDate(hoveredTooltip.request.start_date)
+                formatDate(hoveredTooltip.request.end_date) !==
+                  formatDate(hoveredTooltip.request.start_date)
                   ? ` to ${formatDate(hoveredTooltip.request.end_date)}`
                   : ''}
               </span>

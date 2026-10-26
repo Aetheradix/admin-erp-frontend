@@ -47,9 +47,9 @@ const Events = () => {
   const { user } = useAuth();
   const isAdmin = Boolean(
     user?.role &&
-      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
-        String(user.role).toLowerCase().includes(r)
-      )
+    ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
+      String(user.role).toLowerCase().includes(r)
+    )
   );
   const [registeringEventId, setRegisteringEventId] = useState<string | number | null>(null);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -89,35 +89,36 @@ const Events = () => {
   const activeCategory = filters.category || 'All';
 
   // Partition events into Upcoming vs Previous vs All
-  const { upcomingEvents, previousEvents, displayedEvents, mandatoryUpcomingEvents } = useMemo(() => {
-    const upcoming: ERPEvent[] = [];
-    const previous: ERPEvent[] = [];
+  const { upcomingEvents, previousEvents, displayedEvents, mandatoryUpcomingEvents } =
+    useMemo(() => {
+      const upcoming: ERPEvent[] = [];
+      const previous: ERPEvent[] = [];
 
-    events.forEach((evt) => {
-      const st = (evt.status || '').toLowerCase();
-      if (st === 'completed' || isPastEvent(evt)) {
-        previous.push(evt);
-      } else {
-        upcoming.push(evt);
+      events.forEach((evt) => {
+        const st = (evt.status || '').toLowerCase();
+        if (st === 'completed' || isPastEvent(evt)) {
+          previous.push(evt);
+        } else {
+          upcoming.push(evt);
+        }
+      });
+
+      let currentList = events;
+      if (eventScope === 'upcoming') {
+        currentList = upcoming;
+      } else if (eventScope === 'previous') {
+        currentList = previous;
       }
-    });
 
-    let currentList = events;
-    if (eventScope === 'upcoming') {
-      currentList = upcoming;
-    } else if (eventScope === 'previous') {
-      currentList = previous;
-    }
+      const mandatory = upcoming.filter((e) => e.button_type === 'Mandatory');
 
-    const mandatory = upcoming.filter((e) => e.button_type === 'Mandatory');
-
-    return {
-      upcomingEvents: upcoming,
-      previousEvents: previous,
-      displayedEvents: currentList,
-      mandatoryUpcomingEvents: mandatory,
-    };
-  }, [events, eventScope, localUpdateTick]);
+      return {
+        upcomingEvents: upcoming,
+        previousEvents: previous,
+        displayedEvents: currentList,
+        mandatoryUpcomingEvents: mandatory,
+      };
+    }, [events, eventScope, localUpdateTick]);
 
   const handleCategoryChange = (cat: string) => {
     setFilters((prev) => ({ ...prev, category: cat }));
@@ -239,7 +240,8 @@ const Events = () => {
       });
       setLocalUpdateTick((t) => t + 1);
 
-      const emailRecipient = passResultData?.recipientEmail || user?.email || 'your registered email';
+      const emailRecipient =
+        passResultData?.recipientEmail || user?.email || 'your registered email';
       const emailSentByServer = passResultData?.emailSent === true;
 
       showToast({
@@ -415,15 +417,13 @@ const Events = () => {
             eventScope === 'upcoming'
               ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-102'
               : 'bg-white hover:bg-surface-subtle text-foreground border border-border-subtle shadow-xs'
-          }`}
-        >
+          }`}>
           <CalendarDays size={16} />
           <span>Upcoming & Active Events</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
               eventScope === 'upcoming' ? 'bg-white text-primary' : 'bg-primary/10 text-primary'
-            }`}
-          >
+            }`}>
             {upcomingEvents.length}
           </span>
         </button>
@@ -435,15 +435,13 @@ const Events = () => {
             eventScope === 'previous'
               ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-102'
               : 'bg-white hover:bg-surface-subtle text-foreground border border-border-subtle shadow-xs'
-          }`}
-        >
+          }`}>
           <HistoryIcon size={16} />
           <span>Previous Events</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
               eventScope === 'previous' ? 'bg-white text-primary' : 'bg-zinc-200 text-zinc-700'
-            }`}
-          >
+            }`}>
             {previousEvents.length}
           </span>
         </button>
@@ -455,14 +453,12 @@ const Events = () => {
             eventScope === 'all'
               ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-102'
               : 'bg-white hover:bg-surface-subtle text-foreground border border-border-subtle shadow-xs'
-          }`}
-        >
+          }`}>
           <span>All Events</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
               eventScope === 'all' ? 'bg-white text-primary' : 'bg-zinc-200 text-zinc-700'
-            }`}
-          >
+            }`}>
             {events.length}
           </span>
         </button>

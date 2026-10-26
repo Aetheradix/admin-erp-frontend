@@ -3,15 +3,14 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
 import { Table, Modal, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import {
-  Download,
-  Plus,
-  Filter,
-} from 'lucide-react';
+import { Download, Plus, Filter, Edit3 } from 'lucide-react';
 
 import { useUploadInvoiceMutation } from '@/store/api/uploadSlice';
 import { useFulfillOrderAndDeductStockMutation } from '@/store/api/inventorySlice';
 import {
+  useGetInvoicesQuery,
+  useCreateInvoiceMutation,
+  useUpdateInvoiceMutation,
   useGetInvoiceAuditLogsQuery,
   useCreateInvoiceAuditLogMutation,
   useDeleteInvoiceMutation,
@@ -213,6 +212,14 @@ export function InvoicesPage() {
   const currentUserName = user?.username || 'Admin';
 
   const {
+    data: backendInvoicesData,
+    isLoading: isBackendInvoicesLoading,
+    refetch: refetchBackendInvoices,
+  } = useGetInvoicesQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  const {
     data: backendInvoiceAuditLogsData,
     isLoading: isLogsLoading,
     refetch: refetchLogs,
@@ -220,8 +227,10 @@ export function InvoicesPage() {
     refetchOnMountOrArgChange: true,
   });
 
-  const [createInvoiceAuditLogApi] = useCreateInvoiceAuditLogMutation();
+  const [createInvoiceApi] = useCreateInvoiceMutation();
+  const [updateInvoiceApi] = useUpdateInvoiceMutation();
   const [deleteInvoiceApi] = useDeleteInvoiceMutation();
+  const [createInvoiceAuditLogApi] = useCreateInvoiceAuditLogMutation();
 
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
     try {
@@ -253,7 +262,38 @@ export function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const [showForm, setShowForm] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [form, setForm] = useState<InvoiceForm>(() => createEmptyForm(invoices));
+
+  // Sync backend invoices if available
+  useEffect(() => {
+    if (
+      backendInvoicesData &&
+      Array.isArray(backendInvoicesData) &&
+      backendInvoicesData.length > 0
+    ) {
+      const formatted: Invoice[] = backendInvoicesData.map((item: any) => ({
+        id: String(item.id || item.invoice_number || item.invoiceNumber || 'INV-000'),
+        client: String(item.client || item.bill_to_name || item.billToName || 'Client'),
+        amount: Number(item.amount || item.total || 0),
+        status: (item.status === 'Paid' || item.status === 'Overdue' ? item.status : 'Pending') as
+          'Paid' | 'Pending' | 'Overdue',
+        date: String(
+          item.date ||
+            item.invoice_date ||
+            item.invoiceDate ||
+            new Date().toISOString().slice(0, 10)
+        ),
+        data: item.data || item,
+      }));
+
+      setInvoices((prev) => {
+        const backendIds = new Set(formatted.map((inv) => inv.id));
+        const localOnly = prev.filter((inv) => !backendIds.has(inv.id));
+        return [...formatted, ...localOnly];
+      });
+    }
+  }, [backendInvoicesData]);
 
   // View Modal state
   const [showViewModal, setShowViewModal] = useState(false);
@@ -287,8 +327,8 @@ export function InvoicesPage() {
     const rawBackendLogs = Array.isArray(backendInvoiceAuditLogsData?.data)
       ? backendInvoiceAuditLogsData.data
       : Array.isArray(backendInvoiceAuditLogsData)
-      ? backendInvoiceAuditLogsData
-      : [];
+        ? backendInvoiceAuditLogsData
+        : [];
 
     // Strictly filter out any salary slip / payroll logs if backend returned mixed records
     const isSalarySlipLog = (item: any) => {
@@ -430,8 +470,55 @@ export function InvoicesPage() {
   };
 
   const handleCreateNew = () => {
+    setEditingInvoice(null);
     setForm(createEmptyForm(invoices));
     setShowForm(true);
+  };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    const formData = getInvoiceFormData(invoice);
+    setForm(formData);
+    setEditingInvoice(invoice);
+    setShowForm(true);
+  };
+
+  const handleStatusChange = async (
+    invoice: Invoice,
+    newStatus: 'Paid' | 'Pending' | 'Overdue'
+  ) => {
+    if (invoice.status === newStatus) return;
+
+    const prevStatus = invoice.status;
+    const updatedInvoice: Invoice = {
+      ...invoice,
+      status: newStatus,
+      data: invoice.data ? { ...invoice.data, status: newStatus } : undefined,
+    };
+
+    setInvoices((prev) => prev.map((inv) => (inv.id === invoice.id ? updatedInvoice : inv)));
+
+    if (viewingInvoice?.id === invoice.id) {
+      setViewingInvoice(updatedInvoice);
+    }
+
+    try {
+      await updateInvoiceApi({
+        id: invoice.id,
+        status: newStatus,
+      }).unwrap();
+    } catch (err) {
+      console.warn('Backend status update note:', err);
+    }
+
+    recordAuditLog(
+      'STATUS_UPDATE',
+      `Updated status of invoice ${invoice.id} from ${prevStatus} to ${newStatus} for ${invoice.client}`,
+      { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount }
+    );
+
+    refetchLogs();
+    refetchBackendInvoices();
+    message.success(`Invoice ${invoice.id} marked as ${newStatus}.`);
   };
 
   const handleSubmit = async () => {
@@ -445,18 +532,29 @@ export function InvoicesPage() {
       return;
     }
 
+    const isUpdating = Boolean(editingInvoice);
+
+    // Duplicate check - ignore current invoice if editing
     const isDuplicate = invoices.some(
-      (inv) => inv.id.toLowerCase().trim() === form.invoiceNumber.toLowerCase().trim()
+      (inv) =>
+        inv.id.toLowerCase().trim() === form.invoiceNumber.toLowerCase().trim() &&
+        (!editingInvoice || inv.id !== editingInvoice.id)
     );
     if (isDuplicate) {
-      message.error(`Invoice number "${form.invoiceNumber}" already exists. Please use a unique number.`);
+      message.error(
+        `Invoice number "${form.invoiceNumber}" already exists. Please use a unique number.`
+      );
       return;
     }
 
+    const actionKey = 'invoice-save-action';
+
     try {
       message.loading({
-        content: 'Generating invoice PDF...',
-        key: 'invoice-pdf',
+        content: isUpdating
+          ? 'Updating invoice and generating PDF...'
+          : 'Generating invoice PDF...',
+        key: actionKey,
       });
 
       const subTotal = form.items.reduce(
@@ -467,92 +565,152 @@ export function InvoicesPage() {
       const gstAmount = (subTotal * Number(form.gstRate || 0)) / 100;
       const total = subTotal + gstAmount;
 
-      const newInvoice: Invoice = {
+      const invoicePayload: Invoice = {
         id: form.invoiceNumber.trim(),
         client: form.billToName.trim(),
         amount: total,
-        status: 'Pending',
+        status: form.status || (editingInvoice ? editingInvoice.status : 'Pending'),
         date: form.invoiceDate || new Date().toISOString().slice(0, 10),
         data: {
           ...form,
+          status: form.status || (editingInvoice ? editingInvoice.status : 'Pending'),
           items: form.items.map((item) => ({ ...item })),
         },
       };
 
-      let invoiceUrl: string | undefined = undefined;
+      let invoiceUrl: string | undefined = editingInvoice?.data?.invoiceUrl;
 
       try {
-        const pdfBlob = await generateInvoicePDF(newInvoice.data!);
+        const pdfBlob = await generateInvoicePDF(invoicePayload.data!);
         message.loading({
           content: 'Uploading invoice to storage...',
-          key: 'invoice-pdf',
+          key: actionKey,
         });
 
         const uploadResponse = await uploadInvoice({
           file: pdfBlob,
         }).unwrap();
 
-        invoiceUrl = uploadResponse?.data?.invoiceUrl;
+        if (uploadResponse?.data?.invoiceUrl) {
+          invoiceUrl = uploadResponse.data.invoiceUrl;
+        }
       } catch (uploadErr) {
         console.warn('PDF upload note:', uploadErr);
       }
 
       const savedInvoice: Invoice = {
-        ...newInvoice,
+        ...invoicePayload,
         data: {
-          ...newInvoice.data!,
+          ...invoicePayload.data!,
           invoiceUrl,
         },
       };
 
-      setInvoices((prev) => [savedInvoice, ...prev]);
+      if (isUpdating && editingInvoice) {
+        // 1. Update in local state & localStorage
+        setInvoices((prev) =>
+          prev.map((inv) => (inv.id === editingInvoice.id ? savedInvoice : inv))
+        );
 
-      // Record Audit Log
-      recordAuditLog(
-        'CREATE_INVOICE',
-        `Created invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN')})`,
-        { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount }
-      );
-
-      refetchLogs();
-
-      // Deduct inventory items referenced in this invoice if applicable
-      try {
-        const itemsToDeduct = form.items
-          .filter((item) => item.description?.trim() && Number(item.quantity) > 0)
-          .map((item) => ({
-            asset_id: item.description.trim(),
-            quantity: Number(item.quantity),
-          }));
-
-        if (itemsToDeduct.length > 0) {
-          const deductRes = await fulfillOrderAndDeductStock({
-            invoiceId: form.invoiceNumber,
-            items: itemsToDeduct,
-          }).unwrap();
-
-          if (deductRes?.lowStockAlerts && deductRes.lowStockAlerts.length > 0) {
-            message.warning(
-              `Inventory Notice: ${deductRes.lowStockAlerts.length} item(s) dropped below reorder threshold!`
-            );
-          }
+        // If currently viewing this invoice in modal, update it
+        if (viewingInvoice?.id === editingInvoice.id) {
+          setViewingInvoice(savedInvoice);
         }
-      } catch (deductErr) {
-        console.info('Inventory deduction note:', deductErr);
+
+        // 2. Call backend update API mutation
+        try {
+          await updateInvoiceApi({
+            id: editingInvoice.id,
+            invoice_number: savedInvoice.id,
+            client: savedInvoice.client,
+            amount: savedInvoice.amount,
+            status: savedInvoice.status,
+            date: savedInvoice.date,
+            data: savedInvoice.data,
+          }).unwrap();
+        } catch (apiErr) {
+          console.warn('Backend update note:', apiErr);
+        }
+
+        // 3. Record Audit Log
+        recordAuditLog(
+          'UPDATE_INVOICE',
+          `Updated invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
+          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount }
+        );
+
+        message.success({
+          content: `Invoice ${savedInvoice.id} updated successfully!`,
+          key: actionKey,
+        });
+      } else {
+        // 1. Create in local state & localStorage
+        setInvoices((prev) => [savedInvoice, ...prev]);
+
+        // 2. Call backend create API mutation
+        try {
+          await createInvoiceApi({
+            id: savedInvoice.id,
+            invoice_number: savedInvoice.id,
+            client: savedInvoice.client,
+            amount: savedInvoice.amount,
+            status: savedInvoice.status,
+            date: savedInvoice.date,
+            data: savedInvoice.data,
+          }).unwrap();
+        } catch (apiErr) {
+          console.warn('Backend create note:', apiErr);
+        }
+
+        // 3. Record Audit Log
+        recordAuditLog(
+          'CREATE_INVOICE',
+          `Created invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
+          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount }
+        );
+
+        // 4. Deduct inventory items referenced in this invoice if applicable
+        try {
+          const itemsToDeduct = form.items
+            .filter((item) => item.description?.trim() && Number(item.quantity) > 0)
+            .map((item) => ({
+              asset_id: item.description.trim(),
+              quantity: Number(item.quantity),
+            }));
+
+          if (itemsToDeduct.length > 0) {
+            const deductRes = await fulfillOrderAndDeductStock({
+              invoiceId: form.invoiceNumber,
+              items: itemsToDeduct,
+            }).unwrap();
+
+            if (deductRes?.lowStockAlerts && deductRes.lowStockAlerts.length > 0) {
+              message.warning(
+                `Inventory Notice: ${deductRes.lowStockAlerts.length} item(s) dropped below reorder threshold!`
+              );
+            }
+          }
+        } catch (deductErr) {
+          console.info('Inventory deduction note:', deductErr);
+        }
+
+        message.success({
+          content: `Invoice ${savedInvoice.id} created successfully!`,
+          key: actionKey,
+        });
       }
 
-      setForm(createEmptyForm([savedInvoice, ...invoices]));
-      setShowForm(false);
+      refetchLogs();
+      refetchBackendInvoices();
 
-      message.success({
-        content: `Invoice ${savedInvoice.id} created successfully!`,
-        key: 'invoice-pdf',
-      });
+      setEditingInvoice(null);
+      setForm(createEmptyForm(invoices));
+      setShowForm(false);
     } catch (error) {
-      console.error('Invoice creation failed:', error);
+      console.error('Invoice operation failed:', error);
       message.error({
-        content: error instanceof Error ? error.message : 'Unable to create invoice.',
-        key: 'invoice-pdf',
+        content: error instanceof Error ? error.message : 'Unable to save invoice.',
+        key: actionKey,
       });
     }
   };
@@ -565,25 +723,53 @@ export function InvoicesPage() {
   const handleDeleteInvoice = (invoice: Invoice) => {
     Modal.confirm({
       title: 'Delete Invoice',
-      content: `Are you sure you want to delete invoice ${invoice.id} for ${invoice.client}? This action cannot be undone.`,
+      content: (
+        <div className="space-y-2 text-xs text-slate-600">
+          <p>
+            Are you sure you want to delete invoice{' '}
+            <strong className="font-mono text-slate-900">{invoice.id}</strong> for{' '}
+            <strong className="text-slate-900">{invoice.client}</strong>?
+          </p>
+          <p className="font-semibold text-rose-600">
+            Amount: ₹
+            {Number(invoice.amount || 0).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+            })}
+          </p>
+          <p className="text-[11px] text-slate-400">
+            This action cannot be undone and will be permanently recorded in the audit logs.
+          </p>
+        </div>
+      ),
       okText: 'Yes, Delete',
       okType: 'danger',
       cancelText: 'Cancel',
       maskClosable: true,
       onOk: async () => {
+        const key = 'invoice-delete';
+        message.loading({ content: `Deleting invoice ${invoice.id}...`, key });
+
         setInvoices((prev) => prev.filter((item) => item.id !== invoice.id));
-        recordAuditLog(
-          'DELETE_INVOICE',
-          `Deleted invoice ${invoice.id} for ${invoice.client} (₹${Number(invoice.amount || 0).toLocaleString('en-IN')})`,
-          { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount }
-        );
+        if (viewingInvoice?.id === invoice.id) {
+          setShowViewModal(false);
+          setViewingInvoice(null);
+        }
+
         try {
           await deleteInvoiceApi(invoice.id).unwrap();
-        } catch {
-          // Backend delete best-effort
+        } catch (err) {
+          console.warn('Backend delete note:', err);
         }
+
+        recordAuditLog(
+          'DELETE_INVOICE',
+          `Deleted invoice ${invoice.id} for ${invoice.client} (₹${Number(invoice.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
+          { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount }
+        );
+
         refetchLogs();
-        message.success(`Invoice ${invoice.id} deleted successfully.`);
+        refetchBackendInvoices();
+        message.success({ content: `Invoice ${invoice.id} deleted successfully.`, key });
       },
     });
   };
@@ -656,6 +842,8 @@ export function InvoicesPage() {
   const columns = getInvoiceColumns({
     onDownloadPdf: downloadInvoice,
     onViewInvoice: handleViewInvoice,
+    onEditInvoice: handleEditInvoice,
+    onStatusChange: handleStatusChange,
     onDeleteInvoice: handleDeleteInvoice,
   });
 
@@ -697,9 +885,7 @@ export function InvoicesPage() {
       key: 'username',
       width: 170,
       render: (_, record) => (
-        <span className="text-xs text-slate-600 font-semibold">
-          {record.username || 'System'}
-        </span>
+        <span className="text-xs text-slate-600 font-semibold">{record.username || 'System'}</span>
       ),
     },
   ];
@@ -759,6 +945,7 @@ export function InvoicesPage() {
         <Table
           columns={columns}
           dataSource={filteredInvoices}
+          loading={isBackendInvoicesLoading}
           rowKey="id"
           pagination={{ pageSize: 8 }}
           locale={{ emptyText: 'No invoices found.' }}
@@ -769,7 +956,9 @@ export function InvoicesPage() {
       <div className="flex flex-col gap-3 mt-6">
         <div>
           <h3 className="font-bold text-base text-slate-900">Invoice Audit Logs</h3>
-          <p className="text-xs text-slate-500">History of invoice updates, creations, and deletions</p>
+          <p className="text-xs text-slate-500">
+            History of invoice updates, creations, and deletions
+          </p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <Table
@@ -783,12 +972,14 @@ export function InvoicesPage() {
         </div>
       </div>
 
-      {/* Invoice Creation Form Modal */}
+      {/* Invoice Form Modal (Create & Edit) */}
       <InvoiceFormModal
         visible={showForm}
+        isEditing={Boolean(editingInvoice)}
         onHide={() => {
           if (isUploadingPdf) return;
           setShowForm(false);
+          setEditingInvoice(null);
         }}
         form={form}
         updateField={updateField}
@@ -815,22 +1006,32 @@ export function InvoicesPage() {
               <span className="font-mono text-xs font-bold bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg border border-slate-200">
                 {viewingInvoice?.id}
               </span>
-              <span className="text-sm font-bold text-slate-800">
-                {viewingInvoice?.client}
-              </span>
+              <span className="text-sm font-bold text-slate-800">{viewingInvoice?.client}</span>
               <span
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                   viewingInvoice?.status === 'Paid'
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                     : viewingInvoice?.status === 'Overdue'
-                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                    : 'bg-amber-100 text-amber-800 border border-amber-200'
+                      ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                      : 'bg-amber-100 text-amber-800 border border-amber-200'
                 }`}>
                 {viewingInvoice?.status}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (viewingInvoice) {
+                    setShowViewModal(false);
+                    handleEditInvoice(viewingInvoice);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer">
+                <Edit3 size={14} className="text-indigo-600" />
+                <span>Edit Invoice</span>
+              </button>
               <button
                 type="button"
                 onClick={() => viewingInvoice && downloadInvoice(viewingInvoice)}

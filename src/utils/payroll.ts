@@ -14,10 +14,23 @@ export const generateSlipNumber = (
   employeeCode?: string | number | null,
   monthYearStr?: string | null
 ): string => {
-  const parts = String(monthYearStr || '').trim().split(/[\s\/\-]+/).filter(Boolean);
+  const parts = String(monthYearStr || '')
+    .trim()
+    .split(/[\s\/\-]+/)
+    .filter(Boolean);
   const monthsList = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    'JANUARY',
+    'FEBRUARY',
+    'MARCH',
+    'APRIL',
+    'MAY',
+    'JUNE',
+    'JULY',
+    'AUGUST',
+    'SEPTEMBER',
+    'OCTOBER',
+    'NOVEMBER',
+    'DECEMBER',
   ];
 
   // 1. Dynamic Fallback to current system date

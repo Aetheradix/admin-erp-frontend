@@ -3,7 +3,10 @@ import { apiSlice } from '@/store/api/apiSlice';
 
 export type SyncEventType = 'invitations' | 'audit_logs' | 'users' | 'onboarding' | 'all';
 
-const tagMapping: Record<SyncEventType, Array<'SystemInvitations' | 'SystemAuditLogs' | 'User' | 'ApprovalLogs'>> = {
+const tagMapping: Record<
+  SyncEventType,
+  Array<'SystemInvitations' | 'SystemAuditLogs' | 'User' | 'ApprovalLogs'>
+> = {
   invitations: ['SystemInvitations', 'SystemAuditLogs'],
   audit_logs: ['SystemAuditLogs'],
   users: ['User', 'ApprovalLogs'],

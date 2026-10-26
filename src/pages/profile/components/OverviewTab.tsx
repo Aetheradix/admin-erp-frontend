@@ -9,7 +9,9 @@ interface OverviewTabProps {
 
 export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
   const hasBank = Boolean(empProfile?.bank?.bankName);
-  const hasIdentity = Boolean(empProfile?.identity?.panNumber || empProfile?.identity?.aadhaarNumber);
+  const hasIdentity = Boolean(
+    empProfile?.identity?.panNumber || empProfile?.identity?.aadhaarNumber
+  );
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-300">
@@ -27,7 +29,9 @@ export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
             </div>
             <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
               <span className="text-muted font-bold">Employee Code</span>
-              <span className="font-extrabold text-foreground font-mono">{user.employeeCode || user.employeeId}</span>
+              <span className="font-extrabold text-foreground font-mono">
+                {user.employeeCode || user.employeeId}
+              </span>
             </div>
             {user.employeeId && user.employeeId !== user.employeeCode && (
               <div className="flex items-center justify-between text-xs py-2 border-b border-border-subtle">
@@ -45,7 +49,9 @@ export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
             </div>
             <div className="flex items-center justify-between text-xs py-2">
               <span className="text-muted font-bold">Primary Work Location</span>
-              <span className="font-bold text-foreground">{user.workLocation || 'Main Campus'}</span>
+              <span className="font-bold text-foreground">
+                {user.workLocation || 'Main Campus'}
+              </span>
             </div>
           </div>
         </div>

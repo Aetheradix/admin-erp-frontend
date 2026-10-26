@@ -1,10 +1,5 @@
 import type { ERPEvent, EventAttachment, EventParticipant } from '@/types/models';
-import {
-  Calendar,
-  CheckCircle2,
-  Radio,
-  AlertCircle,
-} from 'lucide-react';
+import { Calendar, CheckCircle2, Radio, AlertCircle } from 'lucide-react';
 
 const REGISTRATIONS_STORAGE_KEY = 'aether_event_registrations_v1';
 const ATTACHMENTS_STORAGE_KEY = 'aether_event_attachments_v1';
@@ -254,14 +249,16 @@ export function isUserRegisteredForEvent(
 
 export function getEventParticipantsList(event: ERPEvent): EventParticipant[] {
   // 1. Get backend participants from database
-  const backendParticipants: EventParticipant[] = (event.participants || []).map((p: EventParticipant) => ({
-    id: String(p.id || `bp_${Math.random()}`),
-    name: p.name || 'Attendee',
-    email: p.email || '',
-    department: p.department || 'Corporate',
-    joinedAt: p.joinedAt || 'Registered',
-    passCode: p.passCode,
-  }));
+  const backendParticipants: EventParticipant[] = (event.participants || []).map(
+    (p: EventParticipant) => ({
+      id: String(p.id || `bp_${Math.random()}`),
+      name: p.name || 'Attendee',
+      email: p.email || '',
+      department: p.department || 'Corporate',
+      joinedAt: p.joinedAt || 'Registered',
+      passCode: p.passCode,
+    })
+  );
 
   // 2. Get local participants
   const all = getAllLocalRegistrations();
@@ -354,7 +351,6 @@ export function removeEventAttachmentLocally(
   return list;
 }
 
-
 export interface RegisterOptions {
   userIdentifier?: string;
   name?: string;
@@ -372,7 +368,11 @@ export function registerUserForEventLocally(
   if (!eventId) return;
   const idStr = String(eventId);
   const all = getAllLocalRegistrations();
-  const state: EventLocalState = all[idStr] || { registeredUsers: [], addedAttendees: 0, participants: [] };
+  const state: EventLocalState = all[idStr] || {
+    registeredUsers: [],
+    addedAttendees: 0,
+    participants: [],
+  };
 
   let identifier = '';
   let participantObj: EventParticipant | null = null;
@@ -380,7 +380,9 @@ export function registerUserForEventLocally(
   if (typeof options === 'string') {
     identifier = options.trim().toLowerCase();
   } else if (options && typeof options === 'object') {
-    identifier = (options.email || options.userIdentifier || options.name || '').trim().toLowerCase();
+    identifier = (options.email || options.userIdentifier || options.name || '')
+      .trim()
+      .toLowerCase();
     participantObj = {
       id: `local_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       name: options.name || 'Confirmed Participant',
@@ -388,7 +390,11 @@ export function registerUserForEventLocally(
       department: options.department || 'Corporate',
       avatar: options.avatar,
       role: options.role || 'Participant',
-      joinedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      joinedAt: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
       passCode: options.passCode,
     };
   }
@@ -401,7 +407,9 @@ export function registerUserForEventLocally(
   if (participantObj) {
     state.participants = state.participants || [];
     const exists = state.participants.some(
-      (p) => (p.email && p.email.toLowerCase() === participantObj!.email.toLowerCase()) || p.name === participantObj!.name
+      (p) =>
+        (p.email && p.email.toLowerCase() === participantObj!.email.toLowerCase()) ||
+        p.name === participantObj!.name
     );
     if (!exists) {
       state.participants.unshift(participantObj);

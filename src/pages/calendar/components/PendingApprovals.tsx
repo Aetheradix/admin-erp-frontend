@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  Calendar,
-  CheckCircle2,
-  XCircle,
-  Home,
-  Clock,
-  ShieldAlert,
-} from 'lucide-react';
+import { Calendar, CheckCircle2, XCircle, Home, Clock, ShieldAlert } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import type { AttendanceRequest } from '@/types/models';
 import { Dialog } from '@/components/ui/composed/Dialog';
@@ -30,9 +23,7 @@ export function PendingApprovals({
   const [rejectReason, setRejectReason] = useState('');
   const [processingId, setProcessingId] = useState<string | number | null>(null);
 
-  const pendingRequests = requests.filter(
-    (r) => (r.status || '').toLowerCase() === 'pending'
-  );
+  const pendingRequests = requests.filter((r) => (r.status || '').toLowerCase() === 'pending');
 
   const handleApprove = async (e: React.MouseEvent, id: string | number) => {
     e.stopPropagation();
@@ -209,7 +200,9 @@ export function PendingApprovals({
         contentClassName="p-6"
         headerClassName="px-6 pt-6 pb-2"
         pt={{
-          root: { className: 'rounded-3xl overflow-hidden border border-border-subtle shadow-xl bg-white' },
+          root: {
+            className: 'rounded-3xl overflow-hidden border border-border-subtle shadow-xl bg-white',
+          },
           mask: { className: 'backdrop-blur-md bg-black/40' },
         }}>
         <div className="flex flex-col gap-4">

@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  Clock,
-  MapPin,
-  Users,
-  Calendar as CalendarIcon,
-  Sparkles,
-  Home,
-} from 'lucide-react';
+import { Clock, MapPin, Users, Calendar as CalendarIcon, Sparkles, Home } from 'lucide-react';
 import { useGetEventsQuery } from '@/store/api/eventApiSlice';
 import type { ERPEvent, AttendanceRequest } from '@/types/models';
 import { parseDateOnly } from '@/utils/date';
@@ -51,7 +44,11 @@ export function AttendancePlanner({
     const end = parseDateOnly(req.end_date || req.start_date);
     if (!start || !end) return false;
 
-    const sel = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const sel = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate()
+    );
     sel.setHours(0, 0, 0, 0);
 
     return sel >= start && sel <= end;

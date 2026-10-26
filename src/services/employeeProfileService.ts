@@ -13,25 +13,30 @@ import { recordAuditLog } from './auditService';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProfileStatus =
-  | 'incomplete'
-  | 'in_progress'
-  | 'submitted'
-  | 'changes_required'
-  | 'approved'
-  | 'id_assigned';
+  'incomplete' | 'in_progress' | 'submitted' | 'changes_required' | 'approved' | 'id_assigned';
 
 export interface ProfileDocument {
   id: string;
-  type: 'pan_card' | 'aadhaar' | 'bank_document' | 'salary_slip' | 'relieving_letter' |
-        'experience_letter' | 'degree_certificate' | 'marksheet' | 'certification' |
-        'profile_picture' | 'passport' | 'other';
+  type:
+    | 'pan_card'
+    | 'aadhaar'
+    | 'bank_document'
+    | 'salary_slip'
+    | 'relieving_letter'
+    | 'experience_letter'
+    | 'degree_certificate'
+    | 'marksheet'
+    | 'certification'
+    | 'profile_picture'
+    | 'passport'
+    | 'other';
   label: string;
   fileName: string;
   fileSize?: number;
   fileType?: string;
   uploadedAt: string;
-  url?: string;          // URL from backend (if uploaded)
-  localData?: string;    // base64 preview (local only)
+  url?: string; // URL from backend (if uploaded)
+  localData?: string; // base64 preview (local only)
   status: 'pending' | 'uploaded' | 'verified' | 'rejected';
   rejectionReason?: string;
 }
@@ -44,7 +49,7 @@ export interface CertificationEntry {
   expiryDate?: string;
   credentialId?: string;
   description?: string;
-  documentId?: string;   // links to ProfileDocument
+  documentId?: string; // links to ProfileDocument
 }
 
 export interface EmploymentHistoryEntry {
@@ -95,7 +100,7 @@ export interface BankDetails {
   bankName: string;
   branchName?: string;
   accountType?: string;
-  documentId?: string;  // bank document
+  documentId?: string; // bank document
 }
 
 export interface IdentityDocuments {
@@ -143,8 +148,7 @@ export interface ProfileCompletionData {
 // ─── Dynamic Form Configuration ───────────────────────────────────────────────
 
 export type FieldType =
-  | 'text' | 'email' | 'tel' | 'number' | 'date'
-  | 'select' | 'textarea' | 'file' | 'checkbox';
+  'text' | 'email' | 'tel' | 'number' | 'date' | 'select' | 'textarea' | 'file' | 'checkbox';
 
 export interface FormFieldConfig {
   id: string;
@@ -156,12 +160,12 @@ export interface FormFieldConfig {
   required: boolean;
   hidden: boolean;
   description?: string;
-  options?: string[];           // For select type
-  maxFileSizeMB?: number;       // For file type
-  allowedFileTypes?: string[];  // e.g. ['pdf', 'jpg']
+  options?: string[]; // For select type
+  maxFileSizeMB?: number; // For file type
+  allowedFileTypes?: string[]; // e.g. ['pdf', 'jpg']
   order: number;
-  visibleToRoles?: string[];    // Which roles can see this field
-  editableByRoles?: string[];   // Which roles can edit this field
+  visibleToRoles?: string[]; // Which roles can see this field
+  editableByRoles?: string[]; // Which roles can edit this field
 }
 
 export interface FormSectionConfig {
@@ -174,7 +178,7 @@ export interface FormSectionConfig {
   hidden: boolean;
   required?: boolean;
   fields: FormFieldConfig[];
-  assignedTeam?: string;  // Which team is responsible for this section
+  assignedTeam?: string; // Which team is responsible for this section
   assignedToTeam?: string;
 }
 
@@ -206,15 +210,88 @@ export const DEFAULT_FORM_CONFIG: FormSectionConfig[] = [
     order: 1,
     hidden: false,
     fields: [
-      { id: 'fullName', section: 'personal', label: 'Full Name', type: 'text', required: true, hidden: false, order: 1 },
-      { id: 'dateOfBirth', section: 'personal', label: 'Date of Birth', type: 'date', required: false, hidden: false, order: 2 },
-      { id: 'gender', section: 'personal', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Non-binary', 'Prefer not to say'], required: false, hidden: false, order: 3 },
-      { id: 'contactNumber', section: 'personal', label: 'Contact Number', type: 'tel', required: true, hidden: false, order: 4 },
-      { id: 'alternateContact', section: 'personal', label: 'Alternate Contact', type: 'tel', required: false, hidden: false, order: 5 },
-      { id: 'currentAddress', section: 'personal', label: 'Current Address', type: 'textarea', required: true, hidden: false, order: 6 },
-      { id: 'permanentAddress', section: 'personal', label: 'Permanent Address', type: 'textarea', required: false, hidden: false, order: 7 },
-      { id: 'emergencyContactName', section: 'personal', label: 'Emergency Contact Name', type: 'text', required: false, hidden: false, order: 8 },
-      { id: 'emergencyContactPhone', section: 'personal', label: 'Emergency Contact Phone', type: 'tel', required: false, hidden: false, order: 9 },
+      {
+        id: 'fullName',
+        section: 'personal',
+        label: 'Full Name',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 1,
+      },
+      {
+        id: 'dateOfBirth',
+        section: 'personal',
+        label: 'Date of Birth',
+        type: 'date',
+        required: false,
+        hidden: false,
+        order: 2,
+      },
+      {
+        id: 'gender',
+        section: 'personal',
+        label: 'Gender',
+        type: 'select',
+        options: ['Male', 'Female', 'Non-binary', 'Prefer not to say'],
+        required: false,
+        hidden: false,
+        order: 3,
+      },
+      {
+        id: 'contactNumber',
+        section: 'personal',
+        label: 'Contact Number',
+        type: 'tel',
+        required: true,
+        hidden: false,
+        order: 4,
+      },
+      {
+        id: 'alternateContact',
+        section: 'personal',
+        label: 'Alternate Contact',
+        type: 'tel',
+        required: false,
+        hidden: false,
+        order: 5,
+      },
+      {
+        id: 'currentAddress',
+        section: 'personal',
+        label: 'Current Address',
+        type: 'textarea',
+        required: true,
+        hidden: false,
+        order: 6,
+      },
+      {
+        id: 'permanentAddress',
+        section: 'personal',
+        label: 'Permanent Address',
+        type: 'textarea',
+        required: false,
+        hidden: false,
+        order: 7,
+      },
+      {
+        id: 'emergencyContactName',
+        section: 'personal',
+        label: 'Emergency Contact Name',
+        type: 'text',
+        required: false,
+        hidden: false,
+        order: 8,
+      },
+      {
+        id: 'emergencyContactPhone',
+        section: 'personal',
+        label: 'Emergency Contact Phone',
+        type: 'tel',
+        required: false,
+        hidden: false,
+        order: 9,
+      },
     ],
   },
   {
@@ -225,14 +302,81 @@ export const DEFAULT_FORM_CONFIG: FormSectionConfig[] = [
     order: 2,
     hidden: false,
     fields: [
-      { id: 'accountHolderName', section: 'bank', label: 'Account Holder Name', type: 'text', required: true, hidden: false, order: 1 },
-      { id: 'bankName', section: 'bank', label: 'Bank Name', type: 'text', required: true, hidden: false, order: 2 },
-      { id: 'accountNumber', section: 'bank', label: 'Account Number', type: 'text', required: true, hidden: false, order: 3 },
-      { id: 'confirmAccountNumber', section: 'bank', label: 'Confirm Account Number', type: 'text', required: true, hidden: false, order: 4 },
-      { id: 'ifscCode', section: 'bank', label: 'IFSC Code', type: 'text', required: true, hidden: false, order: 5 },
-      { id: 'branchName', section: 'bank', label: 'Branch Name', type: 'text', required: false, hidden: false, order: 6 },
-      { id: 'accountType', section: 'bank', label: 'Account Type', type: 'select', options: ['Savings', 'Current', 'Salary'], required: false, hidden: false, order: 7 },
-      { id: 'bankDocument', section: 'bank', label: 'Bank Document (Passbook / Cancelled Cheque)', type: 'file', required: false, hidden: false, order: 8, maxFileSizeMB: 5, allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'] },
+      {
+        id: 'accountHolderName',
+        section: 'bank',
+        label: 'Account Holder Name',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 1,
+      },
+      {
+        id: 'bankName',
+        section: 'bank',
+        label: 'Bank Name',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 2,
+      },
+      {
+        id: 'accountNumber',
+        section: 'bank',
+        label: 'Account Number',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 3,
+      },
+      {
+        id: 'confirmAccountNumber',
+        section: 'bank',
+        label: 'Confirm Account Number',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 4,
+      },
+      {
+        id: 'ifscCode',
+        section: 'bank',
+        label: 'IFSC Code',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 5,
+      },
+      {
+        id: 'branchName',
+        section: 'bank',
+        label: 'Branch Name',
+        type: 'text',
+        required: false,
+        hidden: false,
+        order: 6,
+      },
+      {
+        id: 'accountType',
+        section: 'bank',
+        label: 'Account Type',
+        type: 'select',
+        options: ['Savings', 'Current', 'Salary'],
+        required: false,
+        hidden: false,
+        order: 7,
+      },
+      {
+        id: 'bankDocument',
+        section: 'bank',
+        label: 'Bank Document (Passbook / Cancelled Cheque)',
+        type: 'file',
+        required: false,
+        hidden: false,
+        order: 8,
+        maxFileSizeMB: 5,
+        allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'],
+      },
     ],
   },
   {
@@ -243,12 +387,66 @@ export const DEFAULT_FORM_CONFIG: FormSectionConfig[] = [
     order: 3,
     hidden: false,
     fields: [
-      { id: 'panNumber', section: 'identity', label: 'PAN Card Number', type: 'text', required: true, hidden: false, order: 1 },
-      { id: 'panDocument', section: 'identity', label: 'PAN Card Document', type: 'file', required: true, hidden: false, order: 2, maxFileSizeMB: 5, allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'] },
-      { id: 'aadhaarNumber', section: 'identity', label: 'Aadhaar Number', type: 'text', required: true, hidden: false, order: 3 },
-      { id: 'aadhaarDocument', section: 'identity', label: 'Aadhaar Document', type: 'file', required: true, hidden: false, order: 4, maxFileSizeMB: 5, allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'] },
-      { id: 'passportNumber', section: 'identity', label: 'Passport Number', type: 'text', required: false, hidden: false, order: 5 },
-      { id: 'passportDocument', section: 'identity', label: 'Passport Document', type: 'file', required: false, hidden: false, order: 6, maxFileSizeMB: 5, allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'] },
+      {
+        id: 'panNumber',
+        section: 'identity',
+        label: 'PAN Card Number',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 1,
+      },
+      {
+        id: 'panDocument',
+        section: 'identity',
+        label: 'PAN Card Document',
+        type: 'file',
+        required: true,
+        hidden: false,
+        order: 2,
+        maxFileSizeMB: 5,
+        allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'],
+      },
+      {
+        id: 'aadhaarNumber',
+        section: 'identity',
+        label: 'Aadhaar Number',
+        type: 'text',
+        required: true,
+        hidden: false,
+        order: 3,
+      },
+      {
+        id: 'aadhaarDocument',
+        section: 'identity',
+        label: 'Aadhaar Document',
+        type: 'file',
+        required: true,
+        hidden: false,
+        order: 4,
+        maxFileSizeMB: 5,
+        allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'],
+      },
+      {
+        id: 'passportNumber',
+        section: 'identity',
+        label: 'Passport Number',
+        type: 'text',
+        required: false,
+        hidden: false,
+        order: 5,
+      },
+      {
+        id: 'passportDocument',
+        section: 'identity',
+        label: 'Passport Document',
+        type: 'file',
+        required: false,
+        hidden: false,
+        order: 6,
+        maxFileSizeMB: 5,
+        allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png'],
+      },
     ],
   },
   {
@@ -527,8 +725,7 @@ export function getAllEmployeeProfiles(): ProfileCompletionData[] {
     for (const seed of SEEDED_PROFILES) {
       const matchIdx = combined.findIndex(
         (p) =>
-          p.userEmail?.toLowerCase() === seed.userEmail?.toLowerCase() ||
-          p.userId === seed.userId
+          p.userEmail?.toLowerCase() === seed.userEmail?.toLowerCase() || p.userId === seed.userId
       );
       if (matchIdx === -1) {
         combined.push(seed);
@@ -594,15 +791,22 @@ export function getAllEmployeeProfiles(): ProfileCompletionData[] {
                 },
               });
             } else {
-              if (empId && (!combined[matchIdx].employeeId || combined[matchIdx].employeeId === 'N/A' || combined[matchIdx].employeeId === 'NA')) {
+              if (
+                empId &&
+                (!combined[matchIdx].employeeId ||
+                  combined[matchIdx].employeeId === 'N/A' ||
+                  combined[matchIdx].employeeId === 'NA')
+              ) {
                 combined[matchIdx].employeeId = empId;
                 if (combined[matchIdx].status === 'incomplete') {
                   combined[matchIdx].status = 'id_assigned';
                 }
               }
               if (s.role && !combined[matchIdx].role) combined[matchIdx].role = s.role;
-              if (s.department && !combined[matchIdx].department) combined[matchIdx].department = s.department;
-              if (s.designation && !combined[matchIdx].designation) combined[matchIdx].designation = s.designation;
+              if (s.department && !combined[matchIdx].department)
+                combined[matchIdx].department = s.department;
+              if (s.designation && !combined[matchIdx].designation)
+                combined[matchIdx].designation = s.designation;
             }
           }
         }
@@ -668,7 +872,7 @@ export function updateProfileSection<K extends keyof ProfileCompletionData>(
   section: K,
   value: ProfileCompletionData[K],
   sectionKey: string,
-  actorName: string,
+  actorName: string
 ): void {
   const existing = getEmployeeProfile(userId) || {
     userId,
@@ -702,11 +906,7 @@ export function updateProfileSection<K extends keyof ProfileCompletionData>(
   });
 }
 
-export function submitProfileForReview(
-  userId: number,
-  userEmail: string,
-  actorName: string,
-): void {
+export function submitProfileForReview(userId: number, userEmail: string, actorName: string): void {
   const existing = getEmployeeProfile(userId);
   if (!existing) return;
 
@@ -735,7 +935,7 @@ export function requestProfileChanges(
   reviewerName: string,
   reviewerEmail: string,
   reviewerRole: string,
-  notes: string,
+  notes: string
 ): void {
   const existing = getEmployeeProfile(userId);
   if (!existing) return;
@@ -768,7 +968,7 @@ export function approveProfile(
   reviewerEmail: string,
   reviewerRole: string,
   employeeEmail?: string,
-  employeeName?: string,
+  employeeName?: string
 ): void {
   let existing = getEmployeeProfile(userId);
   if (!existing && employeeEmail) {
@@ -828,7 +1028,7 @@ export function assignEmployeeId(
     role?: string;
     department?: string;
     designation?: string;
-  },
+  }
 ): AssignIdResult {
   const cleanId = employeeId.trim();
   if (!cleanId) {
@@ -838,7 +1038,9 @@ export function assignEmployeeId(
   // Case-insensitive role check for authorized roles
   const normalizedRole = (assignerRole || '').toLowerCase().replace(/[\s_-]/g, '');
   const allowed =
-    ['superadmin', 'admin', 'hradmin', 'hr', 'hiringmanager', 'hiringteam'].includes(normalizedRole) ||
+    ['superadmin', 'admin', 'hradmin', 'hr', 'hiringmanager', 'hiringteam'].includes(
+      normalizedRole
+    ) ||
     assignerRole === 'SuperAdmin' ||
     assignerRole === 'Admin' ||
     assignerRole === 'HrAdmin';
@@ -981,7 +1183,11 @@ export function assignEmployeeId(
     changes: [
       { field: 'Employee ID', from: existing.employeeId || '(none)', to: cleanId },
       { field: 'Role', from: existing.role || '(none)', to: options?.role || existing.role || '' },
-      { field: 'Department', from: existing.department || '(none)', to: options?.department || existing.department || '' },
+      {
+        field: 'Department',
+        from: existing.department || '(none)',
+        to: options?.department || existing.department || '',
+      },
       { field: 'Profile Status', from: existing.status, to: 'id_assigned' },
     ],
   });
@@ -1006,7 +1212,7 @@ export function saveFormConfiguration(
   sections: FormSectionConfig[],
   editorName: string = 'Admin',
   editorEmail: string = '',
-  editorRole: string = 'Admin',
+  editorRole: string = 'Admin'
 ): void {
   localStorage.setItem(FORM_CONFIG_KEY, JSON.stringify(sections));
   notifyChange('profile_form_config');
@@ -1026,35 +1232,31 @@ export function saveFormConfiguration(
 
 export function calculateCompletionPercentage(
   profile: ProfileCompletionData | null,
-  formConfig: FormSectionConfig[],
+  formConfig: FormSectionConfig[]
 ): number {
   if (!profile) return 0;
 
   const activeSections = formConfig.filter((s) => !s.hidden);
   if (activeSections.length === 0) return 0;
 
-  const completed = activeSections.filter(
-    (s) => profile.completedSections[s.id]
-  ).length;
+  const completed = activeSections.filter((s) => profile.completedSections[s.id]).length;
 
   return Math.round((completed / activeSections.length) * 100);
 }
 
 export function getIncompleteRequiredSections(
   profile: ProfileCompletionData | null,
-  formConfig: FormSectionConfig[],
+  formConfig: FormSectionConfig[]
 ): FormSectionConfig[] {
   if (!profile) return formConfig.filter((s) => !s.hidden);
-  return formConfig.filter(
-    (s) => !s.hidden && !profile.completedSections[s.id]
-  );
+  return formConfig.filter((s) => !s.hidden && !profile.completedSections[s.id]);
 }
 
 // ─── Document Helpers ─────────────────────────────────────────────────────────
 
 export function addDocument(
   userId: number,
-  document: Omit<ProfileDocument, 'id' | 'uploadedAt'>,
+  document: Omit<ProfileDocument, 'id' | 'uploadedAt'>
 ): ProfileDocument {
   const profile = getEmployeeProfile(userId);
   const newDoc: ProfileDocument = {
@@ -1099,7 +1301,7 @@ export function ensureEmployeeProfileExists(
   fullName?: string,
   role?: string,
   department?: string,
-  additionalDetails?: Partial<NonNullable<ProfileCompletionData['personal']>>,
+  additionalDetails?: Partial<NonNullable<ProfileCompletionData['personal']>>
 ): ProfileCompletionData {
   const existing = getEmployeeProfile(userId) || (userEmail ? getEmployeeProfile(userEmail) : null);
   if (existing) {
@@ -1188,18 +1390,34 @@ export async function syncProfilesFromBackend(): Promise<void> {
                   ...(merged[idx].completedSections || {}),
                   ...(bp.completedSections || {}),
                 },
-                personal: (merged[idx].personal || bp.personal) ? {
-                  fullName: bp.personal?.fullName || merged[idx].personal?.fullName || '',
-                  email: bp.personal?.email || merged[idx].personal?.email || bp.userEmail || merged[idx].userEmail || '',
-                  ...(merged[idx].personal || {}),
-                  ...(bp.personal || {}),
-                } : undefined,
+                personal:
+                  merged[idx].personal || bp.personal
+                    ? {
+                        fullName: bp.personal?.fullName || merged[idx].personal?.fullName || '',
+                        email:
+                          bp.personal?.email ||
+                          merged[idx].personal?.email ||
+                          bp.userEmail ||
+                          merged[idx].userEmail ||
+                          '',
+                        ...(merged[idx].personal || {}),
+                        ...(bp.personal || {}),
+                      }
+                    : undefined,
                 bank: bp.bank || merged[idx].bank,
                 identity: bp.identity || merged[idx].identity,
-                employment: (bp.employment && bp.employment.length > 0) ? bp.employment : merged[idx].employment,
-                education: (bp.education && bp.education.length > 0) ? bp.education : merged[idx].education,
-                certifications: (bp.certifications && bp.certifications.length > 0) ? bp.certifications : merged[idx].certifications,
-                documents: (bp.documents && bp.documents.length > 0) ? bp.documents : merged[idx].documents,
+                employment:
+                  bp.employment && bp.employment.length > 0
+                    ? bp.employment
+                    : merged[idx].employment,
+                education:
+                  bp.education && bp.education.length > 0 ? bp.education : merged[idx].education,
+                certifications:
+                  bp.certifications && bp.certifications.length > 0
+                    ? bp.certifications
+                    : merged[idx].certifications,
+                documents:
+                  bp.documents && bp.documents.length > 0 ? bp.documents : merged[idx].documents,
               };
             } else {
               merged.push(bp);
@@ -1228,7 +1446,8 @@ export async function syncProfilesFromBackend(): Promise<void> {
           const idx = merged.findIndex(
             (p) =>
               String(p.userId) === String(meProfile.userId) ||
-              (Boolean(meProfile.userEmail) && p.userEmail?.toLowerCase() === meProfile.userEmail.toLowerCase())
+              (Boolean(meProfile.userEmail) &&
+                p.userEmail?.toLowerCase() === meProfile.userEmail.toLowerCase())
           );
           if (idx >= 0) {
             merged[idx] = {
@@ -1240,12 +1459,21 @@ export async function syncProfilesFromBackend(): Promise<void> {
                 ...(merged[idx].completedSections || {}),
                 ...(meProfile.completedSections || {}),
               },
-              personal: (merged[idx].personal || meProfile.personal) ? {
-                fullName: meProfile.personal?.fullName || merged[idx].personal?.fullName || '',
-                email: meProfile.personal?.email || merged[idx].personal?.email || meProfile.userEmail || merged[idx].userEmail || '',
-                ...(merged[idx].personal || {}),
-                ...(meProfile.personal || {}),
-              } : undefined,
+              personal:
+                merged[idx].personal || meProfile.personal
+                  ? {
+                      fullName:
+                        meProfile.personal?.fullName || merged[idx].personal?.fullName || '',
+                      email:
+                        meProfile.personal?.email ||
+                        merged[idx].personal?.email ||
+                        meProfile.userEmail ||
+                        merged[idx].userEmail ||
+                        '',
+                      ...(merged[idx].personal || {}),
+                      ...(meProfile.personal || {}),
+                    }
+                  : undefined,
               bank: meProfile.bank || merged[idx].bank,
               identity: meProfile.identity || merged[idx].identity,
             };
@@ -1261,9 +1489,13 @@ export async function syncProfilesFromBackend(): Promise<void> {
               const curUser = JSON.parse(curUserRaw);
               if (
                 String(curUser.id) === String(meProfile.userId) ||
-                (meProfile.userEmail && curUser.email?.toLowerCase() === meProfile.userEmail.toLowerCase())
+                (meProfile.userEmail &&
+                  curUser.email?.toLowerCase() === meProfile.userEmail.toLowerCase())
               ) {
-                if (meProfile.employeeId && (!curUser.employee_code || curUser.employee_code === 'N/A')) {
+                if (
+                  meProfile.employeeId &&
+                  (!curUser.employee_code || curUser.employee_code === 'N/A')
+                ) {
                   curUser.employee_code = meProfile.employeeId;
                   curUser.employee_id = meProfile.employeeId;
                   curUser.employeeId = meProfile.employeeId;
@@ -1300,4 +1532,3 @@ export async function syncProfilesFromBackend(): Promise<void> {
     // Graceful offline fallback
   }
 }
-

@@ -44,8 +44,8 @@ export function BankDetailsSection({ data, onSave, isSaving, readOnly }: Props) 
       if (key === 'accountNumber' || key === 'confirmAccountNumber') {
         setAccountMismatch(
           next.accountNumber !== '' &&
-          next.confirmAccountNumber !== '' &&
-          next.accountNumber !== next.confirmAccountNumber
+            next.confirmAccountNumber !== '' &&
+            next.accountNumber !== next.confirmAccountNumber
         );
       }
       return next;
@@ -139,8 +139,7 @@ export function BankDetailsSection({ data, onSave, isSaving, readOnly }: Props) 
               <button
                 type="button"
                 onClick={() => setShowAccount(!showAccount)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-              >
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
                 {showAccount ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             )}
@@ -163,8 +162,7 @@ export function BankDetailsSection({ data, onSave, isSaving, readOnly }: Props) 
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-              >
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
@@ -193,11 +191,12 @@ export function BankDetailsSection({ data, onSave, isSaving, readOnly }: Props) 
             className={inputClass(readOnly)}
             value={form.accountType || ''}
             onChange={(e) => set('accountType', e.target.value)}
-            disabled={readOnly}
-          >
+            disabled={readOnly}>
             <option value="">Select type</option>
             {['Savings', 'Current', 'Salary'].map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>
+                {t}
+              </option>
             ))}
           </select>
         </div>
@@ -206,8 +205,9 @@ export function BankDetailsSection({ data, onSave, isSaving, readOnly }: Props) 
       {/* Bank Document Upload Note */}
       <div className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle">
         <p className="text-xs text-muted">
-          <strong className="text-foreground">Supporting Document:</strong> Please upload a cancelled cheque or
-          bank passbook (first page) in the Documents section to verify your bank details.
+          <strong className="text-foreground">Supporting Document:</strong> Please upload a
+          cancelled cheque or bank passbook (first page) in the Documents section to verify your
+          bank details.
         </p>
       </div>
 
@@ -216,8 +216,7 @@ export function BankDetailsSection({ data, onSave, isSaving, readOnly }: Props) 
           <button
             type="submit"
             disabled={isSaving || accountMismatch}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50"
-          >
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

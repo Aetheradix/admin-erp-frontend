@@ -40,12 +40,22 @@ const LoginPage = () => {
     }
 
     if (!emailRegex.test(email)) {
-      showToast({ severity: 'error', summary: 'Error', detail: 'Please enter a valid email address', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please enter a valid email address',
+        life: 3000,
+      });
       return;
     }
 
     if (!password.trim()) {
-      showToast({ severity: 'error', summary: 'Error', detail: 'Password is required', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Password is required',
+        life: 3000,
+      });
       return;
     }
 

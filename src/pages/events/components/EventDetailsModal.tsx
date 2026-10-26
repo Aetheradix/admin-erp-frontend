@@ -83,9 +83,9 @@ export const EventDetailsModal = ({
   const { user } = useAuth();
   const isAdmin = Boolean(
     user?.role &&
-      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
-        String(user.role).toLowerCase().includes(r)
-      )
+    ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
+      String(user.role).toLowerCase().includes(r)
+    )
   );
   const [activeTab, setActiveTab] = useState<'details' | 'participants' | 'media'>('details');
   const [participantSearch, setParticipantSearch] = useState('');
@@ -143,8 +143,7 @@ export const EventDetailsModal = ({
       pt={{
         root: { className: 'rounded-[36px] overflow-hidden border-none shadow-2xl bg-white' },
         mask: { className: 'backdrop-blur-md bg-black/60' },
-      }}
-    >
+      }}>
       <div className="flex flex-col max-h-[88vh] overflow-y-auto bg-white rounded-[36px]">
         {/* Visual Banner Header */}
         <div className="relative h-60 sm:h-68 w-full bg-zinc-950 overflow-hidden flex-shrink-0">
@@ -152,8 +151,7 @@ export const EventDetailsModal = ({
             src={imageBanner}
             alt={event.title}
             onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
+              (e.target as HTMLImageElement).src = CATEGORY_IMAGES[event.category] || DEFAULT_IMAGE;
             }}
             className="w-full h-full object-cover opacity-85"
           />
@@ -164,8 +162,7 @@ export const EventDetailsModal = ({
             {/* Status Badges */}
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`px-3.5 py-1.5 rounded-2xl backdrop-blur-md border text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md ${statusInfo.colorClasses}`}
-              >
+                className={`px-3.5 py-1.5 rounded-2xl backdrop-blur-md border text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md ${statusInfo.colorClasses}`}>
                 <statusInfo.icon size={13} />
                 <span>{statusInfo.label}</span>
               </span>
@@ -188,8 +185,7 @@ export const EventDetailsModal = ({
                     onEdit(String(event.id));
                   }}
                   className="w-9 h-9 rounded-2xl bg-black/50 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                  title="Edit Event"
-                >
+                  title="Edit Event">
                   <Edit2 size={15} />
                 </button>
               )}
@@ -201,8 +197,7 @@ export const EventDetailsModal = ({
                     onDelete(String(event.id));
                   }}
                   className="w-9 h-9 rounded-2xl bg-black/50 backdrop-blur-md text-rose-300 border border-white/20 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                  title="Delete Event"
-                >
+                  title="Delete Event">
                   <Trash2 size={15} />
                 </button>
               )}
@@ -210,8 +205,7 @@ export const EventDetailsModal = ({
                 type="button"
                 onClick={onHide}
                 className="w-9 h-9 rounded-2xl bg-black/50 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-foreground flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                title="Close"
-              >
+                title="Close">
                 <X size={17} />
               </button>
             </div>
@@ -222,8 +216,7 @@ export const EventDetailsModal = ({
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="primary"
-                className="bg-primary backdrop-blur-md text-white border border-white/20 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-xl"
-              >
+                className="bg-primary backdrop-blur-md text-white border border-white/20 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-xl">
                 {event.category || 'General'}
               </Badge>
               {event.author_department && (
@@ -247,8 +240,7 @@ export const EventDetailsModal = ({
               activeTab === 'details'
                 ? 'bg-primary text-white shadow-md'
                 : 'text-muted hover:text-foreground bg-white border border-border-subtle hover:bg-surface-subtle'
-            }`}
-          >
+            }`}>
             <Info size={14} />
             <span>Event Information</span>
           </button>
@@ -260,8 +252,7 @@ export const EventDetailsModal = ({
               activeTab === 'participants'
                 ? 'bg-primary text-white shadow-md'
                 : 'text-muted hover:text-foreground bg-white border border-border-subtle hover:bg-surface-subtle'
-            }`}
-          >
+            }`}>
             <Users size={14} />
             <span>Joined Participants ({attendeesCount})</span>
           </button>
@@ -273,8 +264,7 @@ export const EventDetailsModal = ({
               activeTab === 'media'
                 ? 'bg-primary text-white shadow-md'
                 : 'text-muted hover:text-foreground bg-white border border-border-subtle hover:bg-surface-subtle'
-            }`}
-          >
+            }`}>
             <Sparkles size={14} />
             <span>Recap, Photos & Files</span>
           </button>
@@ -327,8 +317,7 @@ export const EventDetailsModal = ({
                 <div
                   onClick={() => setActiveTab('participants')}
                   className="p-5 rounded-3xl bg-surface-subtle/70 border border-border-subtle flex items-center gap-4 hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer group/stat"
-                  title="Click to view joined participants list"
-                >
+                  title="Click to view joined participants list">
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary group-hover/stat:bg-primary group-hover/stat:text-white flex items-center justify-center flex-shrink-0 shadow-xs transition-colors">
                     <Users size={22} />
                   </div>
@@ -378,8 +367,7 @@ export const EventDetailsModal = ({
               {/* Quick Joined Participants Banner Preview */}
               <div
                 onClick={() => setActiveTab('participants')}
-                className="p-5 rounded-3xl bg-linear-to-r from-primary/10 via-surface-subtle to-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer hover:shadow-md transition-all group/part"
-              >
+                className="p-5 rounded-3xl bg-linear-to-r from-primary/10 via-surface-subtle to-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer hover:shadow-md transition-all group/part">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2.5 overflow-hidden py-1">
                     {participantsList.slice(0, 4).map((p, idx) => (
@@ -387,8 +375,7 @@ export const EventDetailsModal = ({
                         key={p.id}
                         className={`w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-xs font-black shadow-xs ${
                           AVATAR_COLORS[idx % AVATAR_COLORS.length]
-                        }`}
-                      >
+                        }`}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                     ))}
@@ -400,7 +387,8 @@ export const EventDetailsModal = ({
                   </div>
                   <div>
                     <h4 className="text-xs font-black text-foreground group-hover/part:text-primary transition-colors">
-                      {attendeesCount} Registered {attendeesCount === 1 ? 'Colleague' : 'Colleagues'}
+                      {attendeesCount} Registered{' '}
+                      {attendeesCount === 1 ? 'Colleague' : 'Colleagues'}
                     </h4>
                     <p className="text-[11px] text-muted font-medium">
                       See who is attending from Engineering, Product, HR and other teams.
@@ -459,8 +447,7 @@ export const EventDetailsModal = ({
                   {event.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 rounded-xl text-xs font-bold text-primary bg-primary/10 border border-primary/20"
-                    >
+                      className="px-3 py-1 rounded-xl text-xs font-bold text-primary bg-primary/10 border border-primary/20">
                       #{tag}
                     </span>
                   ))}
@@ -481,7 +468,9 @@ export const EventDetailsModal = ({
                       <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
                         Registered Participants
                       </h3>
-                      <Badge variant="primary" className="text-[10px] font-black px-2 py-0.5 rounded-lg">
+                      <Badge
+                        variant="primary"
+                        className="text-[10px] font-black px-2 py-0.5 rounded-lg">
                         {attendeesCount} Joined
                       </Badge>
                     </div>
@@ -513,7 +502,9 @@ export const EventDetailsModal = ({
                   </div>
                   <div>
                     <h4 className="text-sm font-black text-foreground">
-                      {participantSearch ? 'No matching participants found' : 'No participants registered yet'}
+                      {participantSearch
+                        ? 'No matching participants found'
+                        : 'No participants registered yet'}
                     </h4>
                     <p className="text-xs text-muted font-medium mt-0.5">
                       {participantSearch
@@ -526,8 +517,7 @@ export const EventDetailsModal = ({
                       variant="primary"
                       onClick={() => onRegister(event)}
                       disabled={isRegistering}
-                      className="mt-2 h-10 rounded-xl font-bold text-xs gap-1.5 cursor-pointer"
-                    >
+                      className="mt-2 h-10 rounded-xl font-bold text-xs gap-1.5 cursor-pointer">
                       <ArrowUpRight size={14} />
                       <span>Register Now</span>
                     </Button>
@@ -547,12 +537,10 @@ export const EventDetailsModal = ({
                           isCurrentUser
                             ? 'bg-primary/5 border-primary/30 shadow-sm'
                             : 'bg-white border-border-subtle shadow-xs hover:border-primary/20 hover:shadow-sm'
-                        }`}
-                      >
+                        }`}>
                         <div className="flex items-center gap-3.5 min-w-0">
                           <div
-                            className={`w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-black shadow-xs flex-shrink-0 ${avatarBg}`}
-                          >
+                            className={`w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-black shadow-xs flex-shrink-0 ${avatarBg}`}>
                             {participant.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -600,7 +588,6 @@ export const EventDetailsModal = ({
         </div>
 
         {/* Modal Footer Action Bar */}
-
       </div>
     </Dialog>
   );

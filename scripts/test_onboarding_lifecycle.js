@@ -46,10 +46,18 @@ async function runTests() {
     if (userRows.length === 0) throw new Error('Invited user not found in DB');
     const dbUser = userRows[0];
     userId = dbUser.id;
-    if (dbUser.is_temporary_password !== 1 || dbUser.is_onboarded !== 0 || dbUser.onboarding_step !== 1) {
-      throw new Error(`Invalid DB flags: is_temp=${dbUser.is_temporary_password}, is_onboarded=${dbUser.is_onboarded}, step=${dbUser.onboarding_step}`);
+    if (
+      dbUser.is_temporary_password !== 1 ||
+      dbUser.is_onboarded !== 0 ||
+      dbUser.onboarding_step !== 1
+    ) {
+      throw new Error(
+        `Invalid DB flags: is_temp=${dbUser.is_temporary_password}, is_onboarded=${dbUser.is_onboarded}, step=${dbUser.onboarding_step}`
+      );
     }
-    console.log('✓ PASS: DB flags verified: is_temporary_password=1, is_onboarded=0, onboarding_step=1\n');
+    console.log(
+      '✓ PASS: DB flags verified: is_temporary_password=1, is_onboarded=0, onboarding_step=1\n'
+    );
 
     // TEST 3: Login with Temporary Password
     console.log('TEST 3: Logging in with temporary password...');
@@ -77,7 +85,8 @@ async function runTests() {
     } catch (err) {
       // Expected to fail
     }
-    if (tempReused) throw new Error('SECURITY VIOLATION: Temporary password was reused after change!');
+    if (tempReused)
+      throw new Error('SECURITY VIOLATION: Temporary password was reused after change!');
     console.log('✓ PASS: Temporary password is single-use and invalid immediately.\n');
 
     // TEST 6: Resuming Incomplete Onboarding After Interruption / Logout
@@ -89,7 +98,9 @@ async function runTests() {
     if (reloginRes.user.is_onboarded || reloginRes.user.onboarding_step !== 2) {
       throw new Error(`Expected onboarding_step=2, got ${reloginRes.user.onboarding_step}`);
     }
-    console.log('✓ PASS: Incomplete onboarding resumed seamlessly at Step 2 without re-prompting password change.\n');
+    console.log(
+      '✓ PASS: Incomplete onboarding resumed seamlessly at Step 2 without re-prompting password change.\n'
+    );
 
     // TEST 7: Step 2 - Complete User Details
     console.log('TEST 7: Step 2 - Submitting required user profile details...');
@@ -100,7 +111,11 @@ async function runTests() {
       designation: 'Senior Developer',
     };
     const completeRes = await completeOnboarding(userId, profileDetails);
-    if (!completeRes.success || !completeRes.user.is_onboarded || completeRes.user.onboarding_step !== 3) {
+    if (
+      !completeRes.success ||
+      !completeRes.user.is_onboarded ||
+      completeRes.user.onboarding_step !== 3
+    ) {
       throw new Error('Complete onboarding failed');
     }
     console.log('✓ PASS: User details submitted and persisted successfully.\n');
@@ -108,7 +123,11 @@ async function runTests() {
     // TEST 8: Verify Complete Onboarding State
     console.log('TEST 8: Verifying complete onboarding status & normal access...');
     const finalStatus = await getOnboardingStatus(userId);
-    if (finalStatus.is_temporary_password || !finalStatus.is_onboarded || finalStatus.onboarding_step !== 3) {
+    if (
+      finalStatus.is_temporary_password ||
+      !finalStatus.is_onboarded ||
+      finalStatus.onboarding_step !== 3
+    ) {
       throw new Error('Final onboarding state invalid in database');
     }
     const finalLogin = await login(testEmail, newPersonalPass);

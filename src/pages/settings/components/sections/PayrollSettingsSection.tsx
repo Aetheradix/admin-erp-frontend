@@ -222,7 +222,8 @@ export const PayrollSettingsSection: React.FC = () => {
                 )}
               </div>
               <p className="text-xs font-medium text-muted-foreground leading-relaxed mt-0.5">
-                Configure which payroll frequencies are permitted. Employees are assigned to one of these cycles on hire.
+                Configure which payroll frequencies are permitted. Employees are assigned to one of
+                these cycles on hire.
               </p>
             </div>
           </div>
@@ -371,7 +372,8 @@ export const PayrollSettingsSection: React.FC = () => {
               Statutory Tax Rules & Regime Defaults
             </span>
             <p className="text-xs font-medium text-muted-foreground leading-relaxed mt-0.5">
-              Statutory deductions, section 87A rebate thresholds, and current financial year rules enforced by the backend calculation engine.
+              Statutory deductions, section 87A rebate thresholds, and current financial year rules
+              enforced by the backend calculation engine.
             </p>
           </div>
         </div>
@@ -499,7 +501,8 @@ export const PayrollSettingsSection: React.FC = () => {
         {/* Save Bar */}
         <div className="mt-5 pt-4 border-t border-border-subtle flex items-center justify-between">
           <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-            <Info size={13} className="text-primary" /> Changes take effect immediately across all newly created payroll cycles and salary slips.
+            <Info size={13} className="text-primary" /> Changes take effect immediately across all
+            newly created payroll cycles and salary slips.
           </p>
           <button
             type="button"

@@ -27,6 +27,7 @@ interface InvoiceFormModalProps {
   emptyForm: InvoiceForm;
   setForm: (form: InvoiceForm) => void;
   isSubmitting?: boolean;
+  isEditing?: boolean;
 }
 
 interface SectionTitleProps {
@@ -61,6 +62,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   emptyForm,
   setForm,
   isSubmitting = false,
+  isEditing = false,
 }) => {
   const [showIssuerDetails, setShowIssuerDetails] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -90,7 +92,8 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
       (item) => !item.description?.trim() || Number(item.quantity || 0) <= 0
     );
     if (hasInvalidItem) {
-      newErrors.items = 'Please ensure all items have a description and quantity greater than zero.';
+      newErrors.items =
+        'Please ensure all items have a description and quantity greater than zero.';
     }
 
     setErrors(newErrors);
@@ -118,13 +121,22 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-gray-900">Create Tax Invoice</h1>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {isEditing ? 'Edit Tax Invoice' : 'Create Tax Invoice'}
+                </h1>
                 <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-lg bg-gray-100 text-gray-800 border border-gray-200">
                   {form.invoiceNumber || 'NEW'}
                 </span>
+                {isEditing && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Editing Mode
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-500">
-                Enter billing information, items, and tax breakdown.
+                {isEditing
+                  ? 'Update billing information, items, notes, or payment status.'
+                  : 'Enter billing information, items, and tax breakdown.'}
               </p>
             </div>
           </div>
@@ -141,7 +153,10 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleFormSubmit} noValidate className="overflow-y-auto flex-1 p-6 space-y-6">
+        <form
+          onSubmit={handleFormSubmit}
+          noValidate
+          className="overflow-y-auto flex-1 p-6 space-y-6">
           {Object.keys(errors).length > 0 && (
             <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-700 text-sm font-medium">
               <AlertCircle size={20} className="shrink-0 text-red-500" />
@@ -158,14 +173,22 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <Input
-                label="Invoice Number"
-                value={form.invoiceNumber}
-                onChange={(e) => updateField('invoiceNumber', e.target.value)}
-                error={errors.invoiceNumber}
-                required
-                placeholder="e.g. INV-2026-005"
-              />
+              <div>
+                <Input
+                  label="Invoice Number"
+                  value={form.invoiceNumber}
+                  onChange={(e) => updateField('invoiceNumber', e.target.value)}
+                  error={errors.invoiceNumber}
+                  required
+                  disabled={isEditing}
+                  placeholder="e.g. INV-2026-005"
+                />
+                {isEditing && (
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Invoice ID is locked during editing
+                  </p>
+                )}
+              </div>
 
               <Input
                 label="Invoice Date"
@@ -192,9 +215,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  GST Rate (%)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GST Rate (%)</label>
                 <select
                   value={String(form.gstRate)}
                   onChange={(e) => updateField('gstRate', Number(e.target.value))}
@@ -204,6 +225,20 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                   <option value="12">12% (Standard Lower)</option>
                   <option value="18">18% (Standard Services Default)</option>
                   <option value="28">28% (Luxury / Higher)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Status
+                </label>
+                <select
+                  value={form.status || 'Pending'}
+                  onChange={(e) => updateField('status', e.target.value as any)}
+                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
+                  <option value="Pending">Pending</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Overdue">Overdue</option>
                 </select>
               </div>
             </div>
@@ -303,7 +338,8 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                 </span>
                 <span>•</span>
                 <span>
-                  <strong>Address:</strong> {form.companyCity || 'Bhopal'}, {form.companyState || 'Madhya Pradesh'}
+                  <strong>Address:</strong> {form.companyCity || 'Bhopal'},{' '}
+                  {form.companyState || 'Madhya Pradesh'}
                 </span>
               </div>
             ) : (
@@ -362,9 +398,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
               description="Add deliverables, professional services, or products."
             />
 
-            {errors.items && (
-              <p className="text-xs text-red-500 font-medium">{errors.items}</p>
-            )}
+            {errors.items && <p className="text-xs text-red-500 font-medium">{errors.items}</p>}
 
             <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200">
               <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
@@ -397,7 +431,9 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
 
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-gray-500 font-medium sm:hidden">Qty:</span>
+                          <span className="text-[11px] text-gray-500 font-medium sm:hidden">
+                            Qty:
+                          </span>
                           <input
                             type="number"
                             min="1"
@@ -409,7 +445,9 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                         </div>
 
                         <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-gray-500 font-medium sm:hidden">Rate:</span>
+                          <span className="text-[11px] text-gray-500 font-medium sm:hidden">
+                            Rate:
+                          </span>
                           <input
                             type="number"
                             min="0"
@@ -441,7 +479,9 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
               {/* Items Subtotal Footer */}
               <div className="mt-4 pt-3 border-t border-gray-200 flex justify-between font-bold text-xs text-gray-900">
                 <span>Subtotal (Excl. Tax)</span>
-                <span className="font-mono">₹{subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span className="font-mono">
+                  ₹{subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
               </div>
             </div>
           </section>
@@ -522,7 +562,13 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
             onClick={handleFormSubmit}
             className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50 shadow-xs cursor-pointer">
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-            {isSubmitting ? 'Creating Invoice...' : 'Create Invoice'}
+            {isSubmitting
+              ? isEditing
+                ? 'Updating Invoice...'
+                : 'Creating Invoice...'
+              : isEditing
+                ? 'Update Invoice'
+                : 'Create Invoice'}
           </button>
         </div>
       </div>

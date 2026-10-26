@@ -18,16 +18,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import {
-  useGetSalarySlipByIdQuery,
-  useGetAllSalarySlipsQuery,
-} from '@/store/api/financeApiSlice';
+import { useGetSalarySlipByIdQuery, useGetAllSalarySlipsQuery } from '@/store/api/financeApiSlice';
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
 import { generateSlipNumber } from '@/utils/payroll';
-
 
 export interface PayrollRecord {
   id: number;
@@ -130,8 +126,18 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
 
   if (rawMonth && rawYear) {
     const monthNames = [
-      'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
+      'JANUARY',
+      'FEBRUARY',
+      'MARCH',
+      'APRIL',
+      'MAY',
+      'JUNE',
+      'JULY',
+      'AUGUST',
+      'SEPTEMBER',
+      'OCTOBER',
+      'NOVEMBER',
+      'DECEMBER',
     ];
     const mIdx = parseNum(rawMonth) - 1;
     if (mIdx >= 0 && mIdx < 12) {
@@ -193,11 +199,17 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     ];
   }
 
-  const actualSlipNo = String(
-    findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'payslipNo']) || ''
-  );
+  const actualSlipNo = String(findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'payslipNo']) || '');
   const rawEmpCode = String(
-    findDeepValue(item, ['employee_code', 'employeeCode', 'employee_id', 'employeeId', 'user_id']) || userId || '001'
+    findDeepValue(item, [
+      'employee_code',
+      'employeeCode',
+      'employee_id',
+      'employeeId',
+      'user_id',
+    ]) ||
+      userId ||
+      '001'
   );
   const fallbackSlipNo = generateSlipNumber(rawEmpCode, monthYear);
 
@@ -520,7 +532,10 @@ const MyPaySlipPage = () => {
           </button>
 
           <div className="relative w-full sm:w-72">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
             <input
               type="text"
               placeholder="Search slip no, month, amount..."
@@ -697,6 +712,6 @@ const MyPaySlipPage = () => {
       )}
     </div>
   );
-}
+};
 
-export default  MyPaySlipPage;
+export default MyPaySlipPage;

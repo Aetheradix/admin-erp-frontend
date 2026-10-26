@@ -12,19 +12,12 @@ import {
 } from '@/store/api/authApiSlice';
 import { useAuth } from '@/hooks/useAuth';
 import { recordAuditLog, acceptInvitation } from '@/services/auditService';
-import {
-  ShieldCheck,
-  Eye,
-  EyeOff,
-  Check,
-  X,
-  UserCircle,
-  CheckCircle2,
-  Lock,
-} from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, Check, X, UserCircle, CheckCircle2, Lock } from 'lucide-react';
 
 /** Determine the starting step from user's current onboarding_step */
-function getInitialStep(user: { is_temporary_password?: boolean; is_onboarded?: boolean; onboarding_step?: number } | null): 1 | 2 {
+function getInitialStep(
+  user: { is_temporary_password?: boolean; is_onboarded?: boolean; onboarding_step?: number } | null
+): 1 | 2 {
   if (!user) return 1;
   const step = user.onboarding_step ?? 1;
   if (user.is_temporary_password || step === 1) return 1;
@@ -52,18 +45,23 @@ export default function PostLoginOnboarding() {
   const department = user?.department || 'Engineering';
   const designation = user?.designation || '';
 
-  const [changeTemporaryPassword, { isLoading: isChangingPwd }] = useChangeTemporaryPasswordMutation();
-  const [completeOnboarding, { isLoading: isCompletingOnboarding }] = useCompleteOnboardingMutation();
+  const [changeTemporaryPassword, { isLoading: isChangingPwd }] =
+    useChangeTemporaryPasswordMutation();
+  const [completeOnboarding, { isLoading: isCompletingOnboarding }] =
+    useCompleteOnboardingMutation();
 
   // Password strength
-  const passwordChecks = useMemo(() => ({
-    minLength: newPassword.length >= 8,
-    hasUpper: /[A-Z]/.test(newPassword),
-    hasLower: /[a-z]/.test(newPassword),
-    hasNumber: /[0-9]/.test(newPassword),
-    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
-    matches: newPassword.length > 0 && newPassword === confirmPassword,
-  }), [newPassword, confirmPassword]);
+  const passwordChecks = useMemo(
+    () => ({
+      minLength: newPassword.length >= 8,
+      hasUpper: /[A-Z]/.test(newPassword),
+      hasLower: /[a-z]/.test(newPassword),
+      hasNumber: /[0-9]/.test(newPassword),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
+      matches: newPassword.length > 0 && newPassword === confirmPassword,
+    }),
+    [newPassword, confirmPassword]
+  );
 
   const strengthScore = useMemo(() => {
     return Object.values(passwordChecks).filter(Boolean).length - (passwordChecks.matches ? 0 : 0);
@@ -77,14 +75,17 @@ export default function PostLoginOnboarding() {
     passwordChecks.hasSpecial &&
     passwordChecks.matches;
 
-  const isProfileValid =
-    fullName.trim().length >= 2 &&
-    contactNo.trim().length >= 7;
+  const isProfileValid = fullName.trim().length >= 2 && contactNo.trim().length >= 7;
 
   const handleChangePassword = useCallback(async () => {
     if (!isPasswordValid) return;
     if (!currentPassword.trim()) {
-      showToast({ severity: 'error', summary: 'Missing Field', detail: 'Enter your temporary password.', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Missing Field',
+        detail: 'Enter your temporary password.',
+        life: 3000,
+      });
       return;
     }
     try {
@@ -176,7 +177,9 @@ export default function PostLoginOnboarding() {
           { field: 'Full Name', from: user?.username || '(not set)', to: fullName },
           { field: 'Contact Number', from: user?.contact_number || '(not set)', to: contactNo },
           { field: 'Department', from: user?.department || '(not set)', to: department },
-          ...(designation ? [{ field: 'Designation', from: user?.designation || '(not set)', to: designation }] : []),
+          ...(designation
+            ? [{ field: 'Designation', from: user?.designation || '(not set)', to: designation }]
+            : []),
           { field: 'Onboarding Status', from: 'Incomplete', to: 'Fully Activated' },
         ],
       });
@@ -204,7 +207,16 @@ export default function PostLoginOnboarding() {
         life: 4000,
       });
     }
-  }, [isProfileValid, fullName, contactNo, department, designation, completeOnboarding, updateUser, user]);
+  }, [
+    isProfileValid,
+    fullName,
+    contactNo,
+    department,
+    designation,
+    completeOnboarding,
+    updateUser,
+    user,
+  ]);
 
   const handleGoToDashboard = () => {
     navigate('/', { replace: true });
@@ -222,9 +234,12 @@ export default function PostLoginOnboarding() {
             <CheckCircle2 size={44} strokeWidth={1.5} />
           </div>
           <div className="space-y-2">
-            <h3 className="text-2xl font-black text-foreground">Welcome, {fullName || user?.username}!</h3>
+            <h3 className="text-2xl font-black text-foreground">
+              Welcome, {fullName || user?.username}!
+            </h3>
             <p className="text-xs text-muted leading-relaxed max-w-sm">
-              Your password is secured and your profile is active. You now have full access to AetherERP.
+              Your password is secured and your profile is active. You now have full access to
+              AetherERP.
             </p>
           </div>
           <div className="w-full p-4 rounded-xl bg-surface-subtle border border-border-subtle text-left text-xs space-y-2">
@@ -273,11 +288,12 @@ export default function PostLoginOnboarding() {
     <AuthLayout
       title="Complete Account Setup"
       subtitle={`MANDATORY ONBOARDING — STEP ${currentStep} OF 2`}>
-
       {/* Progress */}
       <div className="mb-8">
         <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-muted mb-2">
-          <span className={currentStep >= 1 ? 'text-primary font-black' : ''}>1. Secure Password</span>
+          <span className={currentStep >= 1 ? 'text-primary font-black' : ''}>
+            1. Secure Password
+          </span>
           <span className={currentStep >= 2 ? 'text-primary font-black' : ''}>2. Your Profile</span>
         </div>
         <div className="h-1.5 w-full bg-surface-subtle rounded-full overflow-hidden flex gap-1">
@@ -285,7 +301,11 @@ export default function PostLoginOnboarding() {
             <div
               key={s}
               className={`h-full flex-1 rounded-full transition-all duration-500 ${
-                currentStep > s ? 'bg-success' : currentStep === s ? 'bg-primary' : 'bg-border-subtle/40'
+                currentStep > s
+                  ? 'bg-success'
+                  : currentStep === s
+                    ? 'bg-primary'
+                    : 'bg-border-subtle/40'
               }`}
             />
           ))}
@@ -299,7 +319,9 @@ export default function PostLoginOnboarding() {
         </div>
         <div>
           <div className="text-xs font-black text-foreground">{user?.email}</div>
-          <div className="text-[10px] text-warning font-semibold uppercase tracking-wider">Onboarding Required</div>
+          <div className="text-[10px] text-warning font-semibold uppercase tracking-wider">
+            Onboarding Required
+          </div>
         </div>
       </div>
 
@@ -318,7 +340,8 @@ export default function PostLoginOnboarding() {
                 Change Your Temporary Password
               </h3>
               <p className="text-xs text-muted">
-                Your account was created with a single-use temporary password. Set a strong permanent password to continue.
+                Your account was created with a single-use temporary password. Set a strong
+                permanent password to continue.
               </p>
             </div>
 
@@ -366,7 +389,9 @@ export default function PostLoginOnboarding() {
             {newPassword.length > 0 && (
               <div className="flex flex-col gap-1.5 -mt-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[10px] font-extrabold uppercase text-muted tracking-wider">Strength:</span>
+                  <span className="text-[10px] font-extrabold uppercase text-muted tracking-wider">
+                    Strength:
+                  </span>
                   <span
                     className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
                       strengthScore <= 2
@@ -384,7 +409,11 @@ export default function PostLoginOnboarding() {
                       key={s}
                       className={`h-full flex-1 rounded-full transition-all duration-300 ${
                         s <= strengthScore
-                          ? strengthScore <= 2 ? 'bg-error' : strengthScore <= 4 ? 'bg-warning' : 'bg-success'
+                          ? strengthScore <= 2
+                            ? 'bg-error'
+                            : strengthScore <= 4
+                              ? 'bg-warning'
+                              : 'bg-success'
                           : 'bg-border-subtle/50'
                       }`}
                     />
@@ -429,7 +458,9 @@ export default function PostLoginOnboarding() {
                 ].map(({ key, label }) => {
                   const ok = passwordChecks[key as keyof typeof passwordChecks];
                   return (
-                    <div key={key} className={`flex items-center gap-1.5 ${ok ? 'text-success font-semibold' : 'text-muted'}`}>
+                    <div
+                      key={key}
+                      className={`flex items-center gap-1.5 ${ok ? 'text-success font-semibold' : 'text-muted'}`}>
                       {ok ? <Check size={12} /> : <X size={12} />}
                       <span>{label}</span>
                     </div>
@@ -474,7 +505,8 @@ export default function PostLoginOnboarding() {
                 Complete Your Profile
               </h3>
               <p className="text-xs text-muted">
-                Fill in your details to activate your account. You can update these later in your profile settings.
+                Fill in your details to activate your account. You can update these later in your
+                profile settings.
               </p>
             </div>
 
