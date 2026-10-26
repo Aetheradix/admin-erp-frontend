@@ -41,12 +41,14 @@ interface InvoiceTemplateProps {
 }
 
 const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invoice }, ref) => {
-  const subTotal = invoice.items.reduce(
+  const items = Array.isArray(invoice?.items) ? invoice.items : [];
+
+  const subTotal = items.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
     0
   );
 
-  const gstAmount = (subTotal * Number(invoice.gstRate || 0)) / 100;
+  const gstAmount = (subTotal * Number(invoice?.gstRate || 0)) / 100;
 
   const total = subTotal + gstAmount;
 
@@ -347,7 +349,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           </thead>
 
           <tbody>
-            {invoice.items.map((item, index) => {
+            {items.map((item, index) => {
               const amount = Number(item.quantity || 0) * Number(item.rate || 0);
 
               return (
@@ -390,7 +392,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
               );
             })}
 
-            {invoice.items.length === 0 && (
+            {items.length === 0 && (
               <tr>
                 <td
                   colSpan={4}
