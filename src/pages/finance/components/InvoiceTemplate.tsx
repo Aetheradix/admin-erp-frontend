@@ -97,6 +97,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
       }}>
       <div
         ref={ref}
+        data-invoice-template="true"
         style={{
           position: 'relative',
           width: '794px',
