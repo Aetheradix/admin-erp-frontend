@@ -16,8 +16,7 @@ export default function HiringTeamModule() {
             Loading hiring team module...
           </span>
         </div>
-      }
-    >
+      }>
       <Routes>
         <Route path="/" element={<HiringTeamDashboard />} />
         <Route path="/form-builder" element={<FormBuilderPage />} />

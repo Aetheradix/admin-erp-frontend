@@ -96,21 +96,41 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
             setFormData((prev) => ({
               ...prev,
               totalCompensation: comp.ctcAnnual || comp.ctc_annual || prev.totalCompensation,
-              taxRegime: comp.taxRegime === 'old' || comp.tax_regime === 'old' ? 'Old Regime' : 'New Regime',
+              taxRegime:
+                comp.taxRegime === 'old' || comp.tax_regime === 'old' ? 'Old Regime' : 'New Regime',
               payFrequency: comp.payFrequency || comp.pay_frequency || prev.payFrequency,
-              isMidYearJoiner: Boolean(comp.isMidYearJoiner ?? comp.is_mid_year_joiner ?? prev.isMidYearJoiner),
+              isMidYearJoiner: Boolean(
+                comp.isMidYearJoiner ?? comp.is_mid_year_joiner ?? prev.isMidYearJoiner
+              ),
               effectiveDate: comp.effectiveDate || comp.effective_date || prev.effectiveDate,
               previousEmployerStandardDeduction:
-                comp.previousEmployerStandardDeduction ?? comp.previous_employer_standard_deduction ?? prev.previousEmployerStandardDeduction,
+                comp.previousEmployerStandardDeduction ??
+                comp.previous_employer_standard_deduction ??
+                prev.previousEmployerStandardDeduction,
               section80c: comp.section80c ?? comp.section_80c ?? prev.section80c,
               section80d: comp.section80d ?? comp.section_80d ?? prev.section80d,
               hraExemption: comp.hraExemption ?? comp.hra_exemption ?? prev.hraExemption,
               previousEmployerYtd: {
-                grossPay: comp.previousEmployerGross ?? comp.previous_employer_gross ?? prev.previousEmployerYtd?.grossPay ?? 0,
-                tdsDeducted: comp.previousEmployerTds ?? comp.previous_employer_tds ?? prev.previousEmployerYtd?.tdsDeducted ?? 0,
-                pfDeducted: comp.previousEmployerPf ?? comp.previous_employer_pf ?? prev.previousEmployerYtd?.pfDeducted ?? 0,
+                grossPay:
+                  comp.previousEmployerGross ??
+                  comp.previous_employer_gross ??
+                  prev.previousEmployerYtd?.grossPay ??
+                  0,
+                tdsDeducted:
+                  comp.previousEmployerTds ??
+                  comp.previous_employer_tds ??
+                  prev.previousEmployerYtd?.tdsDeducted ??
+                  0,
+                pfDeducted:
+                  comp.previousEmployerPf ??
+                  comp.previous_employer_pf ??
+                  prev.previousEmployerYtd?.pfDeducted ??
+                  0,
                 ptDeducted: prev.previousEmployerYtd?.ptDeducted ?? 0,
-                standardDeduction: comp.previousEmployerStandardDeduction ?? comp.previous_employer_standard_deduction ?? 0,
+                standardDeduction:
+                  comp.previousEmployerStandardDeduction ??
+                  comp.previous_employer_standard_deduction ??
+                  0,
               },
             }));
           }
@@ -134,24 +154,36 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
             initialData.annual_ctc ||
             prev.totalCompensation ||
             '',
-          taxRegime: (initialData.taxRegime || initialData.tax_regime || prev.taxRegime || 'New Regime') as any,
-          payFrequency: initialData.payFrequency || initialData.pay_frequency || prev.payFrequency || 'monthly',
-          isMidYearJoiner: Boolean(initialData.isMidYearJoiner ?? initialData.is_mid_year_joiner ?? prev.isMidYearJoiner),
+          taxRegime: (initialData.taxRegime ||
+            initialData.tax_regime ||
+            prev.taxRegime ||
+            'New Regime') as any,
+          payFrequency:
+            initialData.payFrequency || initialData.pay_frequency || prev.payFrequency || 'monthly',
+          isMidYearJoiner: Boolean(
+            initialData.isMidYearJoiner ?? initialData.is_mid_year_joiner ?? prev.isMidYearJoiner
+          ),
           panNumber: initialData.panNumber || initialData.pan_number || prev.panNumber || '',
-          effectiveDate: initialData.effectiveDate || initialData.effective_date || prev.effectiveDate,
+          effectiveDate:
+            initialData.effectiveDate || initialData.effective_date || prev.effectiveDate,
           previousEmployerStandardDeduction:
-            initialData.previousEmployerStandardDeduction ?? initialData.previous_employer_standard_deduction ?? prev.previousEmployerStandardDeduction ?? 0,
-          section80c: initialData.section80c ?? initialData.section_80c ?? prev.section80c ?? 150000,
+            initialData.previousEmployerStandardDeduction ??
+            initialData.previous_employer_standard_deduction ??
+            prev.previousEmployerStandardDeduction ??
+            0,
+          section80c:
+            initialData.section80c ?? initialData.section_80c ?? prev.section80c ?? 150000,
           section80d: initialData.section80d ?? initialData.section_80d ?? prev.section80d ?? 25000,
-          hraExemption: initialData.hraExemption ?? initialData.hra_exemption ?? prev.hraExemption ?? 0,
+          hraExemption:
+            initialData.hraExemption ?? initialData.hra_exemption ?? prev.hraExemption ?? 0,
           previousEmployerYtd: initialData.previousEmployerYtd ||
             initialData.previous_employer_ytd || {
-            grossPay: 0,
-            tdsDeducted: 0,
-            pfDeducted: 0,
-            ptDeducted: 0,
-            standardDeduction: 0,
-          },
+              grossPay: 0,
+              tdsDeducted: 0,
+              pfDeducted: 0,
+              ptDeducted: 0,
+              standardDeduction: 0,
+            },
         }));
         setSkillsString(initialData.skills ? initialData.skills.join(', ') : '');
       });
@@ -302,7 +334,10 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                 id="staff-effective-date"
                 value={formData.effectiveDate ? new Date(formData.effectiveDate) : null}
                 onChange={(e) =>
-                  setFormData({ ...formData, effectiveDate: e.value?.toISOString().split('T')[0] || '' })
+                  setFormData({
+                    ...formData,
+                    effectiveDate: e.value?.toISOString().split('T')[0] || '',
+                  })
                 }
                 placeholder="Select effective date"
                 dateFormat="yy-mm-dd"
@@ -335,7 +370,8 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
               Total Compensation & Tax Setup
             </h3>
             <p className="text-xs text-muted-foreground">
-              Stored upon hire. Used as ground-truth for monthly payroll and slab-based statutory tax calculations.
+              Stored upon hire. Used as ground-truth for monthly payroll and slab-based statutory
+              tax calculations.
             </p>
           </div>
         </div>
@@ -346,7 +382,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
             <FormField label="Total Annual Compensation (CTC ₹)" id="staff-ctc">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3 top-3 text-muted-foreground text-sm font-bold">₹</span>
+                  <span className="absolute left-3 top-3 text-muted-foreground text-sm font-bold">
+                    ₹
+                  </span>
                   <Input
                     id="staff-ctc"
                     type="number"
@@ -356,7 +394,7 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                       setFormData({
                         ...formData,
                         totalCompensation: val,
-                        base_salary: val ? Math.round(Number(val) * 0.4 / 12) : '',
+                        base_salary: val ? Math.round((Number(val) * 0.4) / 12) : '',
                       });
                     }}
                     className="pl-8!"
@@ -375,7 +413,8 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
 
               {Boolean(formData.totalCompensation) && (
                 <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                  ≈ ₹{Math.round(Number(formData.totalCompensation) / 12).toLocaleString('en-IN')}/mo gross
+                  ≈ ₹{Math.round(Number(formData.totalCompensation) / 12).toLocaleString('en-IN')}
+                  /mo gross
                 </p>
               )}
             </FormField>
@@ -385,7 +424,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
             <Input
               id="staff-pan"
               value={formData.panNumber || ''}
-              onChange={(e) => setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })}
+              onChange={(e) =>
+                setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })
+              }
               placeholder="e.g. ABCDE1234F"
               maxLength={10}
             />
@@ -421,42 +462,78 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div className="p-2 bg-background rounded-lg border border-border-subtle">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Basic Salary (40%)</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                  Basic Salary (40%)
+                </span>
                 <span className="font-mono font-bold text-foreground">
-                  ₹{Number(calculatedPreview?.components?.basicSalary?.annual || 0).toLocaleString('en-IN')}
+                  ₹
+                  {Number(calculatedPreview?.components?.basicSalary?.annual || 0).toLocaleString(
+                    'en-IN'
+                  )}
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
-                  ₹{Number(calculatedPreview?.components?.basicSalary?.monthly || 0).toLocaleString('en-IN')}/mo
+                  ₹
+                  {Number(calculatedPreview?.components?.basicSalary?.monthly || 0).toLocaleString(
+                    'en-IN'
+                  )}
+                  /mo
                 </span>
               </div>
 
               <div className="p-2 bg-background rounded-lg border border-border-subtle">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">HRA (50% Basic)</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                  HRA (50% Basic)
+                </span>
                 <span className="font-mono font-bold text-foreground">
-                  ₹{Number(calculatedPreview?.components?.houseRentAllowance?.annual || 0).toLocaleString('en-IN')}
+                  ₹
+                  {Number(
+                    calculatedPreview?.components?.houseRentAllowance?.annual || 0
+                  ).toLocaleString('en-IN')}
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
-                  ₹{Number(calculatedPreview?.components?.houseRentAllowance?.monthly || 0).toLocaleString('en-IN')}/mo
+                  ₹
+                  {Number(
+                    calculatedPreview?.components?.houseRentAllowance?.monthly || 0
+                  ).toLocaleString('en-IN')}
+                  /mo
                 </span>
               </div>
 
               <div className="p-2 bg-background rounded-lg border border-border-subtle">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Employer PF (12%)</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                  Employer PF (12%)
+                </span>
                 <span className="font-mono font-bold text-foreground">
-                  ₹{Number(calculatedPreview?.employerContributions?.employerPf?.annual || 0).toLocaleString('en-IN')}
+                  ₹
+                  {Number(
+                    calculatedPreview?.employerContributions?.employerPf?.annual || 0
+                  ).toLocaleString('en-IN')}
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
-                  ₹{Number(calculatedPreview?.employerContributions?.employerPf?.monthly || 0).toLocaleString('en-IN')}/mo
+                  ₹
+                  {Number(
+                    calculatedPreview?.employerContributions?.employerPf?.monthly || 0
+                  ).toLocaleString('en-IN')}
+                  /mo
                 </span>
               </div>
 
               <div className="p-2 bg-background rounded-lg border border-border-subtle">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Special Allowance</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                  Special Allowance
+                </span>
                 <span className="font-mono font-bold text-foreground">
-                  ₹{Number(calculatedPreview?.components?.specialAllowance?.annual || 0).toLocaleString('en-IN')}
+                  ₹
+                  {Number(
+                    calculatedPreview?.components?.specialAllowance?.annual || 0
+                  ).toLocaleString('en-IN')}
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
-                  ₹{Number(calculatedPreview?.components?.specialAllowance?.monthly || 0).toLocaleString('en-IN')}/mo
+                  ₹
+                  {Number(
+                    calculatedPreview?.components?.specialAllowance?.monthly || 0
+                  ).toLocaleString('en-IN')}
+                  /mo
                 </span>
               </div>
             </div>
@@ -476,10 +553,16 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                     : 'border-border-subtle bg-background hover:bg-surface-subtle'
                 }`}>
                 <div>
-                  <span className="text-xs font-bold text-foreground block">New Regime (Default)</span>
-                  <span className="text-[11px] text-muted-foreground">Zero tax up to ₹12 Lakh, standard ₹75,000</span>
+                  <span className="text-xs font-bold text-foreground block">
+                    New Regime (Default)
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Zero tax up to ₹12 Lakh, standard ₹75,000
+                  </span>
                 </div>
-                {formData.taxRegime === 'New Regime' && <ShieldCheck size={18} className="text-primary" />}
+                {formData.taxRegime === 'New Regime' && (
+                  <ShieldCheck size={18} className="text-primary" />
+                )}
               </button>
 
               <button
@@ -492,9 +575,13 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                 }`}>
                 <div>
                   <span className="text-xs font-bold text-foreground block">Old Regime</span>
-                  <span className="text-[11px] text-muted-foreground">Section 80C, 80D, HRA declarations</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Section 80C, 80D, HRA declarations
+                  </span>
                 </div>
-                {formData.taxRegime === 'Old Regime' && <ShieldCheck size={18} className="text-primary" />}
+                {formData.taxRegime === 'Old Regime' && (
+                  <ShieldCheck size={18} className="text-primary" />
+                )}
               </button>
             </div>
           </FormField>
@@ -524,7 +611,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                   }
                   placeholder="150000"
                 />
-                <span className="text-[10px] text-muted-foreground mt-0.5 block">LIC, PPF, ELSS, EPF</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                  LIC, PPF, ELSS, EPF
+                </span>
               </div>
 
               <div>
@@ -542,7 +631,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                   }
                   placeholder="25000"
                 />
-                <span className="text-[10px] text-muted-foreground mt-0.5 block">Medical insurance premium</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                  Medical insurance premium
+                </span>
               </div>
 
               <div>
@@ -560,7 +651,9 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                   }
                   placeholder="0"
                 />
-                <span className="text-[10px] text-muted-foreground mt-0.5 block">Rent receipts exemption</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                  Rent receipts exemption
+                </span>
               </div>
             </div>
           </div>
@@ -574,9 +667,7 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
                 type="checkbox"
                 id="mid-year-toggle"
                 checked={Boolean(formData.isMidYearJoiner)}
-                onChange={(e) =>
-                  setFormData({ ...formData, isMidYearJoiner: e.target.checked })
-                }
+                onChange={(e) => setFormData({ ...formData, isMidYearJoiner: e.target.checked })}
                 className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
               />
               <label
@@ -597,7 +688,8 @@ export const StaffForm = ({ initialData, onSubmit, onCancel }: StaffFormProps) =
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 font-medium">
                 <Info size={14} className="text-primary shrink-0" />
                 <span>
-                  Previous employer YTD data ensures accurate progressive slab calculation and gives the employee full credit for taxes already deducted.
+                  Previous employer YTD data ensures accurate progressive slab calculation and gives
+                  the employee full credit for taxes already deducted.
                 </span>
               </div>
 

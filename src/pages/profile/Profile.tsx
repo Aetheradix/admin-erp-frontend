@@ -67,11 +67,12 @@ const Profile = () => {
   }, [myProfileRes, user?.id, user?.email, profileRefresh]);
 
   const effectiveUser = useMemo(() => {
-    let id = (empProfile?.employeeId && empProfile.employeeId !== 'N/A' && empProfile.employeeId !== 'NA')
-      ? empProfile.employeeId
-      : (user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA')
-        ? user.employeeId
-        : null;
+    let id =
+      empProfile?.employeeId && empProfile.employeeId !== 'N/A' && empProfile.employeeId !== 'NA'
+        ? empProfile.employeeId
+        : user.employeeId && user.employeeId !== 'N/A' && user.employeeId !== 'NA'
+          ? user.employeeId
+          : null;
 
     // Last resort: check staff list directly
     if (!id) {
@@ -79,9 +80,10 @@ const Profile = () => {
         const staffStr = localStorage.getItem('aether_staff_list');
         if (staffStr) {
           const list = JSON.parse(staffStr);
-          const found = list.find((s: any) =>
-            (user.email && s.email?.toLowerCase() === user.email.toLowerCase()) ||
-            (user.id && String(s.id) === String(user.id))
+          const found = list.find(
+            (s: any) =>
+              (user.email && s.email?.toLowerCase() === user.email.toLowerCase()) ||
+              (user.id && String(s.id) === String(user.id))
           );
           if (found && (found.employee_code || found.employee_id || found.employeeId)) {
             id = found.employee_code || found.employee_id || found.employeeId;
@@ -93,7 +95,11 @@ const Profile = () => {
     return {
       ...user,
       employeeId: id || 'N/A',
-      address: user.address || empProfile?.personal?.currentAddress || empProfile?.personal?.permanentAddress || '',
+      address:
+        user.address ||
+        empProfile?.personal?.currentAddress ||
+        empProfile?.personal?.permanentAddress ||
+        '',
       contactNo: user.contactNo || empProfile?.personal?.contactNumber || '',
     };
   }, [user, empProfile]);
@@ -142,13 +148,14 @@ const Profile = () => {
                   empProfile?.status === 'id_assigned' || empProfile?.status === 'approved'
                     ? 'bg-success/10 text-success border-success/20'
                     : empProfile?.status === 'submitted'
-                    ? 'bg-info/10 text-info border-info/20'
-                    : empProfile?.status === 'changes_required'
-                    ? 'bg-warning/10 text-warning border-warning/20'
-                    : 'bg-primary/10 text-primary border-primary/20'
-                }`}
-              >
-                {empProfile?.status ? empProfile.status.replace('_', ' ').toUpperCase() : 'INCOMPLETE'}
+                      ? 'bg-info/10 text-info border-info/20'
+                      : empProfile?.status === 'changes_required'
+                        ? 'bg-warning/10 text-warning border-warning/20'
+                        : 'bg-primary/10 text-primary border-primary/20'
+                }`}>
+                {empProfile?.status
+                  ? empProfile.status.replace('_', ' ').toUpperCase()
+                  : 'INCOMPLETE'}
               </span>
               {empProfile?.employeeId && (
                 <span className="text-[11px] font-mono font-bold text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/15 flex items-center gap-1">
@@ -182,8 +189,7 @@ const Profile = () => {
 
           <Link
             to="/profile-completion"
-            className="px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs transition-all flex items-center gap-2 shrink-0"
-          >
+            className="px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs transition-all flex items-center gap-2 shrink-0">
             <span>{completionPct === 100 ? 'View Details' : 'Complete Profile'}</span>
             <ChevronRight size={14} />
           </Link>

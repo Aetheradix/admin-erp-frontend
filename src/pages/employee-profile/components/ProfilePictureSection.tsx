@@ -1,5 +1,14 @@
 import { useState, useRef } from 'react';
-import { Camera, Upload, Trash2, CheckCircle2, AlertCircle, RefreshCw, User, Save } from 'lucide-react';
+import {
+  Camera,
+  Upload,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  User,
+  Save,
+} from 'lucide-react';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useUploadProfilePictureMutation } from '@/store/api/employeeProfileApiSlice';
 import type { ProfileCompletionData } from '@/services/employeeProfileService';
@@ -18,7 +27,8 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [uploadProfilePictureApi, { isLoading: isUploadingApi }] = useUploadProfilePictureMutation();
+  const [uploadProfilePictureApi, { isLoading: isUploadingApi }] =
+    useUploadProfilePictureMutation();
   const [isProcessingLocal, setIsProcessingLocal] = useState(false);
 
   const isLoading = isUploadingApi || isProcessingLocal;
@@ -126,7 +136,9 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
         </div>
         <div>
           <h3 className="text-base font-black text-foreground">Profile Picture</h3>
-          <p className="text-xs text-muted">Upload a professional headshot for your organization identity</p>
+          <p className="text-xs text-muted">
+            Upload a professional headshot for your organization identity
+          </p>
         </div>
       </div>
 
@@ -136,15 +148,10 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
         <div
           className="relative group shrink-0"
           onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
+          onMouseLeave={() => setIsHovered(false)}>
           <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-xl bg-surface-subtle flex items-center justify-center relative">
             {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Profile Preview"
-                className="w-full h-full object-cover"
-              />
+              <img src={previewUrl} alt="Profile Preview" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-primary/10 flex flex-col items-center justify-center text-primary">
                 <User size={48} className="stroke-[1.5]" />
@@ -157,8 +164,7 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
                 onClick={() => !isLoading && fileInputRef.current?.click()}
                 className={`absolute inset-0 bg-black/50 backdrop-blur-xs flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-200 ${
                   isHovered || isLoading ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
+                }`}>
                 {isLoading ? (
                   <RefreshCw size={24} className="animate-spin text-white" />
                 ) : (
@@ -176,8 +182,7 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
               type="button"
               onClick={handleRemove}
               className="absolute -top-1 -right-1 p-1.5 rounded-full bg-error text-white shadow-md hover:bg-error/90 transition-colors"
-              title="Remove photo"
-            >
+              title="Remove photo">
               <Trash2 size={14} />
             </button>
           )}
@@ -201,8 +206,7 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
                 type="button"
                 disabled={isLoading}
                 onClick={() => fileInputRef.current?.click()}
-                className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
-              >
+                className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
                 {isLoading ? (
                   <RefreshCw size={14} className="animate-spin" />
                 ) : (
@@ -216,8 +220,7 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
                   type="button"
                   onClick={handleRemove}
                   disabled={isLoading}
-                  className="px-4 py-2.5 rounded-xl border border-border-subtle bg-white text-error hover:bg-error/5 text-xs font-bold transition-all flex items-center gap-1.5"
-                >
+                  className="px-4 py-2.5 rounded-xl border border-border-subtle bg-white text-error hover:bg-error/5 text-xs font-bold transition-all flex items-center gap-1.5">
                   <Trash2 size={13} />
                   Remove
                 </button>
@@ -246,8 +249,7 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
             isDragging
               ? 'border-primary bg-primary/5 scale-[1.01]'
               : 'border-border-subtle hover:border-primary/40 bg-surface-subtle/50'
-          }`}
-        >
+          }`}>
           <div className="flex flex-col items-center justify-center gap-2">
             <div className="w-10 h-10 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center justify-center text-muted">
               <Upload size={18} />
@@ -287,8 +289,7 @@ export function ProfilePictureSection({ profile, onSave, onContinue, readOnly }:
           <button
             type="button"
             onClick={() => onContinue && onContinue()}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all"
-          >
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">
             <Save size={16} />
             Save & Continue
           </button>

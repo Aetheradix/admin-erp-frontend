@@ -12,7 +12,8 @@ if (!content.includes("import { useAuth } from '@/hooks/useAuth';")) {
 }
 
 // 2. Update buildJourney signature and implementation
-const oldBuildJourneyRegex = /function buildJourney\([\s\S]*?return \[\s*\{\s*label: 'Invitation Dispatched',[\s\S]*?logEntry: inviteSentLog,\s*\},/;
+const oldBuildJourneyRegex =
+  /function buildJourney\([\s\S]*?return \[\s*\{\s*label: 'Invitation Dispatched',[\s\S]*?logEntry: inviteSentLog,\s*\},/;
 const newBuildJourneyStart = `function buildJourney(
   invitation: InvitationRecord,
   logs: AuditLogEntry[],
@@ -86,7 +87,8 @@ const newBuildJourneyStart = `function buildJourney(
 content = content.replace(oldBuildJourneyRegex, newBuildJourneyStart);
 
 // 3. Update JourneyCard to use useAuth dynamically
-const oldJourneyCardRegex = /function JourneyCard\(\{ invitation, logs \}: \{ invitation: InvitationRecord; logs: AuditLogEntry\[\] \}\) \{[\s\S]*?const steps = buildJourney\(invitation, logs\);[\s\S]*?const doneCount = steps\.filter\(\(s\) => s\.status === 'done'\)\.length;/;
+const oldJourneyCardRegex =
+  /function JourneyCard\(\{ invitation, logs \}: \{ invitation: InvitationRecord; logs: AuditLogEntry\[\] \}\) \{[\s\S]*?const steps = buildJourney\(invitation, logs\);[\s\S]*?const doneCount = steps\.filter\(\(s\) => s\.status === 'done'\)\.length;/;
 const newJourneyCardStart = `function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs: AuditLogEntry[] }) {
   const { user: currentAuthUser } = useAuth();
   const [expanded, setExpanded] = useState(false);
@@ -139,7 +141,8 @@ if (!content.includes('const activeAdminName =')) {
 }
 
 // 6. Update getActorRole to remove hardcoded Sarah
-const oldGetActorRoleRegex = /const getActorRole = \(record: AuditLogEntry\): string => \{[\s\S]*?return 'Staff';\s*\};/;
+const oldGetActorRoleRegex =
+  /const getActorRole = \(record: AuditLogEntry\): string => \{[\s\S]*?return 'Staff';\s*\};/;
 const newGetActorRole = `const getActorRole = (record: AuditLogEntry): string => {
     if (record.userRole) return record.userRole;
     if (
@@ -166,7 +169,8 @@ const newGetActorRole = `const getActorRole = (record: AuditLogEntry): string =>
 content = content.replace(oldGetActorRoleRegex, newGetActorRole);
 
 // 7. Update Actor column rendering
-const oldActorColumnRegex = /title: 'Actor \(Admin \/ Initiator\)',[\s\S]*?key: 'actor',[\s\S]*?render: \(_, record\) => \{[\s\S]*?return \([\s\S]*?<span className="text-\[10px\] text-muted font-mono">\{displayEmail\}<\/span>[\s\S]*?\);\s*\},/;
+const oldActorColumnRegex =
+  /title: 'Actor \(Admin \/ Initiator\)',[\s\S]*?key: 'actor',[\s\S]*?render: \(_, record\) => \{[\s\S]*?return \([\s\S]*?<span className="text-\[10px\] text-muted font-mono">\{displayEmail\}<\/span>[\s\S]*?\);\s*\},/;
 const newActorColumn = `title: 'Actor (Admin / Initiator)',
       key: 'actor',
       render: (_, record) => {
@@ -228,7 +232,8 @@ const newActorColumn = `title: 'Actor (Admin / Initiator)',
 content = content.replace(oldActorColumnRegex, newActorColumn);
 
 // 8. Update Target column rendering
-const oldTargetColumnRegex = /title: 'Target \(Invitee \/ Entity\)',[\s\S]*?key: 'target',[\s\S]*?render: \(_, record\) => \{[\s\S]*?<strong className="text-foreground">\{adminName\}<\/strong>[\s\S]*?\);\s*\},/;
+const oldTargetColumnRegex =
+  /title: 'Target \(Invitee \/ Entity\)',[\s\S]*?key: 'target',[\s\S]*?render: \(_, record\) => \{[\s\S]*?<strong className="text-foreground">\{adminName\}<\/strong>[\s\S]*?\);\s*\},/;
 const newTargetColumn = `title: 'Target (Invitee / Entity)',
       key: 'target',
       render: (_, record) => {
@@ -275,7 +280,8 @@ const newTargetColumn = `title: 'Target (Invitee / Entity)',
 content = content.replace(oldTargetColumnRegex, newTargetColumn);
 
 // 9. Update Modal Admin attribution
-const oldModalAttributionRegex = /\{\(\(\) => \{[\s\S]*?const inv = getMatchingInvitation\(selectedLog\);[\s\S]*?Admin \/ Initiator[\s\S]*?<\/div>\s*\)\(\)\}/;
+const oldModalAttributionRegex =
+  /\{\(\(\) => \{[\s\S]*?const inv = getMatchingInvitation\(selectedLog\);[\s\S]*?Admin \/ Initiator[\s\S]*?<\/div>\s*\)\(\)\}/;
 const newModalAttribution = `{((): any => {
               const inv = getMatchingInvitation(selectedLog);
               const actorRole = getActorRole(selectedLog);

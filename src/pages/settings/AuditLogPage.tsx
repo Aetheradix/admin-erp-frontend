@@ -1,10 +1,7 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import type { AuditLogEntry, InvitationRecord } from '@/services/auditService';
-import {
-  useGetSystemAuditLogsQuery,
-  useGetSystemInvitationsQuery,
-} from '@/store/api/authApiSlice';
+import { useGetSystemAuditLogsQuery, useGetSystemInvitationsQuery } from '@/store/api/authApiSlice';
 import { Modal, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { motion } from 'framer-motion';
@@ -23,7 +20,7 @@ import {
   Terminal,
   User,
   UserPlus,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -99,7 +96,8 @@ function buildJourney(
   const onboardingCompleteLog = logs.find(
     (l) =>
       l.category === 'invitation' &&
-      (l.action.toLowerCase().includes('onboarding') || l.action.toLowerCase().includes('completed')) &&
+      (l.action.toLowerCase().includes('onboarding') ||
+        l.action.toLowerCase().includes('completed')) &&
       (l.userEmail?.toLowerCase() === email || l.targetEmail?.toLowerCase() === email)
   );
 
@@ -168,7 +166,13 @@ const invStatusBadge: Record<string, string> = {
   revoked: 'bg-error/10 text-error border border-error/20',
 };
 
-function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs: AuditLogEntry[] }) {
+function JourneyCard({
+  invitation,
+  logs,
+}: {
+  invitation: InvitationRecord;
+  logs: AuditLogEntry[];
+}) {
   const { user: currentAuthUser } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const steps = buildJourney(invitation, logs, currentAuthUser);
@@ -214,18 +218,25 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-sm font-black text-foreground truncate">{invitation.name || invitation.email}</span>
+            <span className="text-sm font-black text-foreground truncate">
+              {invitation.name || invitation.email}
+            </span>
             <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               Role: {invitation.role}
             </span>
-            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${invStatusBadge[invitation.status]}`}>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${invStatusBadge[invitation.status]}`}>
               {invitation.status}
             </span>
           </div>
-          <div className="text-[11px] text-muted truncate font-mono">{invitation.email} · {invitation.department}</div>
+          <div className="text-[11px] text-muted truncate font-mono">
+            {invitation.email} · {invitation.department}
+          </div>
           <div className="text-[11px] text-muted mt-1.5 flex items-center gap-2 flex-wrap">
             <span className="flex items-center gap-1.5 bg-surface-subtle px-2.5 py-1 rounded-lg border border-border-subtle">
-              <span className="text-muted text-[10px] font-bold uppercase tracking-wider">Invited by:</span>
+              <span className="text-muted text-[10px] font-bold uppercase tracking-wider">
+                Invited by:
+              </span>
               <strong className="text-foreground font-bold">{adminName}</strong>
               <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
                 {adminRole}
@@ -233,7 +244,11 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
               <span className="text-[10px] text-muted font-mono">({adminEmail})</span>
             </span>
             <span className="text-[10px] text-muted">
-              {new Date(invitation.invitedAt).toLocaleDateString()} at {new Date(invitation.invitedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(invitation.invitedAt).toLocaleDateString()} at{' '}
+              {new Date(invitation.invitedAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </span>
           </div>
         </div>
@@ -242,9 +257,20 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
         <div className="shrink-0 flex flex-col items-center gap-1">
           <div className="relative w-12 h-12">
             <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-              <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3" className="text-border-subtle/40" />
               <circle
-                cx="18" cy="18" r="15.5" fill="none"
+                cx="18"
+                cy="18"
+                r="15.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                className="text-border-subtle/40"
+              />
+              <circle
+                cx="18"
+                cy="18"
+                r="15.5"
+                fill="none"
                 stroke={progress === 100 ? '#22c55e' : '#6366f1'}
                 strokeWidth="3"
                 strokeDasharray={`${(progress / 100) * 97.4} 97.4`}
@@ -256,7 +282,9 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
               {progress}%
             </span>
           </div>
-          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">{doneCount}/{steps.length}</span>
+          <span className="text-[9px] font-bold text-muted uppercase tracking-wider">
+            {doneCount}/{steps.length}
+          </span>
         </div>
 
         {/* Expand caret */}
@@ -287,12 +315,23 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
               // const Icon = step.icon;
               const isLast = idx === steps.length - 1;
               return (
-                <div key={idx} className={`relative flex items-start gap-4 ${isLast ? '' : 'mb-5'}`}>
+                <div
+                  key={idx}
+                  className={`relative flex items-start gap-4 ${isLast ? '' : 'mb-5'}`}>
                   {/* Step dot */}
                   <div
                     className={`absolute -left-[9px] w-4 h-4 rounded-full flex items-center justify-center shrink-0 z-10 ${stepStatusStyle[step.status]}`}>
                     {step.status === 'done' ? (
-                      <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 fill-white"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 fill-white">
+                        <path
+                          d="M2 6l3 3 5-5"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     ) : step.status === 'failed' ? (
                       <span className="text-[8px] font-black">✕</span>
                     ) : (
@@ -303,17 +342,24 @@ function JourneyCard({ invitation, logs }: { invitation: InvitationRecord; logs:
                   {/* Content */}
                   <div className="flex-1 ml-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold ${step.status === 'done' ? 'text-foreground' : step.status === 'failed' ? 'text-error' : 'text-muted'}`}>
+                      <span
+                        className={`text-xs font-bold ${step.status === 'done' ? 'text-foreground' : step.status === 'failed' ? 'text-error' : 'text-muted'}`}>
                         {step.label}
                       </span>
                       {step.status === 'done' && (
-                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-success/10 text-success">done</span>
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-success/10 text-success">
+                          done
+                        </span>
                       )}
                       {step.status === 'pending' && (
-                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-muted/10 text-muted">pending</span>
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-muted/10 text-muted">
+                          pending
+                        </span>
                       )}
                       {step.status === 'failed' && (
-                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-error/10 text-error">blocked</span>
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-error/10 text-error">
+                          blocked
+                        </span>
                       )}
                     </div>
                     <p className="text-[11px] text-muted mt-0.5">{step.description}</p>
@@ -473,23 +519,23 @@ export function AuditLogPage() {
         const displayName = isSelf
           ? activeAdminName
           : isAdminAction &&
-            inv?.invitedBy?.name &&
-            inv.invitedBy.name !== 'Sarah Chen' &&
-            inv.invitedBy.name !== 'Admin'
-          ? inv.invitedBy.name
-          : record.user === 'Sarah Chen' || record.user === 'Admin'
-          ? activeAdminName
-          : record.user;
+              inv?.invitedBy?.name &&
+              inv.invitedBy.name !== 'Sarah Chen' &&
+              inv.invitedBy.name !== 'Admin'
+            ? inv.invitedBy.name
+            : record.user === 'Sarah Chen' || record.user === 'Admin'
+              ? activeAdminName
+              : record.user;
         const displayEmail = isSelf
           ? activeAdminEmail
           : isAdminAction &&
-            inv?.invitedBy?.email &&
-            !inv.invitedBy.email.includes('sarah') &&
-            !inv.invitedBy.email.includes('admin@')
-          ? inv.invitedBy.email
-          : record.userEmail?.includes('sarah') || record.userEmail === 'admin@aetheradix.com'
-          ? activeAdminEmail
-          : record.userEmail;
+              inv?.invitedBy?.email &&
+              !inv.invitedBy.email.includes('sarah') &&
+              !inv.invitedBy.email.includes('admin@')
+            ? inv.invitedBy.email
+            : record.userEmail?.includes('sarah') || record.userEmail === 'admin@aetheradix.com'
+              ? activeAdminEmail
+              : record.userEmail;
         const displayRole =
           isAdminAction && inv?.invitedBy?.role && inv.invitedBy.role !== 'Admin'
             ? inv.invitedBy.role
@@ -628,14 +674,18 @@ export function AuditLogPage() {
         <div className="flex items-center gap-2 pt-1 shrink-0">
           {/* Live backend sync badge */}
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 text-success text-[10px] font-black uppercase tracking-wider">
-            <span className={`w-1.5 h-1.5 rounded-full bg-success ${isFetchingLogs ? 'animate-ping' : 'animate-pulse'}`} />
+            <span
+              className={`w-1.5 h-1.5 rounded-full bg-success ${isFetchingLogs ? 'animate-ping' : 'animate-pulse'}`}
+            />
             Live DB Sync
           </span>
           <button
-            onClick={() => { refetchLogs(); refetchInvitations(); }}
+            onClick={() => {
+              refetchLogs();
+              refetchInvitations();
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-border-subtle text-muted text-xs font-bold hover:text-foreground hover:border-primary/30 transition-all cursor-pointer"
-            title="Refresh from database"
-          >
+            title="Refresh from database">
             <RefreshCw size={13} className={isFetchingLogs ? 'animate-spin' : ''} />
             Refresh
           </button>
@@ -694,7 +744,9 @@ export function AuditLogPage() {
 
           {activeView === 'stream' && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-muted uppercase tracking-wider mr-1">Status:</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-wider mr-1">
+                Status:
+              </span>
               {['all', 'Success', 'Warning', 'Critical'].map((st) => (
                 <button
                   key={st}
@@ -787,12 +839,35 @@ export function AuditLogPage() {
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: 'Total Invites', value: invitations.length, color: 'text-primary', bg: 'bg-primary/5' },
-              { label: 'Accepted', value: invitations.filter((i) => i.status === 'accepted').length, color: 'text-success', bg: 'bg-success/5' },
-              { label: 'Pending', value: invitations.filter((i) => i.status === 'pending').length, color: 'text-warning', bg: 'bg-warning/5' },
-              { label: 'Expired / Revoked', value: invitations.filter((i) => i.status === 'expired' || i.status === 'revoked').length, color: 'text-error', bg: 'bg-error/5' },
+              {
+                label: 'Total Invites',
+                value: invitations.length,
+                color: 'text-primary',
+                bg: 'bg-primary/5',
+              },
+              {
+                label: 'Accepted',
+                value: invitations.filter((i) => i.status === 'accepted').length,
+                color: 'text-success',
+                bg: 'bg-success/5',
+              },
+              {
+                label: 'Pending',
+                value: invitations.filter((i) => i.status === 'pending').length,
+                color: 'text-warning',
+                bg: 'bg-warning/5',
+              },
+              {
+                label: 'Expired / Revoked',
+                value: invitations.filter((i) => i.status === 'expired' || i.status === 'revoked')
+                  .length,
+                color: 'text-error',
+                bg: 'bg-error/5',
+              },
             ].map((stat) => (
-              <div key={stat.label} className={`${stat.bg} rounded-2xl p-4 border border-border-subtle`}>
+              <div
+                key={stat.label}
+                className={`${stat.bg} rounded-2xl p-4 border border-border-subtle`}>
                 <div className={`text-2xl font-black ${stat.color}`}>{stat.value}</div>
                 <div className="text-xs text-muted font-semibold mt-0.5">{stat.label}</div>
               </div>

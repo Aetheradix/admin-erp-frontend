@@ -101,7 +101,8 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
                 setFormData((prev) => ({
                   ...prev,
                   startDate: newStart,
-                  endDate: prev.endDate && newStart && prev.endDate < newStart ? null : prev.endDate,
+                  endDate:
+                    prev.endDate && newStart && prev.endDate < newStart ? null : prev.endDate,
                 }));
                 setErrorMsg(null);
               }}

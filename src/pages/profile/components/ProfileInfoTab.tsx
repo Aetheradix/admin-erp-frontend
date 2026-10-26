@@ -1,9 +1,29 @@
 import { useState } from 'react';
 import {
-  Mail, Phone, MapPin, Building, Globe, Edit3, Clock, Calendar, BadgeCheck,
-  CreditCard, Shield, GraduationCap, Briefcase, Award, CheckCircle2,
-  ChevronRight, User, HeartHandshake,
-  Hash, Landmark, FileText, Eye, EyeOff, ShieldCheck,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  Globe,
+  Edit3,
+  Clock,
+  Calendar,
+  BadgeCheck,
+  CreditCard,
+  Shield,
+  GraduationCap,
+  Briefcase,
+  Award,
+  CheckCircle2,
+  ChevronRight,
+  User,
+  HeartHandshake,
+  Hash,
+  Landmark,
+  FileText,
+  Eye,
+  EyeOff,
+  ShieldCheck,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/primitives/Button';
@@ -37,16 +57,10 @@ export const ProfileInfoTab = ({
   const certifications = empProfile?.certifications || [];
 
   const effectiveAddress =
-    personal?.currentAddress ||
-    user.address ||
-    personal?.permanentAddress ||
-    'Not specified';
+    personal?.currentAddress || user.address || personal?.permanentAddress || 'Not specified';
 
   const effectivePermanentAddress =
-    personal?.permanentAddress ||
-    personal?.currentAddress ||
-    user.address ||
-    'Not specified';
+    personal?.permanentAddress || personal?.currentAddress || user.address || 'Not specified';
 
   const maskString = (val?: string, visibleChars = 4) => {
     if (!val) return 'Not specified';
@@ -67,16 +81,14 @@ export const ProfileInfoTab = ({
           <div className="flex items-center gap-3">
             <Link
               to="/profile-completion"
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
               <span>Update via Form</span>
               <ChevronRight size={12} />
             </Link>
             {!isEditing && (
               <button
                 onClick={onStartEdit}
-                className="text-xs font-bold text-muted hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
-              >
+                className="text-xs font-bold text-muted hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors">
                 <Edit3 size={12} /> Edit
               </button>
             )}
@@ -102,8 +114,7 @@ export const ProfileInfoTab = ({
             </span>
             <a
               href={`mailto:${user.email}`}
-              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2 truncate"
-            >
+              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2 truncate">
               <Mail size={14} className="text-muted shrink-0" />
               <span className="truncate">{user.email || 'Not specified'}</span>
             </a>
@@ -116,8 +127,7 @@ export const ProfileInfoTab = ({
             </span>
             <a
               href={`tel:${user.contactNo || personal?.contactNumber}`}
-              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
+              className="text-xs font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2">
               <Phone size={14} className="text-muted shrink-0" />
               <span>{user.contactNo || personal?.contactNumber || 'Not specified'}</span>
             </a>
@@ -182,14 +192,15 @@ export const ProfileInfoTab = ({
               </div>
               <div>
                 <span className="text-[10px] text-muted block font-semibold">Relationship</span>
-                <span className="font-bold text-foreground">{personal.emergencyContactRelation || 'Relative'}</span>
+                <span className="font-bold text-foreground">
+                  {personal.emergencyContactRelation || 'Relative'}
+                </span>
               </div>
               <div>
                 <span className="text-[10px] text-muted block font-semibold">Emergency Phone</span>
                 <a
                   href={`tel:${personal.emergencyContactPhone}`}
-                  className="font-bold text-primary hover:underline flex items-center gap-1.5"
-                >
+                  className="font-bold text-primary hover:underline flex items-center gap-1.5">
                   <Phone size={12} />
                   {personal.emergencyContactPhone}
                 </a>
@@ -231,8 +242,7 @@ export const ProfileInfoTab = ({
 
         <button
           onClick={() => setShowMoreContact(!showMoreContact)}
-          className="text-xs font-extrabold text-primary hover:text-primary/80 self-start cursor-pointer mt-1"
-        >
+          className="text-xs font-extrabold text-primary hover:text-primary/80 self-start cursor-pointer mt-1">
           {showMoreContact ? 'Show Less Details' : 'Show Additional Organizational Details'}
         </button>
       </div>
@@ -260,8 +270,7 @@ export const ProfileInfoTab = ({
           ) : (
             <Link
               to="/profile-completion"
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
               <span>Add Bank Details</span>
               <ChevronRight size={12} />
             </Link>
@@ -283,7 +292,9 @@ export const ProfileInfoTab = ({
                 <User size={12} /> Account Holder
               </span>
               <span className="text-sm font-bold text-foreground">{bank.accountHolderName}</span>
-              <span className="text-[10px] text-muted">{bank.accountType || 'Savings Account'}</span>
+              <span className="text-[10px] text-muted">
+                {bank.accountType || 'Savings Account'}
+              </span>
             </div>
 
             <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white border border-border-subtle shadow-2xs">
@@ -294,8 +305,7 @@ export const ProfileInfoTab = ({
                 <button
                   type="button"
                   onClick={() => setShowAccountNum(!showAccountNum)}
-                  className="text-muted hover:text-foreground text-[10px] font-semibold flex items-center gap-1 cursor-pointer"
-                >
+                  className="text-muted hover:text-foreground text-[10px] font-semibold flex items-center gap-1 cursor-pointer">
                   {showAccountNum ? <EyeOff size={11} /> : <Eye size={11} />}
                   <span>{showAccountNum ? 'Hide' : 'Reveal'}</span>
                 </button>
@@ -313,12 +323,12 @@ export const ProfileInfoTab = ({
             <CreditCard size={28} className="mx-auto text-muted/60 mb-2" />
             <p className="text-xs font-bold text-foreground">No banking records submitted yet</p>
             <p className="text-[11px] text-muted mt-0.5">
-              Submit your salary account passbook/cancelled cheque in the onboarding completion form.
+              Submit your salary account passbook/cancelled cheque in the onboarding completion
+              form.
             </p>
             <Link
               to="/profile-completion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs"
-            >
+              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs">
               <span>Provide Bank Details</span>
               <ChevronRight size={13} />
             </Link>
@@ -349,8 +359,7 @@ export const ProfileInfoTab = ({
           ) : (
             <Link
               to="/profile-completion"
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
               <span>Upload ID Proofs</span>
               <ChevronRight size={12} />
             </Link>
@@ -381,8 +390,7 @@ export const ProfileInfoTab = ({
                 <button
                   type="button"
                   onClick={() => setShowAadhaar(!showAadhaar)}
-                  className="text-muted hover:text-foreground text-[10px] font-semibold flex items-center gap-1 cursor-pointer"
-                >
+                  className="text-muted hover:text-foreground text-[10px] font-semibold flex items-center gap-1 cursor-pointer">
                   {showAadhaar ? <EyeOff size={11} /> : <Eye size={11} />}
                   <span>{showAadhaar ? 'Hide' : 'Reveal'}</span>
                 </button>
@@ -413,8 +421,7 @@ export const ProfileInfoTab = ({
             </p>
             <Link
               to="/profile-completion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs"
-            >
+              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs">
               <span>Submit Identity Proofs</span>
               <ChevronRight size={13} />
             </Link>
@@ -440,8 +447,7 @@ export const ProfileInfoTab = ({
           </div>
           <Link
             to="/profile-completion"
-            className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-          >
+            className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
             <span>{education.length > 0 ? 'Edit Education' : 'Add Degree'}</span>
             <ChevronRight size={12} />
           </Link>
@@ -452,14 +458,15 @@ export const ProfileInfoTab = ({
             {education.map((edu, idx) => (
               <div
                 key={edu.id || idx}
-                className="p-5 rounded-2xl bg-white border border-border-subtle flex items-start gap-4 shadow-2xs hover:shadow-xs transition-shadow"
-              >
+                className="p-5 rounded-2xl bg-white border border-border-subtle flex items-start gap-4 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="w-10 h-10 rounded-xl bg-info/10 text-info flex items-center justify-center shrink-0">
                   <GraduationCap size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-black text-foreground truncate">{edu.degree}</div>
-                  <div className="text-xs font-semibold text-muted mt-0.5 truncate">{edu.institution}</div>
+                  <div className="text-xs font-semibold text-muted mt-0.5 truncate">
+                    {edu.institution}
+                  </div>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {edu.field && (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-surface-subtle text-foreground border border-border-subtle">
@@ -491,8 +498,7 @@ export const ProfileInfoTab = ({
             </p>
             <Link
               to="/profile-completion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs"
-            >
+              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs">
               <span>Add Education Records</span>
               <ChevronRight size={13} />
             </Link>
@@ -518,8 +524,7 @@ export const ProfileInfoTab = ({
           </div>
           <Link
             to="/profile-completion"
-            className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-          >
+            className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
             <span>{employment.length > 0 ? 'Edit History' : 'Add Experience'}</span>
             <ChevronRight size={12} />
           </Link>
@@ -530,8 +535,7 @@ export const ProfileInfoTab = ({
             {employment.map((emp, idx) => (
               <div
                 key={emp.id || idx}
-                className="p-5 rounded-2xl bg-white border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow"
-              >
+                className="p-5 rounded-2xl bg-white border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="flex items-start gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-warning/10 text-warning flex items-center justify-center shrink-0">
                     <Briefcase size={18} />
@@ -556,7 +560,9 @@ export const ProfileInfoTab = ({
                 </div>
 
                 <div className="text-xs text-muted font-semibold shrink-0 md:text-right">
-                  <div>{emp.startDate || '—'} – {emp.isCurrent ? 'Present' : (emp.endDate || '—')}</div>
+                  <div>
+                    {emp.startDate || '—'} – {emp.isCurrent ? 'Present' : emp.endDate || '—'}
+                  </div>
                   {emp.salary && (
                     <div className="text-[11px] font-mono text-foreground font-bold mt-1">
                       Compensation: {emp.salary}
@@ -575,8 +581,7 @@ export const ProfileInfoTab = ({
             </p>
             <Link
               to="/profile-completion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs"
-            >
+              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs">
               <span>Add Prior Work Experience</span>
               <ChevronRight size={13} />
             </Link>
@@ -602,8 +607,7 @@ export const ProfileInfoTab = ({
           </div>
           <Link
             to="/profile-completion"
-            className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-          >
+            className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
             <span>{certifications.length > 0 ? 'Manage Certifications' : 'Add Certificate'}</span>
             <ChevronRight size={12} />
           </Link>
@@ -614,14 +618,15 @@ export const ProfileInfoTab = ({
             {certifications.map((cert, idx) => (
               <div
                 key={cert.id || idx}
-                className="p-5 rounded-2xl bg-white border border-border-subtle flex items-start gap-4 shadow-2xs hover:shadow-xs transition-shadow"
-              >
+                className="p-5 rounded-2xl bg-white border border-border-subtle flex items-start gap-4 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
                   <Award size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-black text-foreground truncate">{cert.title}</div>
-                  <div className="text-xs font-semibold text-muted mt-0.5 truncate">{cert.issuingOrganization}</div>
+                  <div className="text-xs font-semibold text-muted mt-0.5 truncate">
+                    {cert.issuingOrganization}
+                  </div>
                   <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px] text-muted">
                     {cert.issueDate && <span>Issued: {cert.issueDate}</span>}
                     {cert.credentialId && (
@@ -643,8 +648,7 @@ export const ProfileInfoTab = ({
             </p>
             <Link
               to="/profile-completion"
-              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs"
-            >
+              className="inline-flex items-center gap-1.5 px-4 py-2 mt-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-xs">
               <span>Add Certification</span>
               <ChevronRight size={13} />
             </Link>
@@ -671,8 +675,7 @@ export const ProfileInfoTab = ({
         <Button
           variant="ghost"
           onClick={onElevationClick}
-          className="text-xs font-black text-primary hover:bg-primary/10 rounded-xl px-4 py-2 border border-primary/30"
-        >
+          className="text-xs font-black text-primary hover:bg-primary/10 rounded-xl px-4 py-2 border border-primary/30">
           Request Admin Elevation
         </Button>
       </div>

@@ -406,8 +406,7 @@ export const EventForm = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingImage}
-            className="px-3.5 py-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer transition-all disabled:opacity-50"
-          >
+            className="px-3.5 py-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer transition-all disabled:opacity-50">
             {isUploadingImage ? (
               <>
                 <Loader2 size={13} className="animate-spin" />
@@ -425,7 +424,10 @@ export const EventForm = ({
         {/* Live Banner Preview */}
         <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-zinc-900 border border-border-subtle group/banner">
           <img
-            src={resolveImageUrl(formData.image || formData.image_url || '') || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=60'}
+            src={
+              resolveImageUrl(formData.image || formData.image_url || '') ||
+              'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=60'
+            }
             alt="Event banner preview"
             className="w-full h-full object-cover group-hover/banner:scale-105 transition-transform duration-500"
             onError={(e) => {
@@ -483,8 +485,7 @@ export const EventForm = ({
               <div className="flex flex-col gap-1.5 pt-2 border-t border-border-subtle/80 animate-in fade-in slide-in-from-top-2 duration-200">
                 <label
                   htmlFor="custom-category-input"
-                  className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5"
-                >
+                  className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5">
                   <PlusCircle size={13} />
                   <span>Enter Custom Category</span>
                 </label>
@@ -525,10 +526,9 @@ export const EventForm = ({
               <div className="flex flex-col gap-1.5 pt-2 border-t border-border-subtle/80 animate-in fade-in slide-in-from-top-2 duration-200">
                 <label
                   htmlFor="custom-status-input"
-                  className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5"
-                >
+                  className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5">
                   <PlusCircle size={13} />
-                  <span>Add  Status</span>
+                  <span>Add Status</span>
                 </label>
                 <Input
                   id="custom-status-input"
@@ -666,7 +666,10 @@ export const EventForm = ({
               type="number"
               value={formData.max_participants?.toString() || ''}
               onChange={(e) =>
-                setFormData({ ...formData, max_participants: parseInt(e.target.value, 10) || undefined })
+                setFormData({
+                  ...formData,
+                  max_participants: parseInt(e.target.value, 10) || undefined,
+                })
               }
               placeholder="e.g. 50 (Leave empty for unlimited attendance)"
             />
@@ -698,9 +701,7 @@ export const EventForm = ({
               placeholder="https://... (Optional link)"
             />
           </FormField>
-          <span className="text-[10px] text-muted font-medium">
-            Zoom, Meet or external link
-          </span>
+          <span className="text-[10px] text-muted font-medium">Zoom, Meet or external link</span>
         </div>
 
         {/* Instant Broadcast Notification Toggle */}
@@ -717,7 +718,8 @@ export const EventForm = ({
                 </span>
               </span>
               <span className="text-[11px] text-muted font-medium">
-                Sends an email invitation to all 18+ active employees and highlights this in their notification bell.
+                Sends an email invitation to all 18+ active employees and highlights this in their
+                notification bell.
               </span>
             </div>
           </div>
@@ -782,8 +784,7 @@ export const EventForm = ({
                   isAdded
                     ? 'bg-primary text-white border-primary shadow-xs'
                     : 'bg-white hover:bg-primary/10 text-muted hover:text-primary border-border-subtle'
-                }`}
-              >
+                }`}>
                 #{sug}
               </button>
             );

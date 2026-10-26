@@ -105,7 +105,8 @@ const authServicePath = path.join(backendDir, 'src/services/auth.service.js');
 let authServiceContent = fs.readFileSync(authServicePath, 'utf8');
 
 // Update login function in auth.service.js
-const loginRegex = /export const login = async \(email, password\) => \{[\s\S]*?return \{\s*user: \{[\s\S]*?\},[\s\S]*?token,[\s\S]*?\};[\s\S]*?\};/;
+const loginRegex =
+  /export const login = async \(email, password\) => \{[\s\S]*?return \{\s*user: \{[\s\S]*?\},[\s\S]*?token,[\s\S]*?\};[\s\S]*?\};/;
 const newLoginFunction = `export const login = async (email, password) => {
   const [rows] = await pool.execute(
     \`
@@ -197,7 +198,8 @@ if (loginRegex.test(authServiceContent)) {
 }
 
 // Update sendInvitation function in auth.service.js
-const sendInvitationRegex = /export const sendInvitation = async \(email, role\) => \{[\s\S]*?return \{ message: \`Invitation sent successfully to \$\{email\}\` \};[\s\S]*?\};/;
+const sendInvitationRegex =
+  /export const sendInvitation = async \(email, role\) => \{[\s\S]*?return \{ message: \`Invitation sent successfully to \$\{email\}\` \};[\s\S]*?\};/;
 const newSendInvitationFunction = `export const sendInvitation = async (email, role, department = 'Engineering') => {
   // 1. Check if user already exists
   const [existing] = await pool.execute('SELECT id FROM users WHERE email = ?', [email]);

@@ -112,7 +112,10 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
                   Total CTC
                 </span>
                 <span className="text-xs font-black text-foreground font-mono">
-                  ₹{Number(member.totalCompensation || member.total_compensation || member.annualCtc).toLocaleString('en-IN')}
+                  ₹
+                  {Number(
+                    member.totalCompensation || member.total_compensation || member.annualCtc
+                  ).toLocaleString('en-IN')}
                 </span>
               </div>
             </>

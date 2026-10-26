@@ -9,6 +9,7 @@ export interface InvoiceForm {
   invoiceDate: string;
   dueDate: string;
   placeOfSupply: string;
+  status?: 'Paid' | 'Pending' | 'Overdue';
 
   companyName: string;
   companyContact: string;

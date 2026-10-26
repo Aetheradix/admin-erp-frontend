@@ -69,12 +69,13 @@ export const useStaff = () => {
           '',
         taxRegime: member.taxRegime || member.tax_regime || 'New Regime',
         isMidYearJoiner: Boolean(member.isMidYearJoiner ?? member.is_mid_year_joiner),
-        previousEmployerYtd: member.previousEmployerYtd || member.previous_employer_ytd || {
-          grossPay: 0,
-          tdsDeducted: 0,
-          pfDeducted: 0,
-          ptDeducted: 0,
-        },
+        previousEmployerYtd: member.previousEmployerYtd ||
+          member.previous_employer_ytd || {
+            grossPay: 0,
+            tdsDeducted: 0,
+            pfDeducted: 0,
+            ptDeducted: 0,
+          },
         panNumber: member.panNumber || member.pan_number || '',
       });
       setShowForm(true);
@@ -155,15 +156,22 @@ export const useStaff = () => {
           await saveEmployeeCompensation({
             userId: Number(savedUserId),
             ctcAnnual: Number(data.totalCompensation),
-            taxRegime: String(data.taxRegime || '').toLowerCase().includes('old') ? 'old' : 'new',
+            taxRegime: String(data.taxRegime || '')
+              .toLowerCase()
+              .includes('old')
+              ? 'old'
+              : 'new',
             payFrequency: (data.payFrequency || 'monthly').toLowerCase(),
-            effectiveDate: data.effectiveDate || data.joinDate || new Date().toISOString().split('T')[0],
+            effectiveDate:
+              data.effectiveDate || data.joinDate || new Date().toISOString().split('T')[0],
             isMidYearJoiner: Boolean(data.isMidYearJoiner),
             previousEmployerGross: Number(data.previousEmployerYtd?.grossPay || 0),
             previousEmployerTds: Number(data.previousEmployerYtd?.tdsDeducted || 0),
             previousEmployerPf: Number(data.previousEmployerYtd?.pfDeducted || 0),
             previousEmployerStandardDeduction: Number(
-              data.previousEmployerStandardDeduction || data.previousEmployerYtd?.standardDeduction || 0
+              data.previousEmployerStandardDeduction ||
+                data.previousEmployerYtd?.standardDeduction ||
+                0
             ),
             section80c: Number(data.section80c || 0),
             section80d: Number(data.section80d || 0),

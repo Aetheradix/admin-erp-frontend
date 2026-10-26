@@ -184,618 +184,621 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
   const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
 
   return (
-  <div
-    ref={ref}
-    className="salary-statement-paper"
-    style={{
-      width: '794px',
-      minHeight: '1123px',
-      background: '#ffffff',
-      color: '#111111',
-      boxSizing: 'border-box',
-      fontFamily: 'Arial, Helvetica, sans-serif',
-      position: 'relative',
-      overflow: 'visible',
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-      textRendering: 'geometricPrecision',
-    }}>
     <div
-      className="paper-inner"
+      ref={ref}
+      className="salary-statement-paper"
       style={{
-        width: '100%',
-        minHeight: '100%',
+        width: '794px',
+        minHeight: '1123px',
+        background: '#ffffff',
+        color: '#111111',
         boxSizing: 'border-box',
-        padding: '38px 42px 34px',
+        fontFamily: 'Arial, Helvetica, sans-serif',
         position: 'relative',
+        overflow: 'visible',
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
+        textRendering: 'geometricPrecision',
       }}>
       <div
-        className="preview-header-exact"
+        className="paper-inner"
         style={{
+          width: '100%',
+          minHeight: '100%',
+          boxSizing: 'border-box',
+          padding: '38px 42px 34px',
           position: 'relative',
-          marginBottom: '22px',
         }}>
         <div
-          className="header-gray-strip"
+          className="preview-header-exact"
           style={{
-            minHeight: '128px',
-            background: '#eeeeee',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'stretch',
             position: 'relative',
-            padding: '0 8px',
-            boxSizing: 'border-box',
+            marginBottom: '22px',
           }}>
-          {/* LEFT: SALARY STATEMENT */}
           <div
-            className="header-left-title-box"
+            className="header-gray-strip"
             style={{
-              padding: '18px 16px',
+              minHeight: '128px',
+              background: '#eeeeee',
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              minWidth: '240px',
+              justifyContent: 'space-between',
+              alignItems: 'stretch',
+              position: 'relative',
+              padding: '0 8px',
               boxSizing: 'border-box',
             }}>
-            <h1
-              className="header-title-salary"
-              style={{
-                margin: 0,
-                fontSize: '31px',
-                lineHeight: '1.15',
-                fontWeight: 900,
-                letterSpacing: '-0.5px',
-                paddingBottom: '3px',
-              }}>
-              SALARY
-            </h1>
-
-            <h2
-              className="header-title-statement"
-              style={{
-                margin: '2px 0 7px',
-                fontSize: '27px',
-                lineHeight: '1.15',
-                fontWeight: 400,
-                letterSpacing: '-0.5px',
-                paddingBottom: '3px',
-              }}>
-              STATEMENT
-            </h2>
-
+            {/* LEFT: SALARY STATEMENT */}
             <div
-              className="header-title-month"
+              className="header-left-title-box"
               style={{
-                fontSize: '12px',
-                lineHeight: '1.3',
-                fontWeight: 700,
-                letterSpacing: '0.4px',
-                color: '#444444',
-                paddingBottom: '2px',
+                padding: '18px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                minWidth: '240px',
+                boxSizing: 'border-box',
               }}>
-              {data.monthYear || 'JUNE 2026'}
+              <h1
+                className="header-title-salary"
+                style={{
+                  margin: 0,
+                  fontSize: '31px',
+                  lineHeight: '1.15',
+                  fontWeight: 900,
+                  letterSpacing: '-0.5px',
+                  paddingBottom: '3px',
+                }}>
+                SALARY
+              </h1>
+
+              <h2
+                className="header-title-statement"
+                style={{
+                  margin: '2px 0 7px',
+                  fontSize: '27px',
+                  lineHeight: '1.15',
+                  fontWeight: 400,
+                  letterSpacing: '-0.5px',
+                  paddingBottom: '3px',
+                }}>
+                STATEMENT
+              </h2>
+
+              <div
+                className="header-title-month"
+                style={{
+                  fontSize: '12px',
+                  lineHeight: '1.3',
+                  fontWeight: 700,
+                  letterSpacing: '0.4px',
+                  color: '#444444',
+                  paddingBottom: '2px',
+                }}>
+                {data.monthYear || 'JUNE 2026'}
+              </div>
+
+              {data.payrollType === 'Adjustment' && (
+                <div
+                  style={{
+                    display: 'inline-block',
+                    fontSize: '9px',
+                    fontWeight: 800,
+                    background: '#FEF3C7',
+                    color: '#92400E',
+                    border: '1px solid #FCD34D',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    marginTop: '4px',
+                    width: 'fit-content',
+                  }}>
+                  Adjustment Slip • {data.adjustmentType || 'Correction'}
+                  {data.referencedPeriod ? ` (${data.referencedPeriod})` : ''}
+                </div>
+              )}
             </div>
 
-            {data.payrollType === 'Adjustment' && (
+            {/* RIGHT: LOGO + COMPANY */}
+            <div
+              className="header-right-company-box"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: '380px',
+                justifyContent: 'flex-end',
+                paddingRight: '12px',
+                boxSizing: 'border-box',
+              }}>
+              {/* ARX LOGO */}
               <div
+                className="arx-black-logo-box"
                 style={{
-                  display: 'inline-block',
-                  fontSize: '9px',
-                  fontWeight: 800,
-                  background: '#FEF3C7',
-                  color: '#92400E',
-                  border: '1px solid #FCD34D',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  marginTop: '4px',
-                  width: 'fit-content',
+                  width: '105px',
+                  height: '105px',
+                  background: '#111111',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  marginRight: '17px',
+                  flexShrink: 0,
                 }}>
-                Adjustment Slip • {data.adjustmentType || 'Correction'}
-                {data.referencedPeriod ? ` (${data.referencedPeriod})` : ''}
+                <img
+                  src={arxLogoFromAssets}
+                  alt={data.companyName || 'ARX'}
+                  className="arx-logo-img-asset"
+                  style={{
+                    width: '72px',
+                    maxHeight: '72px',
+                    objectFit: 'contain',
+                  }}
+                />
               </div>
-            )}
+
+              {/* COMPANY */}
+              <div
+                className="company-text-info"
+                style={{
+                  width: '210px',
+                  paddingRight: '8px',
+                  boxSizing: 'border-box',
+                }}>
+                <h3
+                  className="company-title-text"
+                  style={{
+                    margin: 0,
+                    fontSize: '15px',
+                    lineHeight: '1.3',
+                    fontWeight: 800,
+                    letterSpacing: '1px',
+                    wordBreak: 'break-word',
+                    paddingBottom: '2px',
+                  }}>
+                  {data.companyName || 'A E T H E R A D I X'}
+                </h3>
+
+                <p
+                  className="company-address-text"
+                  style={{
+                    margin: '7px 0 0',
+                    fontSize: '9px',
+                    lineHeight: '1.5',
+                    color: '#555555',
+                    whiteSpace: 'pre-line',
+                    wordBreak: 'break-word',
+                    paddingBottom: '2px',
+                  }}>
+                  {data.companyAddress ||
+                    'F-N 507, Crystal Tower, IBD Kings Park,\nBawadia Kalan, Bhopal, MP | 462039'}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* RIGHT: LOGO + COMPANY */}
+          {/* HEADER BOTTOM */}
           <div
-            className="header-right-company-box"
+            className="header-bottom-row"
             style={{
+              height: '35px',
+              position: 'relative',
               display: 'flex',
-              alignItems: 'center',
-              minWidth: '380px',
-              justifyContent: 'flex-end',
-              paddingRight: '12px',
-              boxSizing: 'border-box',
+              alignItems: 'flex-end',
             }}>
-            {/* ARX LOGO */}
             <div
-              className="arx-black-logo-box"
+              className="header-bottom-line"
               style={{
-                width: '105px',
-                height: '105px',
+                height: '2px',
                 background: '#111111',
+                width: '100%',
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+              }}
+            />
+
+            <div
+              className="payslip-no-black-badge"
+              style={{
+                position: 'absolute',
+                right: 0,
+                bottom: 0,
+                background: '#111111',
+                color: '#ffffff',
+                minWidth: '200px',
+                minHeight: '28px',
+                padding: '4px 14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                position: 'relative',
-                marginRight: '17px',
-                flexShrink: 0,
-              }}>
-              <img
-                src={arxLogoFromAssets}
-                alt={data.companyName || 'ARX'}
-                className="arx-logo-img-asset"
-                style={{
-                  width: '72px',
-                  maxHeight: '72px',
-                  objectFit: 'contain',
-                }}
-              />
-            </div>
-
-            {/* COMPANY */}
-            <div
-              className="company-text-info"
-              style={{
-                width: '210px',
-                paddingRight: '8px',
+                gap: '7px',
+                fontSize: '10px',
+                lineHeight: '1.3',
                 boxSizing: 'border-box',
               }}>
-              <h3
-                className="company-title-text"
-                style={{
-                  margin: 0,
-                  fontSize: '15px',
-                  lineHeight: '1.3',
-                  fontWeight: 800,
-                  letterSpacing: '1px',
-                  wordBreak: 'break-word',
-                  paddingBottom: '2px',
-                }}>
-                {data.companyName || 'A E T H E R A D I X'}
-              </h3>
-
-              <p
-                className="company-address-text"
-                style={{
-                  margin: '7px 0 0',
-                  fontSize: '9px',
-                  lineHeight: '1.5',
-                  color: '#555555',
-                  whiteSpace: 'pre-line',
-                  wordBreak: 'break-word',
-                  paddingBottom: '2px',
-                }}>
-                {data.companyAddress ||
-                  'F-N 507, Crystal Tower, IBD Kings Park,\nBawadia Kalan, Bhopal, MP | 462039'}
-              </p>
+              <span className="ps-label" style={{ fontWeight: 400, lineHeight: '1.3' }}>
+                Pay Slip No.
+              </span>
+              <span className="ps-colon" style={{ lineHeight: '1.3' }}>
+                :
+              </span>
+              <span className="ps-value" style={{ fontWeight: 700, lineHeight: '1.3' }}>
+                {data.paySlipNo || generateSlipNumber(data.employeeId, data.monthYear)}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* HEADER BOTTOM */}
         <div
-          className="header-bottom-row"
+          className="preview-meta-grid"
           style={{
-            height: '35px',
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'flex-end',
+            marginBottom: '20px',
+            boxSizing: 'border-box',
           }}>
           <div
-            className="header-bottom-line"
+            className="meta-row"
             style={{
-              height: '2px',
-              background: '#111111',
-              width: '100%',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              minHeight: '28px',
+            }}>
+            <MetaItem label="Pay Period" value={data.payPeriod || '01 June - 30 June'} />
+            <MetaItem label="Employee ID" value={data.employeeId || 'X001'} />
+          </div>
+
+          <div
+            className="meta-row"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              minHeight: '28px',
+            }}>
+            <MetaItem
+              label="Employee Name"
+              value={data.employeeName || 'Pratyush Srivastava'}
+              bold
+            />
+            <MetaItem label="Position" value={data.position || 'Director'} bold />
+          </div>
+        </div>
+
+        <div
+          className="preview-tables-container"
+          style={{
+            position: 'relative',
+            marginBottom: '20px',
+            boxSizing: 'border-box',
+          }}>
+          {/* WATERMARK */}
+          <div
+            className="table-watermark"
+            aria-hidden="true"
+            style={{
               position: 'absolute',
-              bottom: 0,
-              left: 0,
+              inset: 0,
+              zIndex: 0,
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}>
+            <svg
+              viewBox="0 0 400 200"
+              className="watermark-svg"
+              style={{
+                width: '100%',
+                height: '220px',
+              }}>
+              <text
+                x="50%"
+                y="50%"
+                dominantBaseline="middle"
+                textAnchor="middle"
+                fill="#1a1a1a"
+                opacity="0.06"
+                fontSize="140"
+                fontWeight="900"
+                fontFamily="Arial, Helvetica, sans-serif"
+                letterSpacing="8">
+                {watermarkText}
+              </text>
+            </svg>
+          </div>
+
+          <div
+            className="tables-flex-row"
+            style={{
+              position: 'relative',
+              zIndex: 1,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '18px',
+              boxSizing: 'border-box',
+            }}>
+            <SalaryTable
+              title="EARNINGS"
+              rows={paddedEarnings}
+              totalLabel="Total Earnings"
+              total={totalEarnings}
+              currencySymbol={currencySymbol}
+            />
+
+            <div>
+              <SalaryTable
+                title="DEDUCTIONS"
+                rows={paddedDeductions}
+                totalLabel="Total Deduction"
+                total={totalDeductions}
+                currencySymbol={currencySymbol}
+              />
+
+              {/* NET PAY */}
+              <div
+                className="table-netpay-row"
+                style={{
+                  background: '#111111',
+                  color: '#ffffff',
+                  minHeight: '51px',
+                  padding: '6px 15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxSizing: 'border-box',
+                }}>
+                <span
+                  className="netpay-label"
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    lineHeight: '1.3',
+                    paddingBottom: '2px',
+                  }}>
+                  Net Pay
+                </span>
+
+                <span
+                  className="netpay-amount"
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    lineHeight: '1.3',
+                    paddingBottom: '2px',
+                  }}>
+                  {formatCurrency(netPay, currencySymbol)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="preview-totals-section"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 235px',
+            gap: '22px',
+            marginBottom: '24px',
+            alignItems: 'stretch',
+            boxSizing: 'border-box',
+          }}>
+          {/* LEFT */}
+          <div
+            className="totals-left"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              boxSizing: 'border-box',
+            }}>
+            <DetailRow label="Generated On" value={data.generatedOn || '01 July, 2026'} />
+            <DetailRow label="Account Number" value={data.accountNumber || '005501040352'} />
+
+            {/* AMOUNT IN WORDS */}
+            <div
+              className="in-words-box"
+              style={{
+                marginTop: '14px',
+                border: '1px solid #d5d5d5',
+                padding: '10px 12px 12px',
+                background: '#fafafa',
+                boxSizing: 'border-box',
+              }}>
+              <span
+                className="in-words-title"
+                style={{
+                  display: 'block',
+                  fontSize: '9px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  color: '#555555',
+                  marginBottom: '5px',
+                  lineHeight: '1.3',
+                  paddingBottom: '1px',
+                }}>
+                Amount in Words:
+              </span>
+
+              <span
+                className="in-words-text"
+                style={{
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  lineHeight: '1.45',
+                  wordBreak: 'break-word',
+                  paddingBottom: '3px',
+                }}>
+                {netPayInWords}
+              </span>
+            </div>
+          </div>
+
+          {/* RIGHT NET PAY CARD */}
+          <div
+            className="totals-right"
+            style={{
+              display: 'flex',
+              boxSizing: 'border-box',
+            }}>
+            <div
+              className="net-pay-card"
+              style={{
+                width: '100%',
+                background: '#111111',
+                color: '#ffffff',
+                padding: '16px 18px',
+                boxSizing: 'border-box',
+              }}>
+              <div
+                className="net-pay-amount"
+                style={{
+                  fontSize: '25px',
+                  fontWeight: 800,
+                  lineHeight: '1.25',
+                  paddingBottom: '3px',
+                }}>
+                {formatCurrency(netPay, currencySymbol)}
+              </div>
+
+              <div
+                className="net-pay-subtext"
+                style={{
+                  marginTop: '3px',
+                  fontSize: '9px',
+                  color: '#bdbdbd',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px',
+                  lineHeight: '1.3',
+                  paddingBottom: '2px',
+                }}>
+                Total Net Pay
+              </div>
+
+              <div
+                className="card-divider"
+                style={{
+                  height: '1px',
+                  background: '#444444',
+                  margin: '12px 0',
+                }}
+              />
+
+              <DaysRow label="Paid Days" value={String(data.paidDays ?? 22).padStart(2, '0')} />
+              <DaysRow label="LOP Days" value={String(data.lopDays ?? 0).padStart(2, '0')} />
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="preview-footer-section"
+          style={{
+            marginTop: '20px',
+            boxSizing: 'border-box',
+          }}>
+          <div
+            className="footer-line"
+            style={{
+              height: '1px',
+              background: '#111111',
+              marginBottom: '14px',
             }}
           />
 
           <div
-            className="payslip-no-black-badge"
+            className="footer-cols"
             style={{
-              position: 'absolute',
-              right: 0,
-              bottom: 0,
-              background: '#111111',
-              color: '#ffffff',
-              minWidth: '200px',
-              minHeight: '28px',
-              padding: '4px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '7px',
-              fontSize: '10px',
-              lineHeight: '1.3',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '30px',
               boxSizing: 'border-box',
             }}>
-            <span className="ps-label" style={{ fontWeight: 400, lineHeight: '1.3' }}>
-              Pay Slip No.
-            </span>
-            <span className="ps-colon" style={{ lineHeight: '1.3' }}>:</span>
-            <span className="ps-value" style={{ fontWeight: 700, lineHeight: '1.3' }}>
-              {data.paySlipNo || generateSlipNumber(data.employeeId, data.monthYear)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="preview-meta-grid"
-        style={{
-          marginBottom: '20px',
-          boxSizing: 'border-box',
-        }}>
-        <div
-          className="meta-row"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            minHeight: '28px',
-          }}>
-          <MetaItem label="Pay Period" value={data.payPeriod || '01 June - 30 June'} />
-          <MetaItem label="Employee ID" value={data.employeeId || 'X001'} />
-        </div>
-
-        <div
-          className="meta-row"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            minHeight: '28px',
-          }}>
-          <MetaItem
-            label="Employee Name"
-            value={data.employeeName || 'Pratyush Srivastava'}
-            bold
-          />
-          <MetaItem label="Position" value={data.position || 'Director'} bold />
-        </div>
-      </div>
-
-      <div
-        className="preview-tables-container"
-        style={{
-          position: 'relative',
-          marginBottom: '20px',
-          boxSizing: 'border-box',
-        }}>
-        {/* WATERMARK */}
-        <div
-          className="table-watermark"
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 0,
-            pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-          }}>
-          <svg
-            viewBox="0 0 400 200"
-            className="watermark-svg"
-            style={{
-              width: '100%',
-              height: '220px',
-            }}>
-            <text
-              x="50%"
-              y="50%"
-              dominantBaseline="middle"
-              textAnchor="middle"
-              fill="#1a1a1a"
-              opacity="0.06"
-              fontSize="140"
-              fontWeight="900"
-              fontFamily="Arial, Helvetica, sans-serif"
-              letterSpacing="8">
-              {watermarkText}
-            </text>
-          </svg>
-        </div>
-
-        <div
-          className="tables-flex-row"
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '18px',
-            boxSizing: 'border-box',
-          }}>
-          <SalaryTable
-            title="EARNINGS"
-            rows={paddedEarnings}
-            totalLabel="Total Earnings"
-            total={totalEarnings}
-            currencySymbol={currencySymbol}
-          />
-
-          <div>
-            <SalaryTable
-              title="DEDUCTIONS"
-              rows={paddedDeductions}
-              totalLabel="Total Deduction"
-              total={totalDeductions}
-              currencySymbol={currencySymbol}
-            />
-
-            {/* NET PAY */}
-            <div
-              className="table-netpay-row"
-              style={{
-                background: '#111111',
-                color: '#ffffff',
-                minHeight: '51px',
-                padding: '6px 15px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                boxSizing: 'border-box',
-              }}>
-              <span
-                className="netpay-label"
+            {/* SIGNATORY */}
+            <div className="footer-col-left">
+              <div
+                className="signatory-row"
                 style={{
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  lineHeight: '1.3',
-                  paddingBottom: '2px',
-                }}>
-                Net Pay
-              </span>
-
-              <span
-                className="netpay-amount"
-                style={{
-                  fontSize: '15px',
-                  fontWeight: 800,
-                  lineHeight: '1.3',
-                  paddingBottom: '2px',
-                }}>
-                {formatCurrency(netPay, currencySymbol)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="preview-totals-section"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 235px',
-          gap: '22px',
-          marginBottom: '24px',
-          alignItems: 'stretch',
-          boxSizing: 'border-box',
-        }}>
-        {/* LEFT */}
-        <div
-          className="totals-left"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            boxSizing: 'border-box',
-          }}>
-          <DetailRow label="Generated On" value={data.generatedOn || '01 July, 2026'} />
-          <DetailRow label="Account Number" value={data.accountNumber || '005501040352'} />
-
-          {/* AMOUNT IN WORDS */}
-          <div
-            className="in-words-box"
-            style={{
-              marginTop: '14px',
-              border: '1px solid #d5d5d5',
-              padding: '10px 12px 12px',
-              background: '#fafafa',
-              boxSizing: 'border-box',
-            }}>
-            <span
-              className="in-words-title"
-              style={{
-                display: 'block',
-                fontSize: '9px',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                color: '#555555',
-                marginBottom: '5px',
-                lineHeight: '1.3',
-                paddingBottom: '1px',
-              }}>
-              Amount in Words:
-            </span>
-
-            <span
-              className="in-words-text"
-              style={{
-                display: 'block',
-                fontSize: '11px',
-                fontWeight: 600,
-                lineHeight: '1.45',
-                wordBreak: 'break-word',
-                paddingBottom: '3px',
-              }}>
-              {netPayInWords}
-            </span>
-          </div>
-        </div>
-
-        {/* RIGHT NET PAY CARD */}
-        <div
-          className="totals-right"
-          style={{
-            display: 'flex',
-            boxSizing: 'border-box',
-          }}>
-          <div
-            className="net-pay-card"
-            style={{
-              width: '100%',
-              background: '#111111',
-              color: '#ffffff',
-              padding: '16px 18px',
-              boxSizing: 'border-box',
-            }}>
-            <div
-              className="net-pay-amount"
-              style={{
-                fontSize: '25px',
-                fontWeight: 800,
-                lineHeight: '1.25',
-                paddingBottom: '3px',
-              }}>
-              {formatCurrency(netPay, currencySymbol)}
-            </div>
-
-            <div
-              className="net-pay-subtext"
-              style={{
-                marginTop: '3px',
-                fontSize: '9px',
-                color: '#bdbdbd',
-                textTransform: 'uppercase',
-                letterSpacing: '0.6px',
-                lineHeight: '1.3',
-                paddingBottom: '2px',
-              }}>
-              Total Net Pay
-            </div>
-
-            <div
-              className="card-divider"
-              style={{
-                height: '1px',
-                background: '#444444',
-                margin: '12px 0',
-              }}
-            />
-
-            <DaysRow label="Paid Days" value={String(data.paidDays ?? 22).padStart(2, '0')} />
-            <DaysRow label="LOP Days" value={String(data.lopDays ?? 0).padStart(2, '0')} />
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="preview-footer-section"
-        style={{
-          marginTop: '20px',
-          boxSizing: 'border-box',
-        }}>
-        <div
-          className="footer-line"
-          style={{
-            height: '1px',
-            background: '#111111',
-            marginBottom: '14px',
-          }}
-        />
-
-        <div
-          className="footer-cols"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '30px',
-            boxSizing: 'border-box',
-          }}>
-          {/* SIGNATORY */}
-          <div className="footer-col-left">
-            <div
-              className="signatory-row"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '112px 10px 1fr',
-                fontSize: '10px',
-                lineHeight: '1.5',
-                alignItems: 'start',
-              }}>
-              <span
-                className="sign-label"
-                style={{
-                  color: '#555555',
+                  display: 'grid',
+                  gridTemplateColumns: '112px 10px 1fr',
+                  fontSize: '10px',
                   lineHeight: '1.5',
+                  alignItems: 'start',
                 }}>
-                Authorized Signatory
-              </span>
-
-              <span className="sign-colon" style={{ lineHeight: '1.5' }}>:</span>
-
-              <span
-                className="sign-value"
-                style={{
-                  fontWeight: 700,
-                  lineHeight: '1.5',
-                  paddingBottom: '2px',
-                }}>
-                {data.authorizedSignatory || 'Seema Srivastava'}
-                <br />
-                <small
-                  className="sign-title"
+                <span
+                  className="sign-label"
                   style={{
                     color: '#555555',
-                    fontWeight: 400,
                     lineHeight: '1.5',
-                    display: 'inline-block',
+                  }}>
+                  Authorized Signatory
+                </span>
+
+                <span className="sign-colon" style={{ lineHeight: '1.5' }}>
+                  :
+                </span>
+
+                <span
+                  className="sign-value"
+                  style={{
+                    fontWeight: 700,
+                    lineHeight: '1.5',
                     paddingBottom: '2px',
                   }}>
-                  {data.signatoryRole || '(Director)'}
-                </small>
-              </span>
+                  {data.authorizedSignatory || 'Seema Srivastava'}
+                  <br />
+                  <small
+                    className="sign-title"
+                    style={{
+                      color: '#555555',
+                      fontWeight: 400,
+                      lineHeight: '1.5',
+                      display: 'inline-block',
+                      paddingBottom: '2px',
+                    }}>
+                    {data.signatoryRole || '(Director)'}
+                  </small>
+                </span>
+              </div>
             </div>
-          </div>
 
-          {/* HR NOTE */}
-          <div className="footer-col-right">
-            <div
-              className="hr-note-box"
-              style={{
-                fontSize: '10px',
-                lineHeight: '1.45',
-                boxSizing: 'border-box',
-              }}>
-              <span
-                className="hr-note-title"
+            {/* HR NOTE */}
+            <div className="footer-col-right">
+              <div
+                className="hr-note-box"
                 style={{
-                  fontWeight: 800,
+                  fontSize: '10px',
                   lineHeight: '1.45',
-                  paddingBottom: '1px',
+                  boxSizing: 'border-box',
                 }}>
-                HR Note :
-              </span>
+                <span
+                  className="hr-note-title"
+                  style={{
+                    fontWeight: 800,
+                    lineHeight: '1.45',
+                    paddingBottom: '1px',
+                  }}>
+                  HR Note :
+                </span>
 
-              <p
-                className="hr-note-text"
-                style={{
-                  margin: '4px 0 0',
-                  color: '#555555',
-                  wordBreak: 'break-word',
-                  lineHeight: '1.5',
-                  paddingBottom: '2px',
-                }}>
-                {data.hrNote ||
-                  'For any discrepancies, please contact the HR department within 3 working days.'}
-              </p>
+                <p
+                  className="hr-note-text"
+                  style={{
+                    margin: '4px 0 0',
+                    color: '#555555',
+                    wordBreak: 'break-word',
+                    lineHeight: '1.5',
+                    paddingBottom: '2px',
+                  }}>
+                  {data.hrNote ||
+                    'For any discrepancies, please contact the HR department within 3 working days.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 });
 
 interface MetaItemProps {
@@ -827,7 +830,9 @@ function MetaItem({ label, value, bold = false }: MetaItemProps) {
         {label}
       </span>
 
-      <span className="meta-colon" style={{ lineHeight: '1.35' }}>:</span>
+      <span className="meta-colon" style={{ lineHeight: '1.35' }}>
+        :
+      </span>
 
       <span
         className={`meta-value ${bold ? 'font-bold' : ''}`}
@@ -935,9 +940,13 @@ function SalaryTable({ title, rows, totalLabel, total, currencySymbol }: SalaryT
           lineHeight: '1.3',
           boxSizing: 'border-box',
         }}>
-        <span className="total-label" style={{ lineHeight: '1.3', paddingBottom: '1px' }}>{totalLabel}</span>
+        <span className="total-label" style={{ lineHeight: '1.3', paddingBottom: '1px' }}>
+          {totalLabel}
+        </span>
 
-        <span className="total-amount" style={{ lineHeight: '1.3', paddingBottom: '1px' }}>{formatCurrency(total, currencySymbol)}</span>
+        <span className="total-amount" style={{ lineHeight: '1.3', paddingBottom: '1px' }}>
+          {formatCurrency(total, currencySymbol)}
+        </span>
       </div>
     </div>
   );
@@ -967,7 +976,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
         {label}
       </span>
 
-      <span className="detail-colon" style={{ lineHeight: '1.35' }}>:</span>
+      <span className="detail-colon" style={{ lineHeight: '1.35' }}>
+        :
+      </span>
 
       <span
         className="detail-value"
@@ -1004,7 +1015,9 @@ function DaysRow({ label, value }: { label: string; value: string }) {
         {label}
       </span>
 
-      <span className="days-colon" style={{ lineHeight: '1.4' }}>:</span>
+      <span className="days-colon" style={{ lineHeight: '1.4' }}>
+        :
+      </span>
 
       <span
         className="days-value"

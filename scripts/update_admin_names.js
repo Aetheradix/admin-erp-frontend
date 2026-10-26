@@ -92,7 +92,11 @@ async function update() {
             item.email,
             `Admin ${item.adminName} (${item.adminRole}) dispatched user onboarding invitation to ${item.name} (${item.email}) for role ${item.role} in ${item.dept}.`,
             JSON.stringify([
-              { field: 'Invited By Admin', from: null, to: `${item.adminName} (${item.adminRole} · ${item.adminEmail})` },
+              {
+                field: 'Invited By Admin',
+                from: null,
+                to: `${item.adminName} (${item.adminRole} · ${item.adminEmail})`,
+              },
               { field: 'Invitee Name', from: null, to: item.name },
               { field: 'Invitee Email', from: null, to: item.email },
               { field: 'Assigned Role', from: null, to: item.role },
@@ -103,7 +107,9 @@ async function update() {
       }
     }
 
-    console.log('✓ Successfully updated all MySQL audit logs and invitation records with Admin Name');
+    console.log(
+      '✓ Successfully updated all MySQL audit logs and invitation records with Admin Name'
+    );
     process.exit(0);
   } catch (err) {
     console.error('Error updating records:', err);

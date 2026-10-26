@@ -310,9 +310,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                   id="inv-status"
                   options={STATUS_OPTIONS}
                   value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.value as InventoryStatus })
-                  }
+                  onChange={(e) => setFormData({ ...formData, status: e.value as InventoryStatus })}
                 />
               </FormField>
             </div>
@@ -330,10 +328,11 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                     Available as a Bookable Resource
                   </span>
                   <span
-                    className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full transition-colors ${formData.is_bookable
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'bg-muted/15 text-muted'
-                      }`}>
+                    className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full transition-colors ${
+                      formData.is_bookable
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'bg-muted/15 text-muted'
+                    }`}>
                     {formData.is_bookable ? 'BOOKABLE (ON)' : 'INVENTORY ONLY (OFF)'}
                   </span>
                 </div>
@@ -560,8 +559,9 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
         <div className="px-6 sm:px-8 py-4 bg-surface-elevated/95 backdrop-blur-md border-t border-border-subtle flex items-center justify-between gap-4 sticky bottom-0 z-10">
           <div className="hidden sm:flex items-center gap-2.5 text-xs text-muted font-medium">
             <span
-              className={`w-2 h-2 rounded-full ${formData.is_bookable ? 'bg-amber-500' : 'bg-emerald-500'
-                }`}
+              className={`w-2 h-2 rounded-full ${
+                formData.is_bookable ? 'bg-amber-500' : 'bg-emerald-500'
+              }`}
             />
             <span>
               {formData.is_bookable

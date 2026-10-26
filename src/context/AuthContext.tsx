@@ -91,8 +91,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const updated = {
               ...(prev || {}),
               ...result.data.user,
-              employeeId: result.data.user.employee_code || result.data.user.employeeId || (prev as any)?.employeeId,
-              employee_id: result.data.user.employee_code || result.data.user.employee_id || (prev as any)?.employee_id,
+              employeeId:
+                result.data.user.employee_code ||
+                result.data.user.employeeId ||
+                (prev as any)?.employeeId,
+              employee_id:
+                result.data.user.employee_code ||
+                result.data.user.employee_id ||
+                (prev as any)?.employee_id,
             };
             try {
               localStorage.setItem('user', JSON.stringify(updated));

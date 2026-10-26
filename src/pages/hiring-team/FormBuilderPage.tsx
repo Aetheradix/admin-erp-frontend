@@ -88,9 +88,7 @@ export default function FormBuilderPage() {
 
   // Toggle Section Visibility
   const toggleSectionHidden = (sectionId: string) => {
-    setSections((prev) =>
-      prev.map((s) => (s.id === sectionId ? { ...s, hidden: !s.hidden } : s))
-    );
+    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, hidden: !s.hidden } : s)));
   };
 
   // Toggle Section Requirement
@@ -210,7 +208,12 @@ export default function FormBuilderPage() {
   // Save Configuration
   const handleSave = async () => {
     try {
-      saveFormConfiguration(sections, user?.username || 'Hiring Admin', user?.email || '', user?.role || 'HrAdmin');
+      saveFormConfiguration(
+        sections,
+        user?.username || 'Hiring Admin',
+        user?.email || '',
+        user?.role || 'HrAdmin'
+      );
       try {
         await saveConfigApi({ sections }).unwrap();
       } catch {
@@ -235,7 +238,11 @@ export default function FormBuilderPage() {
 
   // Reset to Defaults
   const handleResetDefaults = () => {
-    if (window.confirm('Reset form configuration to default system templates? Custom fields will be reverted.')) {
+    if (
+      window.confirm(
+        'Reset form configuration to default system templates? Custom fields will be reverted.'
+      )
+    ) {
       setSections(DEFAULT_FORM_CONFIG);
       saveFormConfiguration(DEFAULT_FORM_CONFIG);
       showToast.info('Form configuration reset to defaults.');
@@ -254,8 +261,7 @@ export default function FormBuilderPage() {
             <button
               type="button"
               onClick={handleResetDefaults}
-              className="px-4 py-2 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-xs font-bold text-muted hover:text-foreground transition-all flex items-center gap-1.5"
-            >
+              className="px-4 py-2 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-xs font-bold text-muted hover:text-foreground transition-all flex items-center gap-1.5">
               <RotateCcw size={13} />
               Reset Defaults
             </button>
@@ -263,8 +269,7 @@ export default function FormBuilderPage() {
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="px-4 py-2 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-xs font-bold text-foreground transition-all flex items-center gap-1.5"
-            >
+              className="px-4 py-2 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-xs font-bold text-foreground transition-all flex items-center gap-1.5">
               <Eye size={14} className="text-primary" />
               Preview Form
             </button>
@@ -273,8 +278,7 @@ export default function FormBuilderPage() {
               type="button"
               onClick={handleSave}
               disabled={isSavingApi}
-              className="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
-            >
+              className="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50">
               <Save size={14} />
               Publish Configuration
             </button>
@@ -287,7 +291,8 @@ export default function FormBuilderPage() {
         <div className="flex items-center gap-3">
           <Sliders size={20} className="text-primary shrink-0" />
           <div className="text-xs text-foreground">
-            <strong>Dynamic Form Engine:</strong> Changes made here take effect immediately for all pending and new employee onboarding sessions without needing backend code deployments.
+            <strong>Dynamic Form Engine:</strong> Changes made here take effect immediately for all
+            pending and new employee onboarding sessions without needing backend code deployments.
           </div>
         </div>
         <span className="text-xs font-mono font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg shrink-0">
@@ -308,14 +313,12 @@ export default function FormBuilderPage() {
                 section.hidden
                   ? 'bg-surface-subtle/50 border-dashed border-border-subtle opacity-70'
                   : 'bg-white border-border-subtle shadow-xs'
-              }`}
-            >
+              }`}>
               {/* Section Header Accordion */}
               <div className="p-5 flex items-center justify-between gap-4">
                 <div
                   className="flex items-center gap-3 flex-1 cursor-pointer select-none"
-                  onClick={() => setExpandedSection(isExpanded ? null : section.id)}
-                >
+                  onClick={() => setExpandedSection(isExpanded ? null : section.id)}>
                   <div className="w-10 h-10 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center justify-center text-primary">
                     <Icon size={18} />
                   </div>
@@ -344,8 +347,7 @@ export default function FormBuilderPage() {
                     value={section.assignedToTeam || 'Employee'}
                     onChange={(e) => changeSectionTeam(section.id, e.target.value)}
                     className="px-2.5 py-1.5 rounded-xl border border-border-subtle bg-surface-subtle text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    title="Assigned handling team"
-                  >
+                    title="Assigned handling team">
                     <option value="Employee">Team: Employee</option>
                     <option value="HiringTeam">Team: Hiring Team</option>
                     <option value="Finance">Team: Finance</option>
@@ -360,8 +362,7 @@ export default function FormBuilderPage() {
                       section.required
                         ? 'bg-error/10 text-error border border-error/20'
                         : 'bg-surface-subtle text-muted hover:text-foreground'
-                    }`}
-                  >
+                    }`}>
                     {section.required ? 'Mandatory' : 'Optional'}
                   </button>
 
@@ -374,8 +375,7 @@ export default function FormBuilderPage() {
                         ? 'bg-warning/10 text-warning'
                         : 'bg-surface-subtle text-muted hover:text-foreground'
                     }`}
-                    title={section.hidden ? 'Show Section' : 'Hide Section'}
-                  >
+                    title={section.hidden ? 'Show Section' : 'Hide Section'}>
                     <Eye size={15} />
                   </button>
 
@@ -386,8 +386,7 @@ export default function FormBuilderPage() {
                       disabled={index === 0}
                       onClick={() => moveSection(index, 'up')}
                       className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-subtle disabled:opacity-30"
-                      title="Move Up"
-                    >
+                      title="Move Up">
                       <ArrowUp size={14} />
                     </button>
                     <button
@@ -395,8 +394,7 @@ export default function FormBuilderPage() {
                       disabled={index === sections.length - 1}
                       onClick={() => moveSection(index, 'down')}
                       className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-subtle disabled:opacity-30"
-                      title="Move Down"
-                    >
+                      title="Move Down">
                       <ArrowDown size={14} />
                     </button>
                   </div>
@@ -404,8 +402,7 @@ export default function FormBuilderPage() {
                   <button
                     type="button"
                     onClick={() => setExpandedSection(isExpanded ? null : section.id)}
-                    className="p-2 text-muted hover:text-foreground"
-                  >
+                    className="p-2 text-muted hover:text-foreground">
                     {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                   </button>
                 </div>
@@ -421,8 +418,7 @@ export default function FormBuilderPage() {
                     <button
                       type="button"
                       onClick={() => handleOpenAddField(section.id)}
-                      className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all flex items-center gap-1 border border-primary/20"
-                    >
+                      className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all flex items-center gap-1 border border-primary/20">
                       <Plus size={13} />
                       Add Field
                     </button>
@@ -441,11 +437,12 @@ export default function FormBuilderPage() {
                             field.hidden
                               ? 'bg-surface-subtle border-dashed border-border-subtle opacity-60'
                               : 'bg-white border-border-subtle'
-                          }`}
-                        >
+                          }`}>
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-foreground">{field.label}</span>
+                              <span className="text-xs font-bold text-foreground">
+                                {field.label}
+                              </span>
                               {field.required && (
                                 <span className="text-error font-bold text-xs">*</span>
                               )}
@@ -467,8 +464,7 @@ export default function FormBuilderPage() {
                                   ? 'bg-error/10 text-error'
                                   : 'bg-surface-subtle text-muted hover:text-foreground'
                               }`}
-                              title="Toggle Required"
-                            >
+                              title="Toggle Required">
                               {field.required ? 'Req' : 'Opt'}
                             </button>
 
@@ -480,8 +476,7 @@ export default function FormBuilderPage() {
                                   ? 'bg-warning/10 text-warning'
                                   : 'text-muted hover:text-foreground'
                               }`}
-                              title={field.hidden ? 'Show Field' : 'Hide Field'}
-                            >
+                              title={field.hidden ? 'Show Field' : 'Hide Field'}>
                               <Eye size={13} />
                             </button>
 
@@ -489,8 +484,7 @@ export default function FormBuilderPage() {
                               type="button"
                               onClick={() => removeField(section.id, field.id)}
                               className="p-1.5 rounded-lg text-muted hover:text-error transition-colors"
-                              title="Delete Field"
-                            >
+                              title="Delete Field">
                               <Trash2 size={13} />
                             </button>
                           </div>
@@ -510,8 +504,7 @@ export default function FormBuilderPage() {
         visible={isNewFieldModalOpen}
         onHide={() => setIsNewFieldModalOpen(false)}
         width={480}
-        header={<h3 className="text-base font-black text-foreground">Add Custom Field</h3>}
-      >
+        header={<h3 className="text-base font-black text-foreground">Add Custom Field</h3>}>
         <div className="space-y-4 pt-2">
           <div>
             <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wider">
@@ -547,8 +540,7 @@ export default function FormBuilderPage() {
               <select
                 value={newField.type}
                 onChange={(e) => setNewField((prev) => ({ ...prev, type: e.target.value as any }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-border-subtle text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
+                className="w-full px-4 py-2.5 rounded-xl border border-border-subtle text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 <option value="text">Text Input</option>
                 <option value="number">Number</option>
                 <option value="email">Email</option>
@@ -581,7 +573,9 @@ export default function FormBuilderPage() {
               onChange={(e) => setNewField((prev) => ({ ...prev, required: e.target.checked }))}
               className="rounded text-primary focus:ring-primary"
             />
-            <label htmlFor="fieldRequired" className="text-xs font-bold text-foreground cursor-pointer">
+            <label
+              htmlFor="fieldRequired"
+              className="text-xs font-bold text-foreground cursor-pointer">
               Mark this field as mandatory for profile submission
             </label>
           </div>
@@ -590,15 +584,13 @@ export default function FormBuilderPage() {
             <button
               type="button"
               onClick={() => setIsNewFieldModalOpen(false)}
-              className="px-4 py-2 rounded-xl border border-border-subtle bg-white text-foreground text-xs font-bold"
-            >
+              className="px-4 py-2 rounded-xl border border-border-subtle bg-white text-foreground text-xs font-bold">
               Cancel
             </button>
             <button
               type="button"
               onClick={handleCreateField}
-              className="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs flex items-center gap-1.5"
-            >
+              className="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs flex items-center gap-1.5">
               <Plus size={14} />
               Add Field
             </button>
@@ -616,11 +608,11 @@ export default function FormBuilderPage() {
             <Eye size={18} className="text-primary" />
             <h3 className="text-base font-black text-foreground">Employee Form Preview</h3>
           </div>
-        }
-      >
+        }>
         <div className="space-y-6 pt-2 max-h-[70vh] overflow-y-auto pr-2">
           <p className="text-xs text-muted">
-            This is how the onboarding form will look to employees during profile completion based on your current configuration:
+            This is how the onboarding form will look to employees during profile completion based
+            on your current configuration:
           </p>
 
           {sections
@@ -628,7 +620,9 @@ export default function FormBuilderPage() {
             .map((sec) => {
               const Icon = SECTION_ICONS[sec.id] || Layers;
               return (
-                <div key={sec.id} className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4">
+                <div
+                  key={sec.id}
+                  className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                       <Icon size={16} />
@@ -645,7 +639,9 @@ export default function FormBuilderPage() {
                     {sec.fields
                       .filter((f) => !f.hidden)
                       .map((field) => (
-                        <div key={field.key} className={field.type === 'textarea' ? 'col-span-2' : ''}>
+                        <div
+                          key={field.key}
+                          className={field.type === 'textarea' ? 'col-span-2' : ''}>
                           <label className="block text-[11px] font-bold text-foreground mb-1 uppercase tracking-wider">
                             {field.label} {field.required && <span className="text-error">*</span>}
                           </label>

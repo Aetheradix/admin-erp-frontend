@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Calendar, Clock, MapPin, ChevronRight, CheckCheck, AlertCircle, ExternalLink } from 'lucide-react';
+import {
+  Bell,
+  Calendar,
+  Clock,
+  MapPin,
+  ChevronRight,
+  CheckCheck,
+  AlertCircle,
+  ExternalLink,
+} from 'lucide-react';
 import { useGetEventsQuery } from '@/store/api/eventSlice';
 import { useNavigate } from 'react-router-dom';
 import type { ERPEvent } from '@/types/models';
@@ -81,10 +90,16 @@ export function EventNotificationDropdown() {
                         isMandatory
                           ? 'bg-amber-500/15 text-amber-600'
                           : isExternal
-                          ? 'bg-sky-500/15 text-sky-600'
-                          : 'bg-primary/10 text-primary'
+                            ? 'bg-sky-500/15 text-sky-600'
+                            : 'bg-primary/10 text-primary'
                       }`}>
-                      {isMandatory ? <AlertCircle size={16} /> : isExternal ? <ExternalLink size={15} /> : <Calendar size={16} />}
+                      {isMandatory ? (
+                        <AlertCircle size={16} />
+                      ) : isExternal ? (
+                        <ExternalLink size={15} />
+                      ) : (
+                        <Calendar size={16} />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">

@@ -46,11 +46,7 @@ import {
 } from '@/store/api/authApiSlice';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import type { UserRole } from '@/config/navItems';
-import {
-  recordAuditLog,
-  type InvitationRecord,
-  type AuditLogEntry,
-} from '@/services/auditService';
+import { recordAuditLog, type InvitationRecord, type AuditLogEntry } from '@/services/auditService';
 import { ensureEmployeeProfileExists } from '@/services/employeeProfileService';
 
 export interface UserRecord {
@@ -224,14 +220,8 @@ export function UsersPage() {
   const [deleteUser] = useDeleteUserMutation();
 
   // Backend invitation & audit log hooks
-  const {
-    data: invitationsResponse,
-    refetch: refetchInvitations,
-  } = useGetSystemInvitationsQuery();
-  const {
-    data: auditLogsResponse,
-    refetch: refetchAuditLogs,
-  } = useGetSystemAuditLogsQuery();
+  const { data: invitationsResponse, refetch: refetchInvitations } = useGetSystemInvitationsQuery();
+  const { data: auditLogsResponse, refetch: refetchAuditLogs } = useGetSystemAuditLogsQuery();
 
   const [createSystemInvitation] = useCreateSystemInvitationMutation();
   const [revokeSystemInvitation] = useRevokeSystemInvitationMutation();
@@ -442,7 +432,9 @@ export function UsersPage() {
           if (res.link) serverLink = res.link;
           if (res.tempPass) serverPass = res.tempPass;
         } catch {
-          try { await sendInvitation({ email: form.email, role: form.role as UserRole }).unwrap(); } catch {}
+          try {
+            await sendInvitation({ email: form.email, role: form.role as UserRole }).unwrap();
+          } catch {}
         }
       }
 
@@ -456,18 +448,37 @@ export function UsersPage() {
           status: 'Active',
         }).unwrap();
       } catch {
-        const initials = form.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-        setLocalUsers((prev) => [{
-          id: Date.now(), name: form.name, email: form.email, role: form.role,
-          department: form.department, status: 'Active', avatar: initials,
-          createdAt: new Date().toISOString().split('T')[0],
-        }, ...prev]);
+        const initials = form.name
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+        setLocalUsers((prev) => [
+          {
+            id: Date.now(),
+            name: form.name,
+            email: form.email,
+            role: form.role,
+            department: form.department,
+            status: 'Active',
+            avatar: initials,
+            createdAt: new Date().toISOString().split('T')[0],
+          },
+          ...prev,
+        ]);
       }
 
       // Initialize employee onboarding tracking profile so Hiring Team immediately monitors them
       ensureEmployeeProfileExists(Date.now(), form.email, form.name, form.role, form.department);
 
-      setInviteResult({ open: true, email: form.email, role: form.role, link: serverLink, tempPass: serverPass });
+      setInviteResult({
+        open: true,
+        email: form.email,
+        role: form.role,
+        link: serverLink,
+        tempPass: serverPass,
+      });
       message.success(`Invitation dispatched to ${form.email} and saved in the database.`);
       setShowForm(false);
       setForm(emptyForm);

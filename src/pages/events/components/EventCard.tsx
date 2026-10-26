@@ -105,8 +105,7 @@ export const EventCard = ({
   return (
     <div
       onClick={handleCardClick}
-      className="group bg-white rounded-3xl border border-border-subtle overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1.5 cursor-pointer relative"
-    >
+      className="group bg-white rounded-3xl border border-border-subtle overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1.5 cursor-pointer relative">
       {/* Visual Header */}
       <div className="relative h-52 overflow-hidden bg-zinc-900">
         {!imageError ? (

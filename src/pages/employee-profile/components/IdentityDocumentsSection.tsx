@@ -35,18 +35,35 @@ interface DocUploadProps {
   readOnly?: boolean;
 }
 
-function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, readOnly }: DocUploadProps) {
+function DocumentUploader({
+  docType,
+  label,
+  existingDoc,
+  userId,
+  onUploaded,
+  readOnly,
+}: DocUploadProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(existingDoc?.localData || null);
 
   const handleFile = async (file: File) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      showToast({ severity: 'error', summary: 'Invalid File', detail: 'Only PDF, JPG, JPEG, PNG files allowed.', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Invalid File',
+        detail: 'Only PDF, JPG, JPEG, PNG files allowed.',
+        life: 3000,
+      });
       return;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      showToast({ severity: 'error', summary: 'File Too Large', detail: `Max file size is ${MAX_SIZE_MB}MB.`, life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'File Too Large',
+        detail: `Max file size is ${MAX_SIZE_MB}MB.`,
+        life: 3000,
+      });
       return;
     }
 
@@ -68,11 +85,21 @@ function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, rea
           localData: base64,
         });
         onUploaded(doc);
-        showToast({ severity: 'success', summary: 'Uploaded', detail: `${label} uploaded successfully.`, life: 2500 });
+        showToast({
+          severity: 'success',
+          summary: 'Uploaded',
+          detail: `${label} uploaded successfully.`,
+          life: 2500,
+        });
       };
       reader.readAsDataURL(file);
     } catch {
-      showToast({ severity: 'error', summary: 'Upload Failed', detail: 'Could not process the file. Please try again.', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: 'Could not process the file. Please try again.',
+        life: 3000,
+      });
     } finally {
       setUploading(false);
     }
@@ -85,11 +112,10 @@ function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, rea
           preview
             ? 'border-success/40 bg-success/5'
             : readOnly
-            ? 'border-border-subtle bg-surface-subtle'
-            : 'border-border-subtle hover:border-primary/40 cursor-pointer bg-surface-subtle/50 hover:bg-primary/5'
+              ? 'border-border-subtle bg-surface-subtle'
+              : 'border-border-subtle hover:border-primary/40 cursor-pointer bg-surface-subtle/50 hover:bg-primary/5'
         }`}
-        onClick={() => !readOnly && !preview && fileRef.current?.click()}
-      >
+        onClick={() => !readOnly && !preview && fileRef.current?.click()}>
         <input
           ref={fileRef}
           type="file"
@@ -98,21 +124,25 @@ function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, rea
           onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
         />
 
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-          preview ? 'bg-success/10' : 'bg-primary/10'
-        }`}>
-          {uploading
-            ? <i className="pi pi-spin pi-spinner text-primary" />
-            : preview
-            ? <Check size={18} className="text-success" />
-            : <Upload size={18} className="text-primary" />
-          }
+        <div
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            preview ? 'bg-success/10' : 'bg-primary/10'
+          }`}>
+          {uploading ? (
+            <i className="pi pi-spin pi-spinner text-primary" />
+          ) : preview ? (
+            <Check size={18} className="text-success" />
+          ) : (
+            <Upload size={18} className="text-primary" />
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="text-xs font-bold text-foreground">{label}</div>
           {existingDoc ? (
-            <div className="text-[10px] text-success font-semibold mt-0.5">{existingDoc.fileName}</div>
+            <div className="text-[10px] text-success font-semibold mt-0.5">
+              {existingDoc.fileName}
+            </div>
           ) : (
             <div className="text-[10px] text-muted mt-0.5">PDF, JPG, PNG up to {MAX_SIZE_MB}MB</div>
           )}
@@ -121,9 +151,11 @@ function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, rea
         {!readOnly && preview && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setPreview(null); }}
-            className="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all shrink-0"
-          >
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreview(null);
+            }}
+            className="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all shrink-0">
             <X size={14} />
           </button>
         )}
@@ -131,9 +163,11 @@ function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, rea
         {!readOnly && !preview && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold shrink-0 hover:bg-primary/20 transition-all"
-          >
+            onClick={(e) => {
+              e.stopPropagation();
+              fileRef.current?.click();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold shrink-0 hover:bg-primary/20 transition-all">
             <Upload size={12} /> Upload
           </button>
         )}
@@ -142,7 +176,15 @@ function DocumentUploader({ docType, label, existingDoc, userId, onUploaded, rea
   );
 }
 
-export function IdentityDocumentsSection({ data, documents, userId, onSave, onDocumentAdded, isSaving, readOnly }: Props) {
+export function IdentityDocumentsSection({
+  data,
+  documents,
+  userId,
+  onSave,
+  onDocumentAdded,
+  isSaving,
+  readOnly,
+}: Props) {
   const [form, setForm] = useState<IdentityDocuments>({
     panNumber: '',
     aadhaarNumber: '',
@@ -153,10 +195,10 @@ export function IdentityDocumentsSection({ data, documents, userId, onSave, onDo
     if (data) setForm({ ...data });
   }, [data]);
 
-  const set = (key: keyof IdentityDocuments, val: string) => setForm((prev) => ({ ...prev, [key]: val }));
+  const set = (key: keyof IdentityDocuments, val: string) =>
+    setForm((prev) => ({ ...prev, [key]: val }));
 
-  const getDoc = (type: ProfileDocument['type']) =>
-    documents.find((d) => d.type === type);
+  const getDoc = (type: ProfileDocument['type']) => documents.find((d) => d.type === type);
 
   const maskAadhaar = (val: string) => {
     if (!val) return '';
@@ -184,7 +226,9 @@ export function IdentityDocumentsSection({ data, documents, userId, onSave, onDo
         <div className="flex items-start gap-3">
           <AlertTriangle size={16} className="text-primary shrink-0 mt-0.5" />
           <p className="text-xs text-foreground">
-            <strong>Upload Now or Later:</strong> You can attach your document proofs now or submit them later before final HR verification. Clicking <strong>Save & Continue</strong> will preserve your entries and take you to the next step.
+            <strong>Upload Now or Later:</strong> You can attach your document proofs now or submit
+            them later before final HR verification. Clicking <strong>Save & Continue</strong> will
+            preserve your entries and take you to the next step.
           </p>
         </div>
       </div>
@@ -225,7 +269,7 @@ export function IdentityDocumentsSection({ data, documents, userId, onSave, onDo
           <label className={labelClass}>Aadhaar Number</label>
           <input
             className={inputClass(readOnly)}
-            value={readOnly ? maskAadhaar(form.aadhaarNumber || '') : (form.aadhaarNumber || '')}
+            value={readOnly ? maskAadhaar(form.aadhaarNumber || '') : form.aadhaarNumber || ''}
             onChange={(e) => set('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))}
             placeholder="12-digit Aadhaar number"
             maxLength={12}
@@ -246,7 +290,8 @@ export function IdentityDocumentsSection({ data, documents, userId, onSave, onDo
       {/* Passport (Optional) */}
       <div className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4">
         <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
-          <FileText size={14} className="text-muted" /> Passport <span className="text-[10px] text-muted font-normal">(Optional)</span>
+          <FileText size={14} className="text-muted" /> Passport{' '}
+          <span className="text-[10px] text-muted font-normal">(Optional)</span>
         </h4>
         <div>
           <label className={labelClass}>Passport Number</label>
@@ -273,8 +318,7 @@ export function IdentityDocumentsSection({ data, documents, userId, onSave, onDo
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50"
-          >
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

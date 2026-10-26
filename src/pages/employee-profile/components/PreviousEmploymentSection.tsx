@@ -37,10 +37,15 @@ function newEntry(): EmploymentHistoryEntry {
   };
 }
 
-export function PreviousEmploymentSection({ data, documents: _documents, userId, onSave, isSaving, readOnly }: Props) {
-  const [entries, setEntries] = useState<EmploymentHistoryEntry[]>(
-    data.length > 0 ? data : []
-  );
+export function PreviousEmploymentSection({
+  data,
+  documents: _documents,
+  userId,
+  onSave,
+  isSaving,
+  readOnly,
+}: Props) {
+  const [entries, setEntries] = useState<EmploymentHistoryEntry[]>(data.length > 0 ? data : []);
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
 
@@ -53,13 +58,18 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
   };
 
   const updateEntry = (id: string, key: keyof EmploymentHistoryEntry, val: any) => {
-    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, [key]: val } : e));
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
   };
 
   const handleFileUpload = async (entryId: string, file: File) => {
     const ALLOWED = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (!ALLOWED.includes(file.type)) {
-      showToast({ severity: 'error', summary: 'Invalid File', detail: 'Only PDF, JPG, PNG files.', life: 3000 });
+      showToast({
+        severity: 'error',
+        summary: 'Invalid File',
+        detail: 'Only PDF, JPG, PNG files.',
+        life: 3000,
+      });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -82,7 +92,12 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
         ...(entries.find((en) => en.id === entryId)?.documentIds || []),
         doc.id,
       ]);
-      showToast({ severity: 'success', summary: 'Uploaded', detail: `${file.name} added.`, life: 2500 });
+      showToast({
+        severity: 'success',
+        summary: 'Uploaded',
+        detail: `${file.name} added.`,
+        life: 2500,
+      });
     };
     reader.readAsDataURL(file);
     setActiveUploadId(null);
@@ -109,8 +124,7 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
           <button
             type="button"
             onClick={addEntry}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-all"
-          >
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-all">
             <Plus size={16} /> Add Employment
           </button>
         )}
@@ -123,14 +137,14 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
           </div>
           <h4 className="text-sm font-bold text-muted mb-2">No Employment History Added</h4>
           <p className="text-xs text-muted max-w-xs mb-4">
-            Add your previous employment records. If this is your first job, you can skip this section.
+            Add your previous employment records. If this is your first job, you can skip this
+            section.
           </p>
           {!readOnly && (
             <button
               type="button"
               onClick={addEntry}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25"
-            >
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25">
               <Plus size={16} /> Add First Employment
             </button>
           )}
@@ -144,8 +158,7 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4"
-          >
+            className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4">
             <div className="flex items-center justify-between">
               <div className="text-xs font-black uppercase tracking-wider text-muted">
                 Employment #{idx + 1}
@@ -154,8 +167,7 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
                 <button
                   type="button"
                   onClick={() => removeEntry(entry.id)}
-                  className="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all"
-                >
+                  className="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all">
                   <Trash2 size={14} />
                 </button>
               )}
@@ -211,7 +223,9 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
                       checked={entry.isCurrent || false}
                       onChange={(e) => updateEntry(entry.id, 'isCurrent', e.target.checked)}
                     />
-                    <span className="text-[10px] text-muted font-semibold">Currently working here</span>
+                    <span className="text-[10px] text-muted font-semibold">
+                      Currently working here
+                    </span>
                   </label>
                 )}
               </div>
@@ -241,13 +255,17 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
             {!readOnly && (
               <div>
                 <label className={labelClass}>Supporting Documents</label>
-                <p className="text-[10px] text-muted mb-2">Upload salary slips, relieving letter, experience letter</p>
+                <p className="text-[10px] text-muted mb-2">
+                  Upload salary slips, relieving letter, experience letter
+                </p>
                 <input
                   ref={activeUploadId === entry.id ? fileRef : undefined}
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFileUpload(entry.id, e.target.files[0])}
+                  onChange={(e) =>
+                    e.target.files?.[0] && handleFileUpload(entry.id, e.target.files[0])
+                  }
                 />
                 <button
                   type="button"
@@ -255,8 +273,7 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
                     setActiveUploadId(entry.id);
                     fileRef.current?.click();
                   }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 text-primary text-xs font-bold hover:bg-primary/10 transition-all"
-                >
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 text-primary text-xs font-bold hover:bg-primary/10 transition-all">
                   <Upload size={14} /> Upload Document
                 </button>
                 {(entry.documentIds?.length || 0) > 0 && (
@@ -281,8 +298,7 @@ export function PreviousEmploymentSection({ data, documents: _documents, userId,
             <button
               type="submit"
               disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50"
-            >
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
               {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
               Save & Continue
             </button>

@@ -14,7 +14,11 @@ import {
 } from 'lucide-react';
 import type { EventAttachment } from '@/types/models';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import { saveEventAttachmentLocally, getEventAttachments, removeEventAttachmentLocally } from '../utils/eventUtils';
+import {
+  saveEventAttachmentLocally,
+  getEventAttachments,
+  removeEventAttachmentLocally,
+} from '../utils/eventUtils';
 import { API_URL } from '@/config/env';
 
 interface EventMediaUploaderProps {
@@ -108,13 +112,25 @@ export const EventMediaUploader = ({
           setUploadingFiles((prev) =>
             prev.map((u) => (u.id === uploader.id ? { ...u, progress: 'done' as const } : u))
           );
-          showToast({ severity: 'success', summary: 'Uploaded!', detail: `"${file.name}" saved to server.`, life: 3000 });
+          showToast({
+            severity: 'success',
+            summary: 'Uploaded!',
+            detail: `"${file.name}" saved to server.`,
+            life: 3000,
+          });
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : 'Upload failed';
           setUploadingFiles((prev) =>
-            prev.map((u) => (u.id === uploader.id ? { ...u, progress: 'error' as const, error: msg } : u))
+            prev.map((u) =>
+              u.id === uploader.id ? { ...u, progress: 'error' as const, error: msg } : u
+            )
           );
-          showToast({ severity: 'error', summary: 'Upload Failed', detail: `"${file.name}": ${msg}`, life: 4000 });
+          showToast({
+            severity: 'error',
+            summary: 'Upload Failed',
+            detail: `"${file.name}": ${msg}`,
+            life: 4000,
+          });
         } finally {
           setTimeout(() => {
             setUploadingFiles((prev) => prev.filter((u) => u.id !== uploader.id));
@@ -170,8 +186,7 @@ export const EventMediaUploader = ({
               variant="primary"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="h-11 rounded-2xl! px-5! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
-            >
+              className="h-11 rounded-2xl! px-5! gap-2 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer whitespace-nowrap">
               {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
               <span>{isUploading ? 'Uploading...' : 'Upload Photos / Files'}</span>
             </Button>
@@ -189,11 +204,12 @@ export const EventMediaUploader = ({
                 u.progress === 'uploading'
                   ? 'bg-amber-50 border-amber-200 text-amber-700'
                   : u.progress === 'done'
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                  : 'bg-red-50 border-red-200 text-red-600'
-              }`}
-            >
-              {u.progress === 'uploading' && <Loader2 size={13} className="animate-spin flex-shrink-0" />}
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-red-50 border-red-200 text-red-600'
+              }`}>
+              {u.progress === 'uploading' && (
+                <Loader2 size={13} className="animate-spin flex-shrink-0" />
+              )}
               {u.progress === 'done' && <FileCheck size={13} className="flex-shrink-0" />}
               {u.progress === 'error' && <X size={13} className="flex-shrink-0" />}
               <span className="truncate flex-1">{u.name}</span>
@@ -221,8 +237,7 @@ export const EventMediaUploader = ({
             <Button
               variant="secondary"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-2 h-10 rounded-xl font-bold text-xs gap-1.5"
-            >
+              className="mt-2 h-10 rounded-xl font-bold text-xs gap-1.5">
               <Plus size={14} />
               <span>Choose Files to Upload</span>
             </Button>
@@ -240,8 +255,7 @@ export const EventMediaUploader = ({
                 {images.map((img) => (
                   <div
                     key={img.id}
-                    className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-900 border border-border-subtle shadow-xs hover:shadow-lg transition-all cursor-pointer"
-                  >
+                    className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-900 border border-border-subtle shadow-xs hover:shadow-lg transition-all cursor-pointer">
                     <img
                       src={img.url}
                       alt={img.name}
@@ -251,22 +265,25 @@ export const EventMediaUploader = ({
                       <div
                         onClick={() => setSelectedPreview(img)}
                         className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-foreground transition-all cursor-pointer"
-                        title="Preview"
-                      >
+                        title="Preview">
                         <Eye size={15} />
                       </div>
                       {!isReadOnly && (
                         <div
-                          onClick={(e) => { e.stopPropagation(); handleRemove(img); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemove(img);
+                          }}
                           className="w-8 h-8 rounded-xl bg-red-500/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
-                          title="Remove Image"
-                        >
+                          title="Remove Image">
                           <Trash2 size={14} />
                         </div>
                       )}
                     </div>
                     <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                      <span className="text-[10px] font-bold text-white truncate block">{img.name}</span>
+                      <span className="text-[10px] font-bold text-white truncate block">
+                        {img.name}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -284,8 +301,7 @@ export const EventMediaUploader = ({
                 {documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-border-subtle shadow-xs hover:shadow-md transition-all group"
-                  >
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-border-subtle shadow-xs hover:shadow-md transition-all group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-black">
                         <FileCheck size={18} />
@@ -304,16 +320,14 @@ export const EventMediaUploader = ({
                         href={doc.url}
                         download={doc.name}
                         className="w-9 h-9 rounded-xl bg-surface-subtle text-foreground hover:bg-primary hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                        title="Download File"
-                      >
+                        title="Download File">
                         <Download size={14} />
                       </a>
                       {!isReadOnly && (
                         <button
                           onClick={() => handleRemove(doc)}
                           className="w-9 h-9 rounded-xl bg-surface-subtle text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                          title="Remove File"
-                        >
+                          title="Remove File">
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -330,12 +344,10 @@ export const EventMediaUploader = ({
       {selectedPreview && (
         <div
           onClick={() => setSelectedPreview(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
-        >
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-3xl max-h-[85vh] bg-zinc-950 rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex flex-col"
-          >
+            className="relative max-w-3xl max-h-[85vh] bg-zinc-950 rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex flex-col">
             <div className="relative flex-1 overflow-hidden flex items-center justify-center bg-black">
               <img
                 src={selectedPreview.url}
@@ -346,22 +358,22 @@ export const EventMediaUploader = ({
             <div className="p-4 bg-zinc-900 border-t border-white/10 flex items-center justify-between">
               <div>
                 <h5 className="text-sm font-bold text-white truncate">{selectedPreview.name}</h5>
-                <span className="text-[10px] text-zinc-400">Uploaded on {selectedPreview.uploaded_at}</span>
+                <span className="text-[10px] text-zinc-400">
+                  Uploaded on {selectedPreview.uploaded_at}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <a
                   href={selectedPreview.url}
                   download={selectedPreview.name}
-                  className="px-4 py-2 rounded-xl bg-white/10 text-white hover:bg-white hover:text-zinc-950 font-bold text-xs flex items-center gap-1.5 transition-all"
-                >
+                  className="px-4 py-2 rounded-xl bg-white/10 text-white hover:bg-white hover:text-zinc-950 font-bold text-xs flex items-center gap-1.5 transition-all">
                   <Download size={14} />
                   <span>Download</span>
                 </a>
                 {!isReadOnly && (
                   <button
                     onClick={() => handleRemove(selectedPreview)}
-                    className="px-4 py-2 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all"
-                  >
+                    className="px-4 py-2 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all">
                     <Trash2 size={14} />
                     <span>Remove</span>
                   </button>
@@ -369,8 +381,7 @@ export const EventMediaUploader = ({
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedPreview(null)}
-                  className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white text-xs font-bold"
-                >
+                  className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white text-xs font-bold">
                   Close
                 </Button>
               </div>

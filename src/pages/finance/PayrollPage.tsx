@@ -78,10 +78,20 @@ export interface PayrollRecord {
 
 const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const monthNames = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    'JANUARY',
+    'FEBRUARY',
+    'MARCH',
+    'APRIL',
+    'MAY',
+    'JUNE',
+    'JULY',
+    'AUGUST',
+    'SEPTEMBER',
+    'OCTOBER',
+    'NOVEMBER',
+    'DECEMBER',
   ];
-  
+
   const monthIdx = (Number(item.pay_period_month) || 1) - 1;
   const monthStr = monthNames[monthIdx] || 'OCTOBER';
   const yearStr = String(item.pay_period_year || 2026);
@@ -92,11 +102,14 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const bonusVal = Number(item.bonus || 0);
   const netVal = Number(item.net_salary || 0);
   const monthYearStr = `${monthStr} ${yearStr}`;
-  const empCode = String(item.employee_code || item.employeeCode || item.employee_id || item.user_id || '001');
+  const empCode = String(
+    item.employee_code || item.employeeCode || item.employee_id || item.user_id || '001'
+  );
   const fallbackSlipNo = generateSlipNumber(empCode, monthYearStr);
 
   // Extract Payroll Type & Adjustments (from native field or serialized in remarks)
-  const isAdjustmentRemark = typeof item.remarks === 'string' && item.remarks.includes('[ADJUSTMENT');
+  const isAdjustmentRemark =
+    typeof item.remarks === 'string' && item.remarks.includes('[ADJUSTMENT');
   const detectedPayrollType: 'Regular' | 'Adjustment' =
     item.payroll_type || item.payrollType || (isAdjustmentRemark ? 'Adjustment' : 'Regular');
 
@@ -164,7 +177,9 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
       { name: 'Income Tax (TDS)', amount: Number(item.income_tax_tds || 0) },
       { name: 'Other Deductions', amount: Number(item.other_deductions || 0) },
     ],
-    hrNote: item.remarks || 'For any discrepancies, please contact the HR department within 3 working days.',
+    hrNote:
+      item.remarks ||
+      'For any discrepancies, please contact the HR department within 3 working days.',
   };
 };
 
@@ -180,8 +195,8 @@ export default function PayrollPage() {
     refetchOnMountOrArgChange: true,
   });
 
-  const { 
-    data: auditLogsData, 
+  const {
+    data: auditLogsData,
     isLoading: isLogsLoading,
     refetch: refetchLogs, // 👈 Destructure refetch
   } = useGetSalarySlipAuditLogsQuery(undefined, {
@@ -191,7 +206,8 @@ export default function PayrollPage() {
   const [createSalarySlip, { isLoading: isCreating }] = useCreateSalarySlipMutation();
   const [updateSalarySlip, { isLoading: isUpdating }] = useUpdateSalarySlipMutation();
   const [deleteSalarySlip, { isLoading: isDeleting }] = useDeleteSalarySlipMutation();
-  const [createAdjustment, { isLoading: isCreatingAdjustment }] = useCreatePayrollAdjustmentMutation();
+  const [createAdjustment, { isLoading: isCreatingAdjustment }] =
+    useCreatePayrollAdjustmentMutation();
   const { refetch: refetchAdjustments } = useGetPayrollAdjustmentsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
@@ -218,8 +234,8 @@ export default function PayrollPage() {
       const itemsList = Array.isArray(rawData?.data)
         ? rawData.data
         : Array.isArray(rawData)
-        ? rawData
-        : [];
+          ? rawData
+          : [];
 
       const formattedRecords: PayrollRecord[] = itemsList.map((item: Record<string, any>) =>
         formatApiRecord(item)
@@ -349,9 +365,11 @@ export default function PayrollPage() {
           adjustmentAmount: Number(data.adjustmentAmount || 0),
           adjustmentReason: data.adjustmentReason || data.adjustmentNotes || 'Adjustment processed',
           referencePeriod: data.referencePeriod || data.referencedPeriod || '',
-          referenceSalarySlipId: data.referenceSalarySlipId ? Number(data.referenceSalarySlipId) : undefined,
+          referenceSalarySlipId: data.referenceSalarySlipId
+            ? Number(data.referenceSalarySlipId)
+            : undefined,
           payFrequency: (data.payCycle || 'monthly').toLowerCase(),
-          month: (data as any).payPeriodMonth || (data as any).month || (new Date().getMonth() + 1),
+          month: (data as any).payPeriodMonth || (data as any).month || new Date().getMonth() + 1,
           year: (data as any).payPeriodYear || (data as any).year || new Date().getFullYear(),
           cycleNumber: data.cyclePart || 1,
         }).unwrap();
@@ -622,7 +640,8 @@ export default function PayrollPage() {
         //   ? 'processing'
         //   : 'error';
         return (
-          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700`}>
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700`}>
             {actionType}
           </span>
         );
@@ -641,9 +660,7 @@ export default function PayrollPage() {
       title: 'Admin / User',
       key: 'username',
       render: (_, record) => (
-        <span className="text-xs text-slate-600 font-semibold">
-          {record.username || 'System'}
-        </span>
+        <span className="text-xs text-slate-600 font-semibold">{record.username || 'System'}</span>
       ),
     },
   ];
@@ -652,8 +669,8 @@ export default function PayrollPage() {
   const rawLogsList = Array.isArray(auditLogsData?.data)
     ? auditLogsData.data
     : Array.isArray(auditLogsData)
-    ? auditLogsData
-    : [];
+      ? auditLogsData
+      : [];
 
   return (
     <div className="flex flex-col gap-6 pb-20 max-w-7xl mx-auto p-4 sm:p-6">
@@ -749,7 +766,9 @@ export default function PayrollPage() {
       <div className="flex flex-col gap-3 mt-6">
         <div>
           <h3 className="font-bold text-base text-slate-900">Audit Logs</h3>
-          <p className="text-xs text-slate-500">History of salary slip updates, creations, and deletions</p>
+          <p className="text-xs text-slate-500">
+            History of salary slip updates, creations, and deletions
+          </p>
         </div>
         <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
           <Table

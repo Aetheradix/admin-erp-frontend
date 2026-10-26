@@ -13,9 +13,9 @@ export const useAttendancePage = () => {
   const { user } = useAuth();
   const isAdmin = Boolean(
     user?.role &&
-      ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
-        String(user.role).toLowerCase().includes(r)
-      )
+    ['admin', 'superadmin', 'hradmin', 'financeadmin', 'manager'].some((r) =>
+      String(user.role).toLowerCase().includes(r)
+    )
   );
 
   const { data: records = [], isLoading: recordsLoading } = useGetAttendanceHistoryQuery();
@@ -30,9 +30,7 @@ export const useAttendancePage = () => {
   const calendarRequests = requests;
 
   // Filter pending requests for approval workflows
-  const pendingRequests = requests.filter(
-    (req) => (req.status || '').toLowerCase() === 'pending'
-  );
+  const pendingRequests = requests.filter((req) => (req.status || '').toLowerCase() === 'pending');
 
   const handleRequestSubmit = async (
     data: Partial<AttendanceRequest> & { startDate: string; endDate: string }

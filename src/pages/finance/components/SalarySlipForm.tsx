@@ -378,8 +378,10 @@ const SalarySlipForm = ({
   });
   const { data: allSalarySlipsData } = useGetAllSalarySlipsQuery();
   const [getSlipsByEmpId] = useLazyGetSalarySlipByIdQuery();
-  const [fetchCompensation, { isLoading: isFetchingCompensation }] = useLazyGetEmployeeCompensationQuery();
-  const [previewCompensation, { isLoading: isPreviewingCompensation }] = usePreviewEmployeeCompensationMutation();
+  const [fetchCompensation, { isLoading: isFetchingCompensation }] =
+    useLazyGetEmployeeCompensationQuery();
+  const [previewCompensation, { isLoading: isPreviewingCompensation }] =
+    usePreviewEmployeeCompensationMutation();
 
   const [customUsersList, setCustomUsersList] = useState<any[]>([]);
   const [isCustomLoading, setIsCustomLoading] = useState<boolean>(false);
@@ -407,7 +409,6 @@ const SalarySlipForm = ({
       clearTimeout(timer);
     };
   }, [searchTerm, fetchUsers]);
-
 
   // Use a ref to ensure initialValues only populates the form once on mount
   const hasInitializedRef = useRef(false);
@@ -502,13 +503,13 @@ const SalarySlipForm = ({
       Array.isArray(initialValues.earnings) && initialValues.earnings.length > 0
         ? initialValues.earnings
         : [
-          { name: 'Basic Pay', amount: basePay },
-          ...(hraPay > 0 ? [{ name: 'HRA', amount: hraPay }] : []),
-          ...(specialPay > 0 ? [{ name: 'Special Allowance', amount: specialPay }] : []),
-          ...(conveyancePay > 0 ? [{ name: 'Conveyance', amount: conveyancePay }] : []),
-          ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
-          ...(otherEarnPay > 0 ? [{ name: 'Other Earnings', amount: otherEarnPay }] : []),
-        ];
+            { name: 'Basic Pay', amount: basePay },
+            ...(hraPay > 0 ? [{ name: 'HRA', amount: hraPay }] : []),
+            ...(specialPay > 0 ? [{ name: 'Special Allowance', amount: specialPay }] : []),
+            ...(conveyancePay > 0 ? [{ name: 'Conveyance', amount: conveyancePay }] : []),
+            ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
+            ...(otherEarnPay > 0 ? [{ name: 'Other Earnings', amount: otherEarnPay }] : []),
+          ];
 
     const pfDeduct = Number(raw.provident_fund || 0);
     const ptDeduct = Number(raw.professional_tax || 0);
@@ -519,11 +520,11 @@ const SalarySlipForm = ({
       Array.isArray(initialValues.deductions) && initialValues.deductions.length > 0
         ? initialValues.deductions
         : [
-          ...(pfDeduct > 0 ? [{ name: 'Provident Fund (PF)', amount: pfDeduct }] : []),
-          ...(ptDeduct > 0 ? [{ name: 'Professional Tax (PT)', amount: ptDeduct }] : []),
-          ...(tdsDeduct > 0 ? [{ name: 'TDS', amount: tdsDeduct }] : []),
-          ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
-        ];
+            ...(pfDeduct > 0 ? [{ name: 'Provident Fund (PF)', amount: pfDeduct }] : []),
+            ...(ptDeduct > 0 ? [{ name: 'Professional Tax (PT)', amount: ptDeduct }] : []),
+            ...(tdsDeduct > 0 ? [{ name: 'TDS', amount: tdsDeduct }] : []),
+            ...(otherDeduct > 0 ? [{ name: 'Other Deductions', amount: otherDeduct }] : []),
+          ];
 
     // Generate proper professional slip number
     const empCode = String(raw.employee_code || initialValues.employeeId || '');
@@ -539,11 +540,11 @@ const SalarySlipForm = ({
       department: String(initialValues.department || ''),
       accountNumber: String(
         raw.bank_account_number ||
-        raw.bankAccountNumber ||
-        raw.account_number ||
-        raw.accountNumber ||
-        initialValues.accountNumber ||
-        ''
+          raw.bankAccountNumber ||
+          raw.account_number ||
+          raw.accountNumber ||
+          initialValues.accountNumber ||
+          ''
       ),
       baseSalary: basePay,
       payCycle: cycle as 'Bi-Weekly' | 'Monthly',
@@ -760,7 +761,10 @@ const SalarySlipForm = ({
   };
 
   // Live annual gross estimate for statutory tax calculation
-  const totalEarningsVal = formData.earnings.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const totalEarningsVal = formData.earnings.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  );
   const estimatedAnnualGross = useMemo(() => {
     if (formData.totalCompensation && Number(formData.totalCompensation) > 0) {
       return Number(formData.totalCompensation);
@@ -780,8 +784,11 @@ const SalarySlipForm = ({
       annualGrossSalary: estimatedAnnualGross,
       regime: formData.taxRegime || 'New Regime',
       basicSalary: Number(formData.baseSalary) || Math.round(estimatedAnnualGross * 0.5),
-      isMidYearJoiner: Boolean(selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner),
-      previousEmployerYtd: selectedEmployeeObj?.previousEmployerYtd || selectedEmployeeObj?.previous_employer_ytd,
+      isMidYearJoiner: Boolean(
+        selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner
+      ),
+      previousEmployerYtd:
+        selectedEmployeeObj?.previousEmployerYtd || selectedEmployeeObj?.previous_employer_ytd,
     });
   }, [estimatedAnnualGross, formData.taxRegime, formData.baseSalary, selectedEmployeeObj]);
 
@@ -852,27 +859,27 @@ const SalarySlipForm = ({
     // 1. Detect bank account from user object
     let detectedAccount = String(
       user.bank_account_number ||
-      user.account_number ||
-      user.accountNumber ||
-      user.bank_account ||
-      user.bankAccount ||
-      user.bank_acc_no ||
-      user.bankAccNo ||
-      ''
+        user.account_number ||
+        user.accountNumber ||
+        user.bank_account ||
+        user.bankAccount ||
+        user.bank_acc_no ||
+        user.bankAccNo ||
+        ''
     ).trim();
 
     // 2. Detect base salary from user object
     let detectedBaseSalary = Number(
       user.base_salary ??
-      user.basic_salary ??
-      user.baseSalary ??
-      user.basicSalary ??
-      user.salary ??
-      user.base_pay ??
-      user.basePay ??
-      user.base_amount ??
-      user.baseAmount ??
-      0
+        user.basic_salary ??
+        user.baseSalary ??
+        user.basicSalary ??
+        user.salary ??
+        user.base_pay ??
+        user.basePay ??
+        user.base_amount ??
+        user.baseAmount ??
+        0
     );
 
     // 3. Fallback: Search existing salary slips in cache
@@ -885,10 +892,16 @@ const SalarySlipForm = ({
     const findInSlips = (slipsList: any[]) => {
       return slipsList.filter((slip: any) => {
         const sUserId = slip.user_id ?? slip.userId;
-        const sEmpCode = String(slip.employee_code ?? slip.employeeCode ?? slip.employeeId ?? '').trim().toLowerCase();
+        const sEmpCode = String(slip.employee_code ?? slip.employeeCode ?? slip.employeeId ?? '')
+          .trim()
+          .toLowerCase();
         const uId = String(rawId).trim().toLowerCase();
-        const uEmpCode = String(user.employee_code ?? user.employee_id ?? user.employeeId ?? '').trim().toLowerCase();
-        const sName = String(slip.username ?? slip.employee_name ?? slip.employeeName ?? '').trim().toLowerCase();
+        const uEmpCode = String(user.employee_code ?? user.employee_id ?? user.employeeId ?? '')
+          .trim()
+          .toLowerCase();
+        const sName = String(slip.username ?? slip.employee_name ?? slip.employeeName ?? '')
+          .trim()
+          .toLowerCase();
         const uName = resolvedName.trim().toLowerCase();
 
         return (
@@ -903,10 +916,10 @@ const SalarySlipForm = ({
       if (!detectedAccount) {
         detectedAccount = String(
           slip.bank_account_number ||
-          slip.bankAccountNumber ||
-          slip.account_number ||
-          slip.accountNumber ||
-          ''
+            slip.bankAccountNumber ||
+            slip.account_number ||
+            slip.accountNumber ||
+            ''
         ).trim();
       }
       if (!detectedBaseSalary) {
@@ -924,22 +937,24 @@ const SalarySlipForm = ({
 
     const matchedSlips = findInSlips(allSlips);
     if (matchedSlips.length > 0) {
-      const sorted = [...matchedSlips].sort((a: any, b: any) => Number(b.id || 0) - Number(a.id || 0));
+      const sorted = [...matchedSlips].sort(
+        (a: any, b: any) => Number(b.id || 0) - Number(a.id || 0)
+      );
       applyFromSlip(sorted[0]);
     }
 
-    const empCode = String(user.employee_code || user.employee_id || user.employeeId || user.id || '');
-    const currentMonthYear = formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
+    const empCode = String(
+      user.employee_code || user.employee_id || user.employeeId || user.id || ''
+    );
+    const currentMonthYear =
+      formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
     const generatedSlipNo = generateSlipNumber(empCode, currentMonthYear);
 
     const detectedTotalComp = Number(
-      user.totalCompensation ??
-      user.total_compensation ??
-      user.annualCtc ??
-      user.annual_ctc ??
-      0
+      user.totalCompensation ?? user.total_compensation ?? user.annualCtc ?? user.annual_ctc ?? 0
     );
-    const detectedRegime = (user.taxRegime || user.tax_regime || 'New Regime') as 'New Regime' | 'Old Regime';
+    const detectedRegime = (user.taxRegime || user.tax_regime || 'New Regime') as
+      'New Regime' | 'Old Regime';
     const detectedPan = String(user.panNumber || user.pan_number || '');
 
     if (!detectedBaseSalary && detectedTotalComp > 0) {
@@ -950,13 +965,16 @@ const SalarySlipForm = ({
 
     setFormData((prev) => {
       const updatedEarnings = [...prev.earnings];
-      const basicIndex = updatedEarnings.findIndex((e) =>
-        e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
+      const basicIndex = updatedEarnings.findIndex(
+        (e) => e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
       );
 
       if (detectedBaseSalary > 0) {
         if (basicIndex !== -1) {
-          updatedEarnings[basicIndex] = { ...updatedEarnings[basicIndex], amount: detectedBaseSalary };
+          updatedEarnings[basicIndex] = {
+            ...updatedEarnings[basicIndex],
+            amount: detectedBaseSalary,
+          };
         } else if (updatedEarnings.length > 0) {
           updatedEarnings[0] = { ...updatedEarnings[0], amount: detectedBaseSalary };
         } else {
@@ -972,11 +990,11 @@ const SalarySlipForm = ({
         position: user.designation || user.role || user.position || '',
         department: user.department || '',
         accountNumber: detectedAccount || '',
-        baseSalary: detectedBaseSalary > 0 ? detectedBaseSalary : (prev.baseSalary || ''),
-        totalCompensation: detectedTotalComp > 0 ? detectedTotalComp : (prev.totalCompensation || ''),
+        baseSalary: detectedBaseSalary > 0 ? detectedBaseSalary : prev.baseSalary || '',
+        totalCompensation: detectedTotalComp > 0 ? detectedTotalComp : prev.totalCompensation || '',
         taxRegime: detectedRegime,
         panNumber: detectedPan || prev.panNumber,
-        paySlipNo: isEditing ? prev.paySlipNo : (generatedSlipNo || prev.paySlipNo),
+        paySlipNo: isEditing ? prev.paySlipNo : generatedSlipNo || prev.paySlipNo,
         earnings: updatedEarnings,
       };
 
@@ -988,15 +1006,23 @@ const SalarySlipForm = ({
     if ((!detectedAccount || !detectedBaseSalary) && rawId) {
       try {
         const res = await getSlipsByEmpId(rawId).unwrap();
-        const empSlips = Array.isArray(res) ? res : res?.data ? (Array.isArray(res.data) ? res.data : [res.data]) : [];
+        const empSlips = Array.isArray(res)
+          ? res
+          : res?.data
+            ? Array.isArray(res.data)
+              ? res.data
+              : [res.data]
+            : [];
         if (empSlips.length > 0) {
-          const newest = [...empSlips].sort((a: any, b: any) => Number(b.id || 0) - Number(a.id || 0))[0];
+          const newest = [...empSlips].sort(
+            (a: any, b: any) => Number(b.id || 0) - Number(a.id || 0)
+          )[0];
           applyFromSlip(newest);
 
           setFormData((prev) => {
             const updatedEarnings = [...prev.earnings];
-            const bIdx = updatedEarnings.findIndex((e) =>
-              e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
+            const bIdx = updatedEarnings.findIndex(
+              (e) => e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
             );
             if (detectedBaseSalary > 0 && bIdx !== -1 && updatedEarnings[bIdx].amount === 0) {
               updatedEarnings[bIdx] = { ...updatedEarnings[bIdx], amount: detectedBaseSalary };
@@ -1253,7 +1279,8 @@ const SalarySlipForm = ({
         'conveyance',
         'transport',
       ];
-      const basicSalary = findAmount(formData.earnings, ['basic']) || Number(formData.baseSalary || 0);
+      const basicSalary =
+        findAmount(formData.earnings, ['basic']) || Number(formData.baseSalary || 0);
       const houseRentAllowance = findAmount(formData.earnings, ['hra', 'house rent']);
       const bonus = findAmount(formData.earnings, ['bonus', 'incentive']);
       const specialAllowance = findAmount(formData.earnings, ['special']);
@@ -1316,8 +1343,12 @@ const SalarySlipForm = ({
         referencePeriod: formData.referencePeriod || formData.referencedPeriod || null,
         referenced_period: formData.referencePeriod || formData.referencedPeriod || null,
         referencedPeriod: formData.referencePeriod || formData.referencedPeriod || null,
-        reference_salary_slip_id: formData.referenceSalarySlipId ? Number(formData.referenceSalarySlipId) : null,
-        referenceSalarySlipId: formData.referenceSalarySlipId ? Number(formData.referenceSalarySlipId) : null,
+        reference_salary_slip_id: formData.referenceSalarySlipId
+          ? Number(formData.referenceSalarySlipId)
+          : null,
+        referenceSalarySlipId: formData.referenceSalarySlipId
+          ? Number(formData.referenceSalarySlipId)
+          : null,
         adjustment_notes: formData.adjustmentReason || formData.adjustmentNotes || null,
         adjustmentNotes: formData.adjustmentReason || formData.adjustmentNotes || null,
         tax_regime: formData.taxRegime || 'New Regime',
@@ -1432,7 +1463,8 @@ const SalarySlipForm = ({
                     Payroll Type
                   </span>
                   <p className="text-xs text-slate-500">
-                    Choose standard recurring cycle payroll or an adjustment to rectify past mistakes.
+                    Choose standard recurring cycle payroll or an adjustment to rectify past
+                    mistakes.
                   </p>
                 </div>
 
@@ -1451,7 +1483,8 @@ const SalarySlipForm = ({
                     type="button"
                     onClick={() => {
                       updateField('payrollType', 'Adjustment');
-                      if (!formData.adjustmentType) updateField('adjustmentType', 'Salary Rate Discrepancy');
+                      if (!formData.adjustmentType)
+                        updateField('adjustmentType', 'Salary Rate Discrepancy');
                     }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       formData.payrollType === 'Adjustment'
@@ -1474,8 +1507,12 @@ const SalarySlipForm = ({
                       onChange={(e) => updateField('adjustmentType', e.target.value)}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black">
                       <option value="wrong_rate">Wrong Rate / Arrears (wrong_rate)</option>
-                      <option value="tax_correction">Tax Deducted Discrepancy / Refund (tax_correction)</option>
-                      <option value="overpayment">Clawback / Overpayment Recovery (overpayment)</option>
+                      <option value="tax_correction">
+                        Tax Deducted Discrepancy / Refund (tax_correction)
+                      </option>
+                      <option value="overpayment">
+                        Clawback / Overpayment Recovery (overpayment)
+                      </option>
                       <option value="underpayment">Underpayment (underpayment)</option>
                       <option value="arrears">Arrears Payment (arrears)</option>
                       <option value="other">Other Past Correction (other)</option>
@@ -1487,7 +1524,9 @@ const SalarySlipForm = ({
                       Adjustment Amount (₹) <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">₹</span>
+                      <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">
+                        ₹
+                      </span>
                       <input
                         type="number"
                         value={formData.adjustmentAmount ?? ''}
@@ -1550,7 +1589,9 @@ const SalarySlipForm = ({
                   </div>
 
                   <div className="md:col-span-3 flex flex-wrap items-center gap-2 pt-1 text-xs">
-                    <span className="text-slate-500 font-semibold text-[11px]">Quick Apply to Slip Breakdown:</span>
+                    <span className="text-slate-500 font-semibold text-[11px]">
+                      Quick Apply to Slip Breakdown:
+                    </span>
                     <button
                       type="button"
                       onClick={() => {
@@ -1561,12 +1602,16 @@ const SalarySlipForm = ({
                           ...prev,
                           earnings: [
                             ...prev.earnings,
-                            { name: `Arrears Adjustment (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`, amount: amt },
+                            {
+                              name: `Arrears Adjustment (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`,
+                              amount: amt,
+                            },
                           ],
                         }));
                       }}
                       className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold transition">
-                      + Add Arrears Earning (+₹{Math.abs(formData.adjustmentAmount || 10000).toLocaleString('en-IN')})
+                      + Add Arrears Earning (+₹
+                      {Math.abs(formData.adjustmentAmount || 10000).toLocaleString('en-IN')})
                     </button>
                     <button
                       type="button"
@@ -1577,7 +1622,10 @@ const SalarySlipForm = ({
                           ...prev,
                           deductions: [
                             ...prev.deductions,
-                            { name: `TDS Correction (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`, amount: amt },
+                            {
+                              name: `TDS Correction (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`,
+                              amount: amt,
+                            },
                           ],
                         }));
                       }}
@@ -1594,12 +1642,16 @@ const SalarySlipForm = ({
                           ...prev,
                           deductions: [
                             ...prev.deductions,
-                            { name: `Overpayment Clawback (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`, amount: amt },
+                            {
+                              name: `Overpayment Clawback (${prev.referencePeriod || prev.referencedPeriod || 'Past Cycle'})`,
+                              amount: amt,
+                            },
                           ],
                         }));
                       }}
                       className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold transition">
-                      + Add Clawback Recovery (-₹{Math.abs(formData.adjustmentAmount || 5000).toLocaleString('en-IN')})
+                      + Add Clawback Recovery (-₹
+                      {Math.abs(formData.adjustmentAmount || 5000).toLocaleString('en-IN')})
                     </button>
                   </div>
                 </div>
@@ -1623,7 +1675,9 @@ const SalarySlipForm = ({
                     value={formData.payCycle || 'Monthly'}
                     onChange={(e) => handleCycleChange(e.target.value as PayCycleOption)}
                     className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
-                    {companyPayrollSettings.enabledPayPeriods.monthly && <option value="Monthly">Monthly</option>}
+                    {companyPayrollSettings.enabledPayPeriods.monthly && (
+                      <option value="Monthly">Monthly</option>
+                    )}
                     {companyPayrollSettings.enabledPayPeriods.semiMonthly && (
                       <option value="Semi-Monthly">Semi-Monthly (Twice/Mo)</option>
                     )}
@@ -1691,7 +1745,9 @@ const SalarySlipForm = ({
                 {formData.payCycle === 'Custom' && (
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Start Date
+                      </label>
                       <input
                         type="date"
                         value={customStart}
@@ -1700,7 +1756,9 @@ const SalarySlipForm = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        End Date
+                      </label>
                       <input
                         type="date"
                         value={customEnd}
@@ -1719,8 +1777,9 @@ const SalarySlipForm = ({
                   <select
                     value={selectedMonth}
                     onChange={(e) => handleMonthChange(e.target.value)}
-                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${errors.monthYear ? 'border-red-500' : 'border-gray-300'
-                      }`}>
+                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
+                      errors.monthYear ? 'border-red-500' : 'border-gray-300'
+                    }`}>
                     {months.map((month: string) => (
                       <option key={month} value={month}>
                         {month}
@@ -1737,8 +1796,9 @@ const SalarySlipForm = ({
                   <select
                     value={selectedYear}
                     onChange={(e) => handleYearChange(e.target.value)}
-                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${errors.monthYear ? 'border-red-500' : 'border-gray-300'
-                      }`}>
+                    className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
+                      errors.monthYear ? 'border-red-500' : 'border-gray-300'
+                    }`}>
                     {years.map((year) => (
                       <option key={year} value={year}>
                         {year}
@@ -1947,8 +2007,10 @@ const SalarySlipForm = ({
                   updateField('baseSalary', val);
                   setFormData((prev) => {
                     const updated = [...prev.earnings];
-                    const bIdx = updated.findIndex((item) =>
-                      item.name.toLowerCase().includes('basic') || item.name.toLowerCase().includes('base')
+                    const bIdx = updated.findIndex(
+                      (item) =>
+                        item.name.toLowerCase().includes('basic') ||
+                        item.name.toLowerCase().includes('base')
                     );
                     const numVal = Number(val || 0);
                     if (bIdx !== -1) {
@@ -1973,15 +2035,17 @@ const SalarySlipForm = ({
                 placeholder="e.g. 1200000"
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax Regime
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tax Regime</label>
                 <select
                   value={formData.taxRegime || 'New Regime'}
-                  onChange={(e) => updateField('taxRegime', e.target.value as 'New Regime' | 'Old Regime')}
+                  onChange={(e) =>
+                    updateField('taxRegime', e.target.value as 'New Regime' | 'Old Regime')
+                  }
                   className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
                   <option value="New Regime">New Regime (Standard ₹75k, Nil up to ₹12L)</option>
-                  <option value="Old Regime">Old Regime (Exemptions 80C/80D/HRA, Nil up to ₹5L)</option>
+                  <option value="Old Regime">
+                    Old Regime (Exemptions 80C/80D/HRA, Nil up to ₹5L)
+                  </option>
                 </select>
               </div>
               <Input
@@ -1992,18 +2056,26 @@ const SalarySlipForm = ({
               />
             </div>
 
-            {Boolean(selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner) && (
+            {Boolean(
+              selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner
+            ) && (
               <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between text-xs text-amber-900">
                 <div className="flex items-center gap-2">
                   <AlertCircle size={15} className="text-amber-600 flex-shrink-0" />
                   <span>
-                    <strong>Mid-Year Joiner Detected:</strong> Previous Employer YTD Gross: ₹{Number(
+                    <strong>Mid-Year Joiner Detected:</strong> Previous Employer YTD Gross: ₹
+                    {Number(
                       selectedEmployeeObj?.previousEmployerYtd?.grossSalary ||
-                      selectedEmployeeObj?.previous_employer_ytd?.grossSalary || 0
-                    ).toLocaleString('en-IN')}, TDS Credited: ₹{Number(
+                        selectedEmployeeObj?.previous_employer_ytd?.grossSalary ||
+                        0
+                    ).toLocaleString('en-IN')}
+                    , TDS Credited: ₹
+                    {Number(
                       selectedEmployeeObj?.previousEmployerYtd?.tdsDeducted ||
-                      selectedEmployeeObj?.previous_employer_ytd?.tdsDeducted || 0
-                    ).toLocaleString('en-IN')}. Cumulative tax slabs and credits are active.
+                        selectedEmployeeObj?.previous_employer_ytd?.tdsDeducted ||
+                        0
+                    ).toLocaleString('en-IN')}
+                    . Cumulative tax slabs and credits are active.
                   </span>
                 </div>
               </div>
@@ -2157,14 +2229,19 @@ const SalarySlipForm = ({
                   <div>
                     <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                       Statutory Tax & TDS Computation ({formData.taxRegime || 'New Regime'})
-                      {Boolean(selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner) && (
+                      {Boolean(
+                        selectedEmployeeObj?.isMidYearJoiner ??
+                        selectedEmployeeObj?.is_mid_year_joiner
+                      ) && (
                         <span className="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold">
                           Mid-Year Joiner
                         </span>
                       )}
                     </h4>
                     <p className="text-xs text-gray-600">
-                      Est. Annual CTC: ₹{Number(estimatedAnnualGross).toLocaleString('en-IN')} • Taxable: ₹{Number(liveTaxResult?.netTaxableIncome || 0).toLocaleString('en-IN')}
+                      Est. Annual CTC: ₹{Number(estimatedAnnualGross).toLocaleString('en-IN')} •
+                      Taxable: ₹
+                      {Number(liveTaxResult?.netTaxableIncome || 0).toLocaleString('en-IN')}
                     </p>
                   </div>
                 </div>
@@ -2183,7 +2260,8 @@ const SalarySlipForm = ({
                     disabled={!liveTaxResult || liveTaxResult.projectedMonthlyTds === 0}
                     className="px-3 py-1.5 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition flex items-center gap-1.5 shadow-xs disabled:opacity-40">
                     <Sparkles size={14} />
-                    Apply TDS (₹{Number(liveTaxResult?.projectedMonthlyTds || 0).toLocaleString('en-IN')})
+                    Apply TDS (₹
+                    {Number(liveTaxResult?.projectedMonthlyTds || 0).toLocaleString('en-IN')})
                   </button>
                   <button
                     type="button"
@@ -2199,19 +2277,33 @@ const SalarySlipForm = ({
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Standard Deduction</span>
-                      <p className="text-sm font-bold text-gray-800 mt-0.5">₹{liveTaxResult.standardDeduction.toLocaleString('en-IN')}</p>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                        Standard Deduction
+                      </span>
+                      <p className="text-sm font-bold text-gray-800 mt-0.5">
+                        ₹{liveTaxResult.standardDeduction.toLocaleString('en-IN')}
+                      </p>
                     </div>
                     <div className="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Total Annual Tax</span>
-                      <p className="text-sm font-bold text-gray-800 mt-0.5">₹{liveTaxResult.totalAnnualTax.toLocaleString('en-IN')}</p>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                        Total Annual Tax
+                      </span>
+                      <p className="text-sm font-bold text-gray-800 mt-0.5">
+                        ₹{liveTaxResult.totalAnnualTax.toLocaleString('en-IN')}
+                      </p>
                     </div>
                     <div className="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Cess (4%)</span>
-                      <p className="text-sm font-bold text-gray-800 mt-0.5">₹{liveTaxResult.healthAndEducationCess.toLocaleString('en-IN')}</p>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                        Cess (4%)
+                      </span>
+                      <p className="text-sm font-bold text-gray-800 mt-0.5">
+                        ₹{liveTaxResult.healthAndEducationCess.toLocaleString('en-IN')}
+                      </p>
                     </div>
                     <div className="p-3 bg-amber-100/60 rounded-xl border border-amber-200 shadow-2xs">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-900">Projected Monthly TDS</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-900">
+                        Projected Monthly TDS
+                      </span>
                       <p className="text-sm font-extrabold text-amber-700 font-mono mt-0.5">
                         ₹{liveTaxResult.projectedMonthlyTds.toLocaleString('en-IN')}/mo
                       </p>
@@ -2222,7 +2314,9 @@ const SalarySlipForm = ({
                     <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
                       <Sparkles size={14} className="text-emerald-600 flex-shrink-0" />
                       <span>
-                        <strong>Section 87A Zero-Tax Rebate Applied:</strong> Taxable income is within the ₹{formData.taxRegime === 'Old Regime' ? '5,00,000' : '12,00,000'} statutory threshold. Net tax payable is ₹0.
+                        <strong>Section 87A Zero-Tax Rebate Applied:</strong> Taxable income is
+                        within the ₹{formData.taxRegime === 'Old Regime' ? '5,00,000' : '12,00,000'}{' '}
+                        statutory threshold. Net tax payable is ₹0.
                       </span>
                     </div>
                   )}

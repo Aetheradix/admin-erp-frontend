@@ -70,12 +70,42 @@ const AVAILABLE_DEPTS = [
 ];
 
 const STATUS_MAP: Record<ProfileStatus, { label: string; color: string; bg: string; icon: any }> = {
-  incomplete: { label: 'Incomplete', color: 'text-error', bg: 'bg-error/10 border-error/20 text-error', icon: AlertCircle },
-  in_progress: { label: 'In Progress', color: 'text-warning', bg: 'bg-warning/10 border-warning/20 text-warning', icon: Clock },
-  submitted: { label: 'Pending Review', color: 'text-info', bg: 'bg-info/10 border-info/20 text-info', icon: Send },
-  changes_required: { label: 'Changes Required', color: 'text-warning', bg: 'bg-warning/10 border-warning/20 text-warning', icon: AlertCircle },
-  approved: { label: 'Approved', color: 'text-success', bg: 'bg-success/10 border-success/20 text-success', icon: CheckCircle2 },
-  id_assigned: { label: 'ID Assigned', color: 'text-success', bg: 'bg-success/10 border-success/20 text-success', icon: ShieldCheck },
+  incomplete: {
+    label: 'Incomplete',
+    color: 'text-error',
+    bg: 'bg-error/10 border-error/20 text-error',
+    icon: AlertCircle,
+  },
+  in_progress: {
+    label: 'In Progress',
+    color: 'text-warning',
+    bg: 'bg-warning/10 border-warning/20 text-warning',
+    icon: Clock,
+  },
+  submitted: {
+    label: 'Pending Review',
+    color: 'text-info',
+    bg: 'bg-info/10 border-info/20 text-info',
+    icon: Send,
+  },
+  changes_required: {
+    label: 'Changes Required',
+    color: 'text-warning',
+    bg: 'bg-warning/10 border-warning/20 text-warning',
+    icon: AlertCircle,
+  },
+  approved: {
+    label: 'Approved',
+    color: 'text-success',
+    bg: 'bg-success/10 border-success/20 text-success',
+    icon: CheckCircle2,
+  },
+  id_assigned: {
+    label: 'ID Assigned',
+    color: 'text-success',
+    bg: 'bg-success/10 border-success/20 text-success',
+    icon: ShieldCheck,
+  },
 };
 
 // Section icon map
@@ -90,7 +120,15 @@ const SECTION_ICON_MAP: Record<string, any> = {
 };
 
 // Compact section completion badge
-function SectionBadge({ sectionId, sectionLabel, completed }: { sectionId: string; sectionLabel: string; completed: boolean }) {
+function SectionBadge({
+  sectionId,
+  sectionLabel,
+  completed,
+}: {
+  sectionId: string;
+  sectionLabel: string;
+  completed: boolean;
+}) {
   const Icon = SECTION_ICON_MAP[sectionId] || FileText;
   return (
     <div
@@ -98,8 +136,7 @@ function SectionBadge({ sectionId, sectionLabel, completed }: { sectionId: strin
         completed
           ? 'bg-success/10 border-success/25 text-success'
           : 'bg-surface-subtle border-border-subtle text-muted'
-      }`}
-    >
+      }`}>
       <Icon size={11} />
       <span>{sectionLabel}</span>
       {completed ? <CheckCircle2 size={10} className="text-success" /> : <Clock size={10} />}
@@ -118,7 +155,11 @@ function OnboardingProgressPanel({
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const onboardingProfiles = profiles.filter(
-    (p) => p.status === 'in_progress' || p.status === 'incomplete' || p.status === 'submitted' || p.status === 'changes_required'
+    (p) =>
+      p.status === 'in_progress' ||
+      p.status === 'incomplete' ||
+      p.status === 'submitted' ||
+      p.status === 'changes_required'
   );
 
   if (onboardingProfiles.length === 0) {
@@ -137,24 +178,28 @@ function OnboardingProgressPanel({
         const conf = STATUS_MAP[profile.status] || STATUS_MAP.incomplete;
         const Icon = conf.icon;
         const totalSections = formConfig.filter((s) => !s.hidden).length;
-        const completedCount = formConfig.filter((s) => !s.hidden && profile.completedSections?.[s.id]).length;
+        const completedCount = formConfig.filter(
+          (s) => !s.hidden && profile.completedSections?.[s.id]
+        ).length;
 
         return (
           <div
             key={profile.userId}
-            className="border border-border-subtle rounded-2xl overflow-hidden bg-white hover:shadow-sm transition-all"
-          >
+            className="border border-border-subtle rounded-2xl overflow-hidden bg-white hover:shadow-sm transition-all">
             {/* Row header */}
             <button
               type="button"
               onClick={() => setExpanded(isExpanded ? null : profile.userId)}
-              className="w-full flex items-center justify-between px-5 py-4 text-left group"
-            >
+              className="w-full flex items-center justify-between px-5 py-4 text-left group">
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Avatar */}
                 <div className="w-9 h-9 rounded-full bg-primary/10 border border-border-subtle flex items-center justify-center shrink-0 overflow-hidden">
                   {profile.profilePictureUrl ? (
-                    <img src={profile.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={profile.profilePictureUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <User size={16} className="text-primary" />
                   )}
@@ -169,8 +214,10 @@ function OnboardingProgressPanel({
                 </div>
 
                 {/* Status badge */}
-                <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${conf.bg} shrink-0`} style={{lineHeight:'1'}}>
-                  <Icon size={10} style={{display:'block',flexShrink:0}} />
+                <span
+                  className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${conf.bg} shrink-0`}
+                  style={{ lineHeight: '1' }}>
+                  <Icon size={10} style={{ display: 'block', flexShrink: 0 }} />
                   <span>{conf.label}</span>
                 </span>
 
@@ -185,18 +232,27 @@ function OnboardingProgressPanel({
                     />
                   </div>
                   <span className="text-xs font-bold text-foreground shrink-0">{pct}%</span>
-                  <span className="text-[10px] text-muted shrink-0">{completedCount}/{totalSections} sections</span>
+                  <span className="text-[10px] text-muted shrink-0">
+                    {completedCount}/{totalSections} sections
+                  </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 shrink-0 ml-3">
                 <span className="text-[11px] text-muted hidden md:block">
-                  Updated {profile.lastSavedAt ? new Date(profile.lastSavedAt).toLocaleDateString() : '—'}
+                  Updated{' '}
+                  {profile.lastSavedAt ? new Date(profile.lastSavedAt).toLocaleDateString() : '—'}
                 </span>
                 {isExpanded ? (
-                  <ChevronUp size={16} className="text-muted group-hover:text-foreground transition-colors" />
+                  <ChevronUp
+                    size={16}
+                    className="text-muted group-hover:text-foreground transition-colors"
+                  />
                 ) : (
-                  <ChevronDown size={16} className="text-muted group-hover:text-foreground transition-colors" />
+                  <ChevronDown
+                    size={16}
+                    className="text-muted group-hover:text-foreground transition-colors"
+                  />
                 )}
               </div>
             </button>
@@ -229,25 +285,35 @@ function OnboardingProgressPanel({
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase mb-1">Full Name</div>
-                    <div className="text-xs font-semibold text-foreground">{profile.personal?.fullName || '—'}</div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {profile.personal?.fullName || '—'}
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase mb-1">Contact</div>
-                    <div className="text-xs font-semibold text-foreground">{profile.personal?.contactNumber || '—'}</div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {profile.personal?.contactNumber || '—'}
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase mb-1">Bank</div>
-                    <div className="text-xs font-semibold text-foreground">{profile.bank?.bankName || '—'}</div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {profile.bank?.bankName || '—'}
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase mb-1">Documents</div>
                     <div className="text-xs font-semibold text-foreground">
-                      {profile.documents?.length ? `${profile.documents.length} uploaded` : 'None yet'}
+                      {profile.documents?.length
+                        ? `${profile.documents.length} uploaded`
+                        : 'None yet'}
                     </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase mb-1">PAN</div>
-                    <div className="text-xs font-mono font-semibold text-foreground">{profile.identity?.panNumber || '—'}</div>
+                    <div className="text-xs font-mono font-semibold text-foreground">
+                      {profile.identity?.panNumber || '—'}
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase mb-1">Aadhaar</div>
@@ -258,13 +324,17 @@ function OnboardingProgressPanel({
                     </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase mb-1">Employment Entries</div>
+                    <div className="text-[10px] font-bold text-muted uppercase mb-1">
+                      Employment Entries
+                    </div>
                     <div className="text-xs font-semibold text-foreground">
                       {profile.employment?.length ? `${profile.employment.length} entries` : 'None'}
                     </div>
                   </div>
                   <div className="p-3 rounded-xl bg-white border border-border-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase mb-1">Education Entries</div>
+                    <div className="text-[10px] font-bold text-muted uppercase mb-1">
+                      Education Entries
+                    </div>
                     <div className="text-xs font-semibold text-foreground">
                       {profile.education?.length ? `${profile.education.length} entries` : 'None'}
                     </div>
@@ -274,7 +344,9 @@ function OnboardingProgressPanel({
                 {/* Review notes if present */}
                 {profile.reviewNotes && (
                   <div className="p-3 rounded-xl bg-warning/5 border border-warning/20">
-                    <div className="text-[10px] font-bold text-warning uppercase mb-1">Pending Revision Notes</div>
+                    <div className="text-[10px] font-bold text-warning uppercase mb-1">
+                      Pending Revision Notes
+                    </div>
                     <div className="text-xs text-foreground">{profile.reviewNotes}</div>
                   </div>
                 )}
@@ -289,7 +361,11 @@ function OnboardingProgressPanel({
 
 export default function HiringTeamDashboard() {
   const { user, isSuperadmin } = useAuth();
-  const { data: dbUsers = [], isLoading: isUsersLoading, refetch: refetchDbUsers } = useGetUsersQuery();
+  const {
+    data: dbUsers = [],
+    isLoading: isUsersLoading,
+    refetch: refetchDbUsers,
+  } = useGetUsersQuery();
   const [updateStaff] = useUpdateStaffMutation();
   const [profiles, setProfiles] = useState<ProfileCompletionData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -300,7 +376,9 @@ export default function HiringTeamDashboard() {
   // Modals state
   const [selectedProfile, setSelectedProfile] = useState<ProfileCompletionData | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const [reviewTab, setReviewTab] = useState<'overview' | 'personal' | 'bank' | 'identity' | 'employment' | 'education' | 'certifications'>('overview');
+  const [reviewTab, setReviewTab] = useState<
+    'overview' | 'personal' | 'bank' | 'identity' | 'employment' | 'education' | 'certifications'
+  >('overview');
 
   // Request changes modal state
   const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
@@ -334,7 +412,9 @@ export default function HiringTeamDashboard() {
   const normalizedUserRole = (userRole || '').toLowerCase().replace(/[\s_-]/g, '');
   const canAssignId =
     isSuperadmin ||
-    ['superadmin', 'admin', 'hradmin', 'hr', 'hiringmanager', 'hiringteam'].includes(normalizedUserRole) ||
+    ['superadmin', 'admin', 'hradmin', 'hr', 'hiringmanager', 'hiringteam'].includes(
+      normalizedUserRole
+    ) ||
     ['SuperAdmin', 'Admin', 'HrAdmin'].includes(userRole);
 
   // Initial sync from backend database and periodic polling
@@ -393,12 +473,14 @@ export default function HiringTeamDashboard() {
       if (existingProfile) {
         list.push({
           ...existingProfile,
-          userId: typeof dbUser.id === 'number' ? dbUser.id : (existingProfile.userId || Date.now()),
+          userId: typeof dbUser.id === 'number' ? dbUser.id : existingProfile.userId || Date.now(),
           userEmail: emailLower || existingProfile.userEmail,
           employeeId:
-            (existingProfile.employeeId && existingProfile.employeeId !== 'N/A' && existingProfile.employeeId !== 'NA')
+            existingProfile.employeeId &&
+            existingProfile.employeeId !== 'N/A' &&
+            existingProfile.employeeId !== 'NA'
               ? existingProfile.employeeId
-              : (dbUser.employee_id || dbUser.employee_code || undefined),
+              : dbUser.employee_id || dbUser.employee_code || undefined,
           role: existingProfile.role || dbUser.role || 'Employee',
           department: existingProfile.department || dbUser.department || '',
           designation: existingProfile.designation || dbUser.designation || '',
@@ -411,10 +493,7 @@ export default function HiringTeamDashboard() {
               'Unnamed Employee',
             email: emailLower || existingProfile.personal?.email || '',
             contactNumber:
-              existingProfile.personal?.contactNumber ||
-              dbUser.contact_no ||
-              dbUser.phone ||
-              '',
+              existingProfile.personal?.contactNumber || dbUser.contact_no || dbUser.phone || '',
           },
         });
       } else {
@@ -442,10 +521,7 @@ export default function HiringTeamDashboard() {
     for (const p of profiles) {
       const emailLower = (p.userEmail || '').toLowerCase().trim();
       const userIdStr = String(p.userId);
-      if (
-        (emailLower && seenEmails.has(emailLower)) ||
-        (userIdStr && seenUserIds.has(userIdStr))
-      ) {
+      if ((emailLower && seenEmails.has(emailLower)) || (userIdStr && seenUserIds.has(userIdStr))) {
         continue;
       }
       if (emailLower) seenEmails.add(emailLower);
@@ -462,7 +538,8 @@ export default function HiringTeamDashboard() {
       const fresh = combinedProfiles.find(
         (p) =>
           String(p.userId) === String(selectedProfile.userId) ||
-          (Boolean(p.userEmail) && p.userEmail.toLowerCase() === selectedProfile.userEmail?.toLowerCase())
+          (Boolean(p.userEmail) &&
+            p.userEmail.toLowerCase() === selectedProfile.userEmail?.toLowerCase())
       );
       if (fresh) setSelectedProfile(fresh);
     }
@@ -474,14 +551,19 @@ export default function HiringTeamDashboard() {
   };
 
   // Summary Metrics
-  const metrics = useMemo(() => ({
-    total: combinedProfiles.length,
-    pending: combinedProfiles.filter((p) => p.status === 'submitted').length,
-    changes: combinedProfiles.filter((p) => p.status === 'changes_required').length,
-    approved: combinedProfiles.filter((p) => p.status === 'approved').length,
-    assigned: combinedProfiles.filter((p) => p.status === 'id_assigned').length,
-    onboarding: combinedProfiles.filter((p) => p.status === 'in_progress' || p.status === 'incomplete').length,
-  }), [combinedProfiles]);
+  const metrics = useMemo(
+    () => ({
+      total: combinedProfiles.length,
+      pending: combinedProfiles.filter((p) => p.status === 'submitted').length,
+      changes: combinedProfiles.filter((p) => p.status === 'changes_required').length,
+      approved: combinedProfiles.filter((p) => p.status === 'approved').length,
+      assigned: combinedProfiles.filter((p) => p.status === 'id_assigned').length,
+      onboarding: combinedProfiles.filter(
+        (p) => p.status === 'in_progress' || p.status === 'incomplete'
+      ).length,
+    }),
+    [combinedProfiles]
+  );
 
   // Tab Filtering
   const filteredProfiles = useMemo(() => {
@@ -499,13 +581,18 @@ export default function HiringTeamDashboard() {
       if (activeTab === 'Changes Required') return p.status === 'changes_required';
       if (activeTab === 'Approved') return p.status === 'approved';
       if (activeTab === 'ID Assigned') return p.status === 'id_assigned';
-      if (activeTab === 'Incomplete') return p.status === 'incomplete' || p.status === 'in_progress';
+      if (activeTab === 'Incomplete')
+        return p.status === 'incomplete' || p.status === 'in_progress';
       return true;
     });
   }, [combinedProfiles, searchQuery, activeTab]);
 
   // Actions
-  const handleApprove = (userId: number | string, employeeEmail?: string, employeeName?: string) => {
+  const handleApprove = (
+    userId: number | string,
+    employeeEmail?: string,
+    employeeName?: string
+  ) => {
     try {
       approveProfile(userId, userName, userEmail, userRole, employeeEmail, employeeName);
       showToast.success('Employee profile approved!');
@@ -587,7 +674,8 @@ export default function HiringTeamDashboard() {
         try {
           const targetDbUser = dbUsers.find(
             (u) =>
-              (selectedProfile.userEmail && u.email?.toLowerCase().trim() === selectedProfile.userEmail.toLowerCase().trim()) ||
+              (selectedProfile.userEmail &&
+                u.email?.toLowerCase().trim() === selectedProfile.userEmail.toLowerCase().trim()) ||
               String(u.id) === String(selectedProfile.userId)
           );
           const targetUserId = targetDbUser?.id || selectedProfile.userId;
@@ -612,7 +700,10 @@ export default function HiringTeamDashboard() {
               try {
                 const currentAuthUser = JSON.parse(savedUserRaw);
                 if (
-                  (currentAuthUser.email && selectedProfile.userEmail && currentAuthUser.email.toLowerCase() === selectedProfile.userEmail.toLowerCase()) ||
+                  (currentAuthUser.email &&
+                    selectedProfile.userEmail &&
+                    currentAuthUser.email.toLowerCase() ===
+                      selectedProfile.userEmail.toLowerCase()) ||
                   String(currentAuthUser.id) === String(targetUserId)
                 ) {
                   const updatedAuthUser = {
@@ -625,8 +716,12 @@ export default function HiringTeamDashboard() {
                     designation: cleanDesig,
                   };
                   localStorage.setItem('user', JSON.stringify(updatedAuthUser));
-                  window.dispatchEvent(new CustomEvent('auth_user_updated', { detail: updatedAuthUser }));
-                  window.dispatchEvent(new CustomEvent('aether_user_updated', { detail: updatedAuthUser }));
+                  window.dispatchEvent(
+                    new CustomEvent('auth_user_updated', { detail: updatedAuthUser })
+                  );
+                  window.dispatchEvent(
+                    new CustomEvent('aether_user_updated', { detail: updatedAuthUser })
+                  );
                 }
               } catch {}
             }
@@ -635,7 +730,9 @@ export default function HiringTeamDashboard() {
           console.warn('Backend updateStaff note:', apiErr);
         }
 
-        showToast.success(`Employee ID "${cleanId}", Role "${cleanRole}" and details assigned successfully!`);
+        showToast.success(
+          `Employee ID "${cleanId}", Role "${cleanRole}" and details assigned successfully!`
+        );
         setIsAssignIdModalOpen(false);
         const fresh = getEmployeeProfile(selectedProfile.userId);
         if (fresh) setSelectedProfile(fresh);
@@ -697,8 +794,10 @@ export default function HiringTeamDashboard() {
         const conf = STATUS_MAP[record.status] || STATUS_MAP.incomplete;
         const Icon = conf.icon;
         return (
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${conf.bg}`} style={{lineHeight:'1'}}>
-            <Icon size={12} style={{display:'block',flexShrink:0}} />
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${conf.bg}`}
+            style={{ lineHeight: '1' }}>
+            <Icon size={12} style={{ display: 'block', flexShrink: 0 }} />
             <span>{conf.label}</span>
           </span>
         );
@@ -710,12 +809,16 @@ export default function HiringTeamDashboard() {
       render: (_, record) => {
         const pct = calculateCompletionPercentage(record, formConfig);
         const totalSections = formConfig.filter((s) => !s.hidden).length;
-        const completedCount = formConfig.filter((s) => !s.hidden && record.completedSections?.[s.id]).length;
+        const completedCount = formConfig.filter(
+          (s) => !s.hidden && record.completedSections?.[s.id]
+        ).length;
         return (
           <div className="w-36">
             <div className="flex justify-between items-center text-xs mb-1">
               <span className="font-semibold text-foreground">{pct}%</span>
-              <span className="text-[10px] text-muted">{completedCount}/{totalSections} secs</span>
+              <span className="text-[10px] text-muted">
+                {completedCount}/{totalSections} secs
+              </span>
             </div>
             <div className="h-1.5 w-full bg-surface-subtle rounded-full overflow-hidden">
               <div
@@ -727,15 +830,19 @@ export default function HiringTeamDashboard() {
             </div>
             {/* Mini section dots */}
             <div className="flex gap-1 mt-1.5">
-              {formConfig.filter((s) => !s.hidden).map((section) => (
-                <div
-                  key={section.id}
-                  title={section.label}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    record.completedSections?.[section.id] ? 'bg-success' : 'bg-surface-subtle border border-border-subtle'
-                  }`}
-                />
-              ))}
+              {formConfig
+                .filter((s) => !s.hidden)
+                .map((section) => (
+                  <div
+                    key={section.id}
+                    title={section.label}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      record.completedSections?.[section.id]
+                        ? 'bg-success'
+                        : 'bg-surface-subtle border border-border-subtle'
+                    }`}
+                  />
+                ))}
             </div>
           </div>
         );
@@ -744,7 +851,7 @@ export default function HiringTeamDashboard() {
     {
       title: 'Employee ID',
       key: 'employeeId',
-      render: (_, record) => (
+      render: (_, record) =>
         record.employeeId ? (
           <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20">
             <KeyRound size={12} />
@@ -752,8 +859,7 @@ export default function HiringTeamDashboard() {
           </span>
         ) : (
           <span className="text-xs text-muted italic">Not Assigned</span>
-        )
-      ),
+        ),
     },
     {
       title: 'Last Updated',
@@ -776,18 +882,20 @@ export default function HiringTeamDashboard() {
               setReviewTab('overview');
               setIsReviewOpen(true);
             }}
-            className="px-3 py-1.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-xs font-bold transition-all flex items-center gap-1"
-          >
+            className="px-3 py-1.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-xs font-bold transition-all flex items-center gap-1">
             <Eye size={13} />
             Review
           </button>
 
-          {(record.status === 'submitted' || record.status === 'changes_required' || record.status === 'in_progress') && (
+          {(record.status === 'submitted' ||
+            record.status === 'changes_required' ||
+            record.status === 'in_progress') && (
             <button
               type="button"
-              onClick={() => handleApprove(record.userId, record.userEmail, record.personal?.fullName)}
-              className="px-3 py-1.5 rounded-xl bg-success text-white hover:bg-success/90 text-xs font-bold transition-all flex items-center gap-1 shadow-xs"
-            >
+              onClick={() =>
+                handleApprove(record.userId, record.userEmail, record.personal?.fullName)
+              }
+              className="px-3 py-1.5 rounded-xl bg-success text-white hover:bg-success/90 text-xs font-bold transition-all flex items-center gap-1 shadow-xs">
               <CheckCircle2 size={13} />
               Approve
             </button>
@@ -804,8 +912,7 @@ export default function HiringTeamDashboard() {
             <button
               type="button"
               onClick={() => handleOpenAssignIdModal(record)}
-              className="px-3 py-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold transition-all flex items-center gap-1 shadow-xs"
-            >
+              className="px-3 py-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold transition-all flex items-center gap-1 shadow-xs">
               <KeyRound size={13} />
               {record.employeeId ? 'Edit ID & Role' : 'Assign ID & Role'}
             </button>
@@ -825,8 +932,7 @@ export default function HiringTeamDashboard() {
           <div className="flex items-center gap-3">
             <Link
               to="/hiring-team/form-builder"
-              className="px-4 py-2 rounded-xl bg-surface-subtle border border-border-subtle text-foreground hover:bg-white text-xs font-bold transition-all flex items-center gap-1.5"
-            >
+              className="px-4 py-2 rounded-xl bg-surface-subtle border border-border-subtle text-foreground hover:bg-white text-xs font-bold transition-all flex items-center gap-1.5">
               <Building size={14} className="text-primary" />
               Configure Form Fields
             </Link>
@@ -834,8 +940,7 @@ export default function HiringTeamDashboard() {
               type="button"
               onClick={refreshList}
               className="p-2.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-muted hover:text-foreground transition-all"
-              title="Refresh profiles"
-            >
+              title="Refresh profiles">
               <RefreshCw size={15} />
             </button>
           </div>
@@ -850,14 +955,15 @@ export default function HiringTeamDashboard() {
         </div>
         <div
           className={`p-5 rounded-2xl border cursor-pointer transition-all ${mainView === 'onboarding' ? 'bg-warning/10 border-warning/30 ring-2 ring-warning/20' : 'bg-warning/5 border-warning/20 hover:bg-warning/10'}`}
-          onClick={() => setMainView(mainView === 'onboarding' ? 'table' : 'onboarding')}
-        >
+          onClick={() => setMainView(mainView === 'onboarding' ? 'table' : 'onboarding')}>
           <div className="text-xs font-bold text-warning uppercase tracking-wider mb-1 flex items-center gap-1.5">
             <TrendingUp size={12} />
             In Onboarding
           </div>
           <div className="text-2xl font-black text-warning">{metrics.onboarding}</div>
-          <div className="text-[10px] text-warning/70 mt-0.5">{mainView === 'onboarding' ? '▲ Click to hide' : 'Click to view'}</div>
+          <div className="text-[10px] text-warning/70 mt-0.5">
+            {mainView === 'onboarding' ? '▲ Click to hide' : 'Click to view'}
+          </div>
         </div>
         <div className="p-5 rounded-2xl bg-info/5 border border-info/20">
           <div className="text-xs font-bold text-info uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -911,7 +1017,14 @@ export default function HiringTeamDashboard() {
       {/* Controls & Search */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         <Tabs
-          items={['All', 'Pending Review', 'Changes Required', 'Approved', 'ID Assigned', 'Incomplete']}
+          items={[
+            'All',
+            'Pending Review',
+            'Changes Required',
+            'Approved',
+            'ID Assigned',
+            'Incomplete',
+          ]}
           activeItem={activeTab}
           onItemChange={setActiveTab}
         />
@@ -949,7 +1062,11 @@ export default function HiringTeamDashboard() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center">
                 {selectedProfile?.profilePictureUrl ? (
-                  <img src={selectedProfile.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={selectedProfile.profilePictureUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User size={20} className="text-primary" />
                 )}
@@ -962,13 +1079,13 @@ export default function HiringTeamDashboard() {
               </div>
             </div>
             {selectedProfile && (
-              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${STATUS_MAP[selectedProfile.status]?.bg}`}>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-bold border ${STATUS_MAP[selectedProfile.status]?.bg}`}>
                 {STATUS_MAP[selectedProfile.status]?.label}
               </span>
             )}
           </div>
-        }
-      >
+        }>
         {selectedProfile && (
           <div className="space-y-6 pt-2">
             {/* Review Section Navigation */}
@@ -995,12 +1112,13 @@ export default function HiringTeamDashboard() {
                       isActive
                         ? 'bg-primary text-white shadow-xs'
                         : 'bg-surface-subtle text-muted hover:text-foreground'
-                    }`}
-                  >
+                    }`}>
                     <Icon size={14} />
                     {tab.label}
                     {tab.id !== 'overview' && (
-                      <span className={`w-1.5 h-1.5 rounded-full ${isDone ? 'bg-success' : 'bg-muted/40'} ${isActive ? 'bg-white/50' : ''}`} />
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${isDone ? 'bg-success' : 'bg-muted/40'} ${isActive ? 'bg-white/50' : ''}`}
+                      />
                     )}
                   </button>
                 );
@@ -1013,7 +1131,9 @@ export default function HiringTeamDashboard() {
                 {/* Completion progress */}
                 <div className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold text-foreground">Overall Profile Completion</span>
+                    <span className="text-sm font-bold text-foreground">
+                      Overall Profile Completion
+                    </span>
                     <span className="text-xl font-black text-primary">
                       {calculateCompletionPercentage(selectedProfile, formConfig)}%
                     </span>
@@ -1021,7 +1141,9 @@ export default function HiringTeamDashboard() {
                   <div className="h-2.5 w-full bg-white rounded-full overflow-hidden border border-border-subtle">
                     <div
                       className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700"
-                      style={{ width: `${calculateCompletionPercentage(selectedProfile, formConfig)}%` }}
+                      style={{
+                        width: `${calculateCompletionPercentage(selectedProfile, formConfig)}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -1047,13 +1169,18 @@ export default function HiringTeamDashboard() {
                               done
                                 ? 'bg-success/5 border-success/25'
                                 : 'bg-surface-subtle border-border-subtle'
-                            }`}
-                          >
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${done ? 'bg-success/15' : 'bg-surface-subtle border border-border-subtle'}`}>
-                              <SectionIcon size={15} className={done ? 'text-success' : 'text-muted'} />
+                            }`}>
+                            <div
+                              className={`w-8 h-8 rounded-xl flex items-center justify-center ${done ? 'bg-success/15' : 'bg-surface-subtle border border-border-subtle'}`}>
+                              <SectionIcon
+                                size={15}
+                                className={done ? 'text-success' : 'text-muted'}
+                              />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-xs font-bold text-foreground">{section.label}</div>
+                              <div className="text-xs font-bold text-foreground">
+                                {section.label}
+                              </div>
                               <div className="text-[10px] text-muted">{section.description}</div>
                             </div>
                             <div className="shrink-0">
@@ -1071,7 +1198,9 @@ export default function HiringTeamDashboard() {
 
                 {/* Key data summary */}
                 <div>
-                  <div className="text-xs font-bold text-muted uppercase tracking-wider mb-3">Quick Data Summary</div>
+                  <div className="text-xs font-bold text-muted uppercase tracking-wider mb-3">
+                    Quick Data Summary
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
                       { label: 'Full Name', value: selectedProfile.personal?.fullName },
@@ -1085,15 +1214,46 @@ export default function HiringTeamDashboard() {
                       { label: 'Bank', value: selectedProfile.bank?.bankName },
                       { label: 'Account Type', value: selectedProfile.bank?.accountType },
                       { label: 'PAN Number', value: selectedProfile.identity?.panNumber },
-                      { label: 'Documents', value: selectedProfile.documents?.length ? `${selectedProfile.documents.length} file(s)` : 'None' },
-                      { label: 'Employment Entries', value: selectedProfile.employment?.length ? `${selectedProfile.employment.length} jobs` : 'None' },
-                      { label: 'Education Entries', value: selectedProfile.education?.length ? `${selectedProfile.education.length} qualifications` : 'None' },
-                      { label: 'Certifications', value: selectedProfile.certifications?.length ? `${selectedProfile.certifications.length} certs` : 'None' },
-                      { label: 'Submitted At', value: selectedProfile.submittedAt ? new Date(selectedProfile.submittedAt).toLocaleString() : 'Not yet' },
+                      {
+                        label: 'Documents',
+                        value: selectedProfile.documents?.length
+                          ? `${selectedProfile.documents.length} file(s)`
+                          : 'None',
+                      },
+                      {
+                        label: 'Employment Entries',
+                        value: selectedProfile.employment?.length
+                          ? `${selectedProfile.employment.length} jobs`
+                          : 'None',
+                      },
+                      {
+                        label: 'Education Entries',
+                        value: selectedProfile.education?.length
+                          ? `${selectedProfile.education.length} qualifications`
+                          : 'None',
+                      },
+                      {
+                        label: 'Certifications',
+                        value: selectedProfile.certifications?.length
+                          ? `${selectedProfile.certifications.length} certs`
+                          : 'None',
+                      },
+                      {
+                        label: 'Submitted At',
+                        value: selectedProfile.submittedAt
+                          ? new Date(selectedProfile.submittedAt).toLocaleString()
+                          : 'Not yet',
+                      },
                     ].map((item) => (
-                      <div key={item.label} className="p-3 rounded-xl bg-surface-subtle border border-border-subtle">
-                        <div className="text-[10px] font-bold text-muted uppercase mb-0.5">{item.label}</div>
-                        <div className="text-xs font-semibold text-foreground">{item.value || '—'}</div>
+                      <div
+                        key={item.label}
+                        className="p-3 rounded-xl bg-surface-subtle border border-border-subtle">
+                        <div className="text-[10px] font-bold text-muted uppercase mb-0.5">
+                          {item.label}
+                        </div>
+                        <div className="text-xs font-semibold text-foreground">
+                          {item.value || '—'}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1135,39 +1295,59 @@ export default function HiringTeamDashboard() {
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Date of Birth / Gender</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Date of Birth / Gender
+                    </div>
                     <div className="text-sm font-semibold text-foreground mt-1">
-                      {selectedProfile.personal?.dateOfBirth || '—'} ({selectedProfile.personal?.gender || '—'})
+                      {selectedProfile.personal?.dateOfBirth || '—'} (
+                      {selectedProfile.personal?.gender || '—'})
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Nationality / Marital Status</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Nationality / Marital Status
+                    </div>
                     <div className="text-sm font-semibold text-foreground mt-1">
-                      {selectedProfile.personal?.nationality || '—'} / {selectedProfile.personal?.maritalStatus || '—'}
+                      {selectedProfile.personal?.nationality || '—'} /{' '}
+                      {selectedProfile.personal?.maritalStatus || '—'}
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Alternate Contact</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Alternate Contact
+                    </div>
                     <div className="text-sm font-semibold text-foreground mt-1">
                       {selectedProfile.personal?.alternateContact || '—'}
                     </div>
                   </div>
                   <div className="col-span-2 p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Current Address</div>
-                    <div className="text-sm text-foreground mt-1">{selectedProfile.personal?.currentAddress || '—'}</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Current Address
+                    </div>
+                    <div className="text-sm text-foreground mt-1">
+                      {selectedProfile.personal?.currentAddress || '—'}
+                    </div>
                   </div>
                   <div className="col-span-2 p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Permanent Address</div>
-                    <div className="text-sm text-foreground mt-1">{selectedProfile.personal?.permanentAddress || '—'}</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Permanent Address
+                    </div>
+                    <div className="text-sm text-foreground mt-1">
+                      {selectedProfile.personal?.permanentAddress || '—'}
+                    </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Emergency Contact Name</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Emergency Contact Name
+                    </div>
                     <div className="text-sm font-semibold text-foreground mt-1">
                       {selectedProfile.personal?.emergencyContactName || '—'}
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Emergency Contact Phone</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Emergency Contact Phone
+                    </div>
                     <div className="text-sm font-semibold text-foreground mt-1">
                       {selectedProfile.personal?.emergencyContactPhone || '—'}
                     </div>
@@ -1181,7 +1361,9 @@ export default function HiringTeamDashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Account Holder Name</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Account Holder Name
+                    </div>
                     <div className="text-sm font-semibold text-foreground mt-1">
                       {selectedProfile.bank?.accountHolderName || '—'}
                     </div>
@@ -1195,7 +1377,9 @@ export default function HiringTeamDashboard() {
                   <div className="p-4 rounded-2xl bg-surface-subtle">
                     <div className="text-[10px] font-bold text-muted uppercase">Account Number</div>
                     <div className="text-sm font-mono font-semibold text-foreground mt-1">
-                      {selectedProfile.bank?.accountNumber ? `••••••••${selectedProfile.bank.accountNumber.slice(-4)}` : '—'}
+                      {selectedProfile.bank?.accountNumber
+                        ? `••••••••${selectedProfile.bank.accountNumber.slice(-4)}`
+                        : '—'}
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
@@ -1239,13 +1423,17 @@ export default function HiringTeamDashboard() {
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Passport Number</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Passport Number
+                    </div>
                     <div className="text-sm font-mono font-semibold text-foreground mt-1">
                       {selectedProfile.identity?.passportNumber || '—'}
                     </div>
                   </div>
                   <div className="p-4 rounded-2xl bg-surface-subtle">
-                    <div className="text-[10px] font-bold text-muted uppercase">Driving License</div>
+                    <div className="text-[10px] font-bold text-muted uppercase">
+                      Driving License
+                    </div>
                     <div className="text-sm font-mono font-semibold text-foreground mt-1">
                       {selectedProfile.identity?.drivingLicense || '—'}
                     </div>
@@ -1253,33 +1441,44 @@ export default function HiringTeamDashboard() {
                 </div>
 
                 <div className="pt-2">
-                  <div className="text-xs font-bold text-foreground mb-3">Uploaded Identity Documents:</div>
+                  <div className="text-xs font-bold text-foreground mb-3">
+                    Uploaded Identity Documents:
+                  </div>
                   {selectedProfile.documents && selectedProfile.documents.length > 0 ? (
                     <div className="space-y-2">
                       {selectedProfile.documents.map((doc) => (
-                        <div key={doc.id} className="p-3 rounded-xl border border-border-subtle bg-white flex items-center justify-between">
+                        <div
+                          key={doc.id}
+                          className="p-3 rounded-xl border border-border-subtle bg-white flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <FileText size={16} className="text-primary" />
                             <div>
-                              <div className="text-xs font-bold text-foreground">{doc.fileName || doc.label}</div>
+                              <div className="text-xs font-bold text-foreground">
+                                {doc.fileName || doc.label}
+                              </div>
                               <div className="text-[10px] text-muted capitalize">
-                                {doc.type} • {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(0)} KB` : ''}
-                                {' '} • Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
+                                {doc.type} •{' '}
+                                {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(0)} KB` : ''} •
+                                Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                              doc.status === 'verified' ? 'bg-success/10 border-success/25 text-success' :
-                              doc.status === 'rejected' ? 'bg-error/10 border-error/25 text-error' :
-                              'bg-surface-subtle border-border-subtle text-muted'
-                            }`}>{doc.status}</span>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                doc.status === 'verified'
+                                  ? 'bg-success/10 border-success/25 text-success'
+                                  : doc.status === 'rejected'
+                                    ? 'bg-error/10 border-error/25 text-error'
+                                    : 'bg-surface-subtle border-border-subtle text-muted'
+                              }`}>
+                              {doc.status}
+                            </span>
                             <a
                               href={doc.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="px-3 py-1 rounded-lg bg-surface-subtle text-primary hover:bg-primary/10 text-xs font-bold transition-all flex items-center gap-1"
-                            >
+                              className="px-3 py-1 rounded-lg bg-surface-subtle text-primary hover:bg-primary/10 text-xs font-bold transition-all flex items-center gap-1">
                               <ExternalLink size={12} />
                               View
                             </a>
@@ -1301,7 +1500,9 @@ export default function HiringTeamDashboard() {
               <div className="space-y-3">
                 {selectedProfile.employment && selectedProfile.employment.length > 0 ? (
                   selectedProfile.employment.map((emp, i) => (
-                    <div key={emp.id || i} className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle space-y-2">
+                    <div
+                      key={emp.id || i}
+                      className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle space-y-2">
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="text-sm font-bold text-foreground">{emp.designation}</div>
@@ -1313,7 +1514,9 @@ export default function HiringTeamDashboard() {
                       </div>
                       {emp.salary && <div className="text-xs text-muted">Salary: {emp.salary}</div>}
                       {emp.responsibilities && (
-                        <div className="text-xs text-muted border-t border-border-subtle pt-2">{emp.responsibilities}</div>
+                        <div className="text-xs text-muted border-t border-border-subtle pt-2">
+                          {emp.responsibilities}
+                        </div>
                       )}
                     </div>
                   ))
@@ -1330,11 +1533,14 @@ export default function HiringTeamDashboard() {
               <div className="space-y-3">
                 {selectedProfile.education && selectedProfile.education.length > 0 ? (
                   selectedProfile.education.map((edu, i) => (
-                    <div key={edu.id || i} className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle space-y-1">
+                    <div
+                      key={edu.id || i}
+                      className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle space-y-1">
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="text-sm font-bold text-foreground">
-                            {edu.degree}{edu.field ? ` in ${edu.field}` : ''}
+                            {edu.degree}
+                            {edu.field ? ` in ${edu.field}` : ''}
                           </div>
                           <div className="text-xs text-muted">{edu.institution}</div>
                         </div>
@@ -1342,7 +1548,9 @@ export default function HiringTeamDashboard() {
                           {edu.startYear} – {edu.endYear}
                         </span>
                       </div>
-                      {edu.grade && <div className="text-xs text-muted">Grade / Percentage: {edu.grade}</div>}
+                      {edu.grade && (
+                        <div className="text-xs text-muted">Grade / Percentage: {edu.grade}</div>
+                      )}
                     </div>
                   ))
                 ) : (
@@ -1358,16 +1566,24 @@ export default function HiringTeamDashboard() {
               <div className="space-y-3">
                 {selectedProfile.certifications && selectedProfile.certifications.length > 0 ? (
                   selectedProfile.certifications.map((cert, i) => (
-                    <div key={cert.id || i} className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle space-y-1">
+                    <div
+                      key={cert.id || i}
+                      className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle space-y-1">
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="text-sm font-bold text-foreground">{cert.title}</div>
                           <div className="text-xs text-muted">{cert.issuingOrganization}</div>
                         </div>
-                        <span className="text-[11px] font-mono text-muted">Issued: {cert.issueDate}</span>
+                        <span className="text-[11px] font-mono text-muted">
+                          Issued: {cert.issueDate}
+                        </span>
                       </div>
-                      {cert.credentialId && <div className="text-xs text-muted">Credential ID: {cert.credentialId}</div>}
-                      {cert.expiryDate && <div className="text-xs text-muted">Expires: {cert.expiryDate}</div>}
+                      {cert.credentialId && (
+                        <div className="text-xs text-muted">Credential ID: {cert.credentialId}</div>
+                      )}
+                      {cert.expiryDate && (
+                        <div className="text-xs text-muted">Expires: {cert.expiryDate}</div>
+                      )}
                     </div>
                   ))
                 ) : (
@@ -1391,17 +1607,22 @@ export default function HiringTeamDashboard() {
                 <button
                   type="button"
                   onClick={() => handleOpenChangesModal(selectedProfile.userId)}
-                  className="px-4 py-2 rounded-xl border border-warning/30 bg-warning/5 text-warning hover:bg-warning/10 text-xs font-bold transition-all flex items-center gap-1.5"
-                >
+                  className="px-4 py-2 rounded-xl border border-warning/30 bg-warning/5 text-warning hover:bg-warning/10 text-xs font-bold transition-all flex items-center gap-1.5">
                   <AlertCircle size={14} />
                   Request Revisions
                 </button>
-                {selectedProfile.status !== 'approved' && selectedProfile.status !== 'id_assigned' ? (
+                {selectedProfile.status !== 'approved' &&
+                selectedProfile.status !== 'id_assigned' ? (
                   <button
                     type="button"
-                    onClick={() => handleApprove(selectedProfile.userId, selectedProfile.userEmail, selectedProfile.personal?.fullName)}
-                    className="px-4 py-2 rounded-xl bg-success text-white hover:bg-success/90 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
-                  >
+                    onClick={() =>
+                      handleApprove(
+                        selectedProfile.userId,
+                        selectedProfile.userEmail,
+                        selectedProfile.personal?.fullName
+                      )
+                    }
+                    className="px-4 py-2 rounded-xl bg-success text-white hover:bg-success/90 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs">
                     <CheckCircle2 size={14} />
                     Approve Profile
                   </button>
@@ -1415,8 +1636,7 @@ export default function HiringTeamDashboard() {
                   <button
                     type="button"
                     onClick={() => handleOpenAssignIdModal(selectedProfile)}
-                    className="px-4 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
-                  >
+                    className="px-4 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs">
                     <KeyRound size={14} />
                     {selectedProfile.employeeId ? 'Edit ID & Role' : 'Assign ID & Role'}
                   </button>
@@ -1432,11 +1652,11 @@ export default function HiringTeamDashboard() {
         visible={isChangesModalOpen}
         onHide={() => setIsChangesModalOpen(false)}
         width={500}
-        header={<h3 className="text-base font-black text-foreground">Request Profile Changes</h3>}
-      >
+        header={<h3 className="text-base font-black text-foreground">Request Profile Changes</h3>}>
         <div className="space-y-4 pt-2">
           <p className="text-xs text-muted">
-            Explain what documents or fields the employee needs to update or re-upload. The employee will see this message upon logging in.
+            Explain what documents or fields the employee needs to update or re-upload. The employee
+            will see this message upon logging in.
           </p>
           <div>
             <label className="block text-xs font-bold text-foreground mb-1 uppercase tracking-wider">
@@ -1454,15 +1674,13 @@ export default function HiringTeamDashboard() {
             <button
               type="button"
               onClick={() => setIsChangesModalOpen(false)}
-              className="px-4 py-2 rounded-xl border border-border-subtle bg-white text-foreground text-xs font-bold"
-            >
+              className="px-4 py-2 rounded-xl border border-border-subtle bg-white text-foreground text-xs font-bold">
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmitChanges}
-              className="px-5 py-2 rounded-xl bg-warning text-white hover:bg-warning/90 text-xs font-bold shadow-xs flex items-center gap-1.5"
-            >
+              className="px-5 py-2 rounded-xl bg-warning text-white hover:bg-warning/90 text-xs font-bold shadow-xs flex items-center gap-1.5">
               <Send size={13} />
               Send to Employee
             </button>
@@ -1479,18 +1697,23 @@ export default function HiringTeamDashboard() {
           <div className="flex items-center gap-2">
             <KeyRound size={18} className="text-primary" />
             <h3 className="text-base font-black text-foreground">
-              {selectedProfile?.employeeId ? 'Manage Official Profile & Role' : 'Assign Official ID & Role'}
+              {selectedProfile?.employeeId
+                ? 'Manage Official Profile & Role'
+                : 'Assign Official ID & Role'}
             </h3>
           </div>
-        }
-      >
+        }>
         <div className="space-y-4 pt-2">
           {/* Target employee summary card */}
           {selectedProfile && (
             <div className="p-3.5 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0 border border-primary/20">
                 {selectedProfile.profilePictureUrl ? (
-                  <img src={selectedProfile.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={selectedProfile.profilePictureUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User size={18} className="text-primary" />
                 )}
@@ -1501,7 +1724,8 @@ export default function HiringTeamDashboard() {
                 </div>
                 <div className="text-xs text-muted truncate">{selectedProfile.userEmail}</div>
               </div>
-              <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_MAP[selectedProfile.status]?.bg || 'bg-surface-subtle'}`}>
+              <span
+                className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_MAP[selectedProfile.status]?.bg || 'bg-surface-subtle'}`}>
                 {STATUS_MAP[selectedProfile.status]?.label || selectedProfile.status}
               </span>
             </div>
@@ -1509,7 +1733,8 @@ export default function HiringTeamDashboard() {
 
           <div className="p-3 rounded-2xl bg-primary/5 border border-primary/20 flex items-center gap-3">
             <div className="text-xs text-primary leading-relaxed">
-              <strong>Role Verified:</strong> You are authorized ({userRole}) to assign or update official employee identifiers, system roles, and department affiliations.
+              <strong>Role Verified:</strong> You are authorized ({userRole}) to assign or update
+              official employee identifiers, system roles, and department affiliations.
             </div>
           </div>
 
@@ -1537,8 +1762,7 @@ export default function HiringTeamDashboard() {
               <select
                 value={roleInput}
                 onChange={(e) => setRoleInput(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-xs font-semibold text-foreground bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-xs font-semibold text-foreground bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 {AVAILABLE_ROLES.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -1556,8 +1780,7 @@ export default function HiringTeamDashboard() {
               <select
                 value={departmentInput}
                 onChange={(e) => setDepartmentInput(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-xs font-semibold text-foreground bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border-subtle text-xs font-semibold text-foreground bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 <option value="">-- Select Department --</option>
                 {AVAILABLE_DEPTS.map((d) => (
                   <option key={d} value={d}>
@@ -1581,24 +1804,20 @@ export default function HiringTeamDashboard() {
             </div>
           </div>
 
-          {assignError && (
-            <p className="text-xs text-error font-medium">{assignError}</p>
-          )}
+          {assignError && <p className="text-xs text-error font-medium">{assignError}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={() => setIsAssignIdModalOpen(false)}
-              className="px-4 py-2 rounded-xl border border-border-subtle bg-white text-foreground text-xs font-bold hover:bg-surface-subtle transition-all"
-            >
+              className="px-4 py-2 rounded-xl border border-border-subtle bg-white text-foreground text-xs font-bold hover:bg-surface-subtle transition-all">
               Cancel
             </button>
             <button
               type="button"
               disabled={isAssigning}
               onClick={handleConfirmAssignId}
-              className="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
+              className="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold shadow-xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
               <CheckCircle2 size={13} />
               {isAssigning ? 'Saving Profile...' : 'Confirm & Save Details'}
             </button>

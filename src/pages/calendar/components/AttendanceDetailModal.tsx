@@ -111,7 +111,11 @@ export function AttendanceDetailModal({
         <div className="flex items-center justify-between w-full pr-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-              {request.type.toLowerCase().includes('home') ? <Home size={20} /> : <Calendar size={20} />}
+              {request.type.toLowerCase().includes('home') ? (
+                <Home size={20} />
+              ) : (
+                <Calendar size={20} />
+              )}
             </div>
             <div>
               <h3 className="text-lg font-black text-foreground">Attendance Request Details</h3>
@@ -126,7 +130,10 @@ export function AttendanceDetailModal({
       contentClassName="p-8"
       headerClassName="px-8 pt-8 pb-4 border-b border-border-subtle/40"
       pt={{
-        root: { className: 'rounded-[36px] overflow-hidden border border-border-subtle shadow-2xl bg-white' },
+        root: {
+          className:
+            'rounded-[36px] overflow-hidden border border-border-subtle shadow-2xl bg-white',
+        },
         mask: { className: 'backdrop-blur-md bg-black/40' },
       }}>
       <div className="flex flex-col gap-6">
@@ -137,8 +144,12 @@ export function AttendanceDetailModal({
               {(request.username || 'E').charAt(0).toUpperCase()}
             </div>
             <div>
-              <h4 className="text-sm font-black text-foreground">{request.username || 'Employee'}</h4>
-              <p className="text-xs text-muted font-medium">{request.email || 'Internal Team Member'}</p>
+              <h4 className="text-sm font-black text-foreground">
+                {request.username || 'Employee'}
+              </h4>
+              <p className="text-xs text-muted font-medium">
+                {request.email || 'Internal Team Member'}
+              </p>
             </div>
           </div>
           {request.department && (
@@ -167,8 +178,7 @@ export function AttendanceDetailModal({
             <span className="text-xs font-black text-foreground flex items-center gap-1">
               <Calendar size={13} className="text-muted" />
               {request.start_date ? formatDate(request.start_date) : '---'}
-              {request.end_date &&
-              formatDate(request.end_date) !== formatDate(request.start_date)
+              {request.end_date && formatDate(request.end_date) !== formatDate(request.start_date)
                 ? ` to ${formatDate(request.end_date)}`
                 : ''}
             </span>

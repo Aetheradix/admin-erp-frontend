@@ -13,7 +13,8 @@ export const AVAILABLE_PAY_PERIODS: PayPeriodConfig[] = [
   {
     id: 'monthly',
     label: 'Monthly',
-    description: 'Calculated once per calendar month (1st to last day of month). Standard in India & Europe.',
+    description:
+      'Calculated once per calendar month (1st to last day of month). Standard in India & Europe.',
     frequencyName: 'Monthly',
     periodsPerYear: 12,
     isCommonInUS: false,
@@ -37,7 +38,8 @@ export const AVAILABLE_PAY_PERIODS: PayPeriodConfig[] = [
   {
     id: 'weekly',
     label: 'Weekly',
-    description: 'Every 7 days (52 pay cycles per year). Common in the US and with small shops & hourly workers.',
+    description:
+      'Every 7 days (52 pay cycles per year). Common in the US and with small shops & hourly workers.',
     frequencyName: 'Weekly',
     periodsPerYear: 52,
     isCommonInUS: true,

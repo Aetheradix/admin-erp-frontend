@@ -230,64 +230,67 @@ export default function AppLayout() {
         )}
 
         {/* Profile Completion Notification Banner */}
-        {showProfileBanner && isProfileIncomplete && location.pathname !== '/profile-completion' && (
-          <div
-            className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${
-              empProfile?.status === 'changes_required'
-                ? 'bg-warning/10 border-warning/30 text-warning'
-                : 'bg-primary/10 border-primary/20 text-foreground'
-            }`}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div
-                className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                  empProfile?.status === 'changes_required'
-                    ? 'bg-warning/20 text-warning'
-                    : 'bg-primary/20 text-primary'
-                }`}
-              >
-                {empProfile?.status === 'changes_required' ? (
-                  <AlertTriangle size={13} />
-                ) : (
-                  <FileText size={13} />
-                )}
+        {showProfileBanner &&
+          isProfileIncomplete &&
+          location.pathname !== '/profile-completion' && (
+            <div
+              className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${
+                empProfile?.status === 'changes_required'
+                  ? 'bg-warning/10 border-warning/30 text-warning'
+                  : 'bg-primary/10 border-primary/20 text-foreground'
+              }`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                    empProfile?.status === 'changes_required'
+                      ? 'bg-warning/20 text-warning'
+                      : 'bg-primary/20 text-primary'
+                  }`}>
+                  {empProfile?.status === 'changes_required' ? (
+                    <AlertTriangle size={13} />
+                  ) : (
+                    <FileText size={13} />
+                  )}
+                </div>
+                <div className="text-xs font-semibold truncate flex items-center gap-2">
+                  <span className="font-black uppercase text-[10px] tracking-wider px-2 py-0.5 rounded-md bg-white/60">
+                    {empProfile?.status === 'changes_required'
+                      ? 'Revisions Required'
+                      : 'Onboarding Profile'}
+                  </span>
+                  <span className="truncate">
+                    {empProfile?.status === 'changes_required'
+                      ? empProfile.reviewNotes ||
+                        'The hiring team requested updates to your submitted onboarding documents.'
+                      : `Your employee profile is ${profilePct}% complete. Please submit mandatory bank & identity details.`}
+                  </span>
+                </div>
               </div>
-              <div className="text-xs font-semibold truncate flex items-center gap-2">
-                <span className="font-black uppercase text-[10px] tracking-wider px-2 py-0.5 rounded-md bg-white/60">
-                  {empProfile?.status === 'changes_required' ? 'Revisions Required' : 'Onboarding Profile'}
-                </span>
-                <span className="truncate">
-                  {empProfile?.status === 'changes_required'
-                    ? empProfile.reviewNotes || 'The hiring team requested updates to your submitted onboarding documents.'
-                    : `Your employee profile is ${profilePct}% complete. Please submit mandatory bank & identity details.`}
-                </span>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsProfileModalOpen(true)}
-                className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${
-                  empProfile?.status === 'changes_required'
-                    ? 'bg-warning text-white hover:bg-warning/90'
-                    : 'bg-primary text-white hover:bg-primary/90'
-                }`}
-              >
-                <span>{empProfile?.status === 'changes_required' ? 'Fix Now' : 'Complete Profile'}</span>
-                <ChevronRight size={12} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowProfileBanner(false)}
-                className="text-muted hover:text-foreground p-1 rounded-lg transition-colors"
-                aria-label="Dismiss profile banner"
-              >
-                <X size={14} />
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${
+                    empProfile?.status === 'changes_required'
+                      ? 'bg-warning text-white hover:bg-warning/90'
+                      : 'bg-primary text-white hover:bg-primary/90'
+                  }`}>
+                  <span>
+                    {empProfile?.status === 'changes_required' ? 'Fix Now' : 'Complete Profile'}
+                  </span>
+                  <ChevronRight size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileBanner(false)}
+                  className="text-muted hover:text-foreground p-1 rounded-lg transition-colors"
+                  aria-label="Dismiss profile banner">
+                  <X size={14} />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
           <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -313,10 +316,7 @@ export default function AppLayout() {
 
       {/* On-Demand Profile Completion Modal */}
       {isProfileModalOpen && (
-        <EmployeeProfileCompletion
-          fullPage={false}
-          onClose={() => setIsProfileModalOpen(false)}
-        />
+        <EmployeeProfileCompletion fullPage={false} onClose={() => setIsProfileModalOpen(false)} />
       )}
     </div>
   );

@@ -26,7 +26,9 @@ async function updateToHasmukh() {
       "UPDATE system_audit_logs SET changes = REPLACE(changes, 'sarah.chen@aetheradix.com', 'hasmukh.arx@gmail.com') WHERE changes LIKE '%sarah.chen@aetheradix.com%'"
     );
 
-    console.log('✓ Successfully updated all MySQL records: SuperAdmin is Hasmukh (hasmukh.arx@gmail.com)');
+    console.log(
+      '✓ Successfully updated all MySQL records: SuperAdmin is Hasmukh (hasmukh.arx@gmail.com)'
+    );
     process.exit(0);
   } catch (err) {
     console.error('Error updating records:', err);

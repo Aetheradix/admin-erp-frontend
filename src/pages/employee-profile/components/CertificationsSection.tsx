@@ -35,7 +35,14 @@ function newEntry(): CertificationEntry {
   };
 }
 
-export function CertificationsSection({ data, documents: _documents, userId, onSave, isSaving, readOnly }: Props) {
+export function CertificationsSection({
+  data,
+  documents: _documents,
+  userId,
+  onSave,
+  isSaving,
+  readOnly,
+}: Props) {
   const [entries, setEntries] = useState<CertificationEntry[]>(data.length > 0 ? data : []);
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
@@ -43,7 +50,7 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
   const addEntry = () => setEntries((prev) => [...prev, newEntry()]);
   const removeEntry = (id: string) => setEntries((prev) => prev.filter((e) => e.id !== id));
   const updateEntry = (id: string, key: keyof CertificationEntry, val: string) =>
-    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, [key]: val } : e));
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
 
   const handleFileUpload = (entryId: string, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -62,7 +69,12 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
         localData: e.target?.result as string,
       });
       updateEntry(entryId, 'documentId', doc.id);
-      showToast({ severity: 'success', summary: 'Uploaded', detail: 'Certificate uploaded.', life: 2500 });
+      showToast({
+        severity: 'success',
+        summary: 'Uploaded',
+        detail: 'Certificate uploaded.',
+        life: 2500,
+      });
     };
     reader.readAsDataURL(file);
     setActiveUploadId(null);
@@ -82,15 +94,16 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
           </div>
           <div>
             <h3 className="text-base font-black text-foreground">Certifications & Achievements</h3>
-            <p className="text-xs text-muted">Professional certifications, awards, and accomplishments</p>
+            <p className="text-xs text-muted">
+              Professional certifications, awards, and accomplishments
+            </p>
           </div>
         </div>
         {!readOnly && (
           <button
             type="button"
             onClick={addEntry}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-all"
-          >
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-all">
             <Plus size={16} /> Add Certification
           </button>
         )}
@@ -103,15 +116,14 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
           </div>
           <h4 className="text-sm font-bold text-muted mb-2">Showcase Your Achievements</h4>
           <p className="text-xs text-muted max-w-sm mb-4">
-            Add your professional certifications, awards, training records, or any notable accomplishments.
-            You can add as many as needed — no code changes required!
+            Add your professional certifications, awards, training records, or any notable
+            accomplishments. You can add as many as needed — no code changes required!
           </p>
           {!readOnly && (
             <button
               type="button"
               onClick={addEntry}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25"
-            >
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25">
               <Plus size={16} /> Add First Certification
             </button>
           )}
@@ -127,22 +139,22 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4 relative"
-            >
+              className="p-5 rounded-2xl bg-surface-subtle border border-border-subtle space-y-4 relative">
               {/* Gradient accent */}
               <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl bg-gradient-to-b from-primary to-primary/30" />
 
               <div className="flex items-center justify-between pl-3">
                 <div className="flex items-center gap-2">
                   <Award size={14} className="text-primary" />
-                  <div className="text-xs font-black uppercase tracking-wider text-muted">Entry #{idx + 1}</div>
+                  <div className="text-xs font-black uppercase tracking-wider text-muted">
+                    Entry #{idx + 1}
+                  </div>
                 </div>
                 {!readOnly && (
                   <button
                     type="button"
                     onClick={() => removeEntry(entry.id)}
-                    className="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all"
-                  >
+                    className="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all">
                     <Trash2 size={14} />
                   </button>
                 )}
@@ -196,7 +208,9 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
                 </div>
 
                 <div>
-                  <label className={labelClass}>Expiry Date <span className="text-muted font-normal">(if applicable)</span></label>
+                  <label className={labelClass}>
+                    Expiry Date <span className="text-muted font-normal">(if applicable)</span>
+                  </label>
                   <input
                     type="date"
                     className={inputClass(readOnly)}
@@ -226,14 +240,18 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       className="hidden"
-                      onChange={(e) => e.target.files?.[0] && handleFileUpload(entry.id, e.target.files[0])}
+                      onChange={(e) =>
+                        e.target.files?.[0] && handleFileUpload(entry.id, e.target.files[0])
+                      }
                     />
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => { setActiveUploadId(entry.id); fileRef.current?.click(); }}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 text-primary text-xs font-bold hover:bg-primary/10 transition-all"
-                      >
+                        onClick={() => {
+                          setActiveUploadId(entry.id);
+                          fileRef.current?.click();
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 text-primary text-xs font-bold hover:bg-primary/10 transition-all">
                         <Upload size={14} /> Upload Certificate
                       </button>
                       {hasCertDoc && (
@@ -255,8 +273,7 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
         <button
           type="button"
           onClick={addEntry}
-          className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border-2 border-dashed border-primary/20 text-primary text-sm font-bold hover:border-primary/40 hover:bg-primary/5 transition-all"
-        >
+          className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border-2 border-dashed border-primary/20 text-primary text-sm font-bold hover:border-primary/40 hover:bg-primary/5 transition-all">
           <Plus size={16} /> Add Another Certification or Achievement
         </button>
       )}
@@ -266,8 +283,7 @@ export function CertificationsSection({ data, documents: _documents, userId, onS
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50"
-          >
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

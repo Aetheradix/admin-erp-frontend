@@ -295,7 +295,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         { type: 'Reimbursements', id: 'LIST' },
       ],
     }),
-    
+
     // Fetch all salary slips
     getAllSalarySlips: builder.query<any, void>({
       query: () => '/finance/salary-slips',
@@ -557,11 +557,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         body: payload,
       }),
       transformResponse: (response: any) => response?.data ?? response,
-      invalidatesTags: [
-        { type: 'SalarySlips', id: 'LIST' },
-        'PayrollAdjustments',
-        'ActivityLogs',
-      ],
+      invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }, 'PayrollAdjustments', 'ActivityLogs'],
     }),
 
     getPayrollAdjustments: builder.query<
@@ -630,4 +626,4 @@ export const {
   useCreatePayrollAdjustmentMutation,
   useGetPayrollAdjustmentsQuery,
   useLazyGetPayrollAdjustmentsQuery,
-} = financeApiSlice;
+} = financeApiSlice;
