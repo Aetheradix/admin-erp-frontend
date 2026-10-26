@@ -14,11 +14,14 @@ export function useInvoicePdf() {
       setPdfInvoice(invoiceData);
 
       // Wait for DOM to finish rendering
-      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 100)));
+      let element = invoicePdfRef.current;
+      for (let attempt = 0; attempt < 10 && !element; attempt++) {
+        await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 50)));
+        element = invoicePdfRef.current;
+      }
 
-      const element = invoicePdfRef.current;
       if (!element) {
-        throw new Error('Salary slip template element not found.');
+        throw new Error('Invoice template element not found.');
       }
 
       // Render canvas with CORS enabled for external images/fonts
@@ -65,6 +68,7 @@ export function useInvoicePdf() {
       throw error;
     } finally {
       setIsGeneratingPdf(false);
+      setPdfInvoice(null);
     }
   };
 

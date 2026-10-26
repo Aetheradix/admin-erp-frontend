@@ -117,49 +117,127 @@ export function generateNextInvoiceNumber(existingInvoices: Invoice[]): string {
 
 /**
  * Ensures any invoice has complete, valid InvoiceForm structure
- * so it can be previewed on-screen and printed without missing-file errors.
+ * so it can be previewed on-screen, edited, and printed without missing-file errors.
  */
 export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
-  if (inv.data) {
-    return {
-      ...inv.data,
-      invoiceNumber: inv.data.invoiceNumber || inv.id,
-      billToName: inv.data.billToName || inv.client,
-    };
+  let parsedData: any = {};
+
+  if (typeof inv.data === 'string') {
+    try {
+      parsedData = JSON.parse(inv.data);
+    } catch (e) {
+      console.warn('Failed to parse invoice.data string:', e);
+      parsedData = {};
+    }
+  } else if (inv.data && typeof inv.data === 'object') {
+    parsedData = inv.data;
   }
 
-  const calculatedTaxRate = 18;
-  const taxableSubtotal = Math.round(Number(inv.amount || 0) / (1 + calculatedTaxRate / 100));
+  const raw = inv as any;
+
+  // Resolve invoiceNumber
+  const invoiceNumber = String(
+    parsedData.invoiceNumber ||
+      parsedData.invoice_number ||
+      raw.invoice_number ||
+      raw.invoiceNumber ||
+      inv.id ||
+      ''
+  ).trim();
+
+  // Resolve billToName
+  const billToName = String(
+    parsedData.billToName ||
+      parsedData.bill_to_name ||
+      parsedData.client ||
+      inv.client ||
+      raw.bill_to_name ||
+      raw.billToName ||
+      ''
+  ).trim();
+
+  // Resolve dates
+  const invoiceDate = String(
+    parsedData.invoiceDate ||
+      parsedData.invoice_date ||
+      parsedData.date ||
+      inv.date ||
+      raw.invoice_date ||
+      raw.date ||
+      new Date().toISOString().slice(0, 10)
+  );
+
+  const dueDate = String(
+    parsedData.dueDate ||
+      parsedData.due_date ||
+      invoiceDate
+  );
+
+  // Resolve Tax Rate and amounts
+  const calculatedTaxRate = Number(
+    parsedData.gstRate ?? raw.gst_rate ?? raw.gstRate ?? 18
+  );
+  const totalAmount = Number(
+    inv.amount || parsedData.amount || parsedData.total || raw.total || 0
+  );
+  const taxableSubtotal = Math.round(totalAmount / (1 + calculatedTaxRate / 100));
+
+  // Resolve items
+  let rawItems = parsedData.items ?? raw.items;
+  if (typeof rawItems === 'string') {
+    try {
+      rawItems = JSON.parse(rawItems);
+    } catch {
+      rawItems = [];
+    }
+  }
+
+  let finalItems: InvoiceItem[] = [];
+  if (Array.isArray(rawItems) && rawItems.length > 0) {
+    finalItems = rawItems.map((item: any) => ({
+      description: String(item.description || item.name || 'Software Engineering & Enterprise Services'),
+      quantity: Math.max(1, Number(item.quantity || item.qty || 1)),
+      rate: Number(item.rate ?? item.price ?? item.amount ?? 0),
+    }));
+  } else {
+    finalItems = [
+      {
+        description: String(
+          parsedData.description || raw.description || 'Software Engineering & Enterprise Services'
+        ),
+        quantity: 1,
+        rate: taxableSubtotal > 0 ? taxableSubtotal : totalAmount,
+      },
+    ];
+  }
 
   return {
-    invoiceNumber: inv.id,
-    invoiceDate: inv.date || new Date().toISOString().slice(0, 10),
-    dueDate: inv.date || new Date().toISOString().slice(0, 10),
-    placeOfSupply: 'Madhya Pradesh',
-    companyName: 'Aetheradix Private Limited',
-    companyContact: 'Pratyush Shrivastava',
-    companyAddress: 'F-N 507, Crystal Tower, IBD Kings Park',
-    companyCity: 'Bawadia Kalan, Bhopal',
-    companyState: 'Madhya Pradesh',
-    companyCountry: 'India',
-    companyPincode: '462039',
-    companyGSTIN: '23ABDCA8625L1ZJ',
-    billToName: inv.client,
-    billToAddress: 'Corporate Office, Sector A',
-    billToCity: 'Bhopal',
-    billToState: 'Madhya Pradesh',
-    billToCountry: 'India',
-    billToPincode: '462001',
-    billToGSTIN: '',
-    items: [
-      {
-        description: 'Software Engineering & Enterprise Services',
-        quantity: 1,
-        rate: taxableSubtotal,
-      },
-    ],
+    invoiceNumber,
+    invoiceDate,
+    dueDate,
+    placeOfSupply: String(parsedData.placeOfSupply || parsedData.place_of_supply || 'Madhya Pradesh'),
+    status: (parsedData.status || inv.status || 'Pending') as 'Paid' | 'Pending' | 'Overdue',
+
+    companyName: String(parsedData.companyName || parsedData.company_name || 'Aetheradix Private Limited'),
+    companyContact: String(parsedData.companyContact || parsedData.company_contact || 'Pratyush Shrivastava'),
+    companyAddress: String(parsedData.companyAddress || parsedData.company_address || 'F-N 507, Crystal Tower, IBD Kings Park'),
+    companyCity: String(parsedData.companyCity || parsedData.company_city || 'Bawadia Kalan, Bhopal'),
+    companyState: String(parsedData.companyState || parsedData.company_state || 'Madhya Pradesh'),
+    companyCountry: String(parsedData.companyCountry || parsedData.company_country || 'India'),
+    companyPincode: String(parsedData.companyPincode || parsedData.company_pincode || '462039'),
+    companyGSTIN: String(parsedData.companyGSTIN || parsedData.company_gstin || '23ABDCA8625L1ZJ'),
+
+    billToName,
+    billToAddress: String(parsedData.billToAddress || parsedData.bill_to_address || 'Corporate Office, Sector A'),
+    billToCity: String(parsedData.billToCity || parsedData.bill_to_city || 'Bhopal'),
+    billToState: String(parsedData.billToState || parsedData.bill_to_state || 'Madhya Pradesh'),
+    billToCountry: String(parsedData.billToCountry || parsedData.bill_to_country || 'India'),
+    billToPincode: String(parsedData.billToPincode || parsedData.bill_to_pincode || '462001'),
+    billToGSTIN: String(parsedData.billToGSTIN || parsedData.bill_to_gstin || ''),
+
+    items: finalItems,
     gstRate: calculatedTaxRate,
-    notes: 'Thank you for your business. Payment is due within 15 days.',
+    notes: String(parsedData.notes || 'Thank you for your business. Payment is due within 15 days.'),
   };
 };
 
@@ -264,6 +342,7 @@ export function InvoicesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [form, setForm] = useState<InvoiceForm>(() => createEmptyForm(invoices));
+  const [isSaving, setIsSaving] = useState(false);
 
   // Sync backend invoices if available
   useEffect(() => {
@@ -272,25 +351,64 @@ export function InvoicesPage() {
       Array.isArray(backendInvoicesData) &&
       backendInvoicesData.length > 0
     ) {
-      const formatted: Invoice[] = backendInvoicesData.map((item: any) => ({
-        id: String(item.id || item.invoice_number || item.invoiceNumber || 'INV-000'),
-        client: String(item.client || item.bill_to_name || item.billToName || 'Client'),
-        amount: Number(item.amount || item.total || 0),
-        status: (item.status === 'Paid' || item.status === 'Overdue' ? item.status : 'Pending') as
-          'Paid' | 'Pending' | 'Overdue',
-        date: String(
+      const formatted: Invoice[] = backendInvoicesData.map((item: any) => {
+        const invNum = String(item.invoice_number || item.invoiceNumber || item.id || 'INV-000');
+        const client = String(item.client || item.bill_to_name || item.billToName || 'Client');
+        const amount = Number(item.amount || item.total || 0);
+        const status = (item.status === 'Paid' || item.status === 'Overdue' ? item.status : 'Pending') as
+          'Paid' | 'Pending' | 'Overdue';
+        const date = String(
           item.date ||
             item.invoice_date ||
             item.invoiceDate ||
             new Date().toISOString().slice(0, 10)
-        ),
-        data: item.data || item,
-      }));
+        );
+
+        const partialInv: Invoice = {
+          id: invNum,
+          client,
+          amount,
+          status,
+          date,
+          data: typeof item.data === 'object' ? item.data : undefined,
+        };
+
+        const fullFormData = getInvoiceFormData(partialInv);
+
+        return {
+          id: invNum,
+          client,
+          amount,
+          status,
+          date,
+          data: {
+            ...fullFormData,
+            invoiceUrl: item.invoice_url || item.invoiceUrl || item.data?.invoiceUrl,
+          },
+          ...((item.id !== undefined && String(item.id) !== invNum) ? { backendId: item.id } : {}),
+        };
+      });
 
       setInvoices((prev) => {
-        const backendIds = new Set(formatted.map((inv) => inv.id));
-        const localOnly = prev.filter((inv) => !backendIds.has(inv.id));
-        return [...formatted, ...localOnly];
+        const prevMap = new Map(prev.map((inv) => [inv.id.toLowerCase().trim(), inv]));
+        const backendIds = new Set(formatted.map((inv) => inv.id.toLowerCase().trim()));
+
+        // Merge backend records with local state so local edits/details aren't lost
+        const mergedBackend = formatted.map((bInv) => {
+          const localMatch = prevMap.get(bInv.id.toLowerCase().trim());
+          if (!localMatch) return bInv;
+          return {
+            ...bInv,
+            data: localMatch.data || bInv.data,
+            client: localMatch.client || bInv.client,
+            amount: localMatch.amount || bInv.amount,
+            status: localMatch.status || bInv.status,
+            date: localMatch.date || bInv.date,
+          };
+        });
+
+        const localOnly = prev.filter((inv) => !backendIds.has(inv.id.toLowerCase().trim()));
+        return [...mergedBackend, ...localOnly];
       });
     }
   }, [backendInvoicesData]);
@@ -502,8 +620,9 @@ export function InvoicesPage() {
     }
 
     try {
+      const apiId = (invoice as any).backendId || invoice.id;
       await updateInvoiceApi({
-        id: invoice.id,
+        id: apiId,
         status: newStatus,
       }).unwrap();
     } catch (err) {
@@ -538,7 +657,9 @@ export function InvoicesPage() {
     const isDuplicate = invoices.some(
       (inv) =>
         inv.id.toLowerCase().trim() === form.invoiceNumber.toLowerCase().trim() &&
-        (!editingInvoice || inv.id !== editingInvoice.id)
+        (!editingInvoice ||
+          (inv.id.toLowerCase().trim() !== editingInvoice.id.toLowerCase().trim() &&
+            (inv as any).backendId !== (editingInvoice as any).backendId))
     );
     if (isDuplicate) {
       message.error(
@@ -548,16 +669,16 @@ export function InvoicesPage() {
     }
 
     const actionKey = 'invoice-save-action';
+    setIsSaving(true);
 
     try {
       message.loading({
-        content: isUpdating
-          ? 'Updating invoice and generating PDF...'
-          : 'Generating invoice PDF...',
+        content: isUpdating ? 'Updating invoice...' : 'Creating invoice...',
         key: actionKey,
       });
 
-      const subTotal = form.items.reduce(
+      const safeItems = Array.isArray(form.items) ? form.items : [];
+      const subTotal = safeItems.reduce(
         (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
         0
       );
@@ -574,58 +695,60 @@ export function InvoicesPage() {
         data: {
           ...form,
           status: form.status || (editingInvoice ? editingInvoice.status : 'Pending'),
-          items: form.items.map((item) => ({ ...item })),
+          items: safeItems.map((item) => ({
+            description: item.description,
+            quantity: Number(item.quantity || 1),
+            rate: Number(item.rate || 0),
+          })),
+          invoiceUrl: editingInvoice?.data?.invoiceUrl,
         },
       };
-
-      let invoiceUrl: string | undefined = editingInvoice?.data?.invoiceUrl;
-
-      try {
-        const pdfBlob = await generateInvoicePDF(invoicePayload.data!);
-        message.loading({
-          content: 'Uploading invoice to storage...',
-          key: actionKey,
-        });
-
-        const uploadResponse = await uploadInvoice({
-          file: pdfBlob,
-        }).unwrap();
-
-        if (uploadResponse?.data?.invoiceUrl) {
-          invoiceUrl = uploadResponse.data.invoiceUrl;
-        }
-      } catch (uploadErr) {
-        console.warn('PDF upload note:', uploadErr);
-      }
 
       const savedInvoice: Invoice = {
         ...invoicePayload,
         data: {
           ...invoicePayload.data!,
-          invoiceUrl,
         },
+        ...((editingInvoice as any)?.backendId ? { backendId: (editingInvoice as any).backendId } : {}),
       };
 
       if (isUpdating && editingInvoice) {
-        // 1. Update in local state & localStorage
+        // 1. Update in local state & localStorage immediately
         setInvoices((prev) =>
-          prev.map((inv) => (inv.id === editingInvoice.id ? savedInvoice : inv))
+          prev.map((inv) =>
+            inv.id.toLowerCase().trim() === editingInvoice.id.toLowerCase().trim() ||
+            ((inv as any).backendId && (inv as any).backendId === (editingInvoice as any).backendId)
+              ? savedInvoice
+              : inv
+          )
         );
 
         // If currently viewing this invoice in modal, update it
-        if (viewingInvoice?.id === editingInvoice.id) {
+        if (
+          viewingInvoice &&
+          (viewingInvoice.id.toLowerCase().trim() === editingInvoice.id.toLowerCase().trim() ||
+            ((viewingInvoice as any).backendId &&
+              (viewingInvoice as any).backendId === (editingInvoice as any).backendId))
+        ) {
           setViewingInvoice(savedInvoice);
         }
 
-        // 2. Call backend update API mutation
+        // 2. Call backend update API mutation (best-effort)
         try {
+          const apiId = (editingInvoice as any).backendId || editingInvoice.id;
           await updateInvoiceApi({
-            id: editingInvoice.id,
+            id: apiId,
             invoice_number: savedInvoice.id,
+            invoiceNumber: savedInvoice.id,
             client: savedInvoice.client,
+            bill_to_name: savedInvoice.client,
+            billToName: savedInvoice.client,
             amount: savedInvoice.amount,
+            total: savedInvoice.amount,
             status: savedInvoice.status,
             date: savedInvoice.date,
+            invoice_date: savedInvoice.date,
+            invoiceDate: savedInvoice.date,
             data: savedInvoice.data,
           }).unwrap();
         } catch (apiErr) {
@@ -652,10 +775,16 @@ export function InvoicesPage() {
           await createInvoiceApi({
             id: savedInvoice.id,
             invoice_number: savedInvoice.id,
+            invoiceNumber: savedInvoice.id,
             client: savedInvoice.client,
+            bill_to_name: savedInvoice.client,
+            billToName: savedInvoice.client,
             amount: savedInvoice.amount,
+            total: savedInvoice.amount,
             status: savedInvoice.status,
             date: savedInvoice.date,
+            invoice_date: savedInvoice.date,
+            invoiceDate: savedInvoice.date,
             data: savedInvoice.data,
           }).unwrap();
         } catch (apiErr) {
@@ -671,7 +800,7 @@ export function InvoicesPage() {
 
         // 4. Deduct inventory items referenced in this invoice if applicable
         try {
-          const itemsToDeduct = form.items
+          const itemsToDeduct = safeItems
             .filter((item) => item.description?.trim() && Number(item.quantity) > 0)
             .map((item) => ({
               asset_id: item.description.trim(),
@@ -700,8 +829,25 @@ export function InvoicesPage() {
         });
       }
 
+      // Generate & upload PDF in the background without blocking the UI
+      generateInvoicePDF(savedInvoice.data!)
+        .then((pdfBlob) => uploadInvoice({ file: pdfBlob }).unwrap())
+        .then((uploadRes) => {
+          if (uploadRes?.data?.invoiceUrl) {
+            setInvoices((prev) =>
+              prev.map((inv) =>
+                inv.id === savedInvoice.id
+                  ? { ...inv, data: { ...inv.data!, invoiceUrl: uploadRes.data.invoiceUrl } }
+                  : inv
+              )
+            );
+          }
+        })
+        .catch((uploadErr) => {
+          console.info('Background PDF generation note:', uploadErr);
+        });
+
       refetchLogs();
-      refetchBackendInvoices();
 
       setEditingInvoice(null);
       setForm(createEmptyForm(invoices));
@@ -712,6 +858,8 @@ export function InvoicesPage() {
         content: error instanceof Error ? error.message : 'Unable to save invoice.',
         key: actionKey,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -756,7 +904,8 @@ export function InvoicesPage() {
         }
 
         try {
-          await deleteInvoiceApi(invoice.id).unwrap();
+          const apiId = (invoice as any).backendId || invoice.id;
+          await deleteInvoiceApi(apiId).unwrap();
         } catch (err) {
           console.warn('Backend delete note:', err);
         }
@@ -977,7 +1126,7 @@ export function InvoicesPage() {
         visible={showForm}
         isEditing={Boolean(editingInvoice)}
         onHide={() => {
-          if (isUploadingPdf) return;
+          if (isSaving || isUploadingPdf) return;
           setShowForm(false);
           setEditingInvoice(null);
         }}
@@ -989,7 +1138,7 @@ export function InvoicesPage() {
         onSubmit={handleSubmit}
         emptyForm={createEmptyForm(invoices)}
         setForm={setForm}
-        isSubmitting={isUploadingPdf}
+        isSubmitting={isSaving || isUploadingPdf}
       />
 
       {/* High-Fidelity Invoice Viewer Modal */}

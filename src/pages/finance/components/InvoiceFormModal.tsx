@@ -69,12 +69,14 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
 
   if (!visible) return null;
 
-  const subTotal = form.items.reduce(
+  const safeItems = Array.isArray(form?.items) ? form.items : [];
+
+  const subTotal = safeItems.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
     0
   );
 
-  const gstAmount = (subTotal * Number(form.gstRate || 0)) / 100;
+  const gstAmount = (subTotal * Number(form?.gstRate || 0)) / 100;
   const total = subTotal + gstAmount;
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -88,12 +90,16 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
       newErrors.billToName = 'Customer or company name is required.';
     }
 
-    const hasInvalidItem = form.items.some(
-      (item) => !item.description?.trim() || Number(item.quantity || 0) <= 0
-    );
-    if (hasInvalidItem) {
-      newErrors.items =
-        'Please ensure all items have a description and quantity greater than zero.';
+    if (safeItems.length === 0) {
+      newErrors.items = 'Please add at least one line item.';
+    } else {
+      const hasInvalidItem = safeItems.some(
+        (item) => !item.description?.trim() || Number(item.quantity || 0) <= 0
+      );
+      if (hasInvalidItem) {
+        newErrors.items =
+          'Please ensure all items have a description and quantity greater than zero.';
+      }
     }
 
     setErrors(newErrors);
@@ -103,13 +109,19 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    if (isSubmitting) return;
+    setErrors({});
+    onHide();
+    setForm(emptyForm);
+  };
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !isSubmitting) {
-          onHide();
-          setForm(emptyForm);
+        if (e.target === e.currentTarget) {
+          handleClose();
         }
       }}>
       <div className="bg-white w-full max-w-5xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
@@ -143,10 +155,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={() => {
-              onHide();
-              setForm(emptyForm);
-            }}
+            onClick={handleClose}
             className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition disabled:opacity-50">
             <X size={20} />
           </button>
@@ -414,7 +423,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
               </div>
 
               <div className="space-y-3">
-                {form.items.map((item, idx) => {
+                {safeItems.map((item, idx) => {
                   const lineTotal = Number(item.quantity || 0) * Number(item.rate || 0);
 
                   return (
@@ -462,7 +471,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                           ₹{lineTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </div>
 
-                        {form.items.length > 1 && (
+                        {safeItems.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeItem(idx)}
@@ -549,10 +558,7 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={() => {
-              onHide();
-              setForm(emptyForm);
-            }}
+            onClick={handleClose}
             className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer">
             Cancel
           </button>
