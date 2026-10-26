@@ -55,8 +55,8 @@ export const useAttendance = () => {
   // WFH vs Office Work Mode toggle (defaults to 'office')
   const [workMode, setWorkMode] = useState<'office' | 'wfh'>('office');
 
-  // Break remark state (employee types reason before taking break)
-  const [breakRemark, setBreakRemark] = useState<string>('');
+  // Break note state (employee types reason before taking break)
+  const [breakNote, setBreakNote] = useState<string>('');
 
   // Real-time Geo-Tagging state
   const [geoLocation, setGeoLocation] = useState<GeoLocationState>({
@@ -158,10 +158,15 @@ export const useAttendance = () => {
       history.forEach((h: any) => {
         const matchingIndex = generated.findIndex((g) => g.date === h.date);
         if (matchingIndex !== -1) {
+          const checkInStr = h.check_in_time ? formatTimeDisplay(h.check_in_time) : (h.checkIn || generated[matchingIndex].checkIn);
+          const checkOutStr = h.check_out_time ? formatTimeDisplay(h.check_out_time) : (h.checkOut || generated[matchingIndex].checkOut);
+          const workMins = h.work_duration != null ? Number(h.work_duration) : null;
+          const breakMins = h.total_break_minutes != null ? Number(h.total_break_minutes) : null;
+
           generated[matchingIndex] = {
             ...generated[matchingIndex],
-            checkIn: h.checkIn || generated[matchingIndex].checkIn,
-            checkOut: h.checkOut || generated[matchingIndex].checkOut,
+            checkIn: checkInStr,
+            checkOut: checkOutStr,
             status: (h.status as any) || generated[matchingIndex].status,
             work_mode: h.work_mode || (h.is_wfh ? 'wfh' : 'office'),
             is_wfh: Boolean(h.is_wfh || h.work_mode === 'wfh'),
@@ -171,6 +176,8 @@ export const useAttendance = () => {
             check_out_latitude: h.check_out_latitude,
             check_out_longitude: h.check_out_longitude,
             check_out_location: h.check_out_location,
+            totalBreakMinutes: breakMins != null ? breakMins : generated[matchingIndex].totalBreakMinutes,
+            netWorkingHours: workMins != null ? Number((workMins / 60).toFixed(2)) : generated[matchingIndex].netWorkingHours,
           };
         }
       });
@@ -183,12 +190,6 @@ export const useAttendance = () => {
   const monthSummary = useMemo(() => {
     return calculateMonthSummary(monthRecords);
   }, [monthRecords]);
-
-  // Currently selected date detail record
-  const selectedDayRecord = useMemo(() => {
-    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-    return monthRecords.find((r) => r.date === dateStr);
-  }, [selectedDate, monthRecords]);
 
   // Live session metrics calculation
   const isCheckedIn = status?.status === 'checked-in';
@@ -213,6 +214,90 @@ export const useAttendance = () => {
   const checkInTimeDisplay = checkInDate ? formatTimeDisplay(checkInDate) : '—';
   const checkOutTimeDisplay = isCheckedIn ? 'In Progress' : (checkOutDate ? formatTimeDisplay(checkOutDate) : '—');
   const shiftTimingDisplay = SHIFT_DISPLAY;
+
+  // Currently selected date detail record
+  const selectedDayRecord = useMemo(() => {
+    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+    const baseRecord = monthRecords.find((r) => r.date === dateStr);
+    if (!baseRecord) return undefined;
+
+    const todayStr = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
+
+    if (dateStr === todayStr && (status?.record || (status?.breaks && status.breaks.length > 0))) {
+      const rawBreaks = Array.isArray(status?.breaks) ? status.breaks : [];
+      let mappedBreaks = baseRecord.breaks;
+
+      if (rawBreaks.length > 0 || status?.activeBreak) {
+        mappedBreaks = rawBreaks.map((b: any, idx: number) => {
+          const s = b.break_start ? new Date(b.break_start) : null;
+          const e = b.break_end ? new Date(b.break_end) : null;
+          const startTimeStr = s && !isNaN(s.getTime()) ? formatTimeDisplay(s) : '—';
+          const isOngoing = b.status === 'IN_PROGRESS' || b.break_end === null;
+          const endTimeStr = isOngoing ? 'In Progress' : (e && !isNaN(e.getTime()) ? formatTimeDisplay(e) : '—');
+          const duration = b.duration != null && b.duration >= 0 ? b.duration : (s && !isNaN(s.getTime()) ? Math.max(0, Math.floor((time.getTime() - s.getTime()) / 60000)) : 0);
+          const breakType = b.break_type || (b.break_note ? b.break_note : `Break #${idx + 1}`);
+          const label = breakType.toLowerCase().includes('break') ? breakType : `${breakType} Break`;
+          const maxAllowed = breakType.toLowerCase().includes('tea') ? 15 : (breakType.toLowerCase().includes('lunch') ? 45 : 30);
+          return {
+            id: `real-break-${b.id || idx}`,
+            label,
+            break_type: breakType,
+            status: isOngoing ? 'IN_PROGRESS' : 'COMPLETED',
+            date: b.date || todayStr,
+            startTime: startTimeStr,
+            endTime: endTimeStr,
+            durationMinutes: duration,
+            break_note: b.break_note || undefined,
+            maxAllowedMinutes: maxAllowed,
+            isOverTime: duration > maxAllowed,
+          };
+        });
+      }
+
+      const completedBreakMins = status?.total_break_minutes ?? 0;
+      const activeBreakStart = (status?.activeBreak as any)?.break_start || (status?.activeBreak as any)?.start_time;
+      let activeBreakMins = 0;
+      if (status?.onBreak && activeBreakStart) {
+        const started = new Date(activeBreakStart);
+        if (!isNaN(started.getTime())) {
+          activeBreakMins = Math.max(0, Math.floor((time.getTime() - started.getTime()) / 60000));
+        }
+      }
+      const totalBreakMins = completedBreakMins + activeBreakMins;
+
+      // Calculate real gross and net working hours
+      let grossHours = baseRecord.grossWorkingHours;
+      let netHours = baseRecord.netWorkingHours;
+      if (checkInDate) {
+        const endRef = checkOutDate || time;
+        const grossMs = Math.max(0, endRef.getTime() - checkInDate.getTime());
+        const grossMins = Math.floor(grossMs / 60000);
+        grossHours = Number((grossMins / 60).toFixed(2));
+
+        const storedWorkDuration = (status?.record as any)?.work_duration;
+        if (checkOutDate && storedWorkDuration != null && Number(storedWorkDuration) > 0) {
+          netHours = Number((Number(storedWorkDuration) / 60).toFixed(2));
+        } else {
+          const netMins = Math.max(0, grossMins - totalBreakMins);
+          netHours = Number((netMins / 60).toFixed(2));
+        }
+      }
+
+      return {
+        ...baseRecord,
+        checkIn: (status?.record as any)?.check_in_time ? formatTimeDisplay((status.record as any).check_in_time) : baseRecord.checkIn,
+        checkOut: (status?.record as any)?.check_out_time ? formatTimeDisplay((status.record as any).check_out_time) : (status?.status === 'checked-in' ? 'In Progress' : baseRecord.checkOut),
+        check_in_location: (status?.record as any)?.check_in_location || baseRecord.check_in_location,
+        check_out_location: (status?.record as any)?.check_out_location || baseRecord.check_out_location,
+        breaks: mappedBreaks,
+        totalBreakMinutes: totalBreakMins,
+        grossWorkingHours: grossHours,
+        netWorkingHours: netHours,
+      };
+    }
+
+    return baseRecord;
+  }, [selectedDate, monthRecords, time, status, checkInDate, checkOutDate]);
 
   // ── 3-state Punctuality: early | on-time | late ──
   // Grace window: ±5 min around shift start counts as 'on-time'
@@ -260,33 +345,40 @@ export const useAttendance = () => {
 
   // ── Break & net working ──
   const totalBreakDisplay = useMemo(() => {
-    const activeBreakStart = (status?.activeBreak as any)?.start_time;
-    // Count elapsed time of the current break if on break
-    let breakMins = 0;
+    const activeBreakStart =
+      (status?.activeBreak as any)?.break_start || (status?.activeBreak as any)?.start_time;
+    let activeBreakMins = 0;
     if (isOnBreak && activeBreakStart) {
       const started = new Date(activeBreakStart);
       if (!isNaN(started.getTime())) {
-        breakMins = Math.floor((time.getTime() - started.getTime()) / 60000);
+        activeBreakMins = Math.max(0, Math.floor((time.getTime() - started.getTime()) / 60000));
       }
     }
-    return breakMins > 0 ? `${formatElapsed(breakMins)} (Active)` : (isOnBreak ? 'On Break' : '—');
-  }, [isOnBreak, status?.activeBreak, time]);
+    const completedMins = status?.total_break_minutes ?? 0;
+    const totalMins = completedMins + activeBreakMins;
+    if (totalMins > 0) {
+      return `${formatElapsed(totalMins)}${isOnBreak ? ' (Active)' : ''}`;
+    }
+    return isOnBreak ? 'On Break' : '—';
+  }, [isOnBreak, status?.activeBreak, status?.total_break_minutes, time]);
 
   const netWorkingDisplay = useMemo(() => {
     if (!isCheckedIn || !checkInDate) return '—';
     const elapsedMs = time.getTime() - checkInDate.getTime();
     const grossMins = Math.floor(elapsedMs / 60000);
-    // Subtract active break if applicable
-    const activeBreakStart = (status?.activeBreak as any)?.start_time;
-    let breakMins = 0;
+    // Subtract cumulative + active break
+    const activeBreakStart =
+      (status?.activeBreak as any)?.break_start || (status?.activeBreak as any)?.start_time;
+    let activeBreakMins = 0;
     if (isOnBreak && activeBreakStart) {
       const started = new Date(activeBreakStart);
       if (!isNaN(started.getTime())) {
-        breakMins = Math.floor((time.getTime() - started.getTime()) / 60000);
+        activeBreakMins = Math.max(0, Math.floor((time.getTime() - started.getTime()) / 60000));
       }
     }
-    return formatElapsed(Math.max(0, grossMins - breakMins));
-  }, [isCheckedIn, checkInDate, isOnBreak, status?.activeBreak, time]);
+    const totalBreakMins = (status?.total_break_minutes ?? 0) + activeBreakMins;
+    return formatElapsed(Math.max(0, grossMins - totalBreakMins));
+  }, [isCheckedIn, checkInDate, isOnBreak, status?.activeBreak, status?.total_break_minutes, time]);
 
   const handleAttendance = async () => {
     try {
@@ -295,6 +387,10 @@ export const useAttendance = () => {
           latitude: geoLocation.latitude,
           longitude: geoLocation.longitude,
           location_name: geoLocation.locationName,
+          check_out_latitude: geoLocation.latitude,
+          check_out_longitude: geoLocation.longitude,
+          check_out_location:
+            geoLocation.locationName || (workMode === 'wfh' ? 'Remote / Home' : 'Office HQ'),
         }).unwrap();
         showToast({
           severity: 'success',
@@ -342,31 +438,50 @@ export const useAttendance = () => {
     }
   };
 
-  const handleBreak = async (remarkOverride?: string) => {
+  const handleBreak = async (breakTypeOrRemark?: string, customRemark?: string) => {
     try {
       if (status?.onBreak) {
-        await endBreak().unwrap();
-        setBreakRemark('');
+        const res = await endBreak().unwrap();
+        setBreakNote('');
         showToast({
           severity: 'success',
           summary: 'Break Ended',
-          detail: 'Welcome back! Break time has been recorded.',
+          detail: res.message || 'Welcome back! Break time has been recorded in database.',
           life: 3000,
         });
       } else {
-        const remarkText =
-          (remarkOverride && remarkOverride.trim())
-            ? remarkOverride.trim()
-            : (breakRemark && breakRemark.trim())
-            ? breakRemark.trim()
-            : 'Break';
-        console.log('[useAttendance] takeBreak payload:', { remark: remarkText });
-        await takeBreak({ remark: remarkText }).unwrap();
-        setBreakRemark('');
+        let break_type = 'Break';
+        let break_note = '';
+
+        if (breakTypeOrRemark) {
+          if (breakTypeOrRemark.toLowerCase().includes('tea')) {
+            break_type = 'Tea Break';
+            break_note = customRemark || breakNote || 'Tea Break';
+          } else if (breakTypeOrRemark.toLowerCase().includes('lunch')) {
+            break_type = 'Lunch Break';
+            break_note = customRemark || breakNote || 'Lunch Break';
+          } else {
+            break_type = breakTypeOrRemark;
+            break_note = customRemark || breakTypeOrRemark;
+          }
+        } else if (breakNote && breakNote.trim()) {
+          const trimmed = breakNote.trim();
+          if (trimmed.toLowerCase().includes('tea')) break_type = 'Tea Break';
+          else if (trimmed.toLowerCase().includes('lunch')) break_type = 'Lunch Break';
+          else break_type = trimmed;
+          break_note = trimmed;
+        }
+
+        console.log('[useAttendance] takeBreak payload:', { break_type, break_note });
+        const res = await takeBreak({
+          break_type,
+          break_note: break_note || break_type,
+        }).unwrap();
+        setBreakNote('');
         showToast({
           severity: 'success',
-          summary: 'Break Started',
-          detail: `Break started: "${remarkText}"`,
+          summary: `${break_type} Started`,
+          detail: res.message || `${break_type} started: "${break_note || break_type}"`,
           life: 3000,
         });
       }
@@ -425,8 +540,8 @@ export const useAttendance = () => {
     monthRecords,
     monthSummary,
     selectedDayRecord,
-    breakRemark,
-    setBreakRemark,
+    breakNote,
+    setBreakNote,
     liveWorkingTime,
     checkInTimeDisplay,
     checkOutTimeDisplay,

@@ -48,8 +48,8 @@ interface TodayAttendanceSummaryProps {
   setWorkMode: (mode: 'office' | 'wfh') => void;
   geoLocation: GeoLocationState;
   requestGeoLocation: () => void;
-  breakRemark: string;
-  setBreakRemark: (v: string) => void;
+  breakNote: string;
+  setBreakNote: (v: string) => void;
 }
 
 const MOODS = [
@@ -84,8 +84,8 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
   setWorkMode,
   geoLocation,
   requestGeoLocation,
-  breakRemark,
-  setBreakRemark,
+  breakNote,
+  setBreakNote,
 }) => {
   const isCheckedIn = status?.status === 'checked-in';
   const isOnBreak = !!status?.onBreak;
@@ -278,49 +278,105 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               </span>
             </Button>
 
-          {/* Break Action Area: remark input + button */}
-          <div className="flex flex-col gap-2">
-            {/* Remark input — only show before taking break */}
-            {!isOnBreak && isCheckedIn && (
-              <div className="flex flex-col gap-1">
-                <label className="text-[9px] font-black text-muted uppercase tracking-wider">
-                  Break Reason (optional)
-                </label>
-                <input
-                  type="text"
-                  value={breakRemark}
-                  onChange={(e) => setBreakRemark(e.target.value)}
-                  placeholder="e.g. Tea break, Lunch, Personal..."
-                  maxLength={80}
-                  className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 transition-colors"
-                />
-              </div>
-            )}
-
-            {/* Active break remark — white bg, icon, bold text */}
-            {isOnBreak && status?.activeBreak?.remark && (
-              <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-white dark:bg-surface-elevated border border-amber-500/30 shadow-sm">
-                <MessageSquare size={13} className="shrink-0 mt-0.5 text-amber-500" />
-                <span className="text-[11px] font-black text-foreground">
-                  {status.activeBreak.remark}
+          {/* Break Action Hub */}
+          <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-surface-elevated border border-border-subtle">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-muted flex items-center gap-1.5">
+                <Coffee size={12} className={isOnBreak ? 'text-amber-500 animate-pulse' : 'text-primary'} />
+                Break Management
+              </span>
+              {isOnBreak ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-[9px] font-black uppercase tracking-wider animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  IN PROGRESS
                 </span>
+              ) : isCheckedIn ? (
+                <span className="text-[10px] font-bold text-muted">Ready</span>
+              ) : (
+                <span className="text-[10px] font-bold text-muted">Punch in first</span>
+              )}
+            </div>
+
+            {/* Active break status card */}
+            {isOnBreak && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-600 dark:text-amber-400">
+                    {status?.activeBreak?.break_type || (status?.activeBreak?.break_note ? `${status.activeBreak.break_note} Break` : 'Break In Progress')}
+                  </span>
+                  <span className="text-[10px] font-black text-amber-600 dark:text-amber-400">
+                    {totalBreakDisplay}
+                  </span>
+                </div>
+                {status?.activeBreak?.break_note && (
+                  <div className="flex items-start gap-1.5 text-[11px] font-bold text-foreground bg-white/70 dark:bg-surface-subtle/80 px-2 py-1 rounded-lg">
+                    <MessageSquare size={12} className="shrink-0 mt-0.5 text-amber-500" />
+                    <span>{status.activeBreak.break_note}</span>
+                  </div>
+                )}
+                {status?.activeBreak?.break_start && (
+                  <span className="text-[9px] font-bold text-muted">
+                    Started at: {new Date(status.activeBreak.break_start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
               </div>
             )}
 
+            {/* When NOT on break: Quick Presets + Reason Input */}
+            {!isOnBreak && isCheckedIn && (
+              <div className="flex flex-col gap-2">
+                {/* Quick 1-Click Break Presets */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    disabled={isBreakLoading}
+                    onClick={() => handleBreak('Tea Break', breakNote || 'Tea Break')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-surface-subtle hover:bg-amber-500/15 border border-border-subtle hover:border-amber-500/40 text-[11px] font-bold text-foreground transition-all cursor-pointer">
+                    <Coffee size={13} className="text-amber-500" />
+                    <span>Tea Break</span>
+                    <span className="text-[9px] text-muted">(15m)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isBreakLoading}
+                    onClick={() => handleBreak('Lunch Break', breakNote || 'Lunch Break')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-surface-subtle hover:bg-amber-500/15 border border-border-subtle hover:border-amber-500/40 text-[11px] font-bold text-foreground transition-all cursor-pointer">
+                    <Coffee size={13} className="text-amber-500" />
+                    <span>Lunch Break</span>
+                    <span className="text-[9px] text-muted">(45m)</span>
+                  </button>
+                </div>
+
+                {/* Custom Remark Input */}
+                <div className="flex flex-col gap-1">
+                  <input
+                    type="text"
+                    value={breakNote}
+                    onChange={(e) => setBreakNote(e.target.value)}
+                    placeholder="Custom break reason (optional)..."
+                    maxLength={80}
+                    className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Primary Break Action Button */}
             <Button
               variant={isOnBreak ? 'ghost' : 'secondary'}
-              aria-label={isOnBreak ? 'End Break' : 'Take Break'}
-              className={`w-full h-12 rounded-2xl! text-xs shadow-sm ${
+              aria-label={isOnBreak ? 'End Break' : 'Start Break'}
+              className={`w-full h-11 rounded-2xl! text-xs shadow-sm ${
                 isOnBreak
-                  ? 'border-2 border-amber-500/40! text-amber-500 bg-amber-500/5'
+                  ? 'border-2 border-amber-500! text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
                   : 'bg-surface-elevated border border-border-subtle hover:border-primary/40'
               } flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer`}
-              onClick={() => handleBreak(breakRemark || undefined)}
+              onClick={() => handleBreak(breakNote || 'Break')}
               loading={isBreakLoading}
               disabled={isBreakLoading || !isCheckedIn}>
-              <Coffee size={16} className={isOnBreak ? 'text-amber-500' : 'text-muted'} />
+              <Coffee size={15} className={isOnBreak ? 'text-amber-500 animate-pulse' : 'text-muted'} />
               <span className="font-black tracking-wider uppercase">
-                {isOnBreak ? 'End Break' : 'Take Break'}
+                {isOnBreak ? 'End Break' : 'Start Break'}
               </span>
             </Button>
           </div>

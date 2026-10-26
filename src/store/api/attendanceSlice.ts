@@ -53,7 +53,7 @@ export const attendanceSlice = apiSlice.injectEndpoints({
             check_out_latitude?: number | null;
             check_out_longitude?: number | null;
             check_out_location?: string | null;
-            remark?: string | null;
+            break_note?: string | null;
           };
         };
       }) => {
@@ -73,9 +73,11 @@ export const attendanceSlice = apiSlice.injectEndpoints({
 
         const rec = response.data.record;
 
+        const isCheckedIn = response.data.status === 'CHECKED_IN' || response.data.status === 'ON_BREAK';
+
         return {
-          status: response.data.status === 'CHECKED_IN' ? 'checked-in' : 'checked-out',
-          onBreak: response.data.onBreak ?? false,
+          status: isCheckedIn ? 'checked-in' : 'checked-out',
+          onBreak: response.data.onBreak ?? response.data.status === 'ON_BREAK',
           activeBreak: response.data.activeBreak ?? null,
           lastAction: rec?.check_in_time
             ? new Date(rec.check_in_time).toISOString()
@@ -141,7 +143,7 @@ export const attendanceSlice = apiSlice.injectEndpoints({
 
     takeBreak: builder.mutation<
       { success: boolean; message: string; data: BreakRecord },
-      { remark?: string }
+      { break_note?: string; break_type?: string; type?: string } | void
     >({
       query: (body) => ({
         url: '/attendance/break/start',

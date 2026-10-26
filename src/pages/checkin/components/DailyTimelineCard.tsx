@@ -185,13 +185,18 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
 
               {/* Breaks */}
               {record.breaks.map((b) => {
-                const isOverTime = b.isOverTime || (b.maxAllowedMinutes != null && b.durationMinutes > b.maxAllowedMinutes);
+                const isOngoing = b.status === 'IN_PROGRESS' || b.endTime === 'In Progress';
+                const isOverTime = !isOngoing && (b.isOverTime || (b.maxAllowedMinutes != null && b.durationMinutes > b.maxAllowedMinutes));
                 const overBy = b.maxAllowedMinutes != null ? b.durationMinutes - b.maxAllowedMinutes : 0;
                 return (
                   <div key={b.id} className="relative flex items-start gap-3 group">
-                    {/* Timeline dot — red if over limit */}
+                    {/* Timeline dot — red if over limit, pulsing amber if ongoing, solid amber if completed */}
                     <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
-                      isOverTime ? 'bg-red-500' : 'bg-amber-500'
+                      isOverTime
+                        ? 'bg-red-500'
+                        : isOngoing
+                        ? 'bg-amber-500 animate-pulse'
+                        : 'bg-amber-500'
                     }`}>
                       <Coffee size={11} />
                     </div>
@@ -199,26 +204,40 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                     <div className={`flex-1 p-3 rounded-2xl border transition-all ${
                       isOverTime
                         ? 'bg-red-500/5 border-red-500/25'
+                        : isOngoing
+                        ? 'bg-amber-500/10 border-amber-500/40 shadow-sm'
                         : 'bg-surface-subtle border-border-subtle'
                     }`}>
                       {/* Header row */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-black text-foreground">{b.label}</span>
+                          {isOngoing ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider animate-pulse">
+                              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                              IN PROGRESS
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[9px] font-black uppercase tracking-wider">
+                              COMPLETED
+                            </span>
+                          )}
                           {isOverTime && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500 text-white text-[9px] font-black uppercase tracking-wider">
                               <AlertTriangle size={9} />
                               OVER LIMIT {overBy > 0 ? `+${overBy}m` : ''}
                             </span>
                           )}
-                          {b.maxAllowedMinutes && !isOverTime && (
+                          {b.maxAllowedMinutes && !isOverTime && !isOngoing && (
                             <span className="text-[9px] font-bold text-muted">
                               (Limit: {b.maxAllowedMinutes}m)
                             </span>
                           )}
                         </div>
-                        <span className={`text-xs font-black shrink-0 ${isOverTime ? 'text-red-500' : 'text-amber-500'}`}>
-                          {formatMinutes(b.durationMinutes)}
+                        <span className={`text-xs font-black shrink-0 ${
+                          isOverTime ? 'text-red-500' : isOngoing ? 'text-amber-500 font-extrabold' : 'text-amber-500'
+                        }`}>
+                          {formatMinutes(b.durationMinutes)} {isOngoing ? '(Live)' : ''}
                         </span>
                       </div>
 
@@ -227,11 +246,13 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                         {b.startTime} – {b.endTime}
                       </span>
 
-                      {/* Employee Remark — white bg, bold text, icon */}
-                      {b.remark && (
+                      {/* Employee Note — white bg, bold text, icon */}
+                      {b.break_note && (
                         <div className="mt-2 flex items-start gap-2 px-3 py-2 rounded-xl bg-white dark:bg-surface-elevated border border-border-subtle shadow-sm">
-                          <MessageSquare size={12} className={`shrink-0 mt-0.5 ${isOverTime ? 'text-red-500' : 'text-amber-500'}`} />
-                          <span className="text-[11px] font-black text-foreground">{b.remark}</span>
+                          <MessageSquare size={12} className={`shrink-0 mt-0.5 ${
+                            isOverTime ? 'text-red-500' : isOngoing ? 'text-amber-500' : 'text-muted'
+                          }`} />
+                          <span className="text-[11px] font-black text-foreground">{b.break_note}</span>
                         </div>
                       )}
 

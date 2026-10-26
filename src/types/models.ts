@@ -50,6 +50,8 @@ export interface AttendanceStatus {
   check_out_longitude?: number | null;
   check_out_location?: string | null;
   record?: AttendanceRecord | null;
+  total_break_minutes?: number;
+  breaks?: BreakRecord[];
 }
 
 export interface AttendanceRequest {
@@ -86,10 +88,13 @@ export interface BreakRecord {
   id: number;
   attendance_id: number;
   user_id: number;
+  break_type?: string | null;
+  date?: string | null;
   break_start: string | null;
   break_end: string | null;
   duration: number | null; // minutes
-  remark: string | null;
+  status?: 'IN_PROGRESS' | 'COMPLETED' | string | null;
+  break_note: string | null;
 }
 
 export interface Career {

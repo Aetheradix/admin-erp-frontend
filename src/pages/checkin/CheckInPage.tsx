@@ -42,8 +42,8 @@ export const CheckInPage: React.FC = () => {
     monthRecords,
     monthSummary,
     selectedDayRecord,
-    breakRemark,
-    setBreakRemark,
+    breakNote,
+    setBreakNote,
     liveWorkingTime,
     checkInTimeDisplay,
     checkOutTimeDisplay,
@@ -139,19 +139,15 @@ export const CheckInPage: React.FC = () => {
             setWorkMode={setWorkMode}
             geoLocation={geoLocation}
             requestGeoLocation={requestGeoLocation}
-            breakRemark={breakRemark}
-            setBreakRemark={setBreakRemark}
+            breakNote={breakNote}
+            setBreakNote={setBreakNote}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-7 xl:col-span-8">
               <DailyTimelineCard
-                selectedDate={new Date()}
-                record={monthRecords.find(
-                  (r) =>
-                    r.date ===
-                    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`
-                )}
+                selectedDate={time}
+                record={selectedDayRecord}
               />
             </div>
             <div className="lg:col-span-5 xl:col-span-4">

@@ -4,7 +4,10 @@ export interface BreakItem {
   startTime: string;
   endTime: string;
   durationMinutes: number;
-  remark?: string | null;         // What employee noted when taking break
+  status?: 'IN_PROGRESS' | 'COMPLETED' | string;
+  break_type?: string;
+  date?: string;
+  break_note?: string | null;     // What employee noted when taking break
   maxAllowedMinutes?: number;     // Policy limit (e.g. Tea: 15m, Lunch: 45m)
   isOverTime?: boolean;           // true if durationMinutes > maxAllowedMinutes
 }
@@ -220,7 +223,7 @@ export function generateMonthAttendanceRecords(
         startTime: '11:30 AM',
         endTime: '11:42 AM',
         durationMinutes: 12,
-        remark: 'Quick tea break',
+        break_note: 'Quick tea break',
         maxAllowedMinutes: 15,
         isOverTime: false,
       },
@@ -230,7 +233,7 @@ export function generateMonthAttendanceRecords(
         startTime: '01:30 PM',
         endTime: '02:00 PM',
         durationMinutes: day % 5 === 0 ? 55 : 30, // some days over limit
-        remark: day % 5 === 0 ? 'Had lunch outside, took a bit longer' : 'Lunch break',
+        break_note: day % 5 === 0 ? 'Had lunch outside, took a bit longer' : 'Lunch break',
         maxAllowedMinutes: 45,
         isOverTime: day % 5 === 0,
       },
