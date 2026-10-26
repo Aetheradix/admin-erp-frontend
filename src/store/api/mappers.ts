@@ -83,13 +83,26 @@ export const mapAttendanceRecord = (record: Record<string, unknown>): Attendance
     ? String(rawDate ?? '')
     : dateValue.toISOString().split('T')[0];
 
+  const isWfh = Boolean(record.is_wfh || record.work_mode === 'wfh');
+  const workMode = (record.work_mode as 'office' | 'wfh' | 'field') || (isWfh ? 'wfh' : 'office');
+
   return {
     id: record.id as string | number,
     date,
-    type: String(record.type ?? record.status ?? 'Work from Office'),
+    type: String(record.type ?? (isWfh ? 'Work from Home' : 'Work from Office')),
     checkIn: formatTime(String(record.checkIn ?? record.check_in_time ?? '')),
     checkOut: formatTime(String(record.checkOut ?? record.check_out_time ?? '')),
     status: record.status ? String(record.status) : undefined,
+    work_mode: workMode,
+    is_wfh: isWfh,
+    check_in_latitude: record.check_in_latitude != null ? Number(record.check_in_latitude) : null,
+    check_in_longitude: record.check_in_longitude != null ? Number(record.check_in_longitude) : null,
+    check_in_location: record.check_in_location ? String(record.check_in_location) : null,
+    check_out_latitude: record.check_out_latitude != null ? Number(record.check_out_latitude) : null,
+    check_out_longitude: record.check_out_longitude != null ? Number(record.check_out_longitude) : null,
+    check_out_location: record.check_out_location ? String(record.check_out_location) : null,
+    device_info: record.device_info ? String(record.device_info) : null,
+    remark: record.remark ? String(record.remark) : null,
   };
 };
 

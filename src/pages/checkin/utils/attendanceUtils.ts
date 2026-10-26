@@ -4,6 +4,9 @@ export interface BreakItem {
   startTime: string;
   endTime: string;
   durationMinutes: number;
+  remark?: string | null;         // What employee noted when taking break
+  maxAllowedMinutes?: number;     // Policy limit (e.g. Tea: 15m, Lunch: 45m)
+  isOverTime?: boolean;           // true if durationMinutes > maxAllowedMinutes
 }
 
 export interface DayDetailedRecord {
@@ -25,6 +28,14 @@ export interface DayDetailedRecord {
   overtimeHours: number;
   location?: string;
   notes?: string;
+  work_mode?: 'office' | 'wfh' | 'field';
+  is_wfh?: boolean;
+  check_in_latitude?: number | null;
+  check_in_longitude?: number | null;
+  check_in_location?: string | null;
+  check_out_latitude?: number | null;
+  check_out_longitude?: number | null;
+  check_out_location?: string | null;
 }
 
 export interface MonthAttendanceSummary {
@@ -209,13 +220,19 @@ export function generateMonthAttendanceRecords(
         startTime: '11:30 AM',
         endTime: '11:42 AM',
         durationMinutes: 12,
+        remark: 'Quick tea break',
+        maxAllowedMinutes: 15,
+        isOverTime: false,
       },
       {
         id: `b2-${day}`,
         label: 'Lunch Break',
         startTime: '01:30 PM',
         endTime: '02:00 PM',
-        durationMinutes: 30,
+        durationMinutes: day % 5 === 0 ? 55 : 30, // some days over limit
+        remark: day % 5 === 0 ? 'Had lunch outside, took a bit longer' : 'Lunch break',
+        maxAllowedMinutes: 45,
+        isOverTime: day % 5 === 0,
       },
     ];
 

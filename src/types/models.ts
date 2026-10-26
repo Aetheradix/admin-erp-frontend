@@ -23,6 +23,16 @@ export interface AttendanceRecord {
   checkIn?: string;
   checkOut?: string;
   status?: string;
+  work_mode?: 'office' | 'wfh' | 'field';
+  is_wfh?: boolean;
+  check_in_latitude?: number | null;
+  check_in_longitude?: number | null;
+  check_in_location?: string | null;
+  check_out_latitude?: number | null;
+  check_out_longitude?: number | null;
+  check_out_location?: string | null;
+  device_info?: string | null;
+  remark?: string | null;
 }
 
 export interface AttendanceStatus {
@@ -31,6 +41,15 @@ export interface AttendanceStatus {
   activeBreak?: BreakRecord | null;
   lastAction?: string | null;
   dbStatus?: string | null;
+  work_mode?: 'office' | 'wfh' | 'field';
+  is_wfh?: boolean;
+  check_in_latitude?: number | null;
+  check_in_longitude?: number | null;
+  check_in_location?: string | null;
+  check_out_latitude?: number | null;
+  check_out_longitude?: number | null;
+  check_out_location?: string | null;
+  record?: AttendanceRecord | null;
 }
 
 export interface AttendanceRequest {

@@ -8,6 +8,9 @@ import {
   AlertTriangle,
   Zap,
   MapPin,
+  Home,
+  Building,
+  MessageSquare,
 } from 'lucide-react';
 import { formatFullDate } from '@/utils/date';
 import {
@@ -138,40 +141,113 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
               {/* Check In Event */}
               {record.checkIn && (
                 <div className="relative flex items-start gap-3 group">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                  <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
+                    record.isLate ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}>
                     <LogIn size={11} />
                   </div>
-                  <div className="flex-1 bg-surface-subtle p-3 rounded-2xl border border-border-subtle">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-foreground">First Check-In</span>
-                      <span className="text-xs font-black text-emerald-500">{record.checkIn}</span>
+                  <div className={`flex-1 p-3 rounded-2xl border ${
+                    record.isLate
+                      ? 'bg-amber-500/5 border-amber-500/25'
+                      : 'bg-surface-subtle border-border-subtle'
+                  }`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-black text-foreground">First Check-In</span>
+                        {record.isLate && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider">
+                            <AlertTriangle size={9} />
+                            LATE CHECK-IN · +{record.lateMinutes}m
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-xs font-black shrink-0 ${
+                        record.isLate ? 'text-amber-500' : 'text-emerald-500'
+                      }`}>{record.checkIn}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted mt-1">
-                      <MapPin size={10} /> {record.location || 'Main Office'}
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold mt-1">
+                      {record.is_wfh || record.work_mode === 'wfh' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 font-bold">
+                          <Home size={10} /> Work From Home
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 font-bold">
+                          <Building size={10} /> In-Office
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1 text-muted">
+                        <MapPin size={10} className="text-primary" /> {record.check_in_location || record.location || 'Office HQ'}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Breaks */}
-              {record.breaks.map((b) => (
-                <div key={b.id} className="relative flex items-start gap-3 group">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-sm">
-                    <Coffee size={11} />
-                  </div>
-                  <div className="flex-1 bg-surface-subtle p-3 rounded-2xl border border-border-subtle">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-foreground">{b.label}</span>
-                      <span className="text-xs font-black text-amber-500">
-                        {formatMinutes(b.durationMinutes)}
-                      </span>
+              {record.breaks.map((b) => {
+                const isOverTime = b.isOverTime || (b.maxAllowedMinutes != null && b.durationMinutes > b.maxAllowedMinutes);
+                const overBy = b.maxAllowedMinutes != null ? b.durationMinutes - b.maxAllowedMinutes : 0;
+                return (
+                  <div key={b.id} className="relative flex items-start gap-3 group">
+                    {/* Timeline dot — red if over limit */}
+                    <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
+                      isOverTime ? 'bg-red-500' : 'bg-amber-500'
+                    }`}>
+                      <Coffee size={11} />
                     </div>
-                    <span className="text-[10px] font-bold text-muted mt-1 block">
-                      {b.startTime} – {b.endTime}
-                    </span>
+
+                    <div className={`flex-1 p-3 rounded-2xl border transition-all ${
+                      isOverTime
+                        ? 'bg-red-500/5 border-red-500/25'
+                        : 'bg-surface-subtle border-border-subtle'
+                    }`}>
+                      {/* Header row */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-black text-foreground">{b.label}</span>
+                          {isOverTime && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500 text-white text-[9px] font-black uppercase tracking-wider">
+                              <AlertTriangle size={9} />
+                              OVER LIMIT {overBy > 0 ? `+${overBy}m` : ''}
+                            </span>
+                          )}
+                          {b.maxAllowedMinutes && !isOverTime && (
+                            <span className="text-[9px] font-bold text-muted">
+                              (Limit: {b.maxAllowedMinutes}m)
+                            </span>
+                          )}
+                        </div>
+                        <span className={`text-xs font-black shrink-0 ${isOverTime ? 'text-red-500' : 'text-amber-500'}`}>
+                          {formatMinutes(b.durationMinutes)}
+                        </span>
+                      </div>
+
+                      {/* Time range */}
+                      <span className="text-[10px] font-bold text-muted mt-1 block">
+                        {b.startTime} – {b.endTime}
+                      </span>
+
+                      {/* Employee Remark — white bg, bold text, icon */}
+                      {b.remark && (
+                        <div className="mt-2 flex items-start gap-2 px-3 py-2 rounded-xl bg-white dark:bg-surface-elevated border border-border-subtle shadow-sm">
+                          <MessageSquare size={12} className={`shrink-0 mt-0.5 ${isOverTime ? 'text-red-500' : 'text-amber-500'}`} />
+                          <span className="text-[11px] font-black text-foreground">{b.remark}</span>
+                        </div>
+                      )}
+
+                      {/* Over-time advisory */}
+                      {isOverTime && overBy > 0 && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <AlertTriangle size={10} className="text-red-400 shrink-0" />
+                          <p className="text-[9px] font-black text-red-400">
+                            Returned {overBy} min late from break — marked for review
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Check Out Event */}
               {record.checkOut && (
@@ -184,9 +260,14 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                       <span className="text-xs font-black text-foreground">Last Check-Out</span>
                       <span className="text-xs font-black text-muted">{record.checkOut}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-muted mt-1 block">
-                      Completed Shift
-                    </span>
+                    <div className="flex items-center justify-between text-[10px] font-bold text-muted mt-1">
+                      <span>Completed Shift</span>
+                      {record.check_out_location && (
+                        <span className="inline-flex items-center gap-1 text-muted">
+                          <MapPin size={10} /> {record.check_out_location}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

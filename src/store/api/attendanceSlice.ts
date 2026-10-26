@@ -9,23 +9,30 @@ import { mapAttendanceRecord } from './mappers';
 
 export type { AttendanceRecord, AttendanceStatsData };
 
+export interface CheckInPayload {
+  remark?: string;
+  work_mode?: 'office' | 'wfh' | 'field';
+  is_wfh?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  check_in_latitude?: number | null;
+  check_in_longitude?: number | null;
+  location_name?: string | null;
+  check_in_location?: string | null;
+  device_info?: string | null;
+}
+
+export interface CheckOutPayload {
+  latitude?: number | null;
+  longitude?: number | null;
+  check_out_latitude?: number | null;
+  check_out_longitude?: number | null;
+  location_name?: string | null;
+  check_out_location?: string | null;
+}
+
 export const attendanceSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // getAttendanceStatus: builder.query<{ status: 'checked-in' | 'checked-out' | null; lastAction?: string | null; dbStatus?: string | null }, void>({
-    //   query: () => '/attendance/status',
-    //   transformResponse: (response: { data?: { status: string; record?: { check_in_time?: string } } }) => {
-    //     if (!response.data || !response.data.status) {
-    //       return { status: null, lastAction: null, dbStatus: null };
-    //     }
-    //     return {
-    //       status: response.data.status === 'CHECKED_IN' ? 'checked-in' : 'checked-out',
-    //       lastAction: response.data.record?.check_in_time ? new Date(response.data.record.check_in_time).toISOString() : null,
-    //       dbStatus: response.data.status
-    //     };
-    //   },
-    //   providesTags: ['Attendance'],
-    // }),
-
     getAttendanceStatus: builder.query<AttendanceStatus, void>({
       query: () => '/attendance/status',
 
@@ -35,7 +42,18 @@ export const attendanceSlice = apiSlice.injectEndpoints({
           onBreak?: boolean;
           activeBreak?: BreakRecord | null;
           record?: {
+            id?: number;
             check_in_time?: string;
+            check_out_time?: string;
+            work_mode?: 'office' | 'wfh' | 'field';
+            is_wfh?: boolean;
+            check_in_latitude?: number | null;
+            check_in_longitude?: number | null;
+            check_in_location?: string | null;
+            check_out_latitude?: number | null;
+            check_out_longitude?: number | null;
+            check_out_location?: string | null;
+            remark?: string | null;
           };
         };
       }) => {
@@ -46,21 +64,34 @@ export const attendanceSlice = apiSlice.injectEndpoints({
             activeBreak: null,
             lastAction: null,
             dbStatus: null,
+            work_mode: 'office',
+            is_wfh: false,
+            total_break_minutes: 0,
+            breaks: [],
           };
         }
 
+        const rec = response.data.record;
+
         return {
           status: response.data.status === 'CHECKED_IN' ? 'checked-in' : 'checked-out',
-
           onBreak: response.data.onBreak ?? false,
-
           activeBreak: response.data.activeBreak ?? null,
-
-          lastAction: response.data.record?.check_in_time
-            ? new Date(response.data.record.check_in_time).toISOString()
+          lastAction: rec?.check_in_time
+            ? new Date(rec.check_in_time).toISOString()
             : null,
-
           dbStatus: response.data.status,
+          work_mode: rec?.work_mode || (rec?.is_wfh ? 'wfh' : 'office'),
+          is_wfh: Boolean(rec?.is_wfh || rec?.work_mode === 'wfh'),
+          check_in_latitude: rec?.check_in_latitude,
+          check_in_longitude: rec?.check_in_longitude,
+          check_in_location: rec?.check_in_location,
+          check_out_latitude: rec?.check_out_latitude,
+          check_out_longitude: rec?.check_out_longitude,
+          check_out_location: rec?.check_out_location,
+          record: rec ? (rec as any) : null,
+          total_break_minutes: (response.data as any).total_break_minutes ?? 0,
+          breaks: (response.data as any).breaks ?? [],
         };
       },
 
@@ -68,19 +99,23 @@ export const attendanceSlice = apiSlice.injectEndpoints({
     }),
     checkIn: builder.mutation<
       { success: boolean; message: string; id: number },
-      { remark?: string }
+      CheckInPayload | void
     >({
       query: (arg) => ({
         url: '/attendance/checkin',
         method: 'POST',
-        body: arg,
+        body: arg || {},
       }),
       invalidatesTags: ['Attendance'],
     }),
-    checkOut: builder.mutation<{ success: boolean; message: string; id: number }, void>({
-      query: () => ({
+    checkOut: builder.mutation<
+      { success: boolean; message: string; id: number },
+      CheckOutPayload | void
+    >({
+      query: (arg) => ({
         url: '/attendance/checkout',
         method: 'POST',
+        body: arg || {},
       }),
       invalidatesTags: ['Attendance'],
     }),

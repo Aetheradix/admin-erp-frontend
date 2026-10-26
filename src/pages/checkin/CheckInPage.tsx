@@ -42,6 +42,8 @@ export const CheckInPage: React.FC = () => {
     monthRecords,
     monthSummary,
     selectedDayRecord,
+    breakRemark,
+    setBreakRemark,
     liveWorkingTime,
     checkInTimeDisplay,
     checkOutTimeDisplay,
@@ -49,7 +51,13 @@ export const CheckInPage: React.FC = () => {
     netWorkingDisplay,
     isLate,
     lateDurationDisplay,
+    earlyDurationDisplay,
+    punctualityStatus,
     shiftTimingDisplay,
+    workMode,
+    setWorkMode,
+    geoLocation,
+    requestGeoLocation,
   } = useAttendance();
 
   const selectedMonthName = MONTH_NAMES[currentMonth.getMonth()];
@@ -124,7 +132,15 @@ export const CheckInPage: React.FC = () => {
             netWorkingDisplay={netWorkingDisplay}
             isLate={isLate}
             lateDurationDisplay={lateDurationDisplay}
+            earlyDurationDisplay={earlyDurationDisplay}
+            punctualityStatus={punctualityStatus}
             shiftTimingDisplay={shiftTimingDisplay}
+            workMode={workMode}
+            setWorkMode={setWorkMode}
+            geoLocation={geoLocation}
+            requestGeoLocation={requestGeoLocation}
+            breakRemark={breakRemark}
+            setBreakRemark={setBreakRemark}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
