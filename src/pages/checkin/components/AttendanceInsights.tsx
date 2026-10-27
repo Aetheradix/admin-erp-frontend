@@ -19,7 +19,7 @@ export const AttendanceInsights: React.FC<AttendanceInsightsProps> = ({
       : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4';
 
   return (
-    <div className="bg-surface-elevated rounded-[36px] p-6 border border-border-subtle shadow-xl flex flex-col gap-5">
+    <div className="bg-surface-elevated rounded-3xl p-6 border border-border-subtle shadow-sm flex flex-col gap-5">
       <div className="flex items-center justify-between gap-2 border-b border-border-subtle/60 pb-4">
         <div>
           <h3 className="text-base font-black text-foreground tracking-tight">

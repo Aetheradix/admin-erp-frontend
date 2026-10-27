@@ -30,7 +30,7 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
   const isLeave = record?.status === 'On Leave';
 
   return (
-    <div className="bg-surface-elevated rounded-[40px] p-6 sm:p-8 border border-border-subtle shadow-xl flex flex-col gap-6 transition-all hover:shadow-2xl h-full">
+    <div className="bg-surface-elevated rounded-3xl p-6 sm:p-7 border border-border-subtle shadow-sm flex flex-col gap-6 transition-all hover:shadow-md h-full">
       {/* Header Info */}
       <div className="flex items-center justify-between border-b border-border-subtle pb-5">
         <div>
