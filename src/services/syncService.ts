@@ -1,17 +1,31 @@
 import { store } from '@/store';
 import { apiSlice } from '@/store/api/apiSlice';
 
-export type SyncEventType = 'invitations' | 'audit_logs' | 'users' | 'onboarding' | 'all';
+export type SyncEventType =
+  | 'invitations'
+  | 'audit_logs'
+  | 'users'
+  | 'onboarding'
+  | 'dashboard'
+  | 'attendance'
+  | 'payroll'
+  | 'inventory'
+  | 'leaves'
+  | 'events'
+  | 'all';
 
-const tagMapping: Record<
-  SyncEventType,
-  Array<'SystemInvitations' | 'SystemAuditLogs' | 'User' | 'ApprovalLogs'>
-> = {
+const tagMapping: Record<SyncEventType, any[]> = {
   invitations: ['SystemInvitations', 'SystemAuditLogs'],
   audit_logs: ['SystemAuditLogs'],
   users: ['User', 'ApprovalLogs'],
   onboarding: ['SystemInvitations', 'SystemAuditLogs', 'User', 'ApprovalLogs'],
-  all: ['SystemInvitations', 'SystemAuditLogs', 'User', 'ApprovalLogs'],
+  dashboard: ['Dashboard', 'Attendance', 'SalarySlips', 'Inventory', 'Leaves', 'Event', 'Projects', 'Tasks'],
+  attendance: ['Attendance', 'Dashboard'],
+  payroll: ['SalarySlips', 'PayrollSettings', 'Dashboard'],
+  inventory: ['Inventory', 'Dashboard'],
+  leaves: ['Leaves', 'Attendance', 'Dashboard'],
+  events: ['Event', 'Dashboard'],
+  all: ['SystemInvitations', 'SystemAuditLogs', 'User', 'ApprovalLogs', 'Dashboard', 'Attendance', 'SalarySlips', 'Inventory', 'Leaves', 'Event', 'Projects', 'Tasks'],
 };
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
