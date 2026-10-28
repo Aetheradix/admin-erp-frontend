@@ -49,6 +49,9 @@ export interface PayrollRecord {
   authorizedSignatory: string;
   signatoryRole: string;
   hrNote: string;
+  isVoid?: boolean;
+  voidReason?: string;
+  paymentStatus?: string;
 }
 
 export interface ParsedSalarySlip {
@@ -252,6 +255,27 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
       findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) ||
         'For any discrepancies, please contact the HR department within 3 working days.'
     ),
+    isVoid: Boolean(
+      findDeepValue(item, ['is_void', 'isVoid']) === true ||
+      findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
+      String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID')
+    ),
+    voidReason: String(
+      findDeepValue(item, ['void_reason', 'voidReason']) ||
+      (String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID: ')
+        ? String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '')
+            .split('[VOID: ')[1]
+            ?.split(']')[0]
+            ?.split('|')[0]
+            ?.trim()
+        : '')
+    ),
+    paymentStatus:
+      findDeepValue(item, ['is_void', 'isVoid']) === true ||
+      findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
+      String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID')
+        ? 'void'
+        : 'paid',
   };
 };
 
@@ -617,7 +641,18 @@ const MyPaySlipPage = () => {
                     </td>
 
                     <td className="py-4 px-6 font-bold text-emerald-600">
-                      ₹{slip.netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      {slip.rawRecord?.isVoid ? (
+                        <div className="flex flex-col">
+                          <span className="text-slate-400 line-through">
+                            ₹{slip.netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 uppercase">
+                            Voided Slip
+                          </span>
+                        </div>
+                      ) : (
+                        `₹${slip.netSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                      )}
                     </td>
 
                     <td className="py-4 px-6 text-xs text-slate-600">

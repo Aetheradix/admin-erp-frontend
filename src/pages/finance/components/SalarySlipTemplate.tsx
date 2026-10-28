@@ -46,6 +46,12 @@ export interface SalarySlipData {
   payrollType?: 'Regular' | 'Adjustment';
   adjustmentType?: string;
   referencedPeriod?: string;
+  isVoid?: boolean;
+  paymentStatus?: string;
+  voidReason?: string;
+  voidNotes?: string;
+  voidedAt?: string;
+  voidedBy?: string;
 }
 
 export interface SalarySlipTemplateProps {
@@ -183,6 +189,13 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
   const netPay = data.total ?? totalEarnings - totalDeductions;
   const netPayInWords = data.netPayInWords || getAmountInWords(netPay);
 
+  const isVoid = Boolean(
+    data.isVoid ||
+      data.paymentStatus === 'void' ||
+      data.paymentStatus === 'Void' ||
+      (typeof data.hrNote === 'string' && data.hrNote.includes('[VOID'))
+  );
+
   return (
     <div
       ref={ref}
@@ -209,6 +222,48 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
           padding: '38px 42px 34px',
           position: 'relative',
         }}>
+        {isVoid && (
+          <div
+            className="void-warning-banner"
+            style={{
+              marginBottom: '16px',
+              padding: '10px 16px',
+              backgroundColor: '#fef2f2',
+              border: '2px solid #ef4444',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              color: '#991b1b',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.3px',
+              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.1)',
+            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>⚠️</span>
+              <span>
+                THIS SALARY SLIP HAS BEEN MARKED AS VOID. NOT VALID FOR FINANCIAL OR TAX FILING PURPOSES.
+              </span>
+            </div>
+            {data.voidReason && (
+              <span
+                style={{
+                  background: '#fee2e2',
+                  border: '1px solid #f87171',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  color: '#b91c1c',
+                  textTransform: 'uppercase',
+                  fontWeight: 800,
+                }}>
+                Reason: {data.voidReason}
+              </span>
+            )}
+          </div>
+        )}
+
         <div
           className="preview-header-exact"
           style={{
@@ -490,19 +545,36 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 width: '100%',
                 height: '220px',
               }}>
-              <text
-                x="50%"
-                y="50%"
-                dominantBaseline="middle"
-                textAnchor="middle"
-                fill="#1a1a1a"
-                opacity="0.06"
-                fontSize="140"
-                fontWeight="900"
-                fontFamily="Arial, Helvetica, sans-serif"
-                letterSpacing="8">
-                {watermarkText}
-              </text>
+              {isVoid ? (
+                <text
+                  x="50%"
+                  y="50%"
+                  dominantBaseline="middle"
+                  textAnchor="middle"
+                  fill="#ef4444"
+                  opacity="0.22"
+                  fontSize="120"
+                  fontWeight="900"
+                  fontFamily="Arial, Helvetica, sans-serif"
+                  letterSpacing="14"
+                  transform="rotate(-20 200 100)">
+                  VOID
+                </text>
+              ) : (
+                <text
+                  x="50%"
+                  y="50%"
+                  dominantBaseline="middle"
+                  textAnchor="middle"
+                  fill="#1a1a1a"
+                  opacity="0.06"
+                  fontSize="140"
+                  fontWeight="900"
+                  fontFamily="Arial, Helvetica, sans-serif"
+                  letterSpacing="8">
+                  {watermarkText}
+                </text>
+              )}
             </svg>
           </div>
 
@@ -537,7 +609,7 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               <div
                 className="table-netpay-row"
                 style={{
-                  background: '#111111',
+                  background: isVoid ? '#7f1d1d' : '#111111',
                   color: '#ffffff',
                   minHeight: '51px',
                   padding: '6px 15px',
@@ -546,16 +618,32 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                   justifyContent: 'space-between',
                   boxSizing: 'border-box',
                 }}>
-                <span
-                  className="netpay-label"
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    lineHeight: '1.3',
-                    paddingBottom: '2px',
-                  }}>
-                  Net Pay
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span
+                    className="netpay-label"
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      lineHeight: '1.3',
+                      paddingBottom: '2px',
+                    }}>
+                    Net Pay
+                  </span>
+                  {isVoid && (
+                    <span
+                      style={{
+                        background: '#fca5a5',
+                        color: '#7f1d1d',
+                        fontSize: '10px',
+                        fontWeight: 900,
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        letterSpacing: '0.5px',
+                      }}>
+                      VOIDED
+                    </span>
+                  )}
+                </div>
 
                 <span
                   className="netpay-amount"
@@ -564,6 +652,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                     fontWeight: 800,
                     lineHeight: '1.3',
                     paddingBottom: '2px',
+                    textDecoration: isVoid ? 'line-through' : 'none',
+                    opacity: isVoid ? 0.8 : 1,
                   }}>
                   {formatCurrency(netPay, currencySymbol)}
                 </span>

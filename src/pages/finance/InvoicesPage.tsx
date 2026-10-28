@@ -3,7 +3,13 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
 import { Table, Modal, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Download, Plus, Filter, Edit3 } from 'lucide-react';
+import { Download, Plus, Filter, Edit3, FileSpreadsheet, Clock } from 'lucide-react';
+import {
+  exportInvoiceAuditLogs,
+  filterLogsByRetention,
+  getThreeMonthsCutoff,
+  pruneLocalStorageLogs,
+} from '@/utils/auditExport';
 
 import { useUploadInvoiceMutation } from '@/store/api/uploadSlice';
 import { useFulfillOrderAndDeductStockMutation } from '@/store/api/inventorySlice';
@@ -325,16 +331,21 @@ export function InvoicesPage() {
 
   const [localAuditLogs, setLocalAuditLogs] = useState<InvoiceAuditLog[]>(() => {
     try {
+      pruneLocalStorageLogs(INVOICE_LOGS_KEY, 'createdAt');
       const stored = localStorage.getItem(INVOICE_LOGS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return filterLogsByRetention(parsed);
+        }
       }
     } catch (e) {
       console.warn('Error reading stored invoice logs:', e);
     }
-    return initialAuditLogs;
+    return filterLogsByRetention(initialAuditLogs);
   });
+
+  const { formattedLabel: retentionCutoffLabel } = useMemo(() => getThreeMonthsCutoff(), []);
 
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -431,16 +442,16 @@ export function InvoicesPage() {
     }
   }, [invoices]);
 
-  // Persist audit logs whenever updated
+  // Persist audit logs whenever updated (strictly enforcing 3-month retention)
   useEffect(() => {
     try {
-      localStorage.setItem(INVOICE_LOGS_KEY, JSON.stringify(localAuditLogs));
+      localStorage.setItem(INVOICE_LOGS_KEY, JSON.stringify(filterLogsByRetention(localAuditLogs)));
     } catch (e) {
       console.warn('Error saving invoice logs:', e);
     }
   }, [localAuditLogs]);
 
-  // Combined Audit Logs (local invoice events + backend invoice audit logs)
+  // Combined Audit Logs (local invoice events + backend invoice audit logs, strictly 3 months)
   const combinedAuditLogs = useMemo(() => {
     const rawBackendLogs = Array.isArray(backendInvoiceAuditLogsData?.data)
       ? backendInvoiceAuditLogsData.data
@@ -482,7 +493,9 @@ export function InvoicesPage() {
     const merged = [...localAuditLogs, ...uniqueBackend];
     // Sort descending by date
     merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return merged;
+
+    // 💡 Strict 3-Month Retention Policy
+    return filterLogsByRetention(merged);
   }, [localAuditLogs, backendInvoiceAuditLogsData]);
 
   const recordAuditLog = (
@@ -497,7 +510,7 @@ export function InvoicesPage() {
       username: currentUserName,
       createdAt: new Date().toISOString(),
     };
-    setLocalAuditLogs((prev) => [newLog, ...prev]);
+    setLocalAuditLogs((prev) => filterLogsByRetention([newLog, ...prev]));
 
     // Send to dedicated backend invoice audit logs endpoint via mutation
     createInvoiceAuditLogApi({
@@ -1098,13 +1111,34 @@ export function InvoicesPage() {
         />
       </motion.div>
 
-      {/* 💡 Dedicated Invoice Audit Logs Table */}
+      {/* 💡 Dedicated Invoice Audit Logs Table (3-Month Retention & Excel/CSV Downloads) */}
       <div className="flex flex-col gap-3 mt-6">
-        <div>
-          <h3 className="font-bold text-base text-slate-900">Invoice Audit Logs</h3>
-          <p className="text-xs text-slate-500">
-            History of invoice updates, creations, and deletions
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+          <div>
+            <h3 className="font-bold text-base text-slate-900">Invoice Audit Logs</h3>
+            <p className="text-xs text-slate-500">
+              History of invoice updates, creations, and deletions
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <Clock size={12} /> Stored for 3 Months Only (Since {retentionCutoffLabel})
+            </span>
+            <button
+              type="button"
+              onClick={() => exportInvoiceAuditLogs(combinedAuditLogs, 'excel')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95">
+              <FileSpreadsheet size={14} className="text-emerald-600" />
+              <span>Download Excel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => exportInvoiceAuditLogs(combinedAuditLogs, 'csv')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95">
+              <Download size={14} className="text-indigo-600" />
+              <span>Download CSV</span>
+            </button>
+          </div>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <Table
@@ -1113,7 +1147,7 @@ export function InvoicesPage() {
             loading={isLogsLoading}
             rowKey={(record) => String(record.id || record._id || Math.random())}
             pagination={{ pageSize: 5 }}
-            locale={{ emptyText: 'No invoice audit logs found.' }}
+            locale={{ emptyText: 'No invoice audit logs found within the last 3 months.' }}
           />
         </div>
       </div>
