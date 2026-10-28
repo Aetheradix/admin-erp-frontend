@@ -33,11 +33,34 @@ export const Dialog = ({
   width,
   pt,
 }: DialogProps) => {
+  // Resolve responsive width: prefer explicit width prop, otherwise derive from max-w-* Tailwind classes
+  const resolvedWidth =
+    width ??
+    (className?.includes('max-w-7xl')
+      ? 'min(1400px, 96vw)'
+      : className?.includes('max-w-6xl')
+        ? 'min(1280px, 95vw)'
+        : className?.includes('max-w-5xl')
+          ? 'min(1080px, 94vw)'
+          : className?.includes('max-w-4xl')
+            ? 'min(900px, 92vw)'
+            : className?.includes('max-w-3xl')
+              ? 'min(768px, 90vw)'
+              : className?.includes('max-w-2xl')
+                ? 'min(672px, 90vw)'
+                : className?.includes('max-w-xl')
+                  ? 'min(576px, 90vw)'
+                  : className?.includes('max-w-lg')
+                    ? 'min(512px, 90vw)'
+                    : className?.includes('max-w-md')
+                      ? 'min(448px, 90vw)'
+                      : undefined);
+
   return (
     <Modal
       open={visible}
       onCancel={onHide}
-      width={width}
+      width={resolvedWidth}
       title={
         header ? (
           <span className={cn('text-2xl font-black tracking-tight', headerClassName)}>
@@ -56,7 +79,7 @@ export const Dialog = ({
       styles={{
         body: { padding: 0 },
       }}
-      style={style}
+      style={{ maxWidth: '96vw', ...style }}
       destroyOnHidden>
       {children}
     </Modal>

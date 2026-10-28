@@ -94,6 +94,7 @@ export const apiSlice = createApi({
     'EmployeeProfile',
     'ProfileFormConfig',
     'Dashboard',
+    'DayApprovals',
   ],
   endpoints: () => ({}),
 });

@@ -75,6 +75,8 @@ export interface AttendanceRequest {
   approver_email?: string;
   created_at?: string;
   updated_at?: string;
+  /** Day-wise approval breakdown returned by the backend. */
+  day_approvals?: import('./dayApproval').DayApproval[];
 }
 
 export interface AttendanceStatsData {

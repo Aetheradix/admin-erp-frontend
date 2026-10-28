@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, CheckCircle2, XCircle, Home, Clock, ShieldAlert } from 'lucide-react';
+import { Calendar, CheckCircle2, XCircle, Home, Clock, ShieldAlert, Layers } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import type { AttendanceRequest } from '@/types/models';
 import { Dialog } from '@/components/ui/composed/Dialog';
@@ -23,7 +23,10 @@ export function PendingApprovals({
   const [rejectReason, setRejectReason] = useState('');
   const [processingId, setProcessingId] = useState<string | number | null>(null);
 
-  const pendingRequests = requests.filter((r) => (r.status || '').toLowerCase() === 'pending');
+  const pendingRequests = requests.filter((r) => {
+    const s = (r.status || '').toLowerCase();
+    return s === 'pending' || s === 'partially processed';
+  });
 
   const handleApprove = async (e: React.MouseEvent, id: string | number) => {
     e.stopPropagation();
@@ -144,24 +147,38 @@ export function PendingApprovals({
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 pt-3 border-t border-border-subtle/50 mt-2">
-                <button
-                  type="button"
-                  disabled={isProcessing}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRejectingItem(request);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer disabled:opacity-50">
-                  <XCircle size={14} /> Reject
-                </button>
-                <button
-                  type="button"
-                  disabled={isProcessing}
-                  onClick={(e) => handleApprove(e, request.id)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50">
-                  <CheckCircle2 size={14} />
-                  {isProcessing ? 'Saving...' : 'Approve'}
-                </button>
+                {request.start_date !== request.end_date && request.end_date ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectRequest?.(request);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-all cursor-pointer">
+                    <Layers size={14} /> Review Days
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isProcessing}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRejectingItem(request);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer disabled:opacity-50">
+                      <XCircle size={14} /> Reject
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isProcessing}
+                      onClick={(e) => handleApprove(e, request.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50">
+                      <CheckCircle2 size={14} />
+                      {isProcessing ? 'Saving...' : 'Approve'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           );

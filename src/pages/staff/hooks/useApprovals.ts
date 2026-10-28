@@ -1,24 +1,39 @@
 import { useState } from 'react';
 import { useGetLeavesQuery, useUpdateLeaveStatusMutation } from '@/store/api/leaveSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import type { AttendanceRequest } from '@/types/models';
 
 export const useApprovals = () => {
-  const { data: leaves = [], isLoading } = useGetLeavesQuery();
+  const { data: leaves = [], isLoading, refetch } = useGetLeavesQuery();
   const [updateStatus, { isLoading: isUpdating }] = useUpdateLeaveStatusMutation();
 
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] = useState<AttendanceRequest | null>(null);
+  const [showDayApprovalModal, setShowDayApprovalModal] = useState(false);
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [actionType, setActionType] = useState<'Approved' | 'Rejected'>('Approved');
 
-  const pendingLeaves = leaves.filter((l: any) => l.status === 'Pending');
+  // Requests requiring action: pending or partially processed requests
+  const pendingLeaves = leaves.filter((l: AttendanceRequest) => {
+    const s = (l.status || '').toLowerCase();
+    return s === 'pending' || s.includes('partial');
+  });
 
   const counts = {
     Pending: pendingLeaves.length,
-    Approved: leaves.filter((l: any) => l.status === 'Approved').length,
-    Rejected: leaves.filter((l: any) => l.status === 'Rejected').length,
+    Approved: leaves.filter((l: AttendanceRequest) => (l.status || '').toLowerCase() === 'approved').length,
+    Rejected: leaves.filter(
+      (l: AttendanceRequest) =>
+        (l.status || '').toLowerCase() === 'rejected' ||
+        (l.status || '').toLowerCase() === 'partially approved / rejected'
+    ).length,
   };
 
-  const handleAction = (request: any, type: 'Approved' | 'Rejected') => {
+  const handleReviewRequest = (request: AttendanceRequest) => {
+    setSelectedRequest(request);
+    setShowDayApprovalModal(true);
+  };
+
+  const handleAction = (request: AttendanceRequest, type: 'Approved' | 'Rejected') => {
     setSelectedRequest(request);
     setActionType(type);
     setShowApprovalDialog(true);
@@ -35,32 +50,41 @@ export const useApprovals = () => {
       showToast({
         severity: 'success',
         summary: 'Success',
-        detail: `Leave ${actionType.toLowerCase()} successfully.`,
+        detail: `Request ${actionType.toLowerCase()} successfully.`,
         life: 3000,
       });
       setShowApprovalDialog(false);
       setSelectedRequest(null);
-    } catch (err: any) {
+      refetch();
+    } catch (err: unknown) {
       console.error('Failed to update status', err);
+      const msg =
+        (err as { data?: { message?: string } })?.data?.message || 'Failed to update leave status.';
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail: err.data?.message || 'Failed to update leave status.',
+        detail: msg,
         life: 3000,
       });
     }
   };
 
   return {
+    leaves,
     pendingLeaves,
     counts,
     isLoading,
     isUpdating,
     selectedRequest,
+    showDayApprovalModal,
     showApprovalDialog,
     actionType,
+    setSelectedRequest,
+    setShowDayApprovalModal,
     setShowApprovalDialog,
+    handleReviewRequest,
     handleAction,
     onConfirmAction,
+    refetch,
   };
 };
