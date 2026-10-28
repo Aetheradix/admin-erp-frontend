@@ -21,6 +21,7 @@ import {
   useApproveLeaveDayMutation,
   useRejectLeaveDayMutation,
   useBulkApproveLeaveMutation,
+  useBulkRejectLeaveMutation,
 } from '@/store/api/leaveSlice';
 import {
   generateDateRange,
@@ -104,6 +105,7 @@ export function DayWiseApprovalTable({
   const [approveDay, { isLoading: isApproving }] = useApproveLeaveDayMutation();
   const [rejectDay, { isLoading: isRejecting }] = useRejectLeaveDayMutation();
   const [bulkApprove, { isLoading: isBulkApproving }] = useBulkApproveLeaveMutation();
+  const [bulkReject, { isLoading: isBulkRejecting }] = useBulkRejectLeaveMutation();
 
   // Build display rows: use server data when available, otherwise generate from date range
   const dateRange = useMemo(
@@ -230,17 +232,15 @@ export function DayWiseApprovalTable({
     }
 
     try {
-      for (const d of selectedDates) {
-        await rejectDay({
-          leaveRequestId: request.id,
-          date: d,
-          remark: bulkRejectRemark.trim(),
-        }).unwrap();
-      }
+      const result = await bulkReject({
+        leaveRequestId: request.id,
+        dates: selectedDates,
+        remark: bulkRejectRemark.trim(),
+      }).unwrap();
       showToast({
         severity: 'info',
         summary: 'Days Rejected',
-        detail: `${selectedDates.length} day(s) rejected successfully.`,
+        detail: `${result.updated} day(s) rejected successfully.`,
         life: 3000,
       });
       setBulkRejectDialog(false);
@@ -821,15 +821,15 @@ export function DayWiseApprovalTable({
                 setBulkRejectDialog(false);
                 setBulkRejectRemark('');
               }}
-              disabled={isRejecting}
+              disabled={isBulkRejecting}
               className="text-xs font-bold text-muted">
               Cancel
             </Button>
             <Button
               variant="danger"
-              disabled={isRejecting || !bulkRejectRemark.trim()}
+              disabled={isBulkRejecting || !bulkRejectRemark.trim()}
               onClick={handleBulkRejectSelected}
-              loading={isRejecting}
+              loading={isBulkRejecting}
               className="text-xs font-black px-6 rounded-xl bg-rose-600! hover:bg-rose-700! text-white">
               Reject {selectedDates.length} Day(s)
             </Button>

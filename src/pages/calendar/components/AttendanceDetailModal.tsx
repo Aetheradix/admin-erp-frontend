@@ -145,7 +145,9 @@ export function AttendanceDetailModal({
         </div>
       }
       modal
-      className="w-full max-w-2xl mx-4"
+      width="min(1100px, 94vw)"
+      style={{ maxWidth: '94vw' }}
+      className="w-full max-w-5xl mx-4"
       contentClassName="p-8"
       headerClassName="px-8 pt-8 pb-4 border-b border-border-subtle/40"
       pt={{
@@ -224,7 +226,7 @@ export function AttendanceDetailModal({
           <span className="text-[10px] font-black text-muted uppercase tracking-wider flex items-center gap-1.5">
             <ListChecks size={13} className="text-primary" /> Day-Wise Approval Status
           </span>
-          <DayWiseApprovalTable request={request} isAdmin={isAdmin} />
+          <DayWiseApprovalTable request={request} isAdmin={isAdmin} showSummary={false} />
         </div>
 
         {/* Legacy single-request approver info (kept for backward compatibility) */}

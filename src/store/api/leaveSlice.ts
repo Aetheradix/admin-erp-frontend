@@ -115,6 +115,22 @@ export const leaveSlice = apiSlice.injectEndpoints({
         'Leaves',
       ],
     }),
+
+    /** Bulk-reject selected days. POST /leaves/:id/days/bulk-reject  body: { dates?, remark } */
+    bulkRejectLeave: builder.mutation<
+      { updated: number },
+      { leaveRequestId: string | number; dates?: string[]; remark: string }
+    >({
+      query: ({ leaveRequestId, dates, remark }) => ({
+        url: `/leaves/${leaveRequestId}/days/bulk-reject`,
+        method: 'POST',
+        body: { dates, remark: remark.trim() },
+      }),
+      invalidatesTags: (_result, _err, { leaveRequestId }) => [
+        { type: 'DayApprovals', id: String(leaveRequestId) },
+        'Leaves',
+      ],
+    }),
   }),
 });
 
@@ -128,4 +144,5 @@ export const {
   useApproveLeaveDayMutation,
   useRejectLeaveDayMutation,
   useBulkApproveLeaveMutation,
+  useBulkRejectLeaveMutation,
 } = leaveSlice;

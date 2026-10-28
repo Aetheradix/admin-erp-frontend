@@ -205,7 +205,9 @@ export function Approvals() {
           </div>
         }
         modal
-        className="w-full max-w-4xl mx-4"
+        width="min(1100px, 94vw)"
+        style={{ maxWidth: '94vw' }}
+        className="w-full max-w-5xl mx-4"
         contentClassName="p-8"
         headerClassName="px-8 pt-8 pb-3 border-b border-border-subtle/50"
         pt={{

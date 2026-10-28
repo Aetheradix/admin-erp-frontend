@@ -27,20 +27,23 @@ export interface DayApprovalActionPayload {
 }
 
 /**
- * Computed overall status for a multi-day request based on its day approvals.
+ * Computed overall status for a multi-day request based on its day approvals:
+ * - Approved: All days are approved.
+ * - Rejected: All days are rejected.
+ * - Partially Approved: At least one day is approved and at least one day is rejected (all days processed).
+ * - Pending: No decision has been made yet (all days pending).
+ * - Partially Processed: Some days have been processed while others are still pending.
  */
 export type OverallRequestStatus =
   | 'Pending'
   | 'Approved'
   | 'Rejected'
   | 'Partially Approved'
-  | 'Partially Rejected'
-  | 'Partially Approved / Rejected'
   | 'Partially Processed';
 
 /**
  * Compute the overall status from a list of DayApproval records.
- * Single source of truth.
+ * Single source of truth across frontend and backend.
  */
 export function computeOverallStatus(dayApprovals: DayApproval[]): OverallRequestStatus {
   if (!dayApprovals || dayApprovals.length === 0) return 'Pending';
@@ -54,12 +57,12 @@ export function computeOverallStatus(dayApprovals: DayApproval[]): OverallReques
   if (approved === total) return 'Approved';
   if (rejected === total) return 'Rejected';
 
-  // Mixed decisions, no pending remaining
-  if (pending === 0) return 'Partially Approved / Rejected';
+  // Some days have been processed while others are still pending
+  if (pending > 0) return 'Partially Processed';
 
-  // Some decided, some still pending
-  if (approved > 0 && rejected === 0) return 'Partially Approved';
-  if (rejected > 0 && approved === 0) return 'Partially Rejected';
+  // All days processed with at least one approved and at least one rejected
+  if (approved > 0 && rejected > 0) return 'Partially Approved';
+
   return 'Partially Processed';
 }
 
