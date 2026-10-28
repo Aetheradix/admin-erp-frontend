@@ -13,6 +13,9 @@ import {
   Sparkles,
   Download,
   FileSpreadsheet,
+  Clock,
+  Ban,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
@@ -24,6 +27,7 @@ import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
 import { generateSlipNumber } from '@/utils/payroll';
+import { getPayrollStatusOverrides } from './PayrollPage';
 
 export interface PayrollRecord {
   id: number;
@@ -76,6 +80,7 @@ export interface ParsedSalarySlip {
   createdAt: string;
   createdBy: string;
   rawRecord?: PayrollRecord;
+  paymentStatus?: string;
 }
 
 // Deep utility helper to find key values in deeply nested objects or wrappers
@@ -270,12 +275,20 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
             ?.trim()
         : '')
     ),
-    paymentStatus:
-      findDeepValue(item, ['is_void', 'isVoid']) === true ||
-      findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
-      String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID')
-        ? 'void'
-        : 'paid',
+    paymentStatus: (() => {
+      const isVoid =
+        findDeepValue(item, ['is_void', 'isVoid']) === true ||
+        findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
+        String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID');
+      if (isVoid) return 'void';
+      const overrides = getPayrollStatusOverrides();
+      const itemId = findDeepValue(item, ['id', 'salary_slip_id', 'salarySlipId']);
+      if (itemId && overrides[String(itemId)]) {
+        return overrides[String(itemId)];
+      }
+      const raw = String(findDeepValue(item, ['payment_status', 'paymentStatus']) || '').toLowerCase();
+      return raw === 'paid' && itemId && overrides[String(itemId)] === 'paid' ? 'paid' : 'pending';
+    })(),
   };
 };
 
@@ -430,6 +443,7 @@ const MyPaySlipPage = () => {
         createdAt: formatted.generatedOn,
         createdBy: String(findDeepValue(item, ['created_by_username', 'createdBy']) || 'HR Dept'),
         rawRecord: formatted,
+        paymentStatus: formatted.paymentStatus,
       };
     });
   }, [empSlipsData, allSlipsData, userId]);
@@ -604,6 +618,7 @@ const MyPaySlipPage = () => {
                 <th className="py-3.5 px-6">Base Salary</th>
                 <th className="py-3.5 px-6">Net Salary</th>
                 <th className="py-3.5 px-6">Days Worked</th>
+                <th className="py-3.5 px-6">Status</th>
                 <th className="py-3.5 px-6">Created Date</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
@@ -611,7 +626,7 @@ const MyPaySlipPage = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredSlips.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <FileText size={32} className="text-slate-300" />
                       <p className="text-sm font-medium text-slate-600">No salary slips found.</p>
@@ -657,6 +672,22 @@ const MyPaySlipPage = () => {
 
                     <td className="py-4 px-6 text-xs text-slate-600">
                       <span className="font-medium text-slate-800">{slip.paidDays}</span> Days
+                    </td>
+
+                    <td className="py-4 px-6">
+                      {slip.rawRecord?.isVoid || slip.paymentStatus === 'void' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md">
+                          <Ban size={11} className="text-rose-600" /> Void
+                        </span>
+                      ) : (slip.paymentStatus || '').toLowerCase() === 'paid' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md">
+                          <CheckCircle2 size={11} className="text-emerald-600" /> Paid
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md">
+                          <Clock size={11} className="text-amber-600" /> Pending
+                        </span>
+                      )}
                     </td>
 
                     <td className="py-4 px-6 text-xs text-slate-500">

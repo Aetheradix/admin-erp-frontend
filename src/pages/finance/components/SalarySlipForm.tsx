@@ -93,6 +93,7 @@ export interface SalarySlipData {
   signatoryRole: string;
 
   hrNote: string;
+  paymentStatus?: string;
 }
 
 interface SalarySlipFormProps {
@@ -317,6 +318,8 @@ const getInitialForm = (): SalarySlipData => {
     paidDays: defaultPaidDays,
     lopDays: 0,
 
+    paymentStatus: 'pending',
+
     generatedOn: getLocalSystemDate(),
 
     earnings: [
@@ -364,6 +367,20 @@ const SalarySlipForm = ({
   const [selectedEmployeeObj, setSelectedEmployeeObj] = useState<any>(null);
   const [showTaxProjectionModal, setShowTaxProjectionModal] = useState<boolean>(false);
   const [showTaxCalculator, setShowTaxCalculator] = useState<boolean>(true);
+  const [deductIncomeTax, setDeductIncomeTax] = useState<boolean>(() => {
+    if (initialValues) {
+      const raw = initialValues as Record<string, any>;
+      const existingTds = Number(raw.income_tax_tds || raw.incomeTaxTds || 0);
+      if (existingTds > 0) return true;
+      if (Array.isArray(initialValues.deductions)) {
+        const found = initialValues.deductions.find((d: any) =>
+          /tax|tds/i.test(d.name || '')
+        );
+        return Number(found?.amount || 0) > 0;
+      }
+    }
+    return false;
+  });
   const companyPayrollSettings = useMemo(() => getStoredPayrollSettings(), []);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -560,10 +577,34 @@ const SalarySlipForm = ({
       earnings: parsedEarnings,
       deductions: parsedDeductions,
       generatedOn: String(formattedDate),
-      hrNote: String(raw.remarks || initialValues.hrNote || ''),
-      authorizedSignatory: String(initialValues.authorizedSignatory || 'Seema Srivastava'),
-      signatoryRole: String(initialValues.signatoryRole || '(Director)'),
+      hrNote: String(
+        raw.hr_note ||
+          raw.hrNote ||
+          raw.remarks ||
+          initialValues.hrNote ||
+          'For any discrepancies, please contact the HR department within 3 working days.'
+      ),
+      authorizedSignatory: String(
+        raw.authorized_signatory ||
+          raw.authorizedSignatory ||
+          initialValues.authorizedSignatory ||
+          'Seema Srivastava'
+      ),
+      signatoryRole: String(
+        raw.signatory_role ||
+          raw.signatoryRole ||
+          initialValues.signatoryRole ||
+          '(Director)'
+      ),
+      paymentStatus: String(raw.payment_status || raw.paymentStatus || initialValues.paymentStatus || 'pending').toLowerCase(),
     });
+
+    const hasTds =
+      tdsDeduct > 0 ||
+      parsedDeductions.some(
+        (d: any) => /tax|tds/i.test(d.name || '') && Number(d.amount || 0) > 0
+      );
+    setDeductIncomeTax(hasTds);
   }, [initialValues]);
 
   const months: string[] = [
@@ -792,9 +833,32 @@ const SalarySlipForm = ({
     });
   }, [estimatedAnnualGross, formData.taxRegime, formData.baseSalary, selectedEmployeeObj]);
 
+  const handleToggleDeductIncomeTax = (checked: boolean) => {
+    setDeductIncomeTax(checked);
+    const targetTdsAmount = checked
+      ? Math.round(Number(liveTaxResult?.projectedMonthlyTds || 0))
+      : 0;
+    setFormData((prev) => {
+      const updated = [...prev.deductions];
+      const idx = updated.findIndex(
+        (d) =>
+          d.name.toLowerCase().includes('tds') ||
+          d.name.toLowerCase().includes('income tax') ||
+          d.name.toLowerCase().includes('tax')
+      );
+      if (idx !== -1) {
+        updated[idx] = { ...updated[idx], amount: targetTdsAmount };
+      } else {
+        updated.push({ name: 'Income Tax (TDS)', amount: targetTdsAmount });
+      }
+      return { ...prev, deductions: updated };
+    });
+  };
+
   const handleApplyTds = () => {
     if (!liveTaxResult) return;
     const tdsMonthly = liveTaxResult.projectedMonthlyTds;
+    setDeductIncomeTax(tdsMonthly > 0);
     setFormData((prev) => {
       const updated = [...prev.deductions];
       const idx = updated.findIndex(
@@ -1133,7 +1197,7 @@ const SalarySlipForm = ({
         const newDeductions: DeductionItem[] = [
           { name: 'Provident Fund (PF)', amount: pfMonthly || 0 },
           { name: 'Professional Tax', amount: ptMonthly || 200 },
-          ...(tdsMonthly > 0
+          ...(deductIncomeTax && tdsMonthly > 0
             ? [{ name: 'Income Tax (TDS)', amount: tdsMonthly }]
             : [{ name: 'Income Tax (TDS)', amount: 0 }]),
         ];
@@ -1196,6 +1260,12 @@ const SalarySlipForm = ({
 
   const updateDeduction = (index: number, field: keyof DeductionItem, value: string | number) => {
     const updatedValue = field === 'amount' ? (value === '' ? 0 : Number(value)) : value;
+    const targetItem = formData.deductions[index];
+    if (targetItem && /tax|tds/i.test(targetItem.name)) {
+      if (field === 'amount') {
+        setDeductIncomeTax(Number(updatedValue) > 0);
+      }
+    }
     setFormData((prev) => ({
       ...prev,
       deductions: prev.deductions.map((item, i) =>
@@ -1401,15 +1471,23 @@ const SalarySlipForm = ({
         otherDeductions: otherDeductions,
 
         // 7. Status & Dates
-        payment_status: 'paid',
-        paymentStatus: 'paid',
+        payment_status: formData.paymentStatus || 'pending',
+        paymentStatus: formData.paymentStatus || 'pending',
         payment_date: formData.generatedOn || new Date().toISOString().split('T')[0],
         paymentDate: formData.generatedOn || new Date().toISOString().split('T')[0],
+        authorized_signatory: formData.authorizedSignatory || 'Seema Srivastava',
+        authorizedSignatory: formData.authorizedSignatory || 'Seema Srivastava',
+        signatory_role: formData.signatoryRole || '(Director)',
+        signatoryRole: formData.signatoryRole || '(Director)',
         remarks:
           formData.payrollType === 'Adjustment'
             ? `[ADJUSTMENT - ${formData.adjustmentType || 'Correction'}${formData.referencedPeriod ? ` | Ref: ${formData.referencedPeriod}` : ''}] ${formData.adjustmentNotes || ''} ${formData.hrNote || ''}`.trim()
             : formData.hrNote || null,
         hr_note:
+          formData.payrollType === 'Adjustment'
+            ? `[ADJUSTMENT - ${formData.adjustmentType || 'Correction'}${formData.referencedPeriod ? ` | Ref: ${formData.referencedPeriod}` : ''}] ${formData.adjustmentNotes || ''} ${formData.hrNote || ''}`.trim()
+            : formData.hrNote || null,
+        hrNote:
           formData.payrollType === 'Adjustment'
             ? `[ADJUSTMENT - ${formData.adjustmentType || 'Correction'}${formData.referencedPeriod ? ` | Ref: ${formData.referencedPeriod}` : ''}] ${formData.adjustmentNotes || ''} ${formData.hrNote || ''}`.trim()
             : formData.hrNote || null,
@@ -1815,6 +1893,20 @@ const SalarySlipForm = ({
                   error={errors.paySlipNo}
                   required
                 />
+
+                {/* Payment Status Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Status
+                  </label>
+                  <select
+                    value={formData.paymentStatus || 'pending'}
+                    onChange={(e) => updateField('paymentStatus', e.target.value)}
+                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-semibold text-slate-800">
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mt-4">
@@ -2173,16 +2265,35 @@ const SalarySlipForm = ({
 
               {/* Deductions */}
               <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-                  <span className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-                    <IndianRupee size={16} className="text-red-600" /> Deductions
-                  </span>
-                  <button
-                    type="button"
-                    onClick={addDeduction}
-                    className="text-xs text-black font-semibold flex items-center gap-1 hover:underline">
-                    <Plus size={14} /> Add Line
-                  </button>
+                <div className="flex flex-wrap items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                      <IndianRupee size={16} className="text-red-600" /> Deductions
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <label
+                      title="When unchecked, Income Tax (TDS) is set to ₹0 unless explicitly checked."
+                      className={`flex items-center gap-1.5 text-xs font-medium cursor-pointer select-none px-2.5 py-1 rounded-lg border transition ${
+                        deductIncomeTax
+                          ? 'bg-amber-100/90 border-amber-300 text-amber-900 font-semibold'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}>
+                      <input
+                        type="checkbox"
+                        checked={deductIncomeTax}
+                        onChange={(e) => handleToggleDeductIncomeTax(e.target.checked)}
+                        className="rounded border-gray-300 text-amber-600 focus:ring-amber-500 h-3.5 w-3.5 cursor-pointer"
+                      />
+                      <span>Deduct Income Tax (TDS)</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addDeduction}
+                      className="text-xs text-black font-semibold flex items-center gap-1 hover:underline">
+                      <Plus size={14} /> Add Line
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-3">
                   {formData.deductions.map((deduction, idx) => (
@@ -2235,6 +2346,15 @@ const SalarySlipForm = ({
                       ) && (
                         <span className="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold">
                           Mid-Year Joiner
+                        </span>
+                      )}
+                      {!deductIncomeTax ? (
+                        <span className="text-[10px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-medium">
+                          TDS Not Deducted
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                          TDS Deducted
                         </span>
                       )}
                     </h4>
@@ -2322,6 +2442,99 @@ const SalarySlipForm = ({
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Signatory & HR Notes Section */}
+            <div className="mt-5 p-4 rounded-2xl bg-gray-50/70 border border-gray-200">
+              <div className="flex flex-wrap items-center justify-between pb-3 border-b border-gray-200 mb-4 gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-gray-200 text-gray-800 rounded-lg">
+                    <UserCheck size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900">Signatory & HR Discrepancy Note</h4>
+                    <p className="text-xs text-gray-500">
+                      Customize the authorized signatory name, title, and instructions shown on this salary slip.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-gray-400 font-medium mr-1">Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField('authorizedSignatory', 'Seema Srivastava');
+                      updateField('signatoryRole', '(Director)');
+                    }}
+                    className="text-[11px] bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium px-2 py-0.5 rounded-md transition shadow-2xs">
+                    Director (Seema Srivastava)
+                  </button>
+                  {Boolean(loggedInUser?.name || (user as any)?.name || user?.username) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const userName = String(
+                          loggedInUser?.name || (user as any)?.name || user?.username || ''
+                        );
+                        updateField('authorizedSignatory', userName);
+                        updateField('signatoryRole', '(Authorized Signatory)');
+                      }}
+                      className="text-[11px] bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium px-2 py-0.5 rounded-md transition shadow-2xs">
+                      Current User ({String(loggedInUser?.name || (user as any)?.name || user?.username)})
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Authorized Signatory Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.authorizedSignatory}
+                    onChange={(e) => updateField('authorizedSignatory', e.target.value)}
+                    placeholder="e.g. Seema Srivastava"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:border-black outline-none bg-white font-medium"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Appears above the designation in the bottom signature block.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Signatory Role / Designation
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.signatoryRole}
+                    onChange={(e) => updateField('signatoryRole', e.target.value)}
+                    placeholder="e.g. (Director) or HR Manager"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:border-black outline-none bg-white font-medium"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Signatory designation or department title.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  HR Note & Discrepancy Instructions
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.hrNote}
+                  onChange={(e) => updateField('hrNote', e.target.value)}
+                  placeholder="e.g. For any discrepancies, please contact the HR department within 3 working days."
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:border-black outline-none bg-white resize-y leading-relaxed"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Printed in the "HR Note" box at the bottom right of the employee's salary slip.
+                </p>
+              </div>
             </div>
 
             {/* Net Salary Banner */}

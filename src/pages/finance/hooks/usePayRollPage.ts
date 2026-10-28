@@ -212,7 +212,7 @@ export const usePayrollPage = () => {
         bonus: bonusPay,
 
         // Metadata & Status
-        paymentStatus: 'paid',
+        paymentStatus: 'pending',
         paymentDate: new Date().toISOString().split('T')[0],
         remarks: formData.hrNote || null,
       };

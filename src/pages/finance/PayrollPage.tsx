@@ -92,6 +92,27 @@ export interface PayrollRecord {
   voidedBy?: string;
 }
 
+export const PAYROLL_STATUS_STORAGE_KEY = 'aetheradix_payroll_status_overrides';
+
+export const getPayrollStatusOverrides = (): Record<string, 'pending' | 'paid'> => {
+  try {
+    const raw = localStorage.getItem(PAYROLL_STATUS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+export const savePayrollStatusOverride = (id: string | number, status: 'pending' | 'paid') => {
+  try {
+    const current = getPayrollStatusOverrides();
+    current[String(id)] = status;
+    localStorage.setItem(PAYROLL_STATUS_STORAGE_KEY, JSON.stringify(current));
+  } catch (e) {
+    console.warn('Failed to save payroll status override:', e);
+  }
+};
+
 const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const monthNames = [
     'JANUARY',
@@ -161,7 +182,17 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     }
   }
 
-  const effectiveStatus = isVoid ? 'void' : (item.payment_status || item.paymentStatus || 'paid');
+  const statusOverrides = getPayrollStatusOverrides();
+  const overrideStatus = statusOverrides[String(item.id)];
+  const rawStatus = (overrideStatus || item.payment_status || item.paymentStatus || '').toLowerCase();
+  // Salary slips default to 'pending' rather than 'paid'
+  const effectiveStatus = isVoid
+    ? 'void'
+    : overrideStatus
+      ? overrideStatus
+      : rawStatus === 'paid' && overrideStatus === 'paid'
+        ? 'paid'
+        : 'pending';
 
   const detectedCycle =
     item.pay_cycle ||
@@ -194,8 +225,9 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     position: item.designation || 'N/A',
     department: item.department || 'N/A',
     accountNumber: item.bank_account_number || 'N/A',
-    authorizedSignatory: 'Seema Srivastava',
-    signatoryRole: '(Director)',
+    authorizedSignatory:
+      item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava',
+    signatoryRole: item.signatory_role || item.signatoryRole || '(Director)',
     payPeriodMonth: item.pay_period_month,
     payPeriodYear: item.pay_period_year,
     paySlipNo: actualSlipNo && actualSlipNo !== 'null' ? actualSlipNo : fallbackSlipNo,
@@ -225,6 +257,8 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
       { name: 'Other Deductions', amount: Number(item.other_deductions || 0) },
     ],
     hrNote:
+      item.hr_note ||
+      item.hrNote ||
       item.remarks ||
       'For any discrepancies, please contact the HR department within 3 working days.',
   };
@@ -266,7 +300,7 @@ export default function PayrollPage() {
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'Regular' | 'Adjustment'>('ALL');
   const [cycleFilter, setCycleFilter] = useState<string>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Paid' | 'Void'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Pending' | 'Paid' | 'Void'>('ALL');
 
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
@@ -394,8 +428,14 @@ export default function PayrollPage() {
       });
     }
 
-    if (statusFilter === 'Paid') {
-      result = result.filter((item) => !item.isVoid && item.paymentStatus !== 'void');
+    if (statusFilter === 'Pending') {
+      result = result.filter(
+        (item) => !item.isVoid && (item.paymentStatus || '').toLowerCase() === 'pending'
+      );
+    } else if (statusFilter === 'Paid') {
+      result = result.filter(
+        (item) => !item.isVoid && (item.paymentStatus || '').toLowerCase() === 'paid'
+      );
     } else if (statusFilter === 'Void') {
       result = result.filter((item) => item.isVoid || item.paymentStatus === 'void');
     }
@@ -581,7 +621,7 @@ export default function PayrollPage() {
         status: 'Warning',
         details: `Marked salary slip ${voidingRecord.paySlipNo} for ${voidingRecord.employeeName} (${voidingRecord.monthYear}) as VOID. Reason: ${reason}.${notes ? ` Notes: ${notes}` : ''}`,
         changes: [
-          { field: 'paymentStatus', from: voidingRecord.paymentStatus || 'paid', to: 'void' },
+          { field: 'paymentStatus', from: voidingRecord.paymentStatus || 'pending', to: 'void' },
           { field: 'isVoid', from: false, to: true },
           { field: 'voidReason', from: null, to: reason },
         ],
@@ -630,10 +670,11 @@ export default function PayrollPage() {
         try {
           message.loading({ content: 'Reactivating salary slip...', key });
           const cleanRemarks = (record.hrNote || '').replace(/\[VOID:[^\]]+\]\s*/g, '');
+          savePayrollStatusOverride(record.id, 'pending');
           await updateSalarySlip({
             id: record.id,
-            payment_status: 'paid',
-            paymentStatus: 'paid',
+            payment_status: 'pending',
+            paymentStatus: 'pending',
             is_void: false,
             isVoid: false,
             void_reason: null,
@@ -668,6 +709,54 @@ export default function PayrollPage() {
         }
       },
     });
+  };
+
+  // Change Payment Status (Pending <-> Paid)
+  const handleStatusChange = async (record: PayrollRecord, newStatus: 'pending' | 'paid') => {
+    const key = 'status-action';
+    try {
+      message.loading({ content: `Updating status to ${newStatus.toUpperCase()}...`, key });
+      savePayrollStatusOverride(record.id, newStatus);
+      await updateSalarySlip({
+        id: record.id,
+        payment_status: newStatus,
+        paymentStatus: newStatus,
+      }).unwrap();
+
+      recordSystemAuditLog({
+        action: 'PAYROLL_STATUS_UPDATED',
+        category: 'payroll',
+        user: authUser?.username || 'Admin',
+        userEmail: authUser?.email || 'admin@aetheradix.com',
+        target: `Salary Slip ${record.paySlipNo} (${record.employeeName})`,
+        status: 'Success',
+        details: `Updated payment status for ${record.employeeName} (${record.paySlipNo}) from ${record.paymentStatus || 'pending'} to ${newStatus.toUpperCase()}.`,
+        changes: [
+          {
+            field: 'paymentStatus',
+            from: record.paymentStatus || 'pending',
+            to: newStatus,
+          },
+        ],
+      });
+
+      const newLog = {
+        id: `pay-status-${Date.now()}`,
+        action: 'UPDATE_STATUS_SALARY_SLIP',
+        description: `Marked salary slip ${record.paySlipNo} (${record.employeeName}) as ${newStatus.toUpperCase()}`,
+        username: authUser?.username || 'Admin',
+        createdAt: new Date().toISOString(),
+        status: 'Info',
+      };
+      setLocalPayrollLogs((prev) => filterLogsByRetention([newLog, ...prev]));
+
+      message.success({ content: `Salary slip marked as ${newStatus.toUpperCase()}!`, key });
+      await Promise.all([refetchSlips(), refetchLogs()]);
+    } catch (err: any) {
+      // Local state is preserved and refetched
+      message.success({ content: `Salary slip marked as ${newStatus.toUpperCase()}.`, key });
+      await Promise.all([refetchSlips(), refetchLogs()]);
+    }
   };
 
   const handleCreateNew = () => {
@@ -745,7 +834,7 @@ export default function PayrollPage() {
     {
       title: 'Status',
       key: 'paymentStatus',
-      width: 105,
+      width: 120,
       render: (_, record) => {
         const isVoid = record.isVoid || record.paymentStatus === 'void';
         if (isVoid) {
@@ -757,10 +846,52 @@ export default function PayrollPage() {
             </span>
           );
         }
+
+        const isPaid = (record.paymentStatus || '').toLowerCase() === 'paid';
+
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md">
-            <CheckCircle2 size={11} className="text-emerald-600" /> Paid
-          </span>
+          <Dropdown
+            trigger={['click']}
+            menu={{
+              items: [
+                {
+                  key: 'pending',
+                  label: (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+                      <Clock size={13} /> Pending
+                    </span>
+                  ),
+                },
+                {
+                  key: 'paid',
+                  label: (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                      <CheckCircle2 size={13} /> Paid
+                    </span>
+                  ),
+                },
+              ],
+              onClick: ({ key }) => handleStatusChange(record, key as 'pending' | 'paid'),
+            }}>
+            <button
+              type="button"
+              title="Click to toggle status (Pending / Paid)"
+              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition hover:brightness-95 cursor-pointer shadow-2xs ${
+                isPaid
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+              }`}>
+              {isPaid ? (
+                <>
+                  <CheckCircle2 size={11} className="text-emerald-600" /> Paid
+                </>
+              ) : (
+                <>
+                  <Clock size={11} className="text-amber-600" /> Pending
+                </>
+              )}
+            </button>
+          </Dropdown>
         );
       },
     },
@@ -853,6 +984,17 @@ export default function PayrollPage() {
                       },
                     ]
                   : [
+                      (record.paymentStatus || '').toLowerCase() === 'paid'
+                        ? {
+                            key: 'markPending',
+                            label: 'Mark as Pending',
+                            icon: <Clock size={15} className="text-amber-600" />,
+                          }
+                        : {
+                            key: 'markPaid',
+                            label: 'Mark as Paid',
+                            icon: <CheckCircle2 size={15} className="text-emerald-600" />,
+                          },
                       {
                         key: 'void',
                         label: 'Mark as Void',
@@ -907,6 +1049,12 @@ export default function PayrollPage() {
                 }
                 if (key === 'download') {
                   downloadSalarySlip(record);
+                }
+                if (key === 'markPending') {
+                  handleStatusChange(record, 'pending');
+                }
+                if (key === 'markPaid') {
+                  handleStatusChange(record, 'paid');
                 }
                 if (key === 'void') {
                   handleOpenVoidModal(record);
@@ -1004,12 +1152,13 @@ export default function PayrollPage() {
 
           {/* Status Filter */}
           <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shadow-xs">
-            <Ban size={14} className="text-slate-400" />
+            <Clock size={14} className="text-slate-400" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
               className="bg-transparent border-none text-xs font-semibold text-slate-700 outline-none cursor-pointer">
               <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending Only</option>
               <option value="Paid">Paid Only</option>
               <option value="Void">Voided Only</option>
             </select>
