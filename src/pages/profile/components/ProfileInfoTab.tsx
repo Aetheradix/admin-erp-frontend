@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/primitives/Button';
+import { useAuth } from '@/hooks/useAuth';
 import type { ProfileUserData } from '../hooks/useProfile';
 import type { ProfileCompletionData } from '@/services/employeeProfileService';
 
@@ -45,6 +46,7 @@ export const ProfileInfoTab = ({
   onStartEdit,
   onElevationClick,
 }: ProfileInfoTabProps) => {
+  const { isSuperadmin } = useAuth();
   const [showMoreContact, setShowMoreContact] = useState(false);
   const [showAccountNum, setShowAccountNum] = useState(false);
   const [showAadhaar, setShowAadhaar] = useState(false);
@@ -672,12 +674,22 @@ export const ProfileInfoTab = ({
             </span>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          onClick={onElevationClick}
-          className="text-xs font-black text-primary hover:bg-primary/10 rounded-xl px-4 py-2 border border-primary/30">
-          Request Admin Elevation
-        </Button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/profile-completion"
+            className="text-xs font-black text-primary hover:bg-primary/10 rounded-xl px-4 py-2 border border-primary/30 inline-flex items-center gap-1.5 transition-all">
+            <Edit3 size={14} />
+            Complete / Edit Details
+          </Link>
+          {!isSuperadmin && (
+            <Button
+              variant="ghost"
+              onClick={onElevationClick}
+              className="text-xs font-black text-muted hover:text-foreground hover:bg-surface-subtle rounded-xl px-3 py-2 border border-border-subtle">
+              Request Admin Elevation
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
