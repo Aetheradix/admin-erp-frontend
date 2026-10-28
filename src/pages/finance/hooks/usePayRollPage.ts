@@ -6,6 +6,11 @@ import {
 import type { CreateSalarySlipPayload } from '@/store/api/financeApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { generateSlipNumber } from '@/utils/payroll';
+import {
+  isProfessionalTaxName,
+  isIncomeTaxTdsName,
+  isProvidentFundName,
+} from '../components/SalarySlipForm';
 
 export interface BreakdownItem {
   name: string;
@@ -210,6 +215,9 @@ export const usePayrollPage = () => {
         // Numerical Totals
         basicSalary: basePay,
         bonus: bonusPay,
+        providentFund: safeDeductions.find((d) => isProvidentFundName(d.name))?.amount || 0,
+        professionalTax: safeDeductions.find((d) => isProfessionalTaxName(d.name))?.amount || 0,
+        incomeTaxTds: safeDeductions.find((d) => isIncomeTaxTdsName(d.name))?.amount || 0,
 
         // Metadata & Status
         paymentStatus: 'pending',

@@ -251,6 +251,37 @@ const calculatePayPeriod = (
   return `${formatDateFormatted(startDate)} - ${formatDateFormatted(endDate)}`;
 };
 
+export const isProfessionalTaxName = (name: string): boolean => {
+  const n = (name || '').toLowerCase().trim();
+  return (
+    n.includes('professional tax') ||
+    n.includes('prof tax') ||
+    n.includes('prof. tax') ||
+    n === 'pt' ||
+    n.startsWith('pt ') ||
+    n.endsWith(' pt') ||
+    n.includes('(pt)')
+  );
+};
+
+export const isIncomeTaxTdsName = (name: string): boolean => {
+  const n = (name || '').toLowerCase().trim();
+  if (isProfessionalTaxName(n)) return false;
+  return (
+    n.includes('tds') ||
+    n.includes('income tax') ||
+    n.includes('tax deducted') ||
+    n === 'tax' ||
+    n === 'income_tax_tds' ||
+    n === 'incometax'
+  );
+};
+
+export const isProvidentFundName = (name: string): boolean => {
+  const n = (name || '').toLowerCase().trim();
+  return n.includes('pf') || n.includes('provident');
+};
+
 const getInitialForm = (): SalarySlipData => {
   const storedSettings = getStoredPayrollSettings();
   const today = new Date();
@@ -369,7 +400,7 @@ const SalarySlipForm = ({
       if (existingTds > 0) return true;
       if (Array.isArray(initialValues.deductions)) {
         const found = initialValues.deductions.find((d: any) =>
-          /tax|tds/i.test(d.name || '')
+          isIncomeTaxTdsName(d.name || '')
         );
         return Number(found?.amount || 0) > 0;
       }
@@ -602,7 +633,7 @@ const SalarySlipForm = ({
     const hasTds =
       tdsDeduct > 0 ||
       parsedDeductions.some(
-        (d: any) => /tax|tds/i.test(d.name || '') && Number(d.amount || 0) > 0
+        (d: any) => isIncomeTaxTdsName(d.name || '') && Number(d.amount || 0) > 0
       );
     setDeductIncomeTax(hasTds);
   }, [initialValues]);
@@ -952,15 +983,10 @@ const SalarySlipForm = ({
       : 0;
     setFormData((prev) => {
       const updated = [...prev.deductions];
-      const idx = updated.findIndex(
-        (d) =>
-          d.name.toLowerCase().includes('tds') ||
-          d.name.toLowerCase().includes('income tax') ||
-          d.name.toLowerCase().includes('tax')
-      );
+      const idx = updated.findIndex((d) => isIncomeTaxTdsName(d.name));
       if (idx !== -1) {
         updated[idx] = { ...updated[idx], amount: targetTdsAmount };
-      } else {
+      } else if (checked && targetTdsAmount > 0) {
         updated.push({ name: 'Income Tax (TDS)', amount: targetTdsAmount });
       }
       return { ...prev, deductions: updated };
@@ -973,12 +999,7 @@ const SalarySlipForm = ({
     setDeductIncomeTax(tdsMonthly > 0);
     setFormData((prev) => {
       const updated = [...prev.deductions];
-      const idx = updated.findIndex(
-        (d) =>
-          d.name.toLowerCase().includes('tds') ||
-          d.name.toLowerCase().includes('income tax') ||
-          d.name.toLowerCase().includes('tax')
-      );
+      const idx = updated.findIndex((d) => isIncomeTaxTdsName(d.name));
       if (idx !== -1) {
         updated[idx] = { ...updated[idx], amount: tdsMonthly };
       } else {
@@ -1386,7 +1407,7 @@ const SalarySlipForm = ({
   const updateDeduction = (index: number, field: keyof DeductionItem, value: string | number) => {
     const updatedValue = field === 'amount' ? (value === '' ? 0 : Number(value)) : value;
     const targetItem = formData.deductions[index];
-    if (targetItem && /tax|tds/i.test(targetItem.name)) {
+    if (targetItem && isIncomeTaxTdsName(targetItem.name)) {
       if (field === 'amount') {
         setDeductIncomeTax(Number(updatedValue) > 0);
       }
@@ -1499,10 +1520,16 @@ const SalarySlipForm = ({
       setIsSubmitting(true);
 
       // 3. Keyword matching helpers for Earnings & Deductions
-      const findAmount = (items: typeof formData.earnings, keywords: string[]) => {
-        const match = items.find((i) =>
-          keywords.some((kw) => i.name.toLowerCase().trim().includes(kw.toLowerCase()))
-        );
+      const findAmount = (
+        items: typeof formData.earnings,
+        keywords: string[],
+        excludeKeywords: string[] = []
+      ) => {
+        const match = items.find((i) => {
+          const name = i.name.toLowerCase().trim();
+          if (excludeKeywords.some((ex) => name.includes(ex.toLowerCase()))) return false;
+          return keywords.some((kw) => name.includes(kw.toLowerCase()));
+        });
         return match ? Number(match.amount) || 0 : 0;
       };
 
@@ -1534,20 +1561,23 @@ const SalarySlipForm = ({
       const conveyanceAllowance = findAmount(formData.earnings, ['conveyance', 'transport']);
       const otherEarnings = getUnmatchedSum(formData.earnings, earningMatches);
 
-      // Deductions Breakdown
-      const deductionMatches = [
-        'pf',
-        'provident',
-        'pt',
-        'professional tax',
-        'tds',
-        'income tax',
-        'tax',
-      ];
+      // Deductions Breakdown - Strictly isolate Professional Tax and TDS
       const providentFund = findAmount(formData.deductions, ['pf', 'provident']);
-      const professionalTax = findAmount(formData.deductions, ['pt', 'professional tax']);
-      const incomeTaxTds = findAmount(formData.deductions, ['tds', 'income tax', 'tax']);
-      const otherDeductions = getUnmatchedSum(formData.deductions, deductionMatches);
+      const professionalTax =
+        formData.deductions.find((d) => isProfessionalTaxName(d.name))
+          ? Number(formData.deductions.find((d) => isProfessionalTaxName(d.name))?.amount) || 0
+          : 0;
+      const tdsItem = formData.deductions.find((d) => isIncomeTaxTdsName(d.name));
+      const incomeTaxTds = deductIncomeTax && tdsItem ? Number(tdsItem.amount) || 0 : 0;
+
+      const otherDeductions = formData.deductions
+        .filter(
+          (d) =>
+            !isProvidentFundName(d.name) &&
+            !isProfessionalTaxName(d.name) &&
+            !isIncomeTaxTdsName(d.name)
+        )
+        .reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
       // Attendance
       const paidDays = Number(formData.paidDays) || 15;
@@ -1558,6 +1588,26 @@ const SalarySlipForm = ({
       const yearStr = formData.monthYear?.split(' ')[1] || String(currentYear);
       const payPeriodMonth = months.indexOf(monthStr.toUpperCase()) + 1;
       const payPeriodYear = Number(yearStr);
+
+      // Clean deductions array: ensure TDS item matches deductIncomeTax state and never leaks or duplicates
+      const cleanedDeductions = formData.deductions
+        .filter((d) => d.name.trim() !== '')
+        .map((d) => {
+          if (isIncomeTaxTdsName(d.name)) {
+            return {
+              ...d,
+              amount: deductIncomeTax ? Number(d.amount) || 0 : 0,
+            };
+          }
+          return d;
+        })
+        .filter((d) => {
+          // If not deducting income tax, remove zero-amount TDS line so it doesn't clutter or create confusion
+          if (!deductIncomeTax && isIncomeTaxTdsName(d.name) && Number(d.amount) === 0) {
+            return false;
+          }
+          return true;
+        });
 
       const payload = {
         // 1. Recipient & Creator IDs
@@ -1624,7 +1674,7 @@ const SalarySlipForm = ({
 
         // 5. Breakdown Arrays
         earnings: formData.earnings.filter((e) => e.name.trim() !== ''),
-        deductions: formData.deductions.filter((d) => d.name.trim() !== ''),
+        deductions: cleanedDeductions,
 
         // 6. Financial Figures (snake_case + camelCase for total service compatibility)
         basic_salary: basicSalary,
