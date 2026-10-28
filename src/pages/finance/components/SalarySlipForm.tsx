@@ -33,8 +33,8 @@ import { calculateTaxForEmployee, type TaxCalculationResult } from '@/utils/taxC
 import { TaxProjectionModal } from './TaxProjectionModal';
 
 import { Input } from '@/components/ui/composed/Input';
-import { generateSlipNumber } from '@/utils/payroll';
-export { generateSlipNumber } from '@/utils/payroll';
+import { generateSlipNumber, formatEmployeeCode, parseSlipNumber } from '@/utils/payroll';
+export { generateSlipNumber, formatEmployeeCode, parseSlipNumber } from '@/utils/payroll';
 export interface EarningsItem {
   name: string;
   amount: number;
@@ -102,12 +102,6 @@ interface SalarySlipFormProps {
   onClose: () => void;
   onCreate: (data: any) => Promise<void>;
   fetchUsers?: (query?: string) => Promise<any[]>;
-}
-
-interface SectionTitleProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
 }
 
 interface SectionTitleProps {
@@ -279,7 +273,7 @@ const getInitialForm = (): SalarySlipData => {
 
   const monthYear = `${monthNameUpper} ${year}`;
   const payPeriod = calculatePayPeriod(monthNameUpper, String(year), defaultCycle, 1);
-  const paySlipNo = generateSlipNumber('EMP-001', monthYear);
+  const paySlipNo = ''; // Will only be generated after employee selection and proper form filling
 
   const defaultPaidDays =
     defaultCycle === 'Weekly'
@@ -360,6 +354,7 @@ const SalarySlipForm = ({
     return initial;
   });
 
+  const [slipSequence, setSlipSequence] = useState<number>(1);
   const [biWeeklyPeriod, setBiWeeklyPeriod] = useState<1 | 2>(1);
   const [cyclePeriodPart, setCyclePeriodPart] = useState<number>(1);
   const [customStart, setCustomStart] = useState<string>('');
@@ -546,7 +541,12 @@ const SalarySlipForm = ({
     // Generate proper professional slip number
     const empCode = String(raw.employee_code || initialValues.employeeId || '');
     const defaultMonthYear = `${monthVal} ${yearVal}`;
-    const generatedSlipNo = generateSlipNumber(empCode, defaultMonthYear);
+    const initialSlipNo = String(raw.pay_slip_no || initialValues.paySlipNo || '');
+    const parsedSlip = parseSlipNumber(initialSlipNo);
+    const initialSlipSeq = parsedSlip?.sequence || 1;
+    setSlipSequence(initialSlipSeq);
+
+    const generatedSlipNo = empCode ? generateSlipNumber(empCode, defaultMonthYear, initialSlipSeq) : '';
 
     // 9. Update Form State
     setFormData({
@@ -567,7 +567,7 @@ const SalarySlipForm = ({
       payCycle: cycle as 'Bi-Weekly' | 'Monthly',
       monthYear: defaultMonthYear,
       payPeriod: String(computedPayPeriod || ''),
-      paySlipNo: String(raw.pay_slip_no || initialValues.paySlipNo || generatedSlipNo), // 💡 Fixed here
+      paySlipNo: initialSlipNo || (isEditing && generatedSlipNo ? generatedSlipNo : ''),
       companyName: String(initialValues.companyName || 'AETHERADIX'),
       companyAddress: String(
         initialValues.companyAddress || 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
@@ -637,6 +637,118 @@ const SalarySlipForm = ({
     }
   };
 
+  const getNextSequenceForEmployee = (
+    empCode: string,
+    targetMonthYear: string,
+    existingSlips: any[]
+  ): number => {
+    if (!empCode || !Array.isArray(existingSlips)) return 1;
+    const cleanCode = formatEmployeeCode(empCode);
+
+    const parts = targetMonthYear.trim().split(/[\s\/\-]+/).filter(Boolean);
+    let targetMonth = 0;
+    let targetYear = 0;
+    for (const p of parts) {
+      const num = Number(p);
+      if (!isNaN(num)) {
+        if (num >= 1900 && num <= 2100) targetYear = num;
+        else if (num >= 1 && num <= 12) targetMonth = num;
+      } else {
+        const idx = months.findIndex(
+          (m) => m === p.toUpperCase() || m.startsWith(p.toUpperCase().slice(0, 3))
+        );
+        if (idx !== -1) targetMonth = idx + 1;
+      }
+    }
+
+    const mm = String(targetMonth).padStart(2, '0');
+    const yy = String(targetYear).slice(-2);
+
+    let maxSeq = 0;
+    for (const s of existingSlips) {
+      const sCode = formatEmployeeCode(
+        s.employee_code || s.employeeCode || s.employee_id || s.employeeId || s.user_id
+      );
+      if (sCode !== cleanCode) continue;
+
+      const sNo = String(s.pay_slip_no || s.paySlipNo || '');
+      const parsed = parseSlipNumber(sNo);
+      if (parsed) {
+        if (parsed.month === mm && parsed.year === yy && parsed.sequence > maxSeq) {
+          maxSeq = parsed.sequence;
+        }
+      }
+    }
+
+    return maxSeq > 0 ? maxSeq + 1 : 1;
+  };
+
+  const handleSlipSequenceChange = (newSeq: number | string) => {
+    const num = Math.max(1, Math.min(999, Number(newSeq) || 1));
+    setSlipSequence(num);
+    const empCode =
+      formData.employeeId ||
+      (selectedEmployeeObj
+        ? String(
+            selectedEmployeeObj.employee_code ||
+              selectedEmployeeObj.employee_id ||
+              selectedEmployeeObj.employeeId ||
+              selectedEmployeeObj.id ||
+              ''
+          )
+        : '');
+    if (empCode && formData.monthYear) {
+      const updatedSlipNo = generateSlipNumber(empCode, formData.monthYear, num);
+      setFormData((prev) => ({ ...prev, paySlipNo: updatedSlipNo }));
+      if (errors.paySlipNo) {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.paySlipNo;
+          return next;
+        });
+      }
+    }
+  };
+
+  const handlePaySlipNoDirectChange = (value: string) => {
+    updateField('paySlipNo', value);
+    const parsed = parseSlipNumber(value);
+    if (parsed) {
+      setSlipSequence(parsed.sequence);
+    }
+  };
+
+  const handleRegenerateSlipNumber = () => {
+    const empCode =
+      formData.employeeId ||
+      (selectedEmployeeObj
+        ? String(
+            selectedEmployeeObj.employee_code ||
+              selectedEmployeeObj.employee_id ||
+              selectedEmployeeObj.employeeId ||
+              selectedEmployeeObj.id ||
+              ''
+          )
+        : '');
+    if (!empCode) {
+      setErrors((prev) => ({
+        ...prev,
+        employeeId: 'Please select an employee first to generate payslip number.',
+        paySlipNo: 'Select employee to generate payslip number.',
+      }));
+      return;
+    }
+    const newSlipNo = generateSlipNumber(empCode, formData.monthYear, slipSequence);
+    setFormData((prev) => ({ ...prev, paySlipNo: newSlipNo }));
+    if (errors.paySlipNo) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.paySlipNo;
+        return next;
+      });
+    }
+  };
+
   // Helper to update month or year and reflect back into formData.monthYear & payPeriod
   const handleMonthChange = (selectedMonth: string) => {
     const currentYearVal = formData.monthYear?.split(' ')[1] || String(currentYear);
@@ -660,7 +772,7 @@ const SalarySlipForm = ({
             )
           : '');
       const updatedSlipNo =
-        !isEditing && empCode ? generateSlipNumber(empCode, updatedMonthYear) : prev.paySlipNo;
+        !isEditing && empCode ? generateSlipNumber(empCode, updatedMonthYear, slipSequence) : prev.paySlipNo;
       return {
         ...prev,
         monthYear: updatedMonthYear,
@@ -694,7 +806,7 @@ const SalarySlipForm = ({
             )
           : '');
       const updatedSlipNo =
-        !isEditing && empCode ? generateSlipNumber(empCode, updatedMonthYear) : prev.paySlipNo;
+        !isEditing && empCode ? generateSlipNumber(empCode, updatedMonthYear, slipSequence) : prev.paySlipNo;
       return {
         ...prev,
         monthYear: updatedMonthYear,
@@ -1012,7 +1124,9 @@ const SalarySlipForm = ({
     );
     const currentMonthYear =
       formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
-    const generatedSlipNo = generateSlipNumber(empCode, currentMonthYear);
+    const detectedSeq = getNextSequenceForEmployee(empCode, currentMonthYear, allSlips);
+    setSlipSequence(detectedSeq);
+    const generatedSlipNo = generateSlipNumber(empCode, currentMonthYear, detectedSeq);
 
     const detectedTotalComp = Number(
       user.totalCompensation ?? user.total_compensation ?? user.annualCtc ?? user.annual_ctc ?? 0
@@ -1058,12 +1172,20 @@ const SalarySlipForm = ({
         totalCompensation: detectedTotalComp > 0 ? detectedTotalComp : prev.totalCompensation || '',
         taxRegime: detectedRegime,
         panNumber: detectedPan || prev.panNumber,
-        paySlipNo: isEditing ? prev.paySlipNo : generatedSlipNo || prev.paySlipNo,
+        paySlipNo: isEditing && prev.paySlipNo ? prev.paySlipNo : generatedSlipNo,
         earnings: updatedEarnings,
       };
 
       console.log('2. New calculated formData state:', updated);
       return updated;
+    });
+
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.userId;
+      delete next.employeeId;
+      delete next.paySlipNo;
+      return next;
     });
 
     // 4. Asynchronous check by employee ID if still missing either account or base salary
@@ -1231,7 +1353,10 @@ const SalarySlipForm = ({
       department: '',
       accountNumber: '',
       baseSalary: '',
+      paySlipNo: '',
     }));
+    setSelectedEmployeeObj(null);
+    setSlipSequence(1);
   };
 
   const updateEarning = (index: number, field: keyof EarningsItem, value: string | number) => {
@@ -1301,16 +1426,68 @@ const SalarySlipForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const newErrors: Record<string, string> = {};
+
     // 1. Target Employee ID (Selected from dropdown - recipient of slip)
     const recipientUserId = formData.userId || formData.employeeId;
     const numericRecipientId = Number(recipientUserId);
 
-    if (!recipientUserId || isNaN(numericRecipientId) || numericRecipientId <= 0) {
-      setErrors((prev) => ({
-        ...prev,
-        userId: 'Please select a valid employee from the list.',
-        employeeId: 'Employee selection is required.',
-      }));
+    if (
+      !recipientUserId ||
+      (isNaN(numericRecipientId) && !formData.employeeName) ||
+      (!formData.employeeId && !formData.employeeName)
+    ) {
+      newErrors.userId = 'Please select a valid employee from the list.';
+      newErrors.employeeId = 'Employee selection is required.';
+    }
+
+    // 2. Month and Year
+    if (!formData.monthYear || !formData.monthYear.trim()) {
+      newErrors.monthYear = 'Month and Year selection is required.';
+    }
+
+    // 3. Attendance - Paid Working Days
+    const paidDaysNum = Number(formData.paidDays);
+    if (isNaN(paidDaysNum) || paidDaysNum <= 0) {
+      newErrors.paidDays = 'Paid working days must be greater than 0.';
+    }
+
+    // 4. Earnings / Basic Pay
+    const totalEarningsVal = formData.earnings.reduce(
+      (sum, item) => sum + (Number(item.amount) || 0),
+      0
+    );
+    const basicAmt = Number(formData.baseSalary) || 0;
+    if (totalEarningsVal <= 0 && basicAmt <= 0) {
+      newErrors.earnings =
+        'At least one earning component (e.g. Basic Pay) must be greater than 0.';
+    }
+
+    // 5. Pay Slip Number
+    let finalSlipNo = formData.paySlipNo?.trim();
+    if (!finalSlipNo) {
+      const empCode =
+        formData.employeeId ||
+        (selectedEmployeeObj
+          ? String(
+              selectedEmployeeObj.employee_code ||
+                selectedEmployeeObj.employee_id ||
+                selectedEmployeeObj.employeeId ||
+                selectedEmployeeObj.id ||
+                ''
+            )
+          : '');
+      if (empCode && formData.monthYear) {
+        finalSlipNo = generateSlipNumber(empCode, formData.monthYear, slipSequence);
+        setFormData((prev) => ({ ...prev, paySlipNo: finalSlipNo }));
+      } else {
+        newErrors.paySlipNo =
+          'Payslip number is required. Please select an employee to generate it.';
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -1527,9 +1704,18 @@ const SalarySlipForm = ({
         <form onSubmit={handleSubmit} noValidate className="overflow-y-auto flex-1">
           <div className="p-6 space-y-8">
             {Object.keys(errors).length > 0 && (
-              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-700 text-sm font-medium">
-                <AlertCircle size={20} className="shrink-0 text-red-500" />
-                <span>Please select an employee and fill all required fields.</span>
+              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700 text-sm font-medium">
+                <AlertCircle size={20} className="shrink-0 text-red-500 mt-0.5" />
+                <div>
+                  <p className="font-bold">Proper form filling required to generate salary slip:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-0.5 text-xs text-red-600 font-medium">
+                    {errors.employeeId && <li>{errors.employeeId}</li>}
+                    {errors.monthYear && <li>{errors.monthYear}</li>}
+                    {errors.paidDays && <li>{errors.paidDays}</li>}
+                    {errors.earnings && <li>{errors.earnings}</li>}
+                    {errors.paySlipNo && <li>{errors.paySlipNo}</li>}
+                  </ul>
+                </div>
               </div>
             )}
 
@@ -1885,14 +2071,27 @@ const SalarySlipForm = ({
                   </select>
                 </div>
 
-                {/* Pay Slip Number */}
-                <Input
-                  label="Pay Slip Number"
-                  value={formData.paySlipNo}
-                  onChange={(e) => updateField('paySlipNo', e.target.value)}
-                  error={errors.paySlipNo}
-                  required
-                />
+                {/* Slip Number / Sequence Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Slip No. <span className="text-xs text-gray-400 font-normal">(001, 002...)</span>
+                  </label>
+                  <select
+                    value={String(slipSequence).padStart(3, '0')}
+                    onChange={(e) => handleSlipSequenceChange(Number(e.target.value))}
+                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono font-bold text-slate-800">
+                    <option value="001">001 (Slip #1)</option>
+                    <option value="002">002 (Slip #2)</option>
+                    <option value="003">003 (Slip #3)</option>
+                    <option value="004">004 (Slip #4)</option>
+                    <option value="005">005 (Slip #5)</option>
+                    {slipSequence > 5 && (
+                      <option value={String(slipSequence).padStart(3, '0')}>
+                        {String(slipSequence).padStart(3, '0')} (Slip #{slipSequence})
+                      </option>
+                    )}
+                  </select>
+                </div>
 
                 {/* Payment Status Dropdown */}
                 <div>
@@ -1909,7 +2108,55 @@ const SalarySlipForm = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Pay Slip Number Input with Format Preview and Regenerate Action */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Pay Slip Number <span className="text-red-500">*</span>
+                    </label>
+                    <span className="text-[11px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md font-medium">
+                      Format: E[Emp]-[MM][YY][SlipNo]
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.paySlipNo}
+                      placeholder={
+                        formData.employeeId
+                          ? 'e.g. E002-0926001'
+                          : 'Select employee to generate (e.g. E002-0926001)'
+                      }
+                      onChange={(e) => handlePaySlipNoDirectChange(e.target.value)}
+                      className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white font-mono font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-black ${
+                        errors.paySlipNo ? 'border-red-500 bg-red-50/20' : 'border-gray-300'
+                      }`}
+                    />
+                    {Boolean(formData.employeeId) && (
+                      <button
+                        type="button"
+                        onClick={handleRegenerateSlipNumber}
+                        title="Regenerate Slip Number"
+                        className="absolute right-2 top-2 px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                        <Sparkles size={13} className="text-black" />
+                        Regenerate
+                      </button>
+                    )}
+                  </div>
+                  {errors.paySlipNo ? (
+                    <p className="mt-1 text-xs text-red-500 font-medium">{errors.paySlipNo}</p>
+                  ) : !formData.employeeId ? (
+                    <p className="mt-1 text-[11px] text-amber-600 font-medium flex items-center gap-1">
+                      <AlertCircle size={12} /> Slip number is generated automatically once employee is selected.
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                      ✓ Generated in format E{formatEmployeeCode(formData.employeeId)}-{selectedMonth ? String(months.indexOf(selectedMonth.toUpperCase()) + 1).padStart(2, '0') : '09'}{String(selectedYear).slice(-2)}{String(slipSequence).padStart(3, '0')}
+                    </p>
+                  )}
+                </div>
+
                 {/* Auto-Calculated Pay Period */}
                 <Input
                   label="Pay Period Range"
@@ -2061,6 +2308,25 @@ const SalarySlipForm = ({
                   )}
                 </div>
               )}
+
+              {formData.employeeId && (
+                <div className="mt-2.5 flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span className="font-semibold text-gray-900">{formData.employeeName}</span>
+                    <span className="text-gray-500 font-mono">Code: {formatEmployeeCode(formData.employeeId)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">Generated Slip No:</span>
+                    <span className="font-mono font-bold text-gray-900 bg-white px-2 py-0.5 rounded border border-gray-200">
+                      {formData.paySlipNo || 'Pending generation'}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {errors.employeeId && (
+                <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.employeeId}</p>
+              )}
             </div>
 
             {/* Mapped Fields */}
@@ -2073,9 +2339,16 @@ const SalarySlipForm = ({
                 required
               />
               <Input
-                label="Employee ID"
+                label="Employee ID / Code"
                 value={formData.employeeId}
-                onChange={(e) => updateField('employeeId', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateField('employeeId', val);
+                  if (val.trim() && formData.monthYear) {
+                    const regenerated = generateSlipNumber(val, formData.monthYear, slipSequence);
+                    updateField('paySlipNo', regenerated);
+                  }
+                }}
                 error={errors.employeeId}
                 required
               />
@@ -2187,6 +2460,7 @@ const SalarySlipForm = ({
                 type="number"
                 value={formData.paidDays}
                 onChange={(e) => updateField('paidDays', Number(e.target.value))}
+                error={errors.paidDays}
                 required
               />
               <Input
@@ -2200,6 +2474,12 @@ const SalarySlipForm = ({
 
           {/* Earnings & Deductions Breakdown */}
           <section className="px-6 pb-6">
+            {errors.earnings && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-600 flex items-center gap-2">
+                <AlertCircle size={15} />
+                <span>{errors.earnings}</span>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Earnings */}
               <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200">
@@ -2567,7 +2847,7 @@ const SalarySlipForm = ({
                   : 'Generating Slip...'
                 : isEditing
                   ? 'Update Salary Slip'
-                  : 'Create Salary Slip'}
+                  : 'Generate Salary Slip'}
             </button>
           </div>
         </form>
