@@ -15,6 +15,8 @@ import {
   FileSpreadsheet,
   Filter,
   Sparkles,
+  Ban,
+  CheckCircle2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
@@ -29,9 +31,18 @@ import {
   useCreatePayrollAdjustmentMutation,
   useGetPayrollAdjustmentsQuery,
 } from '@/store/api/financeApiSlice';
+import { useAuth } from '@/hooks/useAuth';
+import { recordAuditLog as recordSystemAuditLog } from '@/services/auditService';
+import {
+  exportPayrollAuditLogs,
+  filterLogsByRetention,
+  getThreeMonthsCutoff,
+  pruneLocalStorageLogs,
+} from '@/utils/auditExport';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import SalarySlipForm, { generateSlipNumber } from './components/SalarySlipForm';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
+import VoidPayrollModal from './components/VoidPayrollModal';
 import { getStoredPayrollSettings } from '@/types/payrollSettings';
 import type { SalarySlipData } from './components/SalarySlipForm';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
@@ -74,6 +85,11 @@ export interface PayrollRecord {
   payPeriodMonth?: number;
   payPeriodYear?: number;
   rawRecord?: Record<string, any>;
+  isVoid?: boolean;
+  voidReason?: string;
+  voidNotes?: string;
+  voidedAt?: string;
+  voidedBy?: string;
 }
 
 const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
@@ -121,6 +137,32 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     }
   }
 
+  // Detect Void Status (from field or serialized in remarks)
+  const isVoid =
+    item.is_void === true ||
+    item.isVoid === true ||
+    item.payment_status === 'void' ||
+    item.paymentStatus === 'void' ||
+    (typeof item.remarks === 'string' && item.remarks.includes('[VOID'));
+
+  let detectedVoidReason = item.void_reason || item.voidReason || '';
+  let detectedVoidNotes = item.void_notes || item.voidNotes || '';
+  if (!detectedVoidReason && typeof item.remarks === 'string' && item.remarks.includes('[VOID: ')) {
+    const afterPrefix = item.remarks.split('[VOID: ')[1];
+    if (afterPrefix) {
+      const rawVoid = afterPrefix.split(']')[0];
+      if (rawVoid.includes('|')) {
+        const [r, ...n] = rawVoid.split('|');
+        detectedVoidReason = r.trim();
+        detectedVoidNotes = n.join('|').trim();
+      } else {
+        detectedVoidReason = rawVoid.trim();
+      }
+    }
+  }
+
+  const effectiveStatus = isVoid ? 'void' : (item.payment_status || item.paymentStatus || 'paid');
+
   const detectedCycle =
     item.pay_cycle ||
     item.payCycle ||
@@ -159,7 +201,12 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     paySlipNo: actualSlipNo && actualSlipNo !== 'null' ? actualSlipNo : fallbackSlipNo,
     paidDays: Number(item.days_worked || item.total_working_days || 0),
     lopDays: Number(item.leave_days || 0),
-    paymentStatus: item.payment_status || 'paid',
+    paymentStatus: effectiveStatus,
+    isVoid,
+    voidReason: detectedVoidReason,
+    voidNotes: detectedVoidNotes,
+    voidedAt: item.voided_at || item.voidedAt || '',
+    voidedBy: item.voided_by || item.voidedBy || '',
     generatedOn: item.payment_date || item.created_at?.split('T')[0] || '',
     createdBy: item.created_by_username || 'System',
     created_by_username: item.created_by_username || 'System',
@@ -212,11 +259,14 @@ export default function PayrollPage() {
     refetchOnMountOrArgChange: true,
   });
 
+  const { user: authUser } = useAuth();
+
   const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [filteredPayroll, setFilteredPayroll] = useState<PayrollRecord[]>([]);
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'Regular' | 'Adjustment'>('ALL');
   const [cycleFilter, setCycleFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Paid' | 'Void'>('ALL');
 
   const [showSalarySlipForm, setShowSalarySlipForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
@@ -225,8 +275,75 @@ export default function PayrollPage() {
   const [showTaxProjectionModal, setShowTaxProjectionModal] = useState(false);
   const [projectionEmployee, setProjectionEmployee] = useState<any | null>(null);
 
-  const companyPayrollSettings = useMemo(() => getStoredPayrollSettings(), []);
+  // Void Modal State
+  const [voidingRecord, setVoidingRecord] = useState<PayrollRecord | null>(null);
+  const [showVoidModal, setShowVoidModal] = useState<boolean>(false);
+  const [isVoiding, setIsVoiding] = useState<boolean>(false);
 
+  // 💡 Local Payroll Audit Logs (with 3-Month Retention)
+  const PAYROLL_LOGS_KEY = 'aether_erp_payroll_audit_logs';
+  const [localPayrollLogs, setLocalPayrollLogs] = useState<any[]>(() => {
+    try {
+      pruneLocalStorageLogs(PAYROLL_LOGS_KEY, 'createdAt');
+      const raw = localStorage.getItem(PAYROLL_LOGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return filterLogsByRetention(parsed);
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return [];
+  });
+
+  // Persist local payroll audit logs with 3-month retention
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        PAYROLL_LOGS_KEY,
+        JSON.stringify(filterLogsByRetention(localPayrollLogs))
+      );
+    } catch (e) {
+      console.warn('Failed to save local payroll logs:', e);
+    }
+  }, [localPayrollLogs]);
+
+  // Combined Payroll Audit Logs (Backend query + Local events, strictly 3 months)
+  const combinedPayrollLogs = useMemo(() => {
+    const rawBackendLogs = Array.isArray(auditLogsData?.data)
+      ? auditLogsData.data
+      : Array.isArray(auditLogsData)
+        ? auditLogsData
+        : [];
+
+    const formattedBackend = rawBackendLogs.map((item: any) => ({
+      id: String(item.id || item._id || Math.random()),
+      action: String(item.action || 'PAYROLL_ACTION'),
+      description: String(item.description || item.details || 'Payroll modification recorded'),
+      username: String(item.username || item.user || 'System'),
+      createdAt: String(item.created_at || item.createdAt || new Date().toISOString()),
+      status: String(item.status || 'Success'),
+    }));
+
+    const existingIds = new Set(localPayrollLogs.map((l) => String(l.id)));
+    const uniqueBackend = formattedBackend.filter((b: any) => !existingIds.has(String(b.id)));
+    const merged = [...localPayrollLogs, ...uniqueBackend];
+
+    merged.sort(
+      (a, b) =>
+        new Date(b.createdAt || b.created_at || 0).getTime() -
+        new Date(a.createdAt || a.created_at || 0).getTime()
+    );
+
+    // Enforce 3-month retention window
+    return filterLogsByRetention(merged);
+  }, [localPayrollLogs, auditLogsData]);
+
+  const { formattedLabel: retentionCutoffLabel } = useMemo(() => getThreeMonthsCutoff(), []);
+
+  const companyPayrollSettings = useMemo(() => getStoredPayrollSettings(), []);
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -277,8 +394,14 @@ export default function PayrollPage() {
       });
     }
 
+    if (statusFilter === 'Paid') {
+      result = result.filter((item) => !item.isVoid && item.paymentStatus !== 'void');
+    } else if (statusFilter === 'Void') {
+      result = result.filter((item) => item.isVoid || item.paymentStatus === 'void');
+    }
+
     setFilteredPayroll(result);
-  }, [searchText, payroll, typeFilter, cycleFilter]);
+  }, [searchText, payroll, typeFilter, cycleFilter, statusFilter]);
 
   const downloadSalarySlip = async (record: PayrollRecord) => {
     try {
@@ -420,6 +543,133 @@ export default function PayrollPage() {
     });
   };
 
+  // Open Void Modal for a Payroll Slip
+  const handleOpenVoidModal = (record: PayrollRecord) => {
+    setVoidingRecord(record);
+    setShowVoidModal(true);
+  };
+
+  // Confirm Marking as Void
+  const handleConfirmVoid = async (reason: string, notes: string) => {
+    if (!voidingRecord) return;
+    setIsVoiding(true);
+    const key = 'void-payroll-action';
+    try {
+      message.loading({ content: 'Marking salary slip as void...', key });
+      const voidRemark = `[VOID: ${reason}${notes ? ` | ${notes}` : ''}] ${voidingRecord.hrNote || ''}`;
+
+      await updateSalarySlip({
+        id: voidingRecord.id,
+        payment_status: 'void',
+        paymentStatus: 'void',
+        is_void: true,
+        isVoid: true,
+        void_reason: reason,
+        void_notes: notes,
+        voided_at: new Date().toISOString(),
+        voided_by: authUser?.username || 'Admin',
+        remarks: voidRemark,
+      }).unwrap();
+
+      // 1. Central system audit log (saved with 3-month retention)
+      recordSystemAuditLog({
+        action: 'PAYROLL_VOIDED',
+        category: 'payroll',
+        user: authUser?.username || 'Admin',
+        userEmail: authUser?.email || 'admin@aetheradix.com',
+        target: `Salary Slip ${voidingRecord.paySlipNo} (${voidingRecord.employeeName})`,
+        status: 'Warning',
+        details: `Marked salary slip ${voidingRecord.paySlipNo} for ${voidingRecord.employeeName} (${voidingRecord.monthYear}) as VOID. Reason: ${reason}.${notes ? ` Notes: ${notes}` : ''}`,
+        changes: [
+          { field: 'paymentStatus', from: voidingRecord.paymentStatus || 'paid', to: 'void' },
+          { field: 'isVoid', from: false, to: true },
+          { field: 'voidReason', from: null, to: reason },
+        ],
+      });
+
+      // 2. Local payroll audit log for instant display & offline persistence
+      const newLog = {
+        id: `pay-void-${Date.now()}`,
+        action: 'VOID_SALARY_SLIP',
+        description: `Marked salary slip ${voidingRecord.paySlipNo} (${voidingRecord.employeeName}) as VOID. Reason: ${reason}`,
+        username: authUser?.username || 'Admin',
+        createdAt: new Date().toISOString(),
+        status: 'Warning',
+      };
+      setLocalPayrollLogs((prev) => filterLogsByRetention([newLog, ...prev]));
+
+      message.success({
+        content: `Salary slip ${voidingRecord.paySlipNo} marked as VOID successfully.`,
+        key,
+      });
+
+      setShowVoidModal(false);
+      setVoidingRecord(null);
+      await Promise.all([refetchSlips(), refetchLogs()]);
+    } catch (err: any) {
+      message.error({
+        content: err?.data?.message || 'Failed to mark salary slip as void.',
+        key,
+      });
+    } finally {
+      setIsVoiding(false);
+    }
+  };
+
+  // Reactivate a Voided Salary Slip
+  const handleUnvoid = (record: PayrollRecord) => {
+    Modal.confirm({
+      title: 'Reactivate Salary Slip',
+      icon: <CheckCircle2 size={20} className="text-emerald-600" />,
+      content: `Are you sure you want to reactivate the salary slip for ${record.employeeName} (${record.paySlipNo})? This will restore it to valid status.`,
+      okText: 'Yes, Reactivate',
+      okButtonProps: { className: '!bg-emerald-600' },
+      cancelText: 'Cancel',
+      onOk: async () => {
+        const key = 'unvoid-action';
+        try {
+          message.loading({ content: 'Reactivating salary slip...', key });
+          const cleanRemarks = (record.hrNote || '').replace(/\[VOID:[^\]]+\]\s*/g, '');
+          await updateSalarySlip({
+            id: record.id,
+            payment_status: 'paid',
+            paymentStatus: 'paid',
+            is_void: false,
+            isVoid: false,
+            void_reason: null,
+            void_notes: null,
+            remarks: cleanRemarks,
+          }).unwrap();
+
+          recordSystemAuditLog({
+            action: 'PAYROLL_REACTIVATED',
+            category: 'payroll',
+            user: authUser?.username || 'Admin',
+            userEmail: authUser?.email || 'admin@aetheradix.com',
+            target: `Salary Slip ${record.paySlipNo} (${record.employeeName})`,
+            status: 'Success',
+            details: `Reactivated previously voided salary slip ${record.paySlipNo} for ${record.employeeName}.`,
+          });
+
+          const newLog = {
+            id: `pay-unvoid-${Date.now()}`,
+            action: 'REACTIVATE_SALARY_SLIP',
+            description: `Reactivated salary slip ${record.paySlipNo} for ${record.employeeName}`,
+            username: authUser?.username || 'Admin',
+            createdAt: new Date().toISOString(),
+            status: 'Success',
+          };
+          setLocalPayrollLogs((prev) => filterLogsByRetention([newLog, ...prev]));
+
+          message.success({ content: 'Salary slip reactivated successfully.', key });
+          await Promise.all([refetchSlips(), refetchLogs()]);
+        } catch (err: any) {
+          message.error({ content: err?.data?.message || 'Failed to reactivate salary slip.', key });
+        }
+      },
+    });
+  };
+
   const handleCreateNew = () => {
     setEditingRecord(null);
     setShowSalarySlipForm(true);
@@ -493,6 +743,28 @@ export default function PayrollPage() {
       ),
     },
     {
+      title: 'Status',
+      key: 'paymentStatus',
+      width: 105,
+      render: (_, record) => {
+        const isVoid = record.isVoid || record.paymentStatus === 'void';
+        if (isVoid) {
+          return (
+            <span
+              title={record.voidReason ? `Reason: ${record.voidReason}` : 'Marked as Void'}
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-md shadow-2xs">
+              <Ban size={11} className="text-rose-600" /> Void
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md">
+            <CheckCircle2 size={11} className="text-emerald-600" /> Paid
+          </span>
+        );
+      },
+    },
+    {
       title: 'Days Worked',
       key: 'paidDays',
       render: (_, record) => (
@@ -507,11 +779,24 @@ export default function PayrollPage() {
     {
       title: 'Net Salary',
       key: 'total',
-      render: (_, record) => (
-        <span className="text-sm font-black text-slate-900">
-          ₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </span>
-      ),
+      render: (_, record) => {
+        const isVoid = record.isVoid || record.paymentStatus === 'void';
+        return (
+          <div className="flex flex-col">
+            <span
+              className={`text-sm font-black ${
+                isVoid ? 'text-slate-400 line-through' : 'text-slate-900'
+              }`}>
+              ₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </span>
+            {isVoid && (
+              <span className="text-[10px] font-bold text-rose-600 tracking-tight">
+                (Voided Slip)
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: 'Created By',
@@ -537,85 +822,111 @@ export default function PayrollPage() {
       title: '',
       key: 'action',
       width: 70,
-      render: (_, record) => (
-        <Dropdown
-          trigger={['click']}
-          menu={{
-            items: [
-              { key: 'view', label: 'View Salary Slip', icon: <Eye size={15} /> },
-              {
-                key: 'taxProjection',
-                label: 'Tax Projection Sheet',
-                icon: <FileSpreadsheet size={15} className="text-emerald-600" />,
-              },
-              {
-                key: 'adjustment',
-                label: 'Create Adjustment',
-                icon: <Sparkles size={15} className="text-amber-600" />,
-              },
-              { key: 'edit', label: 'Edit Salary Slip', icon: <Edit3 size={15} /> },
-              { key: 'download', label: 'Download PDF', icon: <Download size={15} /> },
-              { type: 'divider' },
-              {
-                key: 'delete',
-                label: 'Delete Salary Slip',
-                icon: <Trash2 size={15} className="text-rose-500" />,
-                danger: true,
-              },
-            ],
-            onClick: ({ key }) => {
-              if (key === 'view') {
-                setSelectedSlip(record);
-                setShowSlipModal(true);
-              }
-              if (key === 'taxProjection') {
-                setProjectionEmployee({
-                  id: record.employeeId || record.userId,
-                  userId: record.userId,
-                  name: record.employeeName,
-                  employeeName: record.employeeName,
-                  employeeId: record.employeeId,
-                  department: record.department,
-                  designation: record.position,
-                  totalCompensation: record.totalCompensation || record.total * 12,
-                  annualCtc: record.totalCompensation || record.total * 12,
-                  taxRegime: record.taxRegime || 'New Regime',
-                });
-                setShowTaxProjectionModal(true);
-              }
-              if (key === 'adjustment') {
-                setEditingRecord({
-                  ...record,
-                  payrollType: 'Adjustment',
-                  referencedPeriod: record.monthYear,
-                  rawRecord: {
+      render: (_, record) => {
+        const isVoid = record.isVoid || record.paymentStatus === 'void';
+
+        return (
+          <Dropdown
+            trigger={['click']}
+            menu={{
+              items: [
+                { key: 'view', label: 'View Salary Slip', icon: <Eye size={15} /> },
+                {
+                  key: 'taxProjection',
+                  label: 'Tax Projection Sheet',
+                  icon: <FileSpreadsheet size={15} className="text-emerald-600" />,
+                },
+                {
+                  key: 'adjustment',
+                  label: 'Create Adjustment',
+                  icon: <Sparkles size={15} className="text-amber-600" />,
+                },
+                { key: 'edit', label: 'Edit Salary Slip', icon: <Edit3 size={15} /> },
+                { key: 'download', label: 'Download PDF', icon: <Download size={15} /> },
+                { type: 'divider' },
+                ...(isVoid
+                  ? [
+                      {
+                        key: 'unvoid',
+                        label: 'Reactivate (Unmark Void)',
+                        icon: <CheckCircle2 size={15} className="text-emerald-600" />,
+                      },
+                    ]
+                  : [
+                      {
+                        key: 'void',
+                        label: 'Mark as Void',
+                        icon: <Ban size={15} className="text-rose-600" />,
+                        danger: true,
+                      },
+                    ]),
+                {
+                  key: 'delete',
+                  label: 'Delete Salary Slip',
+                  icon: <Trash2 size={15} className="text-rose-500" />,
+                  danger: true,
+                },
+              ],
+              onClick: ({ key }) => {
+                if (key === 'view') {
+                  setSelectedSlip(record);
+                  setShowSlipModal(true);
+                }
+                if (key === 'taxProjection') {
+                  setProjectionEmployee({
+                    id: record.employeeId || record.userId,
+                    userId: record.userId,
+                    name: record.employeeName,
+                    employeeName: record.employeeName,
+                    employeeId: record.employeeId,
+                    department: record.department,
+                    designation: record.position,
+                    totalCompensation: record.totalCompensation || record.total * 12,
+                    annualCtc: record.totalCompensation || record.total * 12,
+                    taxRegime: record.taxRegime || 'New Regime',
+                  });
+                  setShowTaxProjectionModal(true);
+                }
+                if (key === 'adjustment') {
+                  setEditingRecord({
                     ...record,
                     payrollType: 'Adjustment',
                     referencedPeriod: record.monthYear,
-                    referenceSalarySlipId: record.id,
-                    userId: record.userId,
-                  },
-                });
-                setShowSalarySlipForm(true);
-              }
-              if (key === 'edit') {
-                handleEdit(record);
-              }
-              if (key === 'download') {
-                downloadSalarySlip(record);
-              }
-              if (key === 'delete') {
-                handleDelete(record);
-              }
-            },
-          }}>
-          <button
-            type="button"
-            className="p-2 rounded-lg hover:bg-slate-100 transition text-slate-500">
-            <MoreHorizontal size={18} />
-          </button>
-        </Dropdown>
-      ),
+                    rawRecord: {
+                      ...record,
+                      payrollType: 'Adjustment',
+                      referencedPeriod: record.monthYear,
+                      referenceSalarySlipId: record.id,
+                      userId: record.userId,
+                    },
+                  });
+                  setShowSalarySlipForm(true);
+                }
+                if (key === 'edit') {
+                  handleEdit(record);
+                }
+                if (key === 'download') {
+                  downloadSalarySlip(record);
+                }
+                if (key === 'void') {
+                  handleOpenVoidModal(record);
+                }
+                if (key === 'unvoid') {
+                  handleUnvoid(record);
+                }
+                if (key === 'delete') {
+                  handleDelete(record);
+                }
+              },
+            }}>
+            <button
+              type="button"
+              className="p-2 rounded-lg hover:bg-slate-100 transition text-slate-500 cursor-pointer">
+              <MoreHorizontal size={18} />
+            </button>
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -623,6 +934,7 @@ export default function PayrollPage() {
     {
       title: 'Timestamp',
       key: 'createdAt',
+      width: 190,
       render: (_, record) => (
         <span className="text-xs font-mono text-slate-600">
           {new Date(record.created_at || record.createdAt).toLocaleString()}
@@ -632,16 +944,21 @@ export default function PayrollPage() {
     {
       title: 'Action',
       key: 'action',
+      width: 170,
       render: (_, record) => {
-        const actionType = record.action || '';
-        // const color = actionType.includes('CREATE')
-        //   ? 'success'
-        //   : actionType.includes('UPDATE')
-        //   ? 'processing'
-        //   : 'error';
+        const actionType = String(record.action || '').toUpperCase();
+        const isVoid = actionType.includes('VOID');
+        const isCreate = actionType.includes('CREATE');
+
         return (
           <span
-            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700`}>
+            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+              isVoid
+                ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                : isCreate
+                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  : 'bg-slate-100 text-slate-700'
+            }`}>
             {actionType}
           </span>
         );
@@ -652,31 +969,27 @@ export default function PayrollPage() {
       key: 'description',
       render: (_, record) => (
         <span className="text-xs text-slate-800 font-medium">
-          {record.description || 'Payroll action performed.'}
+          {record.description || record.details || 'Payroll action performed.'}
         </span>
       ),
     },
     {
       title: 'Admin / User',
       key: 'username',
+      width: 170,
       render: (_, record) => (
-        <span className="text-xs text-slate-600 font-semibold">{record.username || 'System'}</span>
+        <span className="text-xs text-slate-600 font-semibold">{record.username || record.user || 'System'}</span>
       ),
     },
   ];
 
   const isSubmitting = isCreating || isUpdating || isDeleting || isCreatingAdjustment;
-  const rawLogsList = Array.isArray(auditLogsData?.data)
-    ? auditLogsData.data
-    : Array.isArray(auditLogsData)
-      ? auditLogsData
-      : [];
 
   return (
     <div className="flex flex-col gap-6 pb-20 max-w-7xl mx-auto p-4 sm:p-6">
       <PageHeader
         title="All Payrolls"
-        description="Company-wide employee compensation distribution history and generated slips."
+        description="Company-wide employee compensation distribution history, void management, and audit records."
       />
 
       <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
@@ -688,6 +1001,19 @@ export default function PayrollPage() {
             onChange={(e) => setSearchText(e.target.value)}
             className="bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 w-64 shadow-xs"
           />
+
+          {/* Status Filter */}
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shadow-xs">
+            <Ban size={14} className="text-slate-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="bg-transparent border-none text-xs font-semibold text-slate-700 outline-none cursor-pointer">
+              <option value="ALL">All Statuses</option>
+              <option value="Paid">Paid Only</option>
+              <option value="Void">Voided Only</option>
+            </select>
+          </div>
 
           {/* Payroll Type Filter */}
           <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shadow-xs">
@@ -734,7 +1060,7 @@ export default function PayrollPage() {
               setProjectionEmployee(null);
               setShowTaxProjectionModal(true);
             }}
-            className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-50 transition shadow-xs active:scale-95">
+            className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-50 transition shadow-xs active:scale-95 cursor-pointer">
             <FileSpreadsheet size={15} className="text-emerald-600" />
             Tax Projection Sheet
           </button>
@@ -743,7 +1069,7 @@ export default function PayrollPage() {
             type="button"
             disabled={isSubmitting}
             onClick={handleCreateNew}
-            className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-xs active:scale-95">
+            className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 shadow-xs active:scale-95 cursor-pointer">
             <Plus size={16} />
             {isSubmitting ? 'Saving...' : 'Create Salary Slip'}
           </button>
@@ -762,21 +1088,43 @@ export default function PayrollPage() {
         />
       </motion.div>
 
-      {/* 💡 Audit Logs Table at the Bottom */}
+      {/* 💡 Audit Logs Table at the Bottom (3-Month Retention Window & Excel/CSV Downloads) */}
       <div className="flex flex-col gap-3 mt-6">
-        <div>
-          <h3 className="font-bold text-base text-slate-900">Audit Logs</h3>
-          <p className="text-xs text-slate-500">
-            History of salary slip updates, creations, and deletions
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+          <div>
+            <h3 className="font-bold text-base text-slate-900">Payroll Audit Logs</h3>
+            <p className="text-xs text-slate-500">
+              History of salary slip updates, creations, voids, and deletions
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <Clock size={12} /> Stored for 3 Months Only (Since {retentionCutoffLabel})
+            </span>
+            <button
+              type="button"
+              onClick={() => exportPayrollAuditLogs(combinedPayrollLogs, 'excel')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95">
+              <FileSpreadsheet size={14} className="text-emerald-600" />
+              <span>Download Excel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => exportPayrollAuditLogs(combinedPayrollLogs, 'csv')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95">
+              <Download size={14} className="text-indigo-600" />
+              <span>Download CSV</span>
+            </button>
+          </div>
         </div>
+
         <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
           <Table
             columns={logColumns}
-            dataSource={rawLogsList}
+            dataSource={combinedPayrollLogs}
             loading={isLogsLoading}
-            rowKey={(record) => record.id || Math.random()}
-            locale={{ emptyText: 'No audit logs recorded yet.' }}
+            rowKey={(record) => String(record.id || Math.random())}
+            locale={{ emptyText: 'No payroll audit logs recorded in the last 3 months.' }}
             pagination={{ pageSize: 5 }}
           />
         </motion.div>
@@ -848,6 +1196,21 @@ export default function PayrollPage() {
             setProjectionEmployee(null);
           }}
           initialEmployee={projectionEmployee}
+        />
+      )}
+
+      {showVoidModal && (
+        <VoidPayrollModal
+          isOpen={showVoidModal}
+          record={voidingRecord}
+          isLoading={isVoiding}
+          onClose={() => {
+            if (!isVoiding) {
+              setShowVoidModal(false);
+              setVoidingRecord(null);
+            }
+          }}
+          onConfirm={handleConfirmVoid}
         />
       )}
     </div>

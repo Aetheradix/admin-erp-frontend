@@ -6,6 +6,7 @@
 
 import { API_URL } from '@/config/env';
 import { broadcastSync } from './syncService';
+import { filterLogsByRetention } from '@/utils/auditExport';
 export interface InvitationRecord {
   id: string;
   email: string;
@@ -36,7 +37,14 @@ export interface AuditLogEntry {
   id: string;
   action: string;
   category:
-    'invitation' | 'profile' | 'security' | 'user_management' | 'admin' | 'invoice' | 'finance';
+    | 'invitation'
+    | 'profile'
+    | 'security'
+    | 'user_management'
+    | 'admin'
+    | 'invoice'
+    | 'finance'
+    | 'payroll';
   user: string;
   userEmail: string;
   target: string;
@@ -627,15 +635,20 @@ export function getAuditLogs(): AuditLogEntry[] {
       list = [...deedeeLogs, ...list];
       localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(list));
     }
-    return list;
+    // Enforce 3-month (90 days) retention policy: prune logs older than 3 months
+    const retainedList = filterLogsByRetention(list);
+    if (retainedList.length !== list.length) {
+      localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(retainedList));
+    }
+    return retainedList;
   } catch {
-    return SEEDED_AUDIT_LOGS;
+    return filterLogsByRetention(SEEDED_AUDIT_LOGS);
   }
 }
 
 /**
  * Record a new audit log entry
- * Dual-write: localStorage (instant local sync) + backend MySQL (persistent)
+ * Dual-write: localStorage (instant local sync with 3-month retention) + backend MySQL (persistent)
  */
 export function recordAuditLog(entry: {
   action: string;
@@ -666,8 +679,8 @@ export function recordAuditLog(entry: {
     changes: entry.changes,
   };
 
-  // Local storage (for instant tab-level sync)
-  const updatedLogs = [newLog, ...logs];
+  // Local storage: prepend and enforce 3-month retention window
+  const updatedLogs = filterLogsByRetention([newLog, ...logs]);
   localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(updatedLogs));
   notifyChange('audit_logs');
 
