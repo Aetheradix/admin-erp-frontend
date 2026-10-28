@@ -7,7 +7,7 @@ import {
   Calendar as CalendarIcon,
   Sun,
   ShieldCheck,
-  AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { AttendanceRecord, AttendanceRequest } from '@/types/models';
@@ -23,6 +23,7 @@ interface AttendanceCalendarProps {
 
 interface HoverTooltipData {
   request: AttendanceRequest;
+  dateStr: string;
   x: number;
   y: number;
   showBelow: boolean;
@@ -187,6 +188,7 @@ export function AttendanceCalendar({
         {Array.from({ length: numDays }).map((_, i) => {
           const day = i + 1;
           const cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+          const cellDateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isSelected =
             selectedDate &&
             cellDate.getDate() === selectedDate.getDate() &&
@@ -225,7 +227,11 @@ export function AttendanceCalendar({
               {/* Items in Cell */}
               <div className="flex flex-col gap-1.5 my-1">
                 {dayRequests.slice(0, 2).map((req) => {
-                  const statusInfo = getStatusStyles(req.status);
+                  // Resolve day-specific status for this specific calendar date
+                  const dayRecordSpecific = req.day_approvals?.find((d) => d.date === cellDateStr);
+                  const effectiveStatus = dayRecordSpecific ? dayRecordSpecific.status : req.status;
+                  const statusInfo = getStatusStyles(effectiveStatus);
+
                   return (
                     <div
                       key={req.id}
@@ -238,6 +244,7 @@ export function AttendanceCalendar({
                         const showBelow = rect.top < 240;
                         setHoveredTooltip({
                           request: req,
+                          dateStr: cellDateStr,
                           x: Math.min(
                             Math.max(rect.left + rect.width / 2, 160),
                             window.innerWidth - 160
@@ -299,65 +306,81 @@ export function AttendanceCalendar({
             zIndex: 9999,
           }}
           className="w-72 bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-border-subtle shadow-2xl pointer-events-none animate-in fade-in zoom-in-95 duration-150">
-          <div className="flex items-start justify-between gap-2 mb-2 pb-2 border-b border-border-subtle/50">
-            <div>
-              <h5 className="text-xs font-black text-foreground">
-                {hoveredTooltip.request.username || 'Attendance Request'}
-              </h5>
-              <p className="text-[10px] text-muted font-medium">
-                {hoveredTooltip.request.department || hoveredTooltip.request.email || 'Team Member'}
-              </p>
-            </div>
-            <span
-              className={cn(
-                'px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider',
-                getStatusStyles(hoveredTooltip.request.status).card
-              )}>
-              {hoveredTooltip.request.status}
-            </span>
-          </div>
+          {(() => {
+            const specificDay = hoveredTooltip.request.day_approvals?.find(
+              (d) => d.date === hoveredTooltip.dateStr
+            );
+            const effectiveStatus = specificDay ? specificDay.status : hoveredTooltip.request.status;
+            const remarkToShow = specificDay?.remark || hoveredTooltip.request.admin_comment;
 
-          <div className="flex flex-col gap-1.5 text-[11px]">
-            <div className="flex items-center gap-1.5 font-bold text-foreground">
-              <CalendarIcon size={12} className="text-primary shrink-0" />
-              <span>
-                {formatDate(hoveredTooltip.request.start_date)}
-                {hoveredTooltip.request.end_date &&
-                formatDate(hoveredTooltip.request.end_date) !==
-                  formatDate(hoveredTooltip.request.start_date)
-                  ? ` to ${formatDate(hoveredTooltip.request.end_date)}`
-                  : ''}
-              </span>
-            </div>
+            return (
+              <>
+                <div className="flex items-start justify-between gap-2 mb-2 pb-2 border-b border-border-subtle/50">
+                  <div>
+                    <h5 className="text-xs font-black text-foreground">
+                      {hoveredTooltip.request.username || 'Attendance Request'}
+                    </h5>
+                    <p className="text-[10px] text-muted font-medium">
+                      {hoveredTooltip.request.department ||
+                        hoveredTooltip.request.email ||
+                        'Team Member'}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      'px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider',
+                      getStatusStyles(effectiveStatus).card
+                    )}>
+                    {effectiveStatus}
+                  </span>
+                </div>
 
-            <div className="flex items-center gap-1.5 text-muted">
-              <span className="font-black uppercase text-[9px]">Type:</span>
-              <span className="font-bold text-foreground">{hoveredTooltip.request.type}</span>
-            </div>
+                <div className="flex flex-col gap-1.5 text-[11px]">
+                  <div className="flex items-center gap-1.5 font-bold text-foreground">
+                    <CalendarIcon size={12} className="text-primary shrink-0" />
+                    <span>
+                      Date: {formatDate(hoveredTooltip.dateStr)}
+                      {hoveredTooltip.request.end_date &&
+                        hoveredTooltip.request.end_date !== hoveredTooltip.request.start_date && (
+                          <span className="text-[10px] text-muted font-normal ml-1">
+                            (of {formatDate(hoveredTooltip.request.start_date)} -{' '}
+                            {formatDate(hoveredTooltip.request.end_date)})
+                          </span>
+                        )}
+                    </span>
+                  </div>
 
-            <div className="mt-1 p-2 rounded-xl bg-surface-subtle border border-border-subtle/50">
-              <span className="text-[9px] font-black uppercase tracking-wider text-muted block mb-0.5">
-                Reason
-              </span>
-              <p className="text-[10px] font-medium text-foreground italic line-clamp-3">
-                "{hoveredTooltip.request.reason || 'No description provided.'}"
-              </p>
-            </div>
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <span className="font-black uppercase text-[9px]">Type:</span>
+                    <span className="font-bold text-foreground">{hoveredTooltip.request.type}</span>
+                  </div>
 
-            {hoveredTooltip.request.approver_name && (
-              <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold mt-1">
-                <ShieldCheck size={12} />
-                <span>Approved by {hoveredTooltip.request.approver_name}</span>
-              </div>
-            )}
+                  <div className="mt-1 p-2 rounded-xl bg-surface-subtle border border-border-subtle/50">
+                    <span className="text-[9px] font-black uppercase tracking-wider text-muted block mb-0.5">
+                      Employee Reason
+                    </span>
+                    <p className="text-[10px] font-medium text-foreground italic line-clamp-3">
+                      "{hoveredTooltip.request.reason || 'No description provided.'}"
+                    </p>
+                  </div>
 
-            {hoveredTooltip.request.admin_comment && (
-              <div className="flex items-center gap-1 text-[10px] text-rose-700 font-bold mt-1">
-                <AlertCircle size={12} />
-                <span>Note: "{hoveredTooltip.request.admin_comment}"</span>
-              </div>
-            )}
-          </div>
+                  {remarkToShow && (
+                    <div className="flex items-start gap-1 p-2 rounded-xl bg-primary/5 border border-primary/10 text-[10px]">
+                      <MessageSquare size={11} className="text-primary shrink-0 mt-0.5" />
+                      <span className="text-foreground italic">"{remarkToShow}"</span>
+                    </div>
+                  )}
+
+                  {hoveredTooltip.request.approver_name && (
+                    <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold mt-1">
+                      <ShieldCheck size={12} />
+                      <span>Decision by {hoveredTooltip.request.approver_name}</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

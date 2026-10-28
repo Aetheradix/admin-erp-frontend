@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Button } from '@/components/ui/primitives/Button';
-import { Badge } from '@/components/ui/primitives/Badge';
 import { Textarea } from '@/components/ui/primitives/Textarea';
 import {
   Calendar,
@@ -12,9 +11,12 @@ import {
   AlertCircle,
   Home,
   ShieldCheck,
+  ListChecks,
 } from 'lucide-react';
 import type { AttendanceRequest } from '@/types/models';
 import { formatDate } from '@/utils/date';
+import { computeOverallStatus, generateDateRange } from '@/types/dayApproval';
+import { DayWiseApprovalTable } from '@/pages/staff/components/DayWiseApprovalTable';
 
 interface AttendanceDetailModalProps {
   request: AttendanceRequest | null;
@@ -40,8 +42,16 @@ export function AttendanceDetailModal({
   if (!request) return null;
 
   const isPending = (request.status || '').toLowerCase() === 'pending';
-  const isApproved = (request.status || '').toLowerCase() === 'approved';
-  const isRejected = (request.status || '').toLowerCase() === 'rejected';
+
+  // Compute if the request is multi-day
+  const dateRange = generateDateRange(request.start_date, request.end_date || request.start_date);
+  const isMultiDay = dateRange.length > 1;
+
+  // Compute overall status from day approvals if available
+  const computedStatus =
+    request.day_approvals && request.day_approvals.length > 0
+      ? computeOverallStatus(request.day_approvals)
+      : request.status;
 
   const handleConfirmApprove = async () => {
     if (!onApprove) return;
@@ -72,31 +82,40 @@ export function AttendanceDetailModal({
   };
 
   const getStatusBadge = () => {
-    if (isPending) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 border border-amber-500/20">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          Pending Approval
-        </span>
-      );
+    const status = computedStatus;
+    if (status === 'Approved' || status === 'Pending' || status === 'Rejected') {
+      if (status === 'Pending') {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 border border-amber-500/20">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            Pending Approval
+          </span>
+        );
+      }
+      if (status === 'Approved') {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+            <CheckCircle2 size={13} />
+            Approved
+          </span>
+        );
+      }
+      if (status === 'Rejected') {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/10 text-rose-600 border border-rose-500/20">
+            <XCircle size={13} />
+            Rejected
+          </span>
+        );
+      }
     }
-    if (isApproved) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-          <CheckCircle2 size={13} />
-          Approved
-        </span>
-      );
-    }
-    if (isRejected) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/10 text-rose-600 border border-rose-500/20">
-          <XCircle size={13} />
-          Rejected
-        </span>
-      );
-    }
-    return <Badge>{request.status}</Badge>;
+    // Partial statuses
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+        <ListChecks size={13} />
+        {status}
+      </span>
+    );
   };
 
   return (
@@ -126,7 +145,7 @@ export function AttendanceDetailModal({
         </div>
       }
       modal
-      className="w-full max-w-xl mx-4"
+      className="w-full max-w-2xl mx-4"
       contentClassName="p-8"
       headerClassName="px-8 pt-8 pb-4 border-b border-border-subtle/40"
       pt={{
@@ -182,6 +201,11 @@ export function AttendanceDetailModal({
                 ? ` to ${formatDate(request.end_date)}`
                 : ''}
             </span>
+            {isMultiDay && (
+              <span className="text-[10px] text-muted font-bold mt-0.5">
+                {dateRange.length} days total
+              </span>
+            )}
           </div>
         </div>
 
@@ -195,8 +219,16 @@ export function AttendanceDetailModal({
           </p>
         </div>
 
-        {/* Approver History or Feedback */}
-        {(request.approver_name || request.admin_comment) && (
+        {/* Day-Wise Approval Breakdown */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-black text-muted uppercase tracking-wider flex items-center gap-1.5">
+            <ListChecks size={13} className="text-primary" /> Day-Wise Approval Status
+          </span>
+          <DayWiseApprovalTable request={request} isAdmin={isAdmin} />
+        </div>
+
+        {/* Legacy single-request approver info (kept for backward compatibility) */}
+        {(request.approver_name || request.admin_comment) && !isMultiDay && (
           <div className="flex flex-col gap-2 p-4 rounded-2xl bg-primary/5 border border-primary/10">
             <span className="text-[10px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
               <ShieldCheck size={13} /> Approver Assessment
@@ -214,8 +246,8 @@ export function AttendanceDetailModal({
           </div>
         )}
 
-        {/* Rejection input prompt */}
-        {showRejectInput && (
+        {/* Rejection input prompt (for single-request whole-reject fallback) */}
+        {showRejectInput && !isMultiDay && (
           <div className="flex flex-col gap-3 p-4 rounded-2xl bg-rose-50/50 border border-rose-200 animate-in fade-in">
             <label className="text-xs font-black text-rose-800 flex items-center gap-1.5">
               <AlertCircle size={14} /> Reason for Rejection (Optional)
@@ -245,8 +277,8 @@ export function AttendanceDetailModal({
           </div>
         )}
 
-        {/* Admin Quick Action Footer */}
-        {isAdmin && isPending && !showRejectInput && (
+        {/* Admin Quick Action Footer — only for single-day requests (multi-day uses DayWiseApprovalTable) */}
+        {isAdmin && isPending && !isMultiDay && !showRejectInput && (
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle">
             <button
               type="button"
@@ -262,6 +294,14 @@ export function AttendanceDetailModal({
               className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 transition-all cursor-pointer">
               <CheckCircle2 size={14} /> {actionLoading ? 'Approving...' : 'Approve Request'}
             </button>
+          </div>
+        )}
+
+        {/* Note for multi-day: tell admin to use the table */}
+        {isAdmin && isPending && isMultiDay && (
+          <div className="p-3.5 rounded-2xl bg-primary/5 border border-primary/10 text-xs font-medium text-primary flex items-center gap-2">
+            <ListChecks size={14} className="shrink-0" />
+            Use the day-wise table above to approve or reject each day individually.
           </div>
         )}
       </div>
