@@ -18,7 +18,6 @@ import {
   RefreshCw,
   X,
   Check,
-  Lock,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { showToast } from '@/components/ui/composed/Toast.utils';
@@ -224,32 +223,42 @@ export default function EmployeeProfileCompletion({
 
     setIsSubmitting(true);
     try {
-      submitProfileForReview(user.id, user.email, user.username || user.email);
-      const updated = getEmployeeProfile(user.id);
-      setProfile(updated);
-
-      if (incompleteSections.length > 0) {
+      if (profile.status === 'id_assigned' || profile.status === 'approved') {
+        saveEmployeeProfile(profile);
         showToast({
           severity: 'success',
-          summary: 'Profile Submitted!',
-          detail:
-            'Your profile has been submitted for review. Remaining documents can be uploaded anytime.',
-          life: 4500,
+          summary: 'Profile Updated!',
+          detail: 'Your profile changes have been saved successfully.',
+          life: 3500,
         });
       } else {
-        showToast({
-          severity: 'success',
-          summary: 'Profile Submitted!',
-          detail:
-            'Your complete profile has been submitted for review. The HR team will review it shortly.',
-          life: 4000,
-        });
+        submitProfileForReview(user.id, user.email, user.username || user.email);
+        const updated = getEmployeeProfile(user.id);
+        setProfile(updated);
+
+        if (incompleteSections.length > 0) {
+          showToast({
+            severity: 'success',
+            summary: 'Profile Submitted!',
+            detail:
+              'Your profile has been submitted for review. Remaining documents can be uploaded anytime.',
+            life: 4500,
+          });
+        } else {
+          showToast({
+            severity: 'success',
+            summary: 'Profile Submitted!',
+            detail:
+              'Your complete profile has been submitted for review. The HR team will review it shortly.',
+            life: 4000,
+          });
+        }
       }
     } catch {
       showToast({
         severity: 'error',
-        summary: 'Submission Failed',
-        detail: 'Could not submit profile. Please try again.',
+        summary: 'Update Failed',
+        detail: 'Could not save profile. Please try again.',
         life: 3000,
       });
     } finally {
@@ -286,15 +295,8 @@ export default function EmployeeProfileCompletion({
 
   const statusCfg = STATUS_CONFIG[profile.status];
   const StatusIcon = statusCfg.icon;
-  const canSubmit =
-    profile.status !== 'submitted' &&
-    profile.status !== 'approved' &&
-    profile.status !== 'id_assigned';
-
-  const isReadOnly =
-    profile.status === 'submitted' ||
-    profile.status === 'approved' ||
-    profile.status === 'id_assigned';
+  // Allow all users, employees, and super admins to fill and edit profile details
+  const isReadOnly = false;
 
   const containerClass = fullPage
     ? 'min-h-screen bg-background'
@@ -662,33 +664,32 @@ export default function EmployeeProfileCompletion({
               </div>
             )}
 
-            {canSubmit && !isReadOnly && (
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-white shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
-                {isSubmitting ? (
-                  <>
-                    <i className="pi pi-spin pi-spinner" /> Submitting...
-                  </>
-                ) : incompleteSections.length > 0 ? (
-                  <>
-                    <Send size={15} /> Submit for Review (Docs Later)
-                  </>
-                ) : (
-                  <>
-                    <Send size={15} /> Submit for Review
-                  </>
-                )}
-              </button>
-            )}
-
-            {isReadOnly && (
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-subtle text-xs text-muted font-bold">
-                <Lock size={14} />
-                Profile {profile.status === 'submitted' ? 'Under Review' : 'Locked'}
-              </div>
-            )}
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-white shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+              {isSubmitting ? (
+                <>
+                  <i className="pi pi-spin pi-spinner" /> Saving...
+                </>
+              ) : profile.status === 'id_assigned' || profile.status === 'approved' ? (
+                <>
+                  <CheckCircle2 size={15} /> Save Changes
+                </>
+              ) : profile.status === 'submitted' ? (
+                <>
+                  <Send size={15} /> Update Submission
+                </>
+              ) : incompleteSections.length > 0 ? (
+                <>
+                  <Send size={15} /> Submit for Review (Docs Later)
+                </>
+              ) : (
+                <>
+                  <Send size={15} /> Submit for Review
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
