@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -19,6 +19,12 @@ import {
   syncRemotePermissions,
 } from '@/utils/pagePermissions';
 import { usePermission } from '@/hooks/usePermission';
+import {
+  getEmployeeProfile,
+  getFormConfiguration,
+  calculateCompletionPercentage,
+  type ProfileCompletionData,
+} from '@/services/employeeProfileService';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -177,10 +183,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return null;
   };
 
+  // Profile completion tracking to dynamically hide "Complete Profile" when 100% complete
+  const [profileRefresh, setProfileRefresh] = useState(0);
+  useEffect(() => {
+    const handleUpdate = () => setProfileRefresh((p) => p + 1);
+    window.addEventListener('aether_employee_profiles_updated', handleUpdate);
+    window.addEventListener('auth_user_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('aether_employee_profiles_updated', handleUpdate);
+      window.removeEventListener('auth_user_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const empProfile = useMemo<ProfileCompletionData | null>(() => {
+    if (!user) return null;
+    const byEmail = user.email ? getEmployeeProfile(user.email) : null;
+    return byEmail ?? (user.id ? getEmployeeProfile(user.id) : null);
+  }, [user?.id, user?.email, profileRefresh, configVersion]);
+
+  const formConfig = useMemo(() => getFormConfiguration(), [configVersion]);
+
+  const isProfileComplete = useMemo(() => {
+    if (!empProfile) return false;
+    return calculateCompletionPercentage(empProfile, formConfig) >= 100;
+  }, [empProfile, formConfig]);
+
   const isSuperAdminUser = isSuperAdmin(user) || isRbacSuperadmin;
 
   // 1. Initial filter by base roles, global sections, and dynamic role permissions
   const filteredNavItems = navItems.filter((item) => {
+    // Automatically hide Complete Profile once profile is 100% complete
+    if (item.path === '/profile-completion' && isProfileComplete) {
+      return false;
+    }
+
     if (isSuperAdminUser) return true;
 
     // 1. Check static user role access

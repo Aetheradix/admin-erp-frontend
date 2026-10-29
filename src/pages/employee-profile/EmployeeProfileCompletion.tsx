@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -104,6 +105,7 @@ export default function EmployeeProfileCompletion({
   fullPage = false,
 }: EmployeeProfileCompletionProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>('personal');
   const [profile, setProfile] = useState<ProfileCompletionData | null>(null);
   const [formConfig, setFormConfig] = useState<FormSectionConfig[]>([]);
@@ -181,12 +183,25 @@ export default function EmployeeProfileCompletion({
         const updated = getEmployeeProfile(user.id);
         setProfile(updated);
 
-        showToast({
-          severity: 'success',
-          summary: 'Saved',
-          detail: 'Section saved! Moving to next step.',
-          life: 2500,
-        });
+        // Check if this save completes the profile to 100%
+        const updatedPct = calculateCompletionPercentage(updated, formConfig);
+        window.dispatchEvent(new CustomEvent('aether_employee_profiles_updated'));
+
+        if (updatedPct >= 100) {
+          showToast({
+            severity: 'success',
+            summary: 'Section Saved',
+            detail: 'Section saved! Your profile is 100% complete.',
+            life: 2500,
+          });
+        } else {
+          showToast({
+            severity: 'success',
+            summary: 'Saved',
+            detail: 'Section saved! Moving to next step.',
+            life: 2500,
+          });
+        }
 
         // Automatically advance to the next section
         const currentIndex = activeSections.findIndex((s) => s.id === sectionId);
@@ -225,6 +240,23 @@ export default function EmployeeProfileCompletion({
     try {
       if (profile.status === 'id_assigned' || profile.status === 'approved') {
         saveEmployeeProfile(profile);
+        window.dispatchEvent(new CustomEvent('aether_employee_profiles_updated'));
+        const updatedPct = calculateCompletionPercentage(profile, formConfig);
+        
+        if (updatedPct >= 100) {
+          showToast({
+            severity: 'success',
+            summary: 'Profile 100% Complete!',
+            detail: 'Your profile updates have been saved. Redirecting to Profile...',
+            life: 3500,
+          });
+          setTimeout(() => {
+            if (onClose) onClose();
+            if (fullPage) navigate('/profile');
+          }, 1500);
+          return;
+        }
+
         showToast({
           severity: 'success',
           summary: 'Profile Updated!',
@@ -235,8 +267,22 @@ export default function EmployeeProfileCompletion({
         submitProfileForReview(user.id, user.email, user.username || user.email);
         const updated = getEmployeeProfile(user.id);
         setProfile(updated);
+        const updatedPct = calculateCompletionPercentage(updated, formConfig);
+        window.dispatchEvent(new CustomEvent('aether_employee_profiles_updated'));
 
-        if (incompleteSections.length > 0) {
+        if (updatedPct >= 100) {
+          showToast({
+            severity: 'success',
+            summary: 'Profile 100% Complete!',
+            detail: 'Your complete profile has been submitted. Redirecting to Profile...',
+            life: 3500,
+          });
+          setTimeout(() => {
+            if (onClose) onClose();
+            if (fullPage) navigate('/profile');
+          }, 1500);
+          return;
+        } else if (incompleteSections.length > 0) {
           showToast({
             severity: 'success',
             summary: 'Profile Submitted!',

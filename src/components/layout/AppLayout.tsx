@@ -73,11 +73,7 @@ export default function AppLayout() {
     return calculateCompletionPercentage(empProfile, formConfig);
   }, [empProfile, formConfig]);
 
-  const isProfileIncomplete =
-    empProfile === null ||
-    empProfile.status === 'incomplete' ||
-    empProfile.status === 'in_progress' ||
-    empProfile.status === 'changes_required';
+  const isProfileIncomplete = profilePct < 100;
 
   // ONLY show welcome popup for newly invited users coming from onboarding flow!
   useEffect(() => {

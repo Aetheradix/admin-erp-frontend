@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Shield, Upload, Save, FileText, X, Check, AlertTriangle } from 'lucide-react';
 import type { IdentityDocuments, ProfileDocument } from '@/services/employeeProfileService';
-import { addDocument } from '@/services/employeeProfileService';
+import { addDocument, PASSPORT_MAX_LENGTH, validatePassportNumber } from '@/services/employeeProfileService';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 
 interface Props {
@@ -190,10 +190,43 @@ export function IdentityDocumentsSection({
     aadhaarNumber: '',
     ...data,
   });
+  const [passportError, setPassportError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (data) setForm({ ...data });
+    if (data) {
+      setForm({ ...data });
+      if (data.passportNumber) {
+        const res = validatePassportNumber(data.passportNumber);
+        setPassportError(res.isValid ? null : res.error || null);
+      }
+    }
   }, [data]);
+
+  const handlePassportChange = (val: string) => {
+    const raw = val.trimStart().toUpperCase();
+    if (raw.length > PASSPORT_MAX_LENGTH) {
+      setPassportError(`Passport number cannot exceed ${PASSPORT_MAX_LENGTH} characters.`);
+      set('passportNumber', raw.slice(0, PASSPORT_MAX_LENGTH));
+      return;
+    }
+    set('passportNumber', raw);
+    const res = validatePassportNumber(raw);
+    setPassportError(res.isValid ? null : res.error || null);
+  };
+
+  const handlePassportPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text');
+    const clean = pasted.trim().toUpperCase();
+    if (clean.length > PASSPORT_MAX_LENGTH) {
+      setPassportError(`Passport number cannot exceed ${PASSPORT_MAX_LENGTH} characters.`);
+      set('passportNumber', clean.slice(0, PASSPORT_MAX_LENGTH));
+    } else {
+      set('passportNumber', clean);
+      const res = validatePassportNumber(clean);
+      setPassportError(res.isValid ? null : res.error || null);
+    }
+  };
 
   const set = (key: keyof IdentityDocuments, val: string) =>
     setForm((prev) => ({ ...prev, [key]: val }));
@@ -207,7 +240,23 @@ export function IdentityDocumentsSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(form);
+    if (form.passportNumber && form.passportNumber.trim()) {
+      const res = validatePassportNumber(form.passportNumber);
+      if (!res.isValid) {
+        setPassportError(res.error || 'Invalid passport number');
+        showToast({
+          severity: 'error',
+          summary: 'Invalid Passport Number',
+          detail: res.error || 'Please enter a valid passport number before saving.',
+          life: 4000,
+        });
+        return;
+      }
+    }
+    onSave({
+      ...form,
+      passportNumber: form.passportNumber ? form.passportNumber.trim().toUpperCase() : '',
+    });
   };
 
   return (
@@ -294,14 +343,28 @@ export function IdentityDocumentsSection({
           <span className="text-[10px] text-muted font-normal">(Optional)</span>
         </h4>
         <div>
-          <label className={labelClass}>Passport Number</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className={labelClass}>Passport Number</label>
+            <span className="text-[10px] text-muted font-semibold">
+              {(form.passportNumber || '').length} / {PASSPORT_MAX_LENGTH} max
+            </span>
+          </div>
           <input
-            className={inputClass(readOnly)}
+            className={`${inputClass(readOnly)} ${
+              passportError ? 'border-error focus:ring-error/20' : ''
+            }`}
             value={form.passportNumber || ''}
-            onChange={(e) => set('passportNumber', e.target.value.toUpperCase())}
+            onChange={(e) => handlePassportChange(e.target.value)}
+            onPaste={handlePassportPaste}
             placeholder="e.g. A1234567"
+            maxLength={PASSPORT_MAX_LENGTH}
             disabled={readOnly}
           />
+          {passportError && (
+            <p className="text-xs text-error mt-1.5 font-semibold flex items-center gap-1">
+              <AlertTriangle size={12} /> {passportError}
+            </p>
+          )}
         </div>
         <DocumentUploader
           docType="passport"

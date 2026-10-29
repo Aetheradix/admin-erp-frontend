@@ -1228,6 +1228,122 @@ export function saveFormConfiguration(
   });
 }
 
+// ─── Passport Validation & Character Limit ─────────────────────────────────────
+
+/**
+ * Passport Number Validation Rules:
+ * - Indian Passport Standard: Exactly 8 characters (1 uppercase letter followed by 7 digits, e.g. A1234567, Z8765432).
+ * - Maximum character limit: 8 characters.
+ * - Leading and trailing whitespace is trimmed, and comparison is case-insensitive.
+ */
+export const PASSPORT_MAX_LENGTH = 8;
+export const PASSPORT_REGEX = /^[A-Z][0-9]{7}$/;
+
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+export function validatePassportNumber(value?: string | null): ValidationResult {
+  if (!value) return { isValid: true };
+  const trimmed = value.trim();
+  if (trimmed === '') return { isValid: true }; // Optional field
+
+  if (trimmed.length > PASSPORT_MAX_LENGTH) {
+    return {
+      isValid: false,
+      error: `Passport number cannot exceed ${PASSPORT_MAX_LENGTH} characters.`,
+    };
+  }
+
+  const upper = trimmed.toUpperCase();
+  if (!PASSPORT_REGEX.test(upper)) {
+    return {
+      isValid: false,
+      error: 'Invalid passport format. Must be 1 letter followed by 7 digits (e.g., A1234567).',
+    };
+  }
+
+  return { isValid: true };
+}
+
+// ─── Section Completion Validation ────────────────────────────────────────────
+
+/**
+ * Validates whether an employee profile section is genuinely complete according to
+ * required fields and validation rules.
+ */
+export function isSectionValidAndComplete(
+  sectionId: string,
+  profile: ProfileCompletionData | null
+): boolean {
+  if (!profile) return false;
+
+  // Profile picture can be completed either via completedSections or by having profilePictureUrl
+  if (sectionId === 'profile_picture') {
+    return Boolean(profile.profilePictureUrl || profile.completedSections?.profile_picture);
+  }
+
+  // Section must be marked as completed in completedSections
+  if (!profile.completedSections || !profile.completedSections[sectionId]) {
+    return false;
+  }
+
+  switch (sectionId) {
+    case 'personal': {
+      const p = profile.personal;
+      if (!p) return false;
+      return Boolean(
+        p.fullName?.trim() &&
+        p.email?.trim() &&
+        p.contactNumber?.trim() &&
+        p.currentAddress?.trim()
+      );
+    }
+    case 'bank': {
+      const b = profile.bank;
+      if (!b) return false;
+      return Boolean(
+        b.accountHolderName?.trim() &&
+        b.bankName?.trim() &&
+        b.accountNumber?.trim() &&
+        b.ifscCode?.trim()
+      );
+    }
+    case 'identity': {
+      const id = profile.identity;
+      if (!id) return false;
+      const hasPan = Boolean(id.panNumber && id.panNumber.trim().length === 10);
+      const hasAadhaar = Boolean(id.aadhaarNumber && id.aadhaarNumber.trim().length === 12);
+      if (!hasPan || !hasAadhaar) return false;
+
+      // Passport is optional, but if entered it must strictly satisfy the 8-character limit and format
+      if (id.passportNumber && id.passportNumber.trim()) {
+        const pRes = validatePassportNumber(id.passportNumber);
+        if (!pRes.isValid) return false;
+      }
+      return true;
+    }
+    case 'employment': {
+      if (profile.employment && profile.employment.length > 0) {
+        return profile.employment.every((e) => Boolean(e.employer?.trim() && e.designation?.trim()));
+      }
+      return true;
+    }
+    case 'education': {
+      if (profile.education && profile.education.length > 0) {
+        return profile.education.every((e) => Boolean(e.institution?.trim() && e.degree?.trim()));
+      }
+      return true;
+    }
+    case 'certifications': {
+      return true;
+    }
+    default:
+      return Boolean(profile.completedSections[sectionId]);
+  }
+}
+
 // ─── Completion Percentage ────────────────────────────────────────────────────
 
 export function calculateCompletionPercentage(
@@ -1239,7 +1355,7 @@ export function calculateCompletionPercentage(
   const activeSections = formConfig.filter((s) => !s.hidden);
   if (activeSections.length === 0) return 0;
 
-  const completed = activeSections.filter((s) => profile.completedSections[s.id]).length;
+  const completed = activeSections.filter((s) => isSectionValidAndComplete(s.id, profile)).length;
 
   return Math.round((completed / activeSections.length) * 100);
 }
@@ -1249,7 +1365,7 @@ export function getIncompleteRequiredSections(
   formConfig: FormSectionConfig[]
 ): FormSectionConfig[] {
   if (!profile) return formConfig.filter((s) => !s.hidden);
-  return formConfig.filter((s) => !s.hidden && !profile.completedSections[s.id]);
+  return formConfig.filter((s) => !s.hidden && !isSectionValidAndComplete(s.id, profile));
 }
 
 // ─── Document Helpers ─────────────────────────────────────────────────────────
