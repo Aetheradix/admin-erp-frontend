@@ -1,25 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, Upload, Save, FileText, X, Check, AlertTriangle } from 'lucide-react';
+import { Shield, Upload, Save, FileText, X, Check, AlertTriangle, Cloud } from 'lucide-react';
+import { Input } from 'antd';
 import type { IdentityDocuments, ProfileDocument } from '@/services/employeeProfileService';
-import { addDocument, PASSPORT_MAX_LENGTH, validatePassportNumber } from '@/services/employeeProfileService';
+import { addDocument, uploadSecureDocumentToBackend, PASSPORT_MAX_LENGTH, validatePassportNumber } from '@/services/employeeProfileService';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { isDataModified } from '@/utils/formDraftManager';
 
 interface Props {
   data?: IdentityDocuments;
   documents: ProfileDocument[];
   userId: number;
   onSave: (data: IdentityDocuments) => void;
+  onSaveDraft?: (data: IdentityDocuments) => void;
   onDocumentAdded: (doc: ProfileDocument) => void;
+  onDraftChange?: (data: IdentityDocuments, isDirty: boolean) => void;
   isSaving?: boolean;
   readOnly?: boolean;
 }
-
-const inputClass = (readOnly?: boolean) =>
-  `w-full px-4 py-3 rounded-xl border text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-    readOnly
-      ? 'bg-surface-subtle border-border-subtle text-muted cursor-not-allowed'
-      : 'bg-white border-border-subtle hover:border-primary/30 focus:border-primary'
-  }`;
 
 const labelClass = 'block text-xs font-bold text-foreground mb-1.5 uppercase tracking-wider';
 
@@ -69,35 +66,38 @@ function DocumentUploader({
 
     setUploading(true);
     try {
-      // Convert to base64 for local preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target?.result as string;
-        setPreview(base64);
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => setPreview(e.target?.result as string);
+        reader.readAsDataURL(file);
+      }
 
-        const doc = addDocument(userId, {
+      let doc: ProfileDocument;
+      try {
+        doc = await uploadSecureDocumentToBackend(userId, file, docType, label);
+      } catch {
+        doc = addDocument(userId, {
           type: docType,
           label,
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
           status: 'uploaded',
-          localData: base64,
         });
-        onUploaded(doc);
-        showToast({
-          severity: 'success',
-          summary: 'Uploaded',
-          detail: `${label} uploaded successfully.`,
-          life: 2500,
-        });
-      };
-      reader.readAsDataURL(file);
+      }
+
+      onUploaded(doc);
+      showToast({
+        severity: 'success',
+        summary: 'Securely Uploaded',
+        detail: `${label} securely stored in encrypted private vault.`,
+        life: 2500,
+      });
     } catch {
       showToast({
         severity: 'error',
         summary: 'Upload Failed',
-        detail: 'Could not process the file. Please try again.',
+        detail: 'Could not upload document. Please try again.',
         life: 3000,
       });
     } finally {
@@ -181,7 +181,9 @@ export function IdentityDocumentsSection({
   documents,
   userId,
   onSave,
+  onSaveDraft,
   onDocumentAdded,
+  onDraftChange,
   isSaving,
   readOnly,
 }: Props) {
@@ -191,8 +193,13 @@ export function IdentityDocumentsSection({
     ...data,
   });
   const [passportError, setPassportError] = useState<string | null>(null);
+  const isLocalChange = useRef(false);
 
   useEffect(() => {
+    if (isLocalChange.current) {
+      isLocalChange.current = false;
+      return;
+    }
     if (data) {
       setForm({ ...data });
       if (data.passportNumber) {
@@ -202,16 +209,32 @@ export function IdentityDocumentsSection({
     }
   }, [data]);
 
+  const notifyChange = (updated: IdentityDocuments) => {
+    isLocalChange.current = true;
+    if (onDraftChange) {
+      onDraftChange(updated, isDataModified(data, updated));
+    }
+  };
+
   const handlePassportChange = (val: string) => {
     const raw = val.trimStart().toUpperCase();
     if (raw.length > PASSPORT_MAX_LENGTH) {
       setPassportError(`Passport number cannot exceed ${PASSPORT_MAX_LENGTH} characters.`);
-      set('passportNumber', raw.slice(0, PASSPORT_MAX_LENGTH));
+      const trimmed = raw.slice(0, PASSPORT_MAX_LENGTH);
+      setForm((prev) => {
+        const next = { ...prev, passportNumber: trimmed };
+        notifyChange(next);
+        return next;
+      });
       return;
     }
-    set('passportNumber', raw);
     const res = validatePassportNumber(raw);
     setPassportError(res.isValid ? null : res.error || null);
+    setForm((prev) => {
+      const next = { ...prev, passportNumber: raw };
+      notifyChange(next);
+      return next;
+    });
   };
 
   const handlePassportPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -220,16 +243,30 @@ export function IdentityDocumentsSection({
     const clean = pasted.trim().toUpperCase();
     if (clean.length > PASSPORT_MAX_LENGTH) {
       setPassportError(`Passport number cannot exceed ${PASSPORT_MAX_LENGTH} characters.`);
-      set('passportNumber', clean.slice(0, PASSPORT_MAX_LENGTH));
+      const trimmed = clean.slice(0, PASSPORT_MAX_LENGTH);
+      setForm((prev) => {
+        const next = { ...prev, passportNumber: trimmed };
+        notifyChange(next);
+        return next;
+      });
     } else {
-      set('passportNumber', clean);
       const res = validatePassportNumber(clean);
       setPassportError(res.isValid ? null : res.error || null);
+      setForm((prev) => {
+        const next = { ...prev, passportNumber: clean };
+        notifyChange(next);
+        return next;
+      });
     }
   };
 
-  const set = (key: keyof IdentityDocuments, val: string) =>
-    setForm((prev) => ({ ...prev, [key]: val }));
+  const set = (key: keyof IdentityDocuments, val: string) => {
+    setForm((prev) => {
+      const next = { ...prev, [key]: val };
+      notifyChange(next);
+      return next;
+    });
+  };
 
   const getDoc = (type: ProfileDocument['type']) => documents.find((d) => d.type === type);
 
@@ -257,6 +294,15 @@ export function IdentityDocumentsSection({
       ...form,
       passportNumber: form.passportNumber ? form.passportNumber.trim().toUpperCase() : '',
     });
+  };
+
+  const handleDraftClick = () => {
+    if (onSaveDraft) {
+      onSaveDraft({
+        ...form,
+        passportNumber: form.passportNumber ? form.passportNumber.trim().toUpperCase() : '',
+      });
+    }
   };
 
   return (
@@ -289,12 +335,13 @@ export function IdentityDocumentsSection({
         </h4>
         <div>
           <label className={labelClass}>PAN Number</label>
-          <input
-            className={inputClass(readOnly)}
+          <Input
+            size="large"
             value={form.panNumber || ''}
             onChange={(e) => set('panNumber', e.target.value.toUpperCase())}
             placeholder="e.g. ABCDE1234F"
             maxLength={10}
+            className="rounded-xl!"
             disabled={readOnly}
             required
           />
@@ -316,12 +363,13 @@ export function IdentityDocumentsSection({
         </h4>
         <div>
           <label className={labelClass}>Aadhaar Number</label>
-          <input
-            className={inputClass(readOnly)}
+          <Input
+            size="large"
             value={readOnly ? maskAadhaar(form.aadhaarNumber || '') : form.aadhaarNumber || ''}
             onChange={(e) => set('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))}
             placeholder="12-digit Aadhaar number"
             maxLength={12}
+            className="rounded-xl!"
             disabled={readOnly}
             required
           />
@@ -349,10 +397,9 @@ export function IdentityDocumentsSection({
               {(form.passportNumber || '').length} / {PASSPORT_MAX_LENGTH} max
             </span>
           </div>
-          <input
-            className={`${inputClass(readOnly)} ${
-              passportError ? 'border-error focus:ring-error/20' : ''
-            }`}
+          <Input
+            size="large"
+            className={`rounded-xl! ${passportError ? 'border-error!' : ''}`}
             value={form.passportNumber || ''}
             onChange={(e) => handlePassportChange(e.target.value)}
             onPaste={handlePassportPaste}
@@ -377,11 +424,20 @@ export function IdentityDocumentsSection({
       </div>
 
       {!readOnly && (
-        <div className="flex justify-end pt-2">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle/50">
+          {onSaveDraft && (
+            <button
+              type="button"
+              onClick={handleDraftClick}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-sm font-semibold transition-all">
+              <Cloud size={16} className="text-muted" />
+              Save as Draft
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

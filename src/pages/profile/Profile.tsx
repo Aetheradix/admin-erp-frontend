@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { useProfile } from './hooks/useProfile';
+import { usePersistedTab } from '@/hooks/usePersistedTab';
 import { AdminElevationRequest } from '../staff/components/AdminElevationRequest';
 import { ProfileHeader, type TabType } from './components/ProfileHeader';
 import { ProfileInfoTab } from './components/ProfileInfoTab';
@@ -39,7 +40,14 @@ const Profile = () => {
     pollingInterval: 10000,
   });
 
-  const [activeTab, setActiveTab] = useState<TabType>('profile');
+  // Preserve current tab across browser refresh and direct URL links
+  const [activeTab, setActiveTab] = usePersistedTab<TabType>({
+    paramName: 'tab',
+    defaultTab: 'profile',
+    storageKey: 'aether_profile_active_tab',
+    validTabs: ['overview', 'profile', 'organization'],
+  });
+
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [profileRefresh, setProfileRefresh] = useState(0);
 

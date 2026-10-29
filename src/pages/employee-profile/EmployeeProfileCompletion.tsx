@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   User,
   CreditCard,
@@ -16,11 +16,11 @@ import {
   AlertCircle,
   Clock,
   FileText,
-  RefreshCw,
   X,
   Check,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePersistedTab } from '@/hooks/usePersistedTab';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import {
   getEmployeeProfile,
@@ -30,11 +30,20 @@ import {
   getFormConfiguration,
   calculateCompletionPercentage,
   getIncompleteRequiredSections,
+  isSectionValidAndComplete,
   syncProfilesFromBackend,
   type ProfileCompletionData,
   type ProfileStatus,
   type FormSectionConfig,
 } from '@/services/employeeProfileService';
+import {
+  saveFormDraft,
+  getFormDraft,
+  clearFormDraft,
+} from '@/utils/formDraftManager';
+import { SmartAlertBanner } from '@/components/common/SmartAlertBanner';
+import { AutosaveStatusBadge, type AutosaveStatus } from '@/components/common/AutosaveStatusBadge';
+
 import { PersonalDetailsSection } from './components/PersonalDetailsSection';
 import { BankDetailsSection } from './components/BankDetailsSection';
 import { IdentityDocumentsSection } from './components/IdentityDocumentsSection';
@@ -106,11 +115,28 @@ export default function EmployeeProfileCompletion({
 }: EmployeeProfileCompletionProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<string>('personal');
+
+  // 1. Tab Persistence across refresh and direct links
+  const [activeSection, setActiveSection] = usePersistedTab<string>({
+    paramName: 'section',
+    defaultTab: 'personal',
+    storageKey: 'aether_profile_completion_active_section',
+  });
+
   const [profile, setProfile] = useState<ProfileCompletionData | null>(null);
   const [formConfig, setFormConfig] = useState<FormSectionConfig[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 2. Draft & Autosave State
+  const [isCurrentSectionDirty, setIsCurrentSectionDirty] = useState(false);
+  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
+  const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>('idle');
+  const [lastSavedTimestamp, setLastSavedTimestamp] = useState<string | null>(null);
+  const [sectionRefreshKey, setSectionRefreshKey] = useState(0);
+
+  // Autosave debounce timer ref
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load profile and form configuration
   useEffect(() => {
@@ -124,7 +150,6 @@ export default function EmployeeProfileCompletion({
     if (savedProfile) {
       setProfile(savedProfile);
     } else {
-      // Initialize a new profile
       const newProfile: ProfileCompletionData = {
         userId: user.id,
         userEmail: user.email,
@@ -144,13 +169,28 @@ export default function EmployeeProfileCompletion({
       saveEmployeeProfile(newProfile);
     }
 
-    // Sync from backend
     syncProfilesFromBackend().then(() => {
       const fresh =
         (user.email ? getEmployeeProfile(user.email) : null) ?? getEmployeeProfile(user.id);
       if (fresh) setProfile(fresh);
     });
   }, [user]);
+
+  // Check for restored draft when active section changes
+  useEffect(() => {
+    if (!user) return;
+    const draft = getFormDraft(user.id, activeSection);
+    if (draft && draft.data) {
+      setHasRestoredDraft(true);
+      setIsCurrentSectionDirty(true);
+      setAutosaveStatus('restored');
+      setLastSavedTimestamp(new Date(draft.timestamp).toISOString());
+    } else {
+      setHasRestoredDraft(false);
+      setIsCurrentSectionDirty(false);
+      setAutosaveStatus('idle');
+    }
+  }, [user, activeSection, sectionRefreshKey]);
 
   const completionPercentage = useMemo(
     () => calculateCompletionPercentage(profile, formConfig),
@@ -163,8 +203,108 @@ export default function EmployeeProfileCompletion({
   );
 
   const activeSections = useMemo(() => formConfig.filter((s) => !s.hidden), [formConfig]);
-
   const activeIdx = activeSections.findIndex((s) => s.id === activeSection);
+
+  // Resolves effective section data: draft takes precedence over saved profile
+  const getEffectiveSectionData = useCallback(
+    (sectionId: string) => {
+      if (!user) return null;
+      const draft = getFormDraft(user.id, sectionId);
+      if (draft && draft.data) {
+        return draft.data;
+      }
+      return profile ? (profile as any)[sectionId] : null;
+    },
+    [user, profile, sectionRefreshKey]
+  );
+
+  // Debounced draft autosave and parent state synchronization (prevents typing lag)
+  const handleDraftChange = useCallback(
+    (sectionId: string, _data: any, isDirty: boolean) => {
+      if (!user) return;
+      setIsCurrentSectionDirty(isDirty);
+
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      if (isDirty) {
+        setAutosaveStatus('saving');
+      }
+
+      // Debounce updating parent profile & saving draft by 250ms so typing remains 100% fluid (60fps)
+      debounceTimerRef.current = setTimeout(() => {
+        setProfile((prev) => {
+          if (!prev) return prev;
+          const candidate = {
+            ...prev,
+            [sectionId]: _data,
+          };
+          const isValid = isSectionValidAndComplete(sectionId, candidate);
+          return {
+            ...candidate,
+            completedSections: {
+              ...prev.completedSections,
+              [sectionId]: isValid,
+            },
+          };
+        });
+
+        if (isDirty) {
+          saveFormDraft(user.id, sectionId, _data);
+          setAutosaveStatus('saved');
+          setLastSavedTimestamp(new Date().toISOString());
+        } else {
+          setAutosaveStatus('idle');
+        }
+      }, 250);
+    },
+    [user]
+  );
+
+  // Explicit Save as Draft button action (no popups)
+  const handleSaveDraft = useCallback(
+    (data: any) => {
+      if (!user) return;
+      saveFormDraft(user.id, activeSection, data);
+      setIsCurrentSectionDirty(false);
+      setHasRestoredDraft(false);
+      setAutosaveStatus('saved');
+      setLastSavedTimestamp(new Date().toISOString());
+      showToast({
+        severity: 'success',
+        summary: 'Draft Saved',
+        detail: 'Your entries have been saved as draft. You can continue anytime.',
+        life: 2500,
+      });
+    },
+    [user, activeSection]
+  );
+
+  // Discard draft action
+  const handleDiscardDraft = useCallback(() => {
+    if (!user) return;
+    clearFormDraft(user.id, activeSection);
+    setHasRestoredDraft(false);
+    setIsCurrentSectionDirty(false);
+    setAutosaveStatus('idle');
+    setSectionRefreshKey((k) => k + 1);
+    showToast({
+      severity: 'info',
+      summary: 'Draft Discarded',
+      detail: 'Restored original saved profile data.',
+      life: 2500,
+    });
+  }, [user, activeSection]);
+
+  // Tab switch without interrupting confirmation popups
+  const handleSectionSwitch = useCallback(
+    (targetSectionId: string) => {
+      if (targetSectionId === activeSection) return;
+      setActiveSection(targetSectionId);
+    },
+    [activeSection, setActiveSection]
+  );
 
   const handleSaveSection = useCallback(
     async (sectionId: string, data: any) => {
@@ -180,35 +320,42 @@ export default function EmployeeProfileCompletion({
           user.username || user.email
         );
 
+        // Clear draft on successful persistent save
+        clearFormDraft(user.id, sectionId);
+        setIsCurrentSectionDirty(false);
+        setHasRestoredDraft(false);
+        setAutosaveStatus('saved');
+        setLastSavedTimestamp(new Date().toISOString());
+
         const updated = getEmployeeProfile(user.id);
         setProfile(updated);
 
-        // Check if this save completes the profile to 100%
         const updatedPct = calculateCompletionPercentage(updated, formConfig);
         window.dispatchEvent(new CustomEvent('aether_employee_profiles_updated'));
 
         if (updatedPct >= 100) {
           showToast({
             severity: 'success',
-            summary: 'Section Saved',
-            detail: 'Section saved! Your profile is 100% complete.',
-            life: 2500,
+            summary: 'Profile 100% Complete!',
+            detail: 'All required sections are verified and saved.',
+            life: 3000,
           });
         } else {
           showToast({
             severity: 'success',
-            summary: 'Saved',
-            detail: 'Section saved! Moving to next step.',
+            summary: 'Saved Successfully',
+            detail: 'Section saved! Moving to the next step.',
             life: 2500,
           });
         }
 
-        // Automatically advance to the next section
+        // Advance to next section automatically
         const currentIndex = activeSections.findIndex((s) => s.id === sectionId);
         if (currentIndex >= 0 && currentIndex < activeSections.length - 1) {
           setActiveSection(activeSections[currentIndex + 1].id);
         }
       } catch {
+        setAutosaveStatus('error');
         showToast({
           severity: 'error',
           summary: 'Save Failed',
@@ -219,7 +366,7 @@ export default function EmployeeProfileCompletion({
         setIsSaving(false);
       }
     },
-    [user, profile, activeSections]
+    [user, profile, activeSections, formConfig, setActiveSection]
   );
 
   const handleSubmit = useCallback(async () => {
@@ -242,7 +389,7 @@ export default function EmployeeProfileCompletion({
         saveEmployeeProfile(profile);
         window.dispatchEvent(new CustomEvent('aether_employee_profiles_updated'));
         const updatedPct = calculateCompletionPercentage(profile, formConfig);
-        
+
         if (updatedPct >= 100) {
           showToast({
             severity: 'success',
@@ -310,17 +457,17 @@ export default function EmployeeProfileCompletion({
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, profile, incompleteSections]);
+  }, [user, profile, incompleteSections, formConfig, onClose, fullPage, navigate, setActiveSection]);
 
   const goToNext = () => {
     if (activeIdx < activeSections.length - 1) {
-      setActiveSection(activeSections[activeIdx + 1].id);
+      handleSectionSwitch(activeSections[activeIdx + 1].id);
     }
   };
 
   const goToPrev = () => {
     if (activeIdx > 0) {
-      setActiveSection(activeSections[activeIdx - 1].id);
+      handleSectionSwitch(activeSections[activeIdx - 1].id);
     }
   };
 
@@ -341,7 +488,6 @@ export default function EmployeeProfileCompletion({
 
   const statusCfg = STATUS_CONFIG[profile.status];
   const StatusIcon = statusCfg.icon;
-  // Allow all users, employees, and super admins to fill and edit profile details
   const isReadOnly = false;
 
   const containerClass = fullPage
@@ -349,7 +495,7 @@ export default function EmployeeProfileCompletion({
     : 'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4';
 
   const innerClass = fullPage
-    ? 'w-full max-w-7xl mx-auto px-6 py-8'
+    ? 'w-full w-full mx-auto px-2 py-8'
     : 'bg-white rounded-3xl w-full max-w-6xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl';
 
   return (
@@ -362,7 +508,10 @@ export default function EmployeeProfileCompletion({
               <FileText size={22} className="text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-foreground">Complete Your Profile</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-black text-foreground">Complete Your Profile</h2>
+                <AutosaveStatusBadge status={autosaveStatus} lastSavedAt={lastSavedTimestamp} />
+              </div>
               <p className="text-xs text-muted mt-0.5">
                 Fill in all sections to activate your account fully
               </p>
@@ -416,7 +565,7 @@ export default function EmployeeProfileCompletion({
           </div>
         </div>
 
-        {/* ── Status Alert ── */}
+        {/* ── Status Alert Banners ── */}
         {profile.status === 'changes_required' && profile.reviewNotes && (
           <div className="mx-8 mt-4 p-4 rounded-2xl bg-warning/10 border border-warning/20 flex items-start gap-3">
             <AlertCircle size={18} className="text-warning shrink-0 mt-0.5" />
@@ -471,7 +620,7 @@ export default function EmployeeProfileCompletion({
             <div className="p-4 space-y-1">
               {/* Profile picture quick link */}
               <button
-                onClick={() => setActiveSection('profile_picture')}
+                onClick={() => handleSectionSwitch('profile_picture')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all group ${
                   activeSection === 'profile_picture'
                     ? 'bg-primary text-white shadow-md shadow-primary/20'
@@ -508,12 +657,12 @@ export default function EmployeeProfileCompletion({
               {activeSections.map((section) => {
                 const IconComp = SECTION_ICONS[section.id] || FileText;
                 const isActive = activeSection === section.id;
-                const isCompleted = profile.completedSections[section.id];
+                const isCompleted = isSectionValidAndComplete(section.id, profile);
 
                 return (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => handleSectionSwitch(section.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${
                       isActive
                         ? 'bg-primary text-white shadow-md shadow-primary/20'
@@ -566,17 +715,17 @@ export default function EmployeeProfileCompletion({
                     className="h-full rounded-full bg-gradient-to-r from-primary to-primary/80"
                     initial={{ width: 0 }}
                     animate={{ width: `${completionPercentage}%` }}
-                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
                   />
                 </div>
                 <div className="mt-2 text-[10px] text-muted">
-                  {activeSections.filter((s) => profile.completedSections[s.id]).length} of{' '}
+                  {activeSections.filter((s) => isSectionValidAndComplete(s.id, profile)).length} of{' '}
                   {activeSections.length} sections completed
                 </div>
 
                 {profile.status === 'in_progress' && profile.lastSavedAt && (
                   <div className="mt-3 flex items-center gap-1.5 text-[10px] text-muted">
-                    <RefreshCw size={10} />
+                    <Check size={10} className="text-success" />
                     Saved{' '}
                     {new Date(profile.lastSavedAt).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -590,96 +739,113 @@ export default function EmployeeProfileCompletion({
 
           {/* ── Section Content ── */}
           <div className="flex-1 overflow-y-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSection}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="p-8">
-                {activeSection === 'profile_picture' && (
-                  <ProfilePictureSection
-                    profile={profile}
-                    onSave={(url) => {
-                      if (!user) return;
-                      const updated = getEmployeeProfile(user.id) || profile;
-                      const newProfile = { ...updated, profilePictureUrl: url };
-                      saveEmployeeProfile(newProfile);
-                      setProfile(newProfile);
-                    }}
-                    onContinue={goToNext}
-                    readOnly={isReadOnly}
-                  />
-                )}
+            {/* Contextual Smart Alert Banner */}
+            <div className="pt-6">
+              <SmartAlertBanner
+                completionPercentage={completionPercentage}
+                incompleteSections={incompleteSections}
+                activeSection={activeSection}
+                onSelectSection={handleSectionSwitch}
+                hasRestoredDraft={hasRestoredDraft}
+                onDiscardDraft={handleDiscardDraft}
+                isDirty={isCurrentSectionDirty}
+              />
+            </div>
 
-                {activeSection === 'personal' && (
-                  <PersonalDetailsSection
-                    data={profile.personal}
-                    onSave={(data) => handleSaveSection('personal', data)}
-                    isSaving={isSaving}
-                    readOnly={isReadOnly}
-                  />
-                )}
+            <div key={activeSection} className="px-8 pb-8 transition-opacity duration-150">
+              {activeSection === 'profile_picture' && (
+                <ProfilePictureSection
+                  profile={profile}
+                  onSave={(url) => {
+                    if (!user) return;
+                    const updated = getEmployeeProfile(user.id) || profile;
+                    const newProfile = { ...updated, profilePictureUrl: url };
+                    saveEmployeeProfile(newProfile);
+                    setProfile(newProfile);
+                  }}
+                  onContinue={goToNext}
+                  readOnly={isReadOnly}
+                />
+              )}
 
-                {activeSection === 'bank' && (
-                  <BankDetailsSection
-                    data={profile.bank}
-                    onSave={(data) => handleSaveSection('bank', data)}
-                    isSaving={isSaving}
-                    readOnly={isReadOnly}
-                  />
-                )}
+              {activeSection === 'personal' && (
+                <PersonalDetailsSection
+                  data={getEffectiveSectionData('personal')}
+                  onSave={(data) => handleSaveSection('personal', data)}
+                  onSaveDraft={handleSaveDraft}
+                  onDraftChange={(data, isDirty) => handleDraftChange('personal', data, isDirty)}
+                  isSaving={isSaving}
+                  readOnly={isReadOnly}
+                />
+              )}
 
-                {activeSection === 'identity' && (
-                  <IdentityDocumentsSection
-                    data={profile.identity}
-                    documents={profile.documents || []}
-                    userId={user.id}
-                    onSave={(data) => handleSaveSection('identity', data)}
-                    onDocumentAdded={(doc) => {
-                      const updated = getEmployeeProfile(user.id) || profile;
-                      setProfile({ ...updated, documents: [...(updated.documents || []), doc] });
-                    }}
-                    isSaving={isSaving}
-                    readOnly={isReadOnly}
-                  />
-                )}
+              {activeSection === 'bank' && (
+                <BankDetailsSection
+                  data={getEffectiveSectionData('bank')}
+                  onSave={(data) => handleSaveSection('bank', data)}
+                  onSaveDraft={handleSaveDraft}
+                  onDraftChange={(data, isDirty) => handleDraftChange('bank', data, isDirty)}
+                  isSaving={isSaving}
+                  readOnly={isReadOnly}
+                />
+              )}
 
-                {activeSection === 'employment' && (
-                  <PreviousEmploymentSection
-                    data={profile.employment || []}
-                    documents={profile.documents || []}
-                    userId={user.id}
-                    onSave={(data) => handleSaveSection('employment', data)}
-                    isSaving={isSaving}
-                    readOnly={isReadOnly}
-                  />
-                )}
+              {activeSection === 'identity' && (
+                <IdentityDocumentsSection
+                  data={getEffectiveSectionData('identity')}
+                  documents={profile.documents || []}
+                  userId={user.id}
+                  onSave={(data) => handleSaveSection('identity', data)}
+                  onSaveDraft={handleSaveDraft}
+                  onDraftChange={(data, isDirty) => handleDraftChange('identity', data, isDirty)}
+                  onDocumentAdded={(doc) => {
+                    const updated = getEmployeeProfile(user.id) || profile;
+                    setProfile({ ...updated, documents: [...(updated.documents || []), doc] });
+                  }}
+                  isSaving={isSaving}
+                  readOnly={isReadOnly}
+                />
+              )}
 
-                {activeSection === 'education' && (
-                  <EducationSection
-                    data={profile.education || []}
-                    documents={profile.documents || []}
-                    userId={user.id}
-                    onSave={(data) => handleSaveSection('education', data)}
-                    isSaving={isSaving}
-                    readOnly={isReadOnly}
-                  />
-                )}
+              {activeSection === 'employment' && (
+                <PreviousEmploymentSection
+                  data={getEffectiveSectionData('employment') || []}
+                  documents={profile.documents || []}
+                  userId={user.id}
+                  onSave={(data) => handleSaveSection('employment', data)}
+                  onSaveDraft={handleSaveDraft}
+                  onDraftChange={(data, isDirty) => handleDraftChange('employment', data, isDirty)}
+                  isSaving={isSaving}
+                  readOnly={isReadOnly}
+                />
+              )}
 
-                {activeSection === 'certifications' && (
-                  <CertificationsSection
-                    data={profile.certifications || []}
-                    documents={profile.documents || []}
-                    userId={user.id}
-                    onSave={(data) => handleSaveSection('certifications', data)}
-                    isSaving={isSaving}
-                    readOnly={isReadOnly}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+              {activeSection === 'education' && (
+                <EducationSection
+                  data={getEffectiveSectionData('education') || []}
+                  documents={profile.documents || []}
+                  userId={user.id}
+                  onSave={(data) => handleSaveSection('education', data)}
+                  onSaveDraft={handleSaveDraft}
+                  onDraftChange={(data, isDirty) => handleDraftChange('education', data, isDirty)}
+                  isSaving={isSaving}
+                  readOnly={isReadOnly}
+                />
+              )}
+
+              {activeSection === 'certifications' && (
+                <CertificationsSection
+                  data={getEffectiveSectionData('certifications') || []}
+                  documents={profile.documents || []}
+                  userId={user.id}
+                  onSave={(data) => handleSaveSection('certifications', data)}
+                  onSaveDraft={handleSaveDraft}
+                  onDraftChange={(data, isDirty) => handleDraftChange('certifications', data, isDirty)}
+                  isSaving={isSaving}
+                  readOnly={isReadOnly}
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -710,32 +876,35 @@ export default function EmployeeProfileCompletion({
               </div>
             )}
 
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-white shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
-              {isSubmitting ? (
-                <>
-                  <i className="pi pi-spin pi-spinner" /> Saving...
-                </>
-              ) : profile.status === 'id_assigned' || profile.status === 'approved' ? (
-                <>
-                  <CheckCircle2 size={15} /> Save Changes
-                </>
-              ) : profile.status === 'submitted' ? (
-                <>
-                  <Send size={15} /> Update Submission
-                </>
-              ) : incompleteSections.length > 0 ? (
-                <>
-                  <Send size={15} /> Submit for Review (Docs Later)
-                </>
-              ) : (
-                <>
-                  <Send size={15} /> Submit for Review
-                </>
-              )}
-            </button>
+            {/* If profile is 100% complete and approved or on last step, provide one-click Finish / View Profile */}
+            {(completionPercentage >= 100 || activeIdx === activeSections.length - 1) && (
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-white shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+                {isSubmitting ? (
+                  <>
+                    <i className="pi pi-spin pi-spinner" /> Saving...
+                  </>
+                ) : profile.status === 'id_assigned' || profile.status === 'approved' ? (
+                  <>
+                    <CheckCircle2 size={15} /> Finish & View Profile
+                  </>
+                ) : profile.status === 'submitted' ? (
+                  <>
+                    <Send size={15} /> Update Submission
+                  </>
+                ) : incompleteSections.length > 0 ? (
+                  <>
+                    <Send size={15} /> Submit for Review (Docs Later)
+                  </>
+                ) : (
+                  <>
+                    <Send size={15} /> Submit for Review
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

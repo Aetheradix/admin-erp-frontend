@@ -1,25 +1,22 @@
-import { useState, useRef } from 'react';
-import { GraduationCap, Plus, Trash2, Save, Upload, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { GraduationCap, Plus, Trash2, Save, Upload, Check, Cloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Input, Select } from 'antd';
 import type { EducationEntry, ProfileDocument } from '@/services/employeeProfileService';
 import { addDocument } from '@/services/employeeProfileService';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { isDataModified } from '@/utils/formDraftManager';
 
 interface Props {
   data: EducationEntry[];
   documents: ProfileDocument[];
   userId: number;
   onSave: (data: EducationEntry[]) => void;
+  onSaveDraft?: (data: EducationEntry[]) => void;
+  onDraftChange?: (data: EducationEntry[], isDirty: boolean) => void;
   isSaving?: boolean;
   readOnly?: boolean;
 }
-
-const inputClass = (readOnly?: boolean) =>
-  `w-full px-4 py-3 rounded-xl border text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-    readOnly
-      ? 'bg-surface-subtle border-border-subtle text-muted cursor-not-allowed'
-      : 'bg-white border-border-subtle hover:border-primary/30 focus:border-primary'
-  }`;
 
 const labelClass = 'block text-xs font-bold text-foreground mb-1.5 uppercase tracking-wider';
 
@@ -62,17 +59,50 @@ export function EducationSection({
   documents: _documents,
   userId,
   onSave,
+  onSaveDraft,
+  onDraftChange,
   isSaving,
   readOnly,
 }: Props) {
-  const [entries, setEntries] = useState<EducationEntry[]>(data.length > 0 ? data : []);
+  const [entries, setEntries] = useState<EducationEntry[]>(data && data.length > 0 ? data : []);
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+  const isLocalChange = useRef(false);
 
-  const addEntry = () => setEntries((prev) => [...prev, newEntry()]);
-  const removeEntry = (id: string) => setEntries((prev) => prev.filter((e) => e.id !== id));
-  const updateEntry = (id: string, key: keyof EducationEntry, val: any) =>
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
+  useEffect(() => {
+    if (isLocalChange.current) {
+      isLocalChange.current = false;
+      return;
+    }
+    if (data) {
+      setEntries(data);
+    }
+  }, [data]);
+
+  const notifyChange = (updated: EducationEntry[]) => {
+    isLocalChange.current = true;
+    if (onDraftChange) {
+      onDraftChange(updated, isDataModified(data, updated));
+    }
+  };
+
+  const addEntry = () => {
+    const next = [...entries, newEntry()];
+    setEntries(next);
+    notifyChange(next);
+  };
+
+  const removeEntry = (id: string) => {
+    const next = entries.filter((e) => e.id !== id);
+    setEntries(next);
+    notifyChange(next);
+  };
+
+  const updateEntry = (id: string, key: keyof EducationEntry, val: any) => {
+    const next = entries.map((e) => (e.id === id ? { ...e, [key]: val } : e));
+    setEntries(next);
+    notifyChange(next);
+  };
 
   const handleFileUpload = (entryId: string, file: File) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -90,10 +120,13 @@ export function EducationSection({
         status: 'uploaded',
         localData: e.target?.result as string,
       });
-      updateEntry(entryId, 'documentIds', [
-        ...(entries.find((en) => en.id === entryId)?.documentIds || []),
-        doc.id,
-      ]);
+      const next = entries.map((en) =>
+        en.id === entryId
+          ? { ...en, documentIds: [...(en.documentIds || []), doc.id] }
+          : en
+      );
+      setEntries(next);
+      notifyChange(next);
       showToast({
         severity: 'success',
         summary: 'Uploaded',
@@ -177,74 +210,71 @@ export function EducationSection({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Degree / Qualification *</label>
-                <select
-                  className={inputClass(readOnly)}
-                  value={entry.degree}
-                  onChange={(e) => updateEntry(entry.id, 'degree', e.target.value)}
+                <Select
+                  size="large"
+                  className="w-full"
+                  value={entry.degree || undefined}
+                  onChange={(val) => updateEntry(entry.id, 'degree', val)}
+                  placeholder="Select degree"
                   disabled={readOnly}
-                  required>
-                  <option value="">Select degree</option>
-                  {DEGREE_OPTIONS.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
+                  options={DEGREE_OPTIONS.map((d) => ({ label: d, value: d }))}
+                />
               </div>
               <div>
                 <label className={labelClass}>Field of Study</label>
-                <input
-                  className={inputClass(readOnly)}
+                <Input
+                  size="large"
                   value={entry.field || ''}
                   onChange={(e) => updateEntry(entry.id, 'field', e.target.value)}
                   placeholder="e.g. Computer Science"
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
               <div className="col-span-2">
                 <label className={labelClass}>Institution / University *</label>
-                <input
-                  className={inputClass(readOnly)}
+                <Input
+                  size="large"
                   value={entry.institution}
                   onChange={(e) => updateEntry(entry.id, 'institution', e.target.value)}
                   placeholder="Name of institution"
+                  className="rounded-xl!"
                   required
                   disabled={readOnly}
                 />
               </div>
               <div>
                 <label className={labelClass}>Start Year</label>
-                <input
+                <Input
+                  size="large"
                   type="number"
-                  className={inputClass(readOnly)}
                   value={entry.startYear || ''}
                   onChange={(e) => updateEntry(entry.id, 'startYear', e.target.value)}
                   placeholder="e.g. 2018"
-                  min="1950"
-                  max="2030"
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
               <div>
                 <label className={labelClass}>End / Passing Year</label>
-                <input
+                <Input
+                  size="large"
                   type="number"
-                  className={inputClass(readOnly)}
                   value={entry.endYear || ''}
                   onChange={(e) => updateEntry(entry.id, 'endYear', e.target.value)}
                   placeholder="e.g. 2022"
-                  min="1950"
-                  max="2030"
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
               <div>
                 <label className={labelClass}>Grade / Percentage / CGPA</label>
-                <input
-                  className={inputClass(readOnly)}
+                <Input
+                  size="large"
                   value={entry.grade || ''}
                   onChange={(e) => updateEntry(entry.id, 'grade', e.target.value)}
                   placeholder="e.g. 8.5 CGPA or 85%"
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
@@ -283,11 +313,20 @@ export function EducationSection({
       </AnimatePresence>
 
       {!readOnly && (
-        <div className="flex justify-end pt-2">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle/50">
+          {onSaveDraft && (
+            <button
+              type="button"
+              onClick={() => onSaveDraft(entries)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-sm font-semibold transition-all">
+              <Cloud size={16} className="text-muted" />
+              Save as Draft
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

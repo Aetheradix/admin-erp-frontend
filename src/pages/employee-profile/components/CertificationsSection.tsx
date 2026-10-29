@@ -1,25 +1,22 @@
-import { useState, useRef } from 'react';
-import { Award, Plus, Trash2, Save, Upload, Check, Star } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Award, Plus, Trash2, Save, Upload, Check, Star, Cloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from 'antd';
 import type { CertificationEntry, ProfileDocument } from '@/services/employeeProfileService';
 import { addDocument } from '@/services/employeeProfileService';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { isDataModified } from '@/utils/formDraftManager';
 
 interface Props {
   data: CertificationEntry[];
   documents: ProfileDocument[];
   userId: number;
   onSave: (data: CertificationEntry[]) => void;
+  onSaveDraft?: (data: CertificationEntry[]) => void;
+  onDraftChange?: (data: CertificationEntry[], isDirty: boolean) => void;
   isSaving?: boolean;
   readOnly?: boolean;
 }
-
-const inputClass = (readOnly?: boolean) =>
-  `w-full px-4 py-3 rounded-xl border text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-    readOnly
-      ? 'bg-surface-subtle border-border-subtle text-muted cursor-not-allowed'
-      : 'bg-white border-border-subtle hover:border-primary/30 focpius:border-primary'
-  }`;
 
 const labelClass = 'block text-xs font-bold text-foreground mb-1.5 uppercase tracking-wider';
 
@@ -40,17 +37,50 @@ export function CertificationsSection({
   documents: _documents,
   userId,
   onSave,
+  onSaveDraft,
+  onDraftChange,
   isSaving,
   readOnly,
 }: Props) {
-  const [entries, setEntries] = useState<CertificationEntry[]>(data.length > 0 ? data : []);
+  const [entries, setEntries] = useState<CertificationEntry[]>(data && data.length > 0 ? data : []);
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+  const isLocalChange = useRef(false);
 
-  const addEntry = () => setEntries((prev) => [...prev, newEntry()]);
-  const removeEntry = (id: string) => setEntries((prev) => prev.filter((e) => e.id !== id));
-  const updateEntry = (id: string, key: keyof CertificationEntry, val: string) =>
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
+  useEffect(() => {
+    if (isLocalChange.current) {
+      isLocalChange.current = false;
+      return;
+    }
+    if (data) {
+      setEntries(data);
+    }
+  }, [data]);
+
+  const notifyChange = (updated: CertificationEntry[]) => {
+    isLocalChange.current = true;
+    if (onDraftChange) {
+      onDraftChange(updated, isDataModified(data, updated));
+    }
+  };
+
+  const addEntry = () => {
+    const next = [...entries, newEntry()];
+    setEntries(next);
+    notifyChange(next);
+  };
+
+  const removeEntry = (id: string) => {
+    const next = entries.filter((e) => e.id !== id);
+    setEntries(next);
+    notifyChange(next);
+  };
+
+  const updateEntry = (id: string, key: keyof CertificationEntry, val: string) => {
+    const next = entries.map((e) => (e.id === id ? { ...e, [key]: val } : e));
+    setEntries(next);
+    notifyChange(next);
+  };
 
   const handleFileUpload = (entryId: string, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -68,7 +98,11 @@ export function CertificationsSection({
         status: 'uploaded',
         localData: e.target?.result as string,
       });
-      updateEntry(entryId, 'documentId', doc.id);
+      const next = entries.map((en) =>
+        en.id === entryId ? { ...en, documentId: doc.id } : en
+      );
+      setEntries(next);
+      notifyChange(next);
       showToast({
         severity: 'success',
         summary: 'Uploaded',
@@ -163,11 +197,12 @@ export function CertificationsSection({
               <div className="grid grid-cols-2 gap-4 pl-3">
                 <div className="col-span-2">
                   <label className={labelClass}>Certification / Achievement Title *</label>
-                  <input
-                    className={inputClass(readOnly)}
+                  <Input
+                    size="large"
                     value={entry.title}
                     onChange={(e) => updateEntry(entry.id, 'title', e.target.value)}
                     placeholder="e.g. AWS Certified Solutions Architect"
+                    className="rounded-xl!"
                     required
                     disabled={readOnly}
                   />
@@ -175,11 +210,12 @@ export function CertificationsSection({
 
                 <div>
                   <label className={labelClass}>Issuing Organization *</label>
-                  <input
-                    className={inputClass(readOnly)}
+                  <Input
+                    size="large"
                     value={entry.issuingOrganization}
                     onChange={(e) => updateEntry(entry.id, 'issuingOrganization', e.target.value)}
                     placeholder="e.g. Amazon Web Services"
+                    className="rounded-xl!"
                     required
                     disabled={readOnly}
                   />
@@ -187,22 +223,24 @@ export function CertificationsSection({
 
                 <div>
                   <label className={labelClass}>Credential / Certificate ID</label>
-                  <input
-                    className={inputClass(readOnly)}
+                  <Input
+                    size="large"
                     value={entry.credentialId || ''}
                     onChange={(e) => updateEntry(entry.id, 'credentialId', e.target.value)}
                     placeholder="Unique certificate ID (if any)"
+                    className="rounded-xl!"
                     disabled={readOnly}
                   />
                 </div>
 
                 <div>
                   <label className={labelClass}>Issue Date</label>
-                  <input
+                  <Input
+                    size="large"
                     type="date"
-                    className={inputClass(readOnly)}
                     value={entry.issueDate || ''}
                     onChange={(e) => updateEntry(entry.id, 'issueDate', e.target.value)}
+                    className="rounded-xl!"
                     disabled={readOnly}
                   />
                 </div>
@@ -211,22 +249,24 @@ export function CertificationsSection({
                   <label className={labelClass}>
                     Expiry Date <span className="text-muted font-normal">(if applicable)</span>
                   </label>
-                  <input
+                  <Input
+                    size="large"
                     type="date"
-                    className={inputClass(readOnly)}
                     value={entry.expiryDate || ''}
                     onChange={(e) => updateEntry(entry.id, 'expiryDate', e.target.value)}
+                    className="rounded-xl!"
                     disabled={readOnly}
                   />
                 </div>
 
                 <div className="col-span-2">
                   <label className={labelClass}>Description</label>
-                  <textarea
-                    className={`${inputClass(readOnly)} h-20 resize-none`}
+                  <Input.TextArea
+                    rows={3}
                     value={entry.description || ''}
                     onChange={(e) => updateEntry(entry.id, 'description', e.target.value)}
                     placeholder="Brief description of the certification or achievement"
+                    className="rounded-xl!"
                     disabled={readOnly}
                   />
                 </div>
@@ -279,11 +319,20 @@ export function CertificationsSection({
       )}
 
       {!readOnly && (
-        <div className="flex justify-end pt-2">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle/50">
+          {onSaveDraft && (
+            <button
+              type="button"
+              onClick={() => onSaveDraft(entries)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-sm font-semibold transition-all">
+              <Cloud size={16} className="text-muted" />
+              Save as Draft
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

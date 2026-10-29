@@ -1,24 +1,29 @@
-import { useState, useEffect } from 'react';
-import { User, Save } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { User, Save, Cloud } from 'lucide-react';
+import { Input, Select, DatePicker, Checkbox } from 'antd';
+import dayjs from 'dayjs';
 import type { PersonalDetails } from '@/services/employeeProfileService';
+import { isDataModified } from '@/utils/formDraftManager';
 
 interface Props {
   data?: PersonalDetails;
   onSave: (data: PersonalDetails) => void;
+  onSaveDraft?: (data: PersonalDetails) => void;
+  onDraftChange?: (data: PersonalDetails, isDirty: boolean) => void;
   isSaving?: boolean;
   readOnly?: boolean;
 }
 
-const inputClass = (readOnly?: boolean) =>
-  `w-full px-4 py-3 rounded-xl border text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-    readOnly
-      ? 'bg-surface-subtle border-border-subtle text-muted cursor-not-allowed'
-      : 'bg-white border-border-subtle hover:border-primary/30 focus:border-primary'
-  }`;
-
 const labelClass = 'block text-xs font-bold text-foreground mb-1.5 uppercase tracking-wider';
 
-export function PersonalDetailsSection({ data, onSave, isSaving, readOnly }: Props) {
+export function PersonalDetailsSection({
+  data,
+  onSave,
+  onSaveDraft,
+  onDraftChange,
+  isSaving,
+  readOnly,
+}: Props) {
   const [form, setForm] = useState<PersonalDetails>({
     fullName: '',
     contactNumber: '',
@@ -28,19 +33,42 @@ export function PersonalDetailsSection({ data, onSave, isSaving, readOnly }: Pro
     ...data,
   });
   const [sameAddress, setSameAddress] = useState(data?.sameAsCurrentAddress || false);
+  const isLocalChange = useRef(false);
 
   useEffect(() => {
-    if (data) setForm({ ...data });
+    if (isLocalChange.current) {
+      isLocalChange.current = false;
+      return;
+    }
+    if (data) {
+      setForm({ ...data });
+      setSameAddress(Boolean(data.sameAsCurrentAddress));
+    }
   }, [data]);
 
-  const set = (key: keyof PersonalDetails, val: string | boolean) => {
-    setForm((prev) => ({ ...prev, [key]: val }));
+  const set = (key: keyof PersonalDetails, val: any) => {
+    isLocalChange.current = true;
+    setForm((prev) => {
+      const next = { ...prev, [key]: val };
+      if (onDraftChange) {
+        onDraftChange(next, isDataModified(data, next));
+      }
+      return next;
+    });
   };
 
   const handleSameAddress = (checked: boolean) => {
     setSameAddress(checked);
-    if (checked) set('permanentAddress', form.currentAddress || '');
-    set('sameAsCurrentAddress', checked);
+    const perm = checked ? form.currentAddress || '' : form.permanentAddress;
+    const next = {
+      ...form,
+      permanentAddress: perm,
+      sameAsCurrentAddress: checked,
+    };
+    setForm(next);
+    if (onDraftChange) {
+      onDraftChange(next, isDataModified(data, next));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,89 +91,95 @@ export function PersonalDetailsSection({ data, onSave, isSaving, readOnly }: Pro
       <div className="grid grid-cols-2 gap-5">
         <div className="col-span-2 md:col-span-1">
           <label className={labelClass}>Full Name *</label>
-          <input
-            className={inputClass(readOnly)}
+          <Input
+            size="large"
             value={form.fullName}
             onChange={(e) => set('fullName', e.target.value)}
             placeholder="e.g. John Smith"
+            className="rounded-xl!"
             required
             disabled={readOnly}
           />
         </div>
         <div className="col-span-2 md:col-span-1">
           <label className={labelClass}>Email Address *</label>
-          <input className={inputClass(true)} value={form.email} disabled readOnly type="email" />
+          <Input size="large" value={form.email} disabled className="rounded-xl!" />
         </div>
         <div>
           <label className={labelClass}>Date of Birth</label>
-          <input
-            type="date"
-            className={inputClass(readOnly)}
-            value={form.dateOfBirth || ''}
-            onChange={(e) => set('dateOfBirth', e.target.value)}
+          <DatePicker
+            size="large"
+            className="w-full rounded-xl!"
+            value={form.dateOfBirth ? dayjs(form.dateOfBirth) : null}
+            onChange={(_, dateStr) => set('dateOfBirth', typeof dateStr === 'string' ? dateStr : '')}
             disabled={readOnly}
           />
         </div>
         <div>
           <label className={labelClass}>Gender</label>
-          <select
-            className={inputClass(readOnly)}
-            value={form.gender || ''}
-            onChange={(e) => set('gender', e.target.value)}
-            disabled={readOnly}>
-            <option value="">Select gender</option>
-            {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
+          <Select
+            size="large"
+            className="w-full"
+            value={form.gender || undefined}
+            onChange={(val) => set('gender', val)}
+            placeholder="Select gender"
+            disabled={readOnly}
+            options={[
+              { label: 'Male', value: 'Male' },
+              { label: 'Female', value: 'Female' },
+              { label: 'Non-binary', value: 'Non-binary' },
+              { label: 'Prefer not to say', value: 'Prefer not to say' },
+            ]}
+          />
         </div>
         <div>
           <label className={labelClass}>Nationality</label>
-          <input
-            className={inputClass(readOnly)}
+          <Input
+            size="large"
             value={form.nationality || ''}
             onChange={(e) => set('nationality', e.target.value)}
             placeholder="e.g. Indian"
+            className="rounded-xl!"
             disabled={readOnly}
           />
         </div>
         <div>
           <label className={labelClass}>Marital Status</label>
-          <select
-            className={inputClass(readOnly)}
-            value={form.maritalStatus || ''}
-            onChange={(e) => set('maritalStatus', e.target.value)}
-            disabled={readOnly}>
-            <option value="">Select status</option>
-            {['Single', 'Married', 'Divorced', 'Widowed'].map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <Select
+            size="large"
+            className="w-full"
+            value={form.maritalStatus || undefined}
+            onChange={(val) => set('maritalStatus', val)}
+            placeholder="Select status"
+            disabled={readOnly}
+            options={[
+              { label: 'Single', value: 'Single' },
+              { label: 'Married', value: 'Married' },
+              { label: 'Divorced', value: 'Divorced' },
+              { label: 'Widowed', value: 'Widowed' },
+            ]}
+          />
         </div>
         <div>
           <label className={labelClass}>Contact Number *</label>
-          <input
-            type="tel"
-            className={inputClass(readOnly)}
+          <Input
+            size="large"
             value={form.contactNumber}
             onChange={(e) => set('contactNumber', e.target.value)}
             placeholder="+91 9876543210"
+            className="rounded-xl!"
             required
             disabled={readOnly}
           />
         </div>
         <div>
           <label className={labelClass}>Alternate Contact</label>
-          <input
-            type="tel"
-            className={inputClass(readOnly)}
+          <Input
+            size="large"
             value={form.alternateContact || ''}
             onChange={(e) => set('alternateContact', e.target.value)}
             placeholder="+91 9876543210"
+            className="rounded-xl!"
             disabled={readOnly}
           />
         </div>
@@ -159,36 +193,34 @@ export function PersonalDetailsSection({ data, onSave, isSaving, readOnly }: Pro
           </h4>
           <div>
             <label className={labelClass}>Current Address *</label>
-            <textarea
-              className={`${inputClass(readOnly)} h-20 resize-none`}
+            <Input.TextArea
+              rows={3}
               value={form.currentAddress}
               onChange={(e) => set('currentAddress', e.target.value)}
               placeholder="Street, City, State, PIN"
+              className="rounded-xl!"
               required
               disabled={readOnly}
             />
           </div>
 
           {!readOnly && (
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={sameAddress}
-                onChange={(e) => handleSameAddress(e.target.checked)}
-                className="rounded"
-              />
+            <Checkbox
+              checked={sameAddress}
+              onChange={(e) => handleSameAddress(e.target.checked)}>
               <span className="text-xs text-muted font-semibold">Same as current address</span>
-            </label>
+            </Checkbox>
           )}
 
           {!sameAddress && (
             <div>
               <label className={labelClass}>Permanent Address</label>
-              <textarea
-                className={`${inputClass(readOnly)} h-20 resize-none`}
+              <Input.TextArea
+                rows={3}
                 value={form.permanentAddress}
                 onChange={(e) => set('permanentAddress', e.target.value)}
                 placeholder="Street, City, State, PIN"
+                className="rounded-xl!"
                 disabled={readOnly}
               />
             </div>
@@ -205,37 +237,42 @@ export function PersonalDetailsSection({ data, onSave, isSaving, readOnly }: Pro
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Name</label>
-              <input
-                className={inputClass(readOnly)}
+              <Input
+                size="large"
                 value={form.emergencyContactName || ''}
                 onChange={(e) => set('emergencyContactName', e.target.value)}
                 placeholder="Contact person name"
+                className="rounded-xl!"
                 disabled={readOnly}
               />
             </div>
             <div>
               <label className={labelClass}>Relation</label>
-              <select
-                className={inputClass(readOnly)}
-                value={form.emergencyContactRelation || ''}
-                onChange={(e) => set('emergencyContactRelation', e.target.value)}
-                disabled={readOnly}>
-                <option value="">Select relation</option>
-                {['Spouse', 'Parent', 'Sibling', 'Child', 'Friend', 'Other'].map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+              <Select
+                size="large"
+                className="w-full"
+                value={form.emergencyContactRelation || undefined}
+                onChange={(val) => set('emergencyContactRelation', val)}
+                placeholder="Select relation"
+                disabled={readOnly}
+                options={[
+                  { label: 'Spouse', value: 'Spouse' },
+                  { label: 'Parent', value: 'Parent' },
+                  { label: 'Sibling', value: 'Sibling' },
+                  { label: 'Child', value: 'Child' },
+                  { label: 'Friend', value: 'Friend' },
+                  { label: 'Other', value: 'Other' },
+                ]}
+              />
             </div>
             <div className="col-span-2">
               <label className={labelClass}>Phone Number</label>
-              <input
-                type="tel"
-                className={inputClass(readOnly)}
+              <Input
+                size="large"
                 value={form.emergencyContactPhone || ''}
                 onChange={(e) => set('emergencyContactPhone', e.target.value)}
                 placeholder="+91 9876543210"
+                className="rounded-xl!"
                 disabled={readOnly}
               />
             </div>
@@ -244,11 +281,20 @@ export function PersonalDetailsSection({ data, onSave, isSaving, readOnly }: Pro
       </div>
 
       {!readOnly && (
-        <div className="flex justify-end pt-2">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle/50">
+          {onSaveDraft && (
+            <button
+              type="button"
+              onClick={() => onSaveDraft({ ...form, sameAsCurrentAddress: sameAddress })}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-sm font-semibold transition-all">
+              <Cloud size={16} className="text-muted" />
+              Save as Draft
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
             {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
             Save & Continue
           </button>

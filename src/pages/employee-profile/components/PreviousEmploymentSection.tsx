@@ -1,25 +1,22 @@
-import { useState, useRef } from 'react';
-import { Briefcase, Plus, Trash2, Save, Upload, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Briefcase, Plus, Trash2, Save, Upload, Check, Cloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Input, Checkbox } from 'antd';
 import type { EmploymentHistoryEntry, ProfileDocument } from '@/services/employeeProfileService';
 import { addDocument } from '@/services/employeeProfileService';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { isDataModified } from '@/utils/formDraftManager';
 
 interface Props {
   data: EmploymentHistoryEntry[];
   documents: ProfileDocument[];
   userId: number;
   onSave: (data: EmploymentHistoryEntry[]) => void;
+  onSaveDraft?: (data: EmploymentHistoryEntry[]) => void;
+  onDraftChange?: (data: EmploymentHistoryEntry[], isDirty: boolean) => void;
   isSaving?: boolean;
   readOnly?: boolean;
 }
-
-const inputClass = (readOnly?: boolean) =>
-  `w-full px-4 py-3 rounded-xl border text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-    readOnly
-      ? 'bg-surface-subtle border-border-subtle text-muted cursor-not-allowed'
-      : 'bg-white border-border-subtle hover:border-primary/30 focus:border-primary'
-  }`;
 
 const labelClass = 'block text-xs font-bold text-foreground mb-1.5 uppercase tracking-wider';
 
@@ -42,23 +39,49 @@ export function PreviousEmploymentSection({
   documents: _documents,
   userId,
   onSave,
+  onSaveDraft,
+  onDraftChange,
   isSaving,
   readOnly,
 }: Props) {
-  const [entries, setEntries] = useState<EmploymentHistoryEntry[]>(data.length > 0 ? data : []);
+  const [entries, setEntries] = useState<EmploymentHistoryEntry[]>(data && data.length > 0 ? data : []);
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+  const isLocalChange = useRef(false);
+
+  useEffect(() => {
+    if (isLocalChange.current) {
+      isLocalChange.current = false;
+      return;
+    }
+    if (data) {
+      setEntries(data);
+    }
+  }, [data]);
+
+  const notifyChange = (updated: EmploymentHistoryEntry[]) => {
+    isLocalChange.current = true;
+    if (onDraftChange) {
+      onDraftChange(updated, isDataModified(data, updated));
+    }
+  };
 
   const addEntry = () => {
-    setEntries((prev) => [...prev, newEntry()]);
+    const next = [...entries, newEntry()];
+    setEntries(next);
+    notifyChange(next);
   };
 
   const removeEntry = (id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id));
+    const next = entries.filter((e) => e.id !== id);
+    setEntries(next);
+    notifyChange(next);
   };
 
   const updateEntry = (id: string, key: keyof EmploymentHistoryEntry, val: any) => {
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
+    const next = entries.map((e) => (e.id === id ? { ...e, [key]: val } : e));
+    setEntries(next);
+    notifyChange(next);
   };
 
   const handleFileUpload = async (entryId: string, file: File) => {
@@ -88,10 +111,13 @@ export function PreviousEmploymentSection({
         status: 'uploaded',
         localData: e.target?.result as string,
       });
-      updateEntry(entryId, 'documentIds', [
-        ...(entries.find((en) => en.id === entryId)?.documentIds || []),
-        doc.id,
-      ]);
+      const next = entries.map((en) =>
+        en.id === entryId
+          ? { ...en, documentIds: [...(en.documentIds || []), doc.id] }
+          : en
+      );
+      setEntries(next);
+      notifyChange(next);
       showToast({
         severity: 'success',
         summary: 'Uploaded',
@@ -176,76 +202,81 @@ export function PreviousEmploymentSection({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Company / Employer *</label>
-                <input
-                  className={inputClass(readOnly)}
+                <Input
+                  size="large"
                   value={entry.employer}
                   onChange={(e) => updateEntry(entry.id, 'employer', e.target.value)}
                   placeholder="Company name"
+                  className="rounded-xl!"
                   required
                   disabled={readOnly}
                 />
               </div>
               <div>
                 <label className={labelClass}>Designation / Role *</label>
-                <input
-                  className={inputClass(readOnly)}
+                <Input
+                  size="large"
                   value={entry.designation}
                   onChange={(e) => updateEntry(entry.id, 'designation', e.target.value)}
                   placeholder="Your role/title"
+                  className="rounded-xl!"
                   required
                   disabled={readOnly}
                 />
               </div>
               <div>
                 <label className={labelClass}>Start Date</label>
-                <input
+                <Input
+                  size="large"
                   type="date"
-                  className={inputClass(readOnly)}
                   value={entry.startDate || ''}
                   onChange={(e) => updateEntry(entry.id, 'startDate', e.target.value)}
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
               <div>
                 <label className={labelClass}>End Date</label>
-                <input
+                <Input
+                  size="large"
                   type="date"
-                  className={inputClass(readOnly || entry.isCurrent)}
                   value={entry.endDate || ''}
                   onChange={(e) => updateEntry(entry.id, 'endDate', e.target.value)}
+                  className="rounded-xl!"
                   disabled={readOnly || entry.isCurrent}
                   placeholder={entry.isCurrent ? 'Present' : ''}
                 />
                 {!readOnly && (
-                  <label className="flex items-center gap-1.5 mt-2 cursor-pointer">
-                    <input
-                      type="checkbox"
+                  <div className="mt-2">
+                    <Checkbox
                       checked={entry.isCurrent || false}
-                      onChange={(e) => updateEntry(entry.id, 'isCurrent', e.target.checked)}
-                    />
-                    <span className="text-[10px] text-muted font-semibold">
-                      Currently working here
-                    </span>
-                  </label>
+                      onChange={(e) => updateEntry(entry.id, 'isCurrent', e.target.checked)}>
+                      <span className="text-[11px] text-muted font-semibold">
+                        Currently working here
+                      </span>
+                    </Checkbox>
+                  </div>
                 )}
               </div>
               <div>
                 <label className={labelClass}>Last Drawn Salary (₹)</label>
-                <input
-                  className={inputClass(readOnly)}
+                <Input
+                  size="large"
                   value={entry.salary || ''}
                   onChange={(e) => updateEntry(entry.id, 'salary', e.target.value)}
                   placeholder="Monthly CTC"
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
               <div className="col-span-2">
                 <label className={labelClass}>Key Responsibilities</label>
-                <textarea
-                  className={`${inputClass(readOnly)} h-20 resize-none`}
+                <Input.TextArea
+                  rows={3}
                   value={entry.responsibilities || ''}
                   onChange={(e) => updateEntry(entry.id, 'responsibilities', e.target.value)}
                   placeholder="Briefly describe your role and responsibilities"
+                  className="rounded-xl!"
                   disabled={readOnly}
                 />
               </div>
@@ -288,17 +319,28 @@ export function PreviousEmploymentSection({
       </AnimatePresence>
 
       {!readOnly && (
-        <div className="flex justify-between items-center pt-2">
-          {entries.length === 0 && (
-            <span className="text-xs text-muted">
-              Fresher or no previous experience? Click continue to proceed.
-            </span>
-          )}
-          <div className="ml-auto">
+        <div className="flex items-center justify-between pt-4 border-t border-border-subtle/50">
+          <div>
+            {entries.length === 0 && (
+              <span className="text-xs text-muted">
+                Fresher or no previous experience? Click continue to proceed.
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {onSaveDraft && (
+              <button
+                type="button"
+                onClick={() => onSaveDraft(entries)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border-subtle bg-white hover:bg-surface-subtle text-foreground text-sm font-semibold transition-all">
+                <Cloud size={16} className="text-muted" />
+                Save as Draft
+              </button>
+            )}
             <button
               type="submit"
               disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all disabled:opacity-50">
               {isSaving ? <i className="pi pi-spin pi-spinner" /> : <Save size={16} />}
               Save & Continue
             </button>

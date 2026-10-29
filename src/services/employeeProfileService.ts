@@ -882,13 +882,19 @@ export function updateProfileSection<K extends keyof ProfileCompletionData>(
     completedSections: {},
   };
 
-  const updated: ProfileCompletionData = {
+  const candidate: ProfileCompletionData = {
     ...existing,
     [section]: value,
     status: existing.status === 'incomplete' ? 'in_progress' : existing.status,
+  };
+
+  const isValid = isSectionValidAndComplete(sectionKey, candidate);
+
+  const updated: ProfileCompletionData = {
+    ...candidate,
     completedSections: {
       ...existing.completedSections,
-      [sectionKey]: true,
+      [sectionKey]: isValid,
     },
   };
 
@@ -1279,17 +1285,10 @@ export function isSectionValidAndComplete(
 ): boolean {
   if (!profile) return false;
 
-  // Profile picture can be completed either via completedSections or by having profilePictureUrl
-  if (sectionId === 'profile_picture') {
-    return Boolean(profile.profilePictureUrl || profile.completedSections?.profile_picture);
-  }
-
-  // Section must be marked as completed in completedSections
-  if (!profile.completedSections || !profile.completedSections[sectionId]) {
-    return false;
-  }
-
   switch (sectionId) {
+    case 'profile_picture': {
+      return Boolean(profile.profilePictureUrl);
+    }
     case 'personal': {
       const p = profile.personal;
       if (!p) return false;
@@ -1313,34 +1312,46 @@ export function isSectionValidAndComplete(
     case 'identity': {
       const id = profile.identity;
       if (!id) return false;
-      const hasPan = Boolean(id.panNumber && id.panNumber.trim().length === 10);
-      const hasAadhaar = Boolean(id.aadhaarNumber && id.aadhaarNumber.trim().length === 12);
+      const cleanPan = id.panNumber?.trim() || '';
+      const cleanAadhaar = id.aadhaarNumber?.trim().replace(/[\s-]/g, '') || '';
+      const hasPan = Boolean(cleanPan && (cleanPan.length === 10 || cleanPan.includes('•')));
+      const hasAadhaar = Boolean(cleanAadhaar && (cleanAadhaar.length === 12 || cleanAadhaar.includes('•')));
       if (!hasPan || !hasAadhaar) return false;
 
-      // Passport is optional, but if entered it must strictly satisfy the 8-character limit and format
-      if (id.passportNumber && id.passportNumber.trim()) {
+      if (id.passportNumber && id.passportNumber.trim() && !id.passportNumber.includes('•')) {
         const pRes = validatePassportNumber(id.passportNumber);
         if (!pRes.isValid) return false;
       }
       return true;
     }
-    case 'employment': {
-      if (profile.employment && profile.employment.length > 0) {
-        return profile.employment.every((e) => Boolean(e.employer?.trim() && e.designation?.trim()));
-      }
-      return true;
-    }
     case 'education': {
-      if (profile.education && profile.education.length > 0) {
-        return profile.education.every((e) => Boolean(e.institution?.trim() && e.degree?.trim()));
+      if (!profile.education || !Array.isArray(profile.education) || profile.education.length === 0) {
+        return false;
       }
-      return true;
+      return profile.education.every(
+        (e) => Boolean(e.institution?.trim() && e.degree?.trim())
+      );
+    }
+    case 'employment': {
+      // Optional section: only marked complete if user added valid employment records
+      if (!profile.employment || !Array.isArray(profile.employment) || profile.employment.length === 0) {
+        return false;
+      }
+      return profile.employment.every(
+        (e) => Boolean(e.employer?.trim() && e.designation?.trim())
+      );
     }
     case 'certifications': {
-      return true;
+      // Optional section: only marked complete if user added valid certifications
+      if (!profile.certifications || !Array.isArray(profile.certifications) || profile.certifications.length === 0) {
+        return false;
+      }
+      return profile.certifications.every(
+        (c) => Boolean(c.title?.trim() && c.issuingOrganization?.trim())
+      );
     }
     default:
-      return Boolean(profile.completedSections[sectionId]);
+      return Boolean(profile.completedSections?.[sectionId]);
   }
 }
 
@@ -1355,20 +1366,187 @@ export function calculateCompletionPercentage(
   const activeSections = formConfig.filter((s) => !s.hidden);
   if (activeSections.length === 0) return 0;
 
-  const completed = activeSections.filter((s) => isSectionValidAndComplete(s.id, profile)).length;
+  // Required sections for mandatory 100% completion (employment and certifications are optional)
+  const requiredSections = activeSections.filter(
+    (s) => s.id !== 'employment' && s.id !== 'certifications' && s.id !== 'profile_picture'
+  );
 
-  return Math.round((completed / activeSections.length) * 100);
+  if (requiredSections.length === 0) return 100;
+
+  let totalScore = 0;
+
+  for (const s of requiredSections) {
+    if (s.id === 'personal') {
+      const p = profile.personal;
+      let fieldCount = 0;
+      if (p?.fullName?.trim()) fieldCount++;
+      if (p?.email?.trim()) fieldCount++;
+      if (p?.contactNumber?.trim()) fieldCount++;
+      if (p?.currentAddress?.trim()) fieldCount++;
+      totalScore += (fieldCount / 4) * 100;
+    } else if (s.id === 'bank') {
+      const b = profile.bank;
+      let fieldCount = 0;
+      if (b?.accountHolderName?.trim()) fieldCount++;
+      if (b?.bankName?.trim()) fieldCount++;
+      if (b?.accountNumber?.trim()) fieldCount++;
+      if (b?.ifscCode?.trim()) fieldCount++;
+      totalScore += (fieldCount / 4) * 100;
+    } else if (s.id === 'identity') {
+      const id = profile.identity;
+      let fieldCount = 0;
+      const cleanPan = id?.panNumber?.trim() || '';
+      const cleanAadhaar = id?.aadhaarNumber?.trim().replace(/[\s-]/g, '') || '';
+      if (cleanPan && (cleanPan.length === 10 || cleanPan.includes('•'))) fieldCount++;
+      if (cleanAadhaar && (cleanAadhaar.length === 12 || cleanAadhaar.includes('•'))) fieldCount++;
+      totalScore += (fieldCount / 2) * 100;
+    } else if (s.id === 'education') {
+      const hasEdu = Boolean(
+        profile.education &&
+        Array.isArray(profile.education) &&
+        profile.education.length > 0 &&
+        profile.education.some((e) => e.institution?.trim() && e.degree?.trim())
+      );
+      totalScore += hasEdu ? 100 : 0;
+    } else {
+      totalScore += isSectionValidAndComplete(s.id, profile) ? 100 : 0;
+    }
+  }
+
+  const rawPercent = Math.round(totalScore / requiredSections.length);
+  return Math.min(100, Math.max(0, rawPercent));
 }
 
 export function getIncompleteRequiredSections(
   profile: ProfileCompletionData | null,
   formConfig: FormSectionConfig[]
 ): FormSectionConfig[] {
-  if (!profile) return formConfig.filter((s) => !s.hidden);
-  return formConfig.filter((s) => !s.hidden && !isSectionValidAndComplete(s.id, profile));
+  if (!profile) {
+    return formConfig.filter(
+      (s) => !s.hidden && s.id !== 'employment' && s.id !== 'certifications' && s.id !== 'profile_picture'
+    );
+  }
+  return formConfig.filter(
+    (s) =>
+      !s.hidden &&
+      s.id !== 'employment' &&
+      s.id !== 'certifications' &&
+      s.id !== 'profile_picture' &&
+      !isSectionValidAndComplete(s.id, profile)
+  );
+}
+
+/**
+ * Returns a human-readable list of specific missing required fields for a section
+ */
+export function getSectionMissingFields(
+  sectionId: string,
+  profile: ProfileCompletionData | null
+): string[] {
+  if (!profile) return ['All section details'];
+  const missing: string[] = [];
+
+  switch (sectionId) {
+    case 'profile_picture':
+      if (!profile.profilePictureUrl) {
+        missing.push('Profile Picture');
+      }
+      break;
+    case 'personal': {
+      const p = profile.personal;
+      if (!p?.fullName?.trim()) missing.push('Full Name');
+      if (!p?.email?.trim()) missing.push('Email Address');
+      if (!p?.contactNumber?.trim()) missing.push('Contact Number');
+      if (!p?.currentAddress?.trim()) missing.push('Current Address');
+      break;
+    }
+    case 'bank': {
+      const b = profile.bank;
+      if (!b?.accountHolderName?.trim()) missing.push('Account Holder Name');
+      if (!b?.bankName?.trim()) missing.push('Bank Name');
+      if (!b?.accountNumber?.trim()) missing.push('Account Number');
+      if (!b?.ifscCode?.trim()) missing.push('IFSC Code');
+      break;
+    }
+    case 'identity': {
+      const id = profile.identity;
+      const pan = id?.panNumber?.trim() || '';
+      const aadhaar = id?.aadhaarNumber?.trim().replace(/[\s-]/g, '') || '';
+      const isPanValid = pan.length === 10 || (pan.includes('•') && pan.length >= 7);
+      const isAadhaarValid = aadhaar.length === 12 || (aadhaar.includes('•') && aadhaar.length >= 8);
+      if (!isPanValid) missing.push('10-character PAN Card Number');
+      if (!isAadhaarValid) missing.push('12-digit Aadhaar Number');
+      break;
+    }
+    case 'education': {
+      if (!profile.education || !Array.isArray(profile.education) || profile.education.length === 0) {
+        missing.push('At least one Educational Qualification');
+      } else {
+        const hasMissing = profile.education.some((e) => !e.institution?.trim() || !e.degree?.trim());
+        if (hasMissing) missing.push('Degree and Institution for all qualifications');
+      }
+      break;
+    }
+  }
+
+  return missing;
 }
 
 // ─── Document Helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Securely uploads an identity card or bank document to the backend private vault.
+ */
+export async function uploadSecureDocumentToBackend(
+  userId: number,
+  file: File,
+  docType: ProfileDocument['type'],
+  label: string
+): Promise<ProfileDocument> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('userId', String(userId));
+  formData.append('documentType', docType);
+  formData.append('label', label);
+
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_URL}/employee-profile/documents/upload`, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || 'Secure upload failed.');
+  }
+
+  const resJson = await response.json();
+  const uploaded = resJson.data;
+
+  // Sync to local profile
+  const profile = getEmployeeProfile(userId);
+  const newDoc: ProfileDocument = {
+    id: uploaded.id,
+    type: docType,
+    label,
+    fileName: file.name,
+    fileSize: file.size,
+    fileType: file.type,
+    uploadedAt: uploaded.uploadedAt,
+    url: uploaded.url,
+    status: 'uploaded',
+  };
+
+  if (profile) {
+    const updatedDocs = [...(profile.documents || []).filter((d) => d.id !== newDoc.id), newDoc];
+    saveEmployeeProfile({ ...profile, documents: updatedDocs });
+  }
+
+  return newDoc;
+}
 
 export function addDocument(
   userId: number,
@@ -1406,6 +1584,8 @@ export function removeDocument(userId: number, documentId: string): void {
   };
   saveEmployeeProfile(updated);
 }
+
+
 
 /**
  * Ensures an employee profile exists for an invited or registered user,
