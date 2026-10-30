@@ -522,7 +522,7 @@ const MyPaySlipPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/60 p-4 sm:p-6 md:p-10 max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50/60 p-4 sm:p-6 md:p-10 w-full mx-auto space-y-8">
       {/* Header Profile Section */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">

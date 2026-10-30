@@ -1,7 +1,16 @@
 import { useGetAllResourceBookingsQuery } from '../../store/api/resourceBookingSlice';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 const AllBookingsPage = () => {
   const { data: bookings = [], isLoading } = useGetAllResourceBookingsQuery();
+  const columns: ColumnsType<(typeof bookings)[number]> = [
+    { title: 'Employee', key: 'employee', render: (_, booking) => <><p className="font-medium">{booking.username || '-'}</p><p className="text-xs text-muted-foreground">{booking.email || ''}</p></> },
+    { title: 'Resource', dataIndex: 'resource_name', key: 'resource_name' },
+    { title: 'Purpose', dataIndex: 'purpose', key: 'purpose', render: (value) => value || '-' },
+    { title: 'Date', dataIndex: 'start_datetime', key: 'start_datetime', render: (value) => new Date(value).toLocaleString() },
+    { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs text-green-700">{value}</span> },
+  ];
 
   return (
     <div className="space-y-6 p-6">
@@ -14,53 +23,7 @@ const AllBookingsPage = () => {
       </div>
 
       <div className="overflow-hidden rounded-xl border">
-        {isLoading ? (
-          <div className="p-6">Loading bookings...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b bg-muted/40">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Employee</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Resource</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Purpose</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {bookings.map((booking) => (
-                  <tr key={booking.id}>
-                    <td className="px-4 py-4">
-                      <p className="font-medium">{booking.username || '-'}</p>
-
-                      <p className="text-xs text-muted-foreground">{booking.email || ''}</p>
-                    </td>
-
-                    <td className="px-4 py-4">{booking.resource_name}</td>
-
-                    <td className="px-4 py-4 text-sm">{booking.purpose || '-'}</td>
-
-                    <td className="px-4 py-4 text-sm">
-                      {new Date(booking.start_datetime).toLocaleString()}
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs text-green-700">
-                        {booking.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <Table columns={columns} dataSource={bookings} rowKey="id" loading={isLoading} pagination={false} scroll={{ x: 'max-content' }} />
       </div>
     </div>
   );

@@ -1187,6 +1187,7 @@ export function UsersPage() {
           </div>
 
           <Table
+            scroll={{ x: 'max-content' }}
             columns={invitationColumns}
             dataSource={filteredInvitations}
             rowKey="id"
@@ -1225,6 +1226,7 @@ export function UsersPage() {
           </div>
 
           <Table
+            scroll={{ x: 'max-content' }}
             columns={systemAuditColumns}
             dataSource={auditLogs}
             rowKey="id"
@@ -1249,6 +1251,7 @@ export function UsersPage() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
           <Table
+            scroll={{ x: 'max-content' }}
             columns={columns}
             dataSource={filteredUsers}
             rowKey="id"

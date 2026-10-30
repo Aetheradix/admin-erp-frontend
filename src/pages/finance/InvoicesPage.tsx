@@ -1050,7 +1050,7 @@ export function InvoicesPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 pb-20 max-w-7xl mx-auto p-4 sm:p-6">
+    <div className="flex flex-col gap-6 pb-20 w-full mx-auto p-4 sm:p-6">
       <PageHeader
         title="Invoices"
         description="Manage and track client billing, view generated statements, and review audit logs."
@@ -1102,6 +1102,7 @@ export function InvoicesPage() {
       {/* Main Invoices Table */}
       <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
         <Table
+          scroll={{ x: 'max-content' }}
           columns={columns}
           dataSource={filteredInvoices}
           loading={isBackendInvoicesLoading}
@@ -1142,6 +1143,7 @@ export function InvoicesPage() {
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <Table
+            scroll={{ x: 'max-content' }}
             columns={auditColumns}
             dataSource={combinedAuditLogs}
             loading={isLogsLoading}

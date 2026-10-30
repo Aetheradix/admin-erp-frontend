@@ -538,6 +538,7 @@ export function RolesPage() {
           transition={{ duration: 0.2 }}
           className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
           <Table
+            scroll={{ x: 'max-content' }}
             columns={roleColumns}
             dataSource={roles}
             rowKey="id"
@@ -675,6 +676,7 @@ export function RolesPage() {
           transition={{ duration: 0.2 }}
           className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
           <Table
+            scroll={{ x: 'max-content' }}
             columns={auditColumns}
             dataSource={auditLogs}
             rowKey="id"

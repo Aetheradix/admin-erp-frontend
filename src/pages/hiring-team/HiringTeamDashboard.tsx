@@ -1043,6 +1043,7 @@ export default function HiringTeamDashboard() {
       {/* Main Table */}
       <div className="bg-white rounded-3xl border border-border-subtle overflow-hidden shadow-xs">
         <Table
+          scroll={{ x: 'max-content' }}
           columns={columns}
           dataSource={filteredProfiles}
           rowKey="userId"

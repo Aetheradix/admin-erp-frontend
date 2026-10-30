@@ -203,6 +203,8 @@ import React, { useState, useMemo } from 'react';
 import { useExpensesPage, EXPENSE_CATEGORIES, EXPENSE_STATUSES } from './hooks/useExpensesPage'; // Adjust import path as needed
 import type { ExpenseRecord } from '@/store/api/expenseSlice';
 import { Download, FileText } from 'lucide-react';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -658,8 +660,18 @@ export const ExpensesPage: React.FC = () => {
     setCustomEndDate('');
   };
 
+  const expenseColumns: ColumnsType<ExpenseRecord> = [
+    { title: 'Expense #', key: 'expense_number', render: (_, expense) => <span className="font-mono text-xs text-gray-500">{expense.expense_number || `#${expense.id}`}</span> },
+    { title: 'Title & Vendor', key: 'title', render: (_, expense) => <><div className="font-medium text-gray-900">{expense.title}</div><div className="text-xs text-gray-500">{expense.vendor_name || 'N/A'}</div></> },
+    { title: 'Employee / Team', key: 'employee', render: (_, expense) => { const participants = (expense as any).participants || (expense as any).participant_ids; const isShared = Array.isArray(participants) && participants.length > 0; return <><div>{expense.employee_name || 'N/A'}</div>{isShared && <span className="inline-flex items-center text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 mt-0.5">Shared ({participants.length} people)</span>}</>; } },
+    { title: 'Category', dataIndex: 'category', key: 'category' },
+    { title: 'Amount', dataIndex: 'amount', key: 'amount', render: (amount) => <span className="font-semibold text-gray-900">{formatCurrency(Number(amount || 0))}</span> },
+    { title: 'Status', dataIndex: 'status', key: 'status', render: (status) => <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadge(status)}`}>{status || 'Pending'}</span> },
+    { title: 'Actions', key: 'actions', align: 'right', render: (_, expense) => { const status = expense.status?.toLowerCase(); return <div className="flex items-center justify-end gap-2 whitespace-nowrap"><button onClick={() => openDetails(expense)} className="text-xs font-medium text-gray-600 hover:text-gray-900 underline">Details</button>{status === 'pending' && <><button disabled={isUpdatingStatus} onClick={() => handleApprove(expense.id)} className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 disabled:opacity-50">Approve</button><button disabled={isUpdatingStatus} onClick={() => setRejectionModalId(expense.id)} className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 disabled:opacity-50">Reject</button></>}{status === 'approved' && <button disabled={isUpdatingStatus} onClick={() => handleMarkAsPaid(expense.id)} className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100 disabled:opacity-50">Mark Paid</button>}</div>; } },
+  ];
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 w-full mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Expenses Management</h1>
@@ -821,11 +833,10 @@ export const ExpensesPage: React.FC = () => {
                 key={preset.id}
                 type="button"
                 onClick={() => setDatePreset(preset.id as DateRangePreset)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}>
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isActive
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}>
                 {preset.label}
               </button>
             );
@@ -931,94 +942,7 @@ export const ExpensesPage: React.FC = () => {
             No expenses found matching the selected criteria or date range.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-              <thead className="bg-gray-50 text-gray-500 font-medium">
-                <tr>
-                  <th className="px-4 py-3">Expense #</th>
-                  <th className="px-4 py-3">Title & Vendor</th>
-                  <th className="px-4 py-3">Employee / Team</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 text-gray-700">
-                {dateFilteredExpenses.map((expense: ExpenseRecord) => {
-                  const status = expense.status?.toLowerCase();
-                  const participants =
-                    (expense as any).participants || (expense as any).participant_ids;
-                  const isShared = Array.isArray(participants) && participants.length > 0;
-
-                  return (
-                    <tr key={expense.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-mono text-xs text-gray-500">
-                        {expense.expense_number || `#${expense.id}`}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{expense.title}</div>
-                        <div className="text-xs text-gray-500">{expense.vendor_name || 'N/A'}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div>{expense.employee_name || 'N/A'}</div>
-                        {isShared && (
-                          <span className="inline-flex items-center text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 mt-0.5">
-                            Shared ({participants.length} people)
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">{expense.category}</td>
-                      <td className="px-4 py-3 font-semibold text-gray-900">
-                        {formatCurrency(Number(expense.amount || 0))}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadge(
-                            expense.status
-                          )}`}>
-                          {expense.status || 'Pending'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right space-x-2">
-                        <button
-                          onClick={() => openDetails(expense)}
-                          className="text-xs font-medium text-gray-600 hover:text-gray-900 underline">
-                          Details
-                        </button>
-
-                        {status === 'pending' && (
-                          <>
-                            <button
-                              disabled={isUpdatingStatus}
-                              onClick={() => handleApprove(expense.id)}
-                              className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 disabled:opacity-50">
-                              Approve
-                            </button>
-                            <button
-                              disabled={isUpdatingStatus}
-                              onClick={() => setRejectionModalId(expense.id)}
-                              className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 disabled:opacity-50">
-                              Reject
-                            </button>
-                          </>
-                        )}
-
-                        {status === 'approved' && (
-                          <button
-                            disabled={isUpdatingStatus}
-                            onClick={() => handleMarkAsPaid(expense.id)}
-                            className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100 disabled:opacity-50">
-                            Mark Paid
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <Table<ExpenseRecord> columns={expenseColumns} dataSource={dateFilteredExpenses} rowKey="id" pagination={false} scroll={{ x: 'max-content' }} />
         )}
       </div>
 
@@ -1120,11 +1044,10 @@ export const ExpensesPage: React.FC = () => {
                           <div
                             key={user.id}
                             onClick={() => toggleUserSelection(user.id)}
-                            className={`flex items-center gap-2 p-2 rounded border text-xs cursor-pointer select-none transition-colors ${
-                              isChecked
-                                ? 'bg-blue-100/80 border-blue-400 text-blue-900 font-medium'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                            }`}>
+                            className={`flex items-center gap-2 p-2 rounded border text-xs cursor-pointer select-none transition-colors ${isChecked
+                              ? 'bg-blue-100/80 border-blue-400 text-blue-900 font-medium'
+                              : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                              }`}>
                             <input
                               type="checkbox"
                               checked={isChecked}
@@ -1252,21 +1175,21 @@ export const ExpensesPage: React.FC = () => {
 
               {((selectedExpense as any).participants ||
                 (selectedExpense as any).participant_ids) && (
-                <div className="col-span-2 pt-2 border-t border-gray-100">
-                  <p className="text-xs text-gray-500 mb-1 font-medium">Involved Team Members</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {MOCK_USERS.filter((u) =>
-                      ((selectedExpense as any).participant_ids || []).includes(u.id)
-                    ).map((user) => (
-                      <span
-                        key={user.id}
-                        className="px-2 py-0.5 text-xs bg-blue-50 text-blue-800 rounded border border-blue-200">
-                        {user.name}
-                      </span>
-                    ))}
+                  <div className="col-span-2 pt-2 border-t border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Involved Team Members</p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {MOCK_USERS.filter((u) =>
+                        ((selectedExpense as any).participant_ids || []).includes(u.id)
+                      ).map((user) => (
+                        <span
+                          key={user.id}
+                          className="px-2 py-0.5 text-xs bg-blue-50 text-blue-800 rounded border border-blue-200">
+                          {user.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t">

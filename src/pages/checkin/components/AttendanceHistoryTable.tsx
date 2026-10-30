@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { Table as AntTable } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import {
   Search,
   Filter,
@@ -107,6 +109,18 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     }
   };
 
+  const columns: ColumnsType<DayDetailedRecord> = [
+    { title: 'Date', dataIndex: 'date', key: 'date', render: (date) => formatDate(date) },
+    { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusBadge },
+    { title: 'Mode & Geo', key: 'mode', render: (_, r) => <div className="flex flex-col gap-1 items-start">{r.is_wfh || r.work_mode === 'wfh' ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-[10px] border border-indigo-500/20"><Home size={11} /> WFH</span> : <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 font-black text-[10px] border border-emerald-500/20"><Building size={11} /> Office</span>}{r.check_in_location && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted truncate max-w-[130px]"><MapPin size={10} />{r.check_in_location}</span>}</div> },
+    { title: 'Check In', dataIndex: 'checkIn', key: 'checkIn', render: (v) => v || '---' },
+    { title: 'Check Out', dataIndex: 'checkOut', key: 'checkOut', render: (v) => v || '---' },
+    { title: 'Breaks', dataIndex: 'totalBreakMinutes', key: 'breaks', render: (v) => v > 0 ? formatMinutes(v) : '0m' },
+    { title: 'Net Hours', dataIndex: 'netWorkingHours', key: 'hours', render: (v) => v > 0 ? formatHoursAndMinutes(v) : '---' },
+    { title: 'Punctuality', key: 'punctuality', render: (_, r) => r.isLate ? <span className="text-warning font-black">+{r.lateMinutes}m Late</span> : r.status === 'Present' ? <span className="text-success font-black">On Time</span> : <span className="text-muted">---</span> },
+    { title: 'Overtime', dataIndex: 'overtimeHours', key: 'overtime', render: (v) => v > 0 ? <span className="text-purple-500 font-black inline-flex items-center gap-1"><Zap size={12} /> +{v}h</span> : <span className="text-muted">---</span> },
+  ];
+
   return (
     <div className="bg-surface-elevated rounded-[40px] border border-border-subtle shadow-xl overflow-hidden flex flex-col transition-all hover:shadow-2xl">
       {/* Table Header Controls */}
@@ -176,87 +190,7 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
       </div>
 
       {/* Table Area */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border-subtle bg-surface-subtle/40 text-[10px] font-black uppercase text-muted tracking-widest">
-              <th className="py-4 px-6">Date</th>
-              <th className="py-4 px-6">Status</th>
-              <th className="py-4 px-6">Mode & Geo</th>
-              <th className="py-4 px-6">Check In</th>
-              <th className="py-4 px-6">Check Out</th>
-              <th className="py-4 px-6">Breaks</th>
-              <th className="py-4 px-6">Net Hours</th>
-              <th className="py-4 px-6">Punctuality</th>
-              <th className="py-4 px-6">Overtime</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-subtle/40 text-xs font-bold">
-            {filteredRecords.map((r) => (
-              <tr
-                key={r.id}
-                onClick={() => onSelectRecord && onSelectRecord(r)}
-                className="hover:bg-surface-subtle/80 transition-colors cursor-pointer">
-                <td className="py-4 px-6 text-foreground font-black">{formatDate(r.date)}</td>
-                <td className="py-4 px-6">{getStatusBadge(r.status)}</td>
-                <td className="py-4 px-6">
-                  <div className="flex flex-col gap-1 items-start">
-                    {r.is_wfh || r.work_mode === 'wfh' ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-[10px] border border-indigo-500/20">
-                        <Home size={11} /> WFH
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 font-black text-[10px] border border-emerald-500/20">
-                        <Building size={11} /> Office
-                      </span>
-                    )}
-                    {r.check_in_location && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted truncate max-w-[130px]">
-                        <MapPin size={10} className="text-primary shrink-0" />
-                        {r.check_in_location}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="py-4 px-6 text-foreground">{r.checkIn || '---'}</td>
-                <td className="py-4 px-6 text-foreground">{r.checkOut || '---'}</td>
-                <td className="py-4 px-6 text-amber-500">
-                  {r.totalBreakMinutes > 0 ? formatMinutes(r.totalBreakMinutes) : '0m'}
-                </td>
-                <td className="py-4 px-6 text-primary font-black">
-                  {r.netWorkingHours > 0 ? formatHoursAndMinutes(r.netWorkingHours) : '---'}
-                </td>
-                <td className="py-4 px-6">
-                  {r.isLate ? (
-                    <span className="text-warning font-black">+{r.lateMinutes}m Late</span>
-                  ) : r.status === 'Present' ? (
-                    <span className="text-success font-black">On Time</span>
-                  ) : (
-                    <span className="text-muted">---</span>
-                  )}
-                </td>
-                <td className="py-4 px-6">
-                  {r.overtimeHours > 0 ? (
-                    <span className="text-purple-500 font-black inline-flex items-center gap-1">
-                      <Zap size={12} /> +{r.overtimeHours}h
-                    </span>
-                  ) : (
-                    <span className="text-muted">---</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-
-            {filteredRecords.length === 0 && (
-              <tr>
-                <td colSpan={9} className="py-12 text-center text-muted font-bold">
-                  No attendance records found matching filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AntTable<DayDetailedRecord> columns={columns} dataSource={filteredRecords} rowKey="id" pagination={false} locale={{ emptyText: 'No attendance records found matching filters.' }} scroll={{ x: 'max-content' }} onRow={(record) => ({ onClick: () => onSelectRecord?.(record), className: 'cursor-pointer' })} />
     </div>
   );
 };

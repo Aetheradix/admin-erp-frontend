@@ -14,7 +14,8 @@ import {
   Printer,
   Filter,
 } from 'lucide-react';
-import { message as antMessage } from 'antd';
+import { message as antMessage, Table as AntTable } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -167,6 +168,27 @@ interface LedgerTableProps {
 function LedgerTable({ title, entries, color, icon, defaultOpen = true }: LedgerTableProps) {
   const [open, setOpen] = useState(defaultOpen);
   const total = entries.reduce((sum, e) => sum + e.currentPeriod, 0);
+  const columns: ColumnsType<FinancialEntry> = [
+    {
+      title: 'Particulars',
+      dataIndex: 'particulars',
+      key: 'particulars',
+      render: (value: string) => <span style={{ color: '#cbd5e1' }}>{value}</span>,
+    },
+    {
+      title: 'Current Period (₹)',
+      dataIndex: 'currentPeriod',
+      key: 'currentPeriod',
+      align: 'right',
+      render: (value: number) => <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{fmt(value)}</span>,
+    },
+    {
+      title: '% of Total',
+      key: 'percentage',
+      align: 'right',
+      render: (_, entry) => <span style={{ color: '#64748b' }}>{total > 0 ? `${((entry.currentPeriod / total) * 100).toFixed(1)}%` : '—'}</span>,
+    },
+  ];
 
   return (
     <div
@@ -226,97 +248,27 @@ function LedgerTable({ title, entries, color, icon, defaultOpen = true }: Ledger
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
             style={{ overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  {['Particulars', 'Current Period (₹)', '% of Total'].map((h, i) => (
-                    <th
-                      key={h}
-                      style={{
-                        padding: '10px 20px',
-                        textAlign: i === 0 ? 'left' : 'right',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#475569',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.06em',
-                        background: 'rgba(255,255,255,0.02)',
-                      }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry, i) => (
-                  <tr
-                    key={i}
-                    style={{
-                      borderTop: '1px solid rgba(255,255,255,0.04)',
-                      transition: 'background 0.1s',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'transparent';
-                    }}>
-                    <td style={{ padding: '12px 20px', fontSize: 14, color: '#cbd5e1' }}>
-                      {entry.particulars}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px 20px',
-                        fontSize: 14,
-                        color: '#f1f5f9',
-                        fontWeight: 600,
-                        textAlign: 'right',
-                      }}>
-                      {fmt(entry.currentPeriod)}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px 20px',
-                        fontSize: 13,
-                        color: '#64748b',
-                        textAlign: 'right',
-                      }}>
-                      {total > 0 ? `${((entry.currentPeriod / total) * 100).toFixed(1)}%` : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr
-                  style={{
-                    borderTop: '1px solid rgba(255,255,255,0.1)',
-                    background: `${color}08`,
-                  }}>
-                  <td style={{ padding: '14px 20px', fontWeight: 800, fontSize: 14, color }}>
-                    Total {title}
-                  </td>
-                  <td
-                    style={{
-                      padding: '14px 20px',
-                      fontWeight: 800,
-                      fontSize: 15,
-                      color,
-                      textAlign: 'right',
-                    }}>
-                    {fmt(total)}
-                  </td>
-                  <td
-                    style={{
-                      padding: '14px 20px',
-                      textAlign: 'right',
-                      color: '#64748b',
-                      fontSize: 13,
-                    }}>
-                    100%
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+            <AntTable<FinancialEntry>
+              columns={columns}
+              dataSource={entries}
+              rowKey="particulars"
+              pagination={false}
+              size="small"
+              scroll={{ x: 'max-content' }}
+              summary={() => (
+                <AntTable.Summary.Row style={{ background: `${color}08` }}>
+                  <AntTable.Summary.Cell index={0}>
+                    <strong style={{ color }}>Total {title}</strong>
+                  </AntTable.Summary.Cell>
+                  <AntTable.Summary.Cell index={1} align="right">
+                    <strong style={{ color }}>{fmt(total)}</strong>
+                  </AntTable.Summary.Cell>
+                  <AntTable.Summary.Cell index={2} align="right">
+                    <span style={{ color: '#64748b' }}>100%</span>
+                  </AntTable.Summary.Cell>
+                </AntTable.Summary.Row>
+              )}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -775,8 +727,13 @@ export default function AuditBookPage() {
               }}>
               Net Profit / Loss Summary
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              {[
+            <AntTable
+              size="small"
+              pagination={false}
+              showHeader={false}
+              scroll={{ x: 'max-content' }}
+              rowKey="label"
+              dataSource={[
                 ['Total Revenue', fmt(totalRevenue), '#22c55e'],
                 ['Less: Expenses', `(${fmt(totalExpenses)})`, '#f87171'],
                 [
@@ -784,32 +741,12 @@ export default function AuditBookPage() {
                   fmt(Math.abs(netProfitLoss)),
                   netProfitLoss >= 0 ? '#6366f1' : '#f87171',
                 ],
-              ].map(([label, val, color], i) => (
-                <tr
-                  key={i}
-                  style={{ borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                  <td
-                    style={{
-                      padding: '8px 0',
-                      fontSize: 14,
-                      color: '#94a3b8',
-                      fontWeight: i === 2 ? 700 : 400,
-                    }}>
-                    {label}
-                  </td>
-                  <td
-                    style={{
-                      padding: '8px 0',
-                      fontSize: 14,
-                      color,
-                      fontWeight: 700,
-                      textAlign: 'right',
-                    }}>
-                    {val}
-                  </td>
-                </tr>
-              ))}
-            </table>
+              ].map(([label, value, color], index) => ({ key: String(index), label, value, color, index }))}
+              columns={[
+                { title: 'Label', dataIndex: 'label', key: 'label', render: (value, record) => <span style={{ color: '#94a3b8', fontWeight: record.index === 2 ? 700 : 400 }}>{value}</span> },
+                { title: 'Value', dataIndex: 'value', key: 'value', align: 'right' as const, render: (value, record) => <span style={{ color: record.color, fontWeight: 700 }}>{value}</span> },
+              ]}
+            />
           </div>
           <div>
             <div

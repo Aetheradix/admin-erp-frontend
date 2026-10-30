@@ -40,7 +40,7 @@ export const DataTable = <T extends object>({
   paginator,
   rows = 10,
   className,
-  scrollable,
+  scrollable = true,
   dataKey = 'id',
   loading,
   emptyMessage = 'No records found',
@@ -60,7 +60,7 @@ export const DataTable = <T extends object>({
       rowKey={dataKey}
       loading={loading}
       pagination={paginator ? { pageSize: rows, showSizeChanger: false } : false}
-      scroll={scrollable ? { x: true } : undefined}
+      scroll={scrollable ? { x: 'max-content' } : undefined}
       locale={{ emptyText: emptyMessage }}
       rowClassName={
         stripedRows ? (_, index) => (index % 2 === 1 ? 'bg-surface-subtle/30' : '') : undefined

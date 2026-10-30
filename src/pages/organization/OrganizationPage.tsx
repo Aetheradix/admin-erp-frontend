@@ -740,6 +740,7 @@ export function OrganizationPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
             <Table
+              scroll={{ x: 'max-content' }}
               columns={docColumns}
               dataSource={documents}
               rowKey="id"

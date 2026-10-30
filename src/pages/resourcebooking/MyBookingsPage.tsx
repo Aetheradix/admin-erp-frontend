@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 import {
   useGetMyResourceBookingsQuery,
@@ -21,6 +23,14 @@ const MyBookingsPage = () => {
       booking.purpose?.toLowerCase().includes(value)
     );
   });
+  const columns: ColumnsType<(typeof bookings)[number]> = [
+    { title: 'Resource', key: 'resource', render: (_, booking) => <><p className="font-medium">{booking.resource_name}</p><p className="text-xs text-muted-foreground">{booking.resource_type}</p></> },
+    { title: 'Purpose', dataIndex: 'purpose', key: 'purpose', render: (value) => value || '-' },
+    { title: 'Date', dataIndex: 'start_datetime', key: 'date', render: (value) => new Date(value).toLocaleDateString() },
+    { title: 'Time', key: 'time', render: (_, booking) => `${new Date(booking.start_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(booking.end_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` },
+    { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">{value}</span> },
+    { title: 'Action', key: 'action', align: 'right', render: (_, booking) => booking.status?.toLowerCase() !== 'cancelled' && <button type="button" disabled={cancelling} onClick={() => handleCancel(booking.id)} className="text-sm font-medium text-red-600 hover:underline">Cancel</button> },
+  ];
 
   const handleCancel = async (id: number) => {
     const confirmed = window.confirm('Are you sure you want to cancel this booking?');
@@ -56,81 +66,7 @@ const MyBookingsPage = () => {
       </div>
 
       <div className="overflow-hidden rounded-xl border">
-        {isLoading ? (
-          <div className="p-6">Loading bookings...</div>
-        ) : filteredBookings.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="font-medium">No bookings found</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b bg-muted/40">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Resource</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Purpose</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Time</th>
-
-                  <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-
-                  <th className="px-4 py-3 text-right text-sm font-medium">Action</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {filteredBookings.map((booking) => (
-                  <tr key={booking.id}>
-                    <td className="px-4 py-4">
-                      <p className="font-medium">{booking.resource_name}</p>
-
-                      <p className="text-xs text-muted-foreground">{booking.resource_type}</p>
-                    </td>
-
-                    <td className="px-4 py-4 text-sm">{booking.purpose || '-'}</td>
-
-                    <td className="px-4 py-4 text-sm">
-                      {new Date(booking.start_datetime).toLocaleDateString()}
-                    </td>
-
-                    <td className="px-4 py-4 text-sm">
-                      {new Date(booking.start_datetime).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                      {' - '}
-                      {new Date(booking.end_datetime).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
-                        {booking.status}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-4 text-right">
-                      {booking.status?.toLowerCase() !== 'cancelled' && (
-                        <button
-                          type="button"
-                          disabled={cancelling}
-                          onClick={() => handleCancel(booking.id)}
-                          className="text-sm font-medium text-red-600 hover:underline">
-                          Cancel
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <Table columns={columns} dataSource={filteredBookings} rowKey="id" loading={isLoading} pagination={false} locale={{ emptyText: 'No bookings found' }} scroll={{ x: 'max-content' }} />
       </div>
     </div>
   );

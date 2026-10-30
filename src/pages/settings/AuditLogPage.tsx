@@ -813,6 +813,7 @@ export function AuditLogPage() {
           </div>
 
           <Table
+            scroll={{ x: 'max-content' }}
             columns={columns}
             dataSource={filteredLogs}
             rowKey="id"
@@ -1032,7 +1033,7 @@ export function AuditLogPage() {
                 <span className="text-[10px] font-black uppercase tracking-wider text-muted">
                   Recorded Attribute Changes
                 </span>
-                <div className="rounded-xl border border-border-subtle overflow-hidden">
+                <div className="rounded-xl border border-border-subtle overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-surface-subtle/60 border-b border-border-subtle font-bold text-muted text-[10px] uppercase">
                       <tr>
