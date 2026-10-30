@@ -151,7 +151,7 @@ export default function AppLayout() {
   }, [darkMode, accentColor, density]);
 
   return (
-    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden selection:bg-primary selection:text-background relative font-body">
+    <div className="app-shell flex h-screen w-full bg-background text-foreground overflow-hidden selection:bg-primary selection:text-background relative font-body">
       <CursorGlow />
       <ConfirmDialog />
       <Toast />
@@ -288,8 +288,8 @@ export default function AppLayout() {
             </div>
           )}
 
-        <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 bg-background custom-scrollbar">
-          <div className="max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <main className="app-main flex-1 min-w-0 overflow-y-auto p-3 sm:p-6 lg:p-10 bg-background custom-scrollbar">
+          <div className="app-page-content min-w-0 max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
             <PageAccessGuard>
               <Outlet />
             </PageAccessGuard>

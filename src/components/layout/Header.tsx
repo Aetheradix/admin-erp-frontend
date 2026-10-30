@@ -18,7 +18,7 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
   const search = useGlobalSearch();
 
   return (
-    <header className="h-24 w-full flex items-center justify-between px-6 sm:px-8 lg:px-10 z-20 bg-background/80 backdrop-blur-md border-b border-border-subtle">
+    <header className="app-header h-16 sm:h-20 lg:h-24 w-full flex items-center justify-between px-3 sm:px-6 lg:px-10 z-20 bg-background/80 backdrop-blur-md border-b border-border-subtle">
       <div className="flex items-center gap-4 w-full max-w-2xl">
         {/* Mobile & Desktop Menu Toggle */}
         <Button
@@ -55,7 +55,7 @@ export default function Header({ onMenuClick, onCopilotClick }: HeaderProps) {
           onClick={onCopilotClick}
           aria-label="Gemini AI Copilot"
           title="Aether Copilot (Gemini AI)"
-          className="w-13! h-13! rounded-pill! bg-primary/10! border-primary/20! hover:bg-primary/20! text-primary transition-all duration-150 relative group">
+          className="w-10! h-10! sm:w-13! sm:h-13! rounded-pill! bg-primary/10! border-primary/20! hover:bg-primary/20! text-primary transition-all duration-150 relative group">
           <Sparkles
             size={20}
             className="animate-pulse group-hover:scale-110 transition-transform"

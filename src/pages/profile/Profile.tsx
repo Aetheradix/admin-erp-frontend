@@ -248,7 +248,7 @@ const Profile = () => {
         visible={showElevationDialog}
         onHide={() => setShowElevationDialog(false)}
         header="Request Admin Rights Elevation"
-        style={{ width: '450px' }}>
+        style={{ width: 'min(450px, calc(100vw - 2rem))' }}>
         <AdminElevationRequest onSuccess={() => setShowElevationDialog(false)} />
       </Dialog>
 
