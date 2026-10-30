@@ -1828,3 +1828,33 @@ export async function syncProfilesFromBackend(): Promise<void> {
     // Graceful offline fallback
   }
 }
+
+/**
+ * Fetches decrypted sensitive vault details (bank and identity fields) for an employee.
+ * Access is protected by authorization (self, HR, admin) and security audit logs on the server.
+ */
+export async function fetchSensitiveVaultDetails(
+  userId?: number | string,
+  reveal = true
+): Promise<{ bank?: any; identity?: any } | null> {
+  try {
+    const token = localStorage.getItem('token');
+    const target = userId || 'me';
+    const res = await fetch(
+      `${API_URL}/employee-profile/${target}/sensitive?reveal=${reveal ? 'true' : 'false'}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data || null;
+  } catch (err) {
+    console.warn('Failed to fetch sensitive vault details:', err);
+    return null;
+  }
+}
+

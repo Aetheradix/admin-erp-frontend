@@ -30,6 +30,8 @@ import { Button } from '@/components/ui/primitives/Button';
 import { useAuth } from '@/hooks/useAuth';
 import type { ProfileUserData } from '../hooks/useProfile';
 import type { ProfileCompletionData } from '@/services/employeeProfileService';
+import { fetchSensitiveVaultDetails } from '@/services/employeeProfileService';
+import { getFormDraft } from '@/utils/formDraftManager';
 
 interface ProfileInfoTabProps {
   user: ProfileUserData;
@@ -48,8 +50,122 @@ export const ProfileInfoTab = ({
 }: ProfileInfoTabProps) => {
   const { isSuperadmin } = useAuth();
   const [showMoreContact, setShowMoreContact] = useState(false);
-  const [showAccountNum, setShowAccountNum] = useState(false);
-  const [showAadhaar, setShowAadhaar] = useState(false);
+  // Independent visibility state for each sensitive field
+  const [visibleFields, setVisibleFields] = useState<{
+    accountNumber: boolean;
+    panNumber: boolean;
+    aadhaarNumber: boolean;
+    passportNumber: boolean;
+  }>({
+    accountNumber: false,
+    panNumber: false,
+    aadhaarNumber: false,
+    passportNumber: false,
+  });
+
+  const [vaultUnmasked, setVaultUnmasked] = useState<{ bank?: any; identity?: any } | null>(null);
+  const [isLoadingField, setIsLoadingField] = useState<Record<string, boolean>>({});
+
+  const toggleSensitiveField = async (
+    fieldKey: 'accountNumber' | 'panNumber' | 'aadhaarNumber' | 'passportNumber'
+  ) => {
+    const willShow = !visibleFields[fieldKey];
+
+    // If revealing for the first time and we don't have vaultUnmasked yet, fetch it securely
+    if (willShow && !vaultUnmasked) {
+      setIsLoadingField((prev) => ({ ...prev, [fieldKey]: true }));
+      try {
+        const data = await fetchSensitiveVaultDetails(user.id, true);
+        if (data) {
+          setVaultUnmasked(data);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch decrypted vault data:', err);
+      } finally {
+        setIsLoadingField((prev) => ({ ...prev, [fieldKey]: false }));
+      }
+    }
+
+    setVisibleFields((prev) => ({
+      ...prev,
+      [fieldKey]: willShow,
+    }));
+  };
+
+  const getSensitiveDisplay = (
+    fieldKey: 'accountNumber' | 'panNumber' | 'aadhaarNumber' | 'passportNumber',
+    storedValue?: string,
+    vaultValue?: string
+  ): string => {
+    const isRevealed = Boolean(visibleFields[fieldKey]);
+
+    // When revealed: return complete original unmasked value
+    if (isRevealed) {
+      if (vaultValue && !vaultValue.includes('•')) {
+        return vaultValue;
+      }
+      if (user?.id) {
+        if (fieldKey === 'accountNumber') {
+          const draft = getFormDraft<any>(user.id, 'bank')?.data?.accountNumber;
+          if (draft && !draft.includes('•')) return draft;
+        } else {
+          const idDraft = getFormDraft<any>(user.id, 'identity')?.data;
+          const val = idDraft?.[fieldKey];
+          if (val && !val.includes('•')) return val;
+        }
+      }
+      if (storedValue && !storedValue.includes('•')) {
+        return storedValue;
+      }
+      return vaultValue || storedValue || 'Not provided';
+    }
+
+    // When hidden: return masked representation (showing only last 4 characters where applicable)
+    const unmaskedCandidate =
+      (vaultValue && !vaultValue.includes('•') ? vaultValue : null) ||
+      (storedValue && !storedValue.includes('•') ? storedValue : null);
+
+    if (unmaskedCandidate) {
+      const clean = unmaskedCandidate.trim();
+      switch (fieldKey) {
+        case 'accountNumber': {
+          const last4 = clean.length >= 4 ? clean.slice(-4) : clean;
+          return `•••• ${last4}`;
+        }
+        case 'aadhaarNumber': {
+          const noSpaces = clean.replace(/[\s-]/g, '');
+          const last4 = noSpaces.length >= 4 ? noSpaces.slice(-4) : noSpaces;
+          return `•••••••• ${last4}`;
+        }
+        case 'panNumber': {
+          if (clean.length === 10) {
+            return `${clean.slice(0, 3)}•••••${clean.slice(-2)}`;
+          }
+          return `•••••• ${clean.slice(-4)}`;
+        }
+        case 'passportNumber': {
+          if (clean.length >= 4) {
+            return `${clean.charAt(0)}•••••${clean.slice(-2)}`;
+          }
+          return `•••• ${clean.slice(-2) || clean}`;
+        }
+      }
+    }
+
+    if (storedValue) {
+      if (fieldKey === 'accountNumber' && storedValue.includes('•')) {
+        const last4 = storedValue.replace(/[\s•-]/g, '');
+        return `•••• ${last4.slice(-4) || storedValue.slice(-4)}`;
+      }
+      if (fieldKey === 'aadhaarNumber' && storedValue.includes('•')) {
+        const last4 = storedValue.replace(/[\s•-]/g, '');
+        return `•••••••• ${last4.slice(-4) || storedValue.slice(-4)}`;
+      }
+      return storedValue;
+    }
+
+    return 'Not provided';
+  };
 
   const personal = empProfile?.personal;
   const bank = empProfile?.bank;
@@ -64,13 +180,6 @@ export const ProfileInfoTab = ({
   const effectivePermanentAddress =
     personal?.permanentAddress || personal?.currentAddress || user.address || 'Not specified';
 
-  const maskString = (val?: string, visibleChars = 4) => {
-    if (!val) return 'Not specified';
-    const clean = val.replace(/\s+/g, '');
-    if (clean.length <= visibleChars) return clean;
-    const masked = '•'.repeat(Math.max(0, clean.length - visibleChars));
-    return `${masked} ${clean.slice(-visibleChars)}`;
-  };
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-300">
@@ -306,14 +415,27 @@ export const ProfileInfoTab = ({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setShowAccountNum(!showAccountNum)}
-                  className="text-muted hover:text-foreground text-[10px] font-semibold flex items-center gap-1 cursor-pointer">
-                  {showAccountNum ? <EyeOff size={11} /> : <Eye size={11} />}
-                  <span>{showAccountNum ? 'Hide' : 'Reveal'}</span>
+                  onClick={() => toggleSensitiveField('accountNumber')}
+                  title={visibleFields.accountNumber ? 'Hide Details' : 'Show Details'}
+                  aria-label={visibleFields.accountNumber ? 'Hide Details' : 'Show Details'}
+                  disabled={isLoadingField.accountNumber}
+                  className="text-muted hover:text-foreground hover:bg-surface-subtle px-1.5 py-0.5 rounded-md text-[10px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all duration-150 group">
+                  {isLoadingField.accountNumber ? (
+                    <i className="pi pi-spin pi-spinner text-[10px]" />
+                  ) : visibleFields.accountNumber ? (
+                    <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                  ) : (
+                    <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                  )}
+                  <span>{visibleFields.accountNumber ? 'Hide' : 'Reveal'}</span>
                 </button>
               </div>
               <span className="text-sm font-mono font-bold text-foreground">
-                {showAccountNum ? bank.accountNumber : maskString(bank.accountNumber)}
+                {getSensitiveDisplay(
+                  'accountNumber',
+                  bank.accountNumber,
+                  vaultUnmasked?.bank?.accountNumber
+                )}
               </span>
               <span className="text-[10px] font-mono font-semibold text-primary">
                 IFSC: {bank.ifscCode}
@@ -372,11 +494,35 @@ export const ProfileInfoTab = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
             {/* PAN */}
             <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white border border-border-subtle shadow-2xs">
-              <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider flex items-center gap-1">
-                <FileText size={12} /> PAN Card
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider flex items-center gap-1">
+                  <FileText size={12} /> PAN Card
+                </span>
+                {identity.panNumber && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSensitiveField('panNumber')}
+                    title={visibleFields.panNumber ? 'Hide Details' : 'Show Details'}
+                    aria-label={visibleFields.panNumber ? 'Hide Details' : 'Show Details'}
+                    disabled={isLoadingField.panNumber}
+                    className="text-muted hover:text-foreground hover:bg-surface-subtle px-1.5 py-0.5 rounded-md text-[10px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all duration-150 group">
+                    {isLoadingField.panNumber ? (
+                      <i className="pi pi-spin pi-spinner text-[10px]" />
+                    ) : visibleFields.panNumber ? (
+                      <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                    )}
+                    <span>{visibleFields.panNumber ? 'Hide' : 'Reveal'}</span>
+                  </button>
+                )}
+              </div>
               <span className="text-sm font-mono font-black text-foreground tracking-wider">
-                {identity.panNumber || 'Not provided'}
+                {getSensitiveDisplay(
+                  'panNumber',
+                  identity.panNumber,
+                  vaultUnmasked?.identity?.panNumber
+                )}
               </span>
               <span className="text-[10px] text-success font-semibold flex items-center gap-1 mt-0.5">
                 <CheckCircle2 size={10} /> Tax Identification Active
@@ -389,27 +535,66 @@ export const ProfileInfoTab = ({
                 <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider flex items-center gap-1">
                   <Shield size={12} /> Aadhaar Number
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setShowAadhaar(!showAadhaar)}
-                  className="text-muted hover:text-foreground text-[10px] font-semibold flex items-center gap-1 cursor-pointer">
-                  {showAadhaar ? <EyeOff size={11} /> : <Eye size={11} />}
-                  <span>{showAadhaar ? 'Hide' : 'Reveal'}</span>
-                </button>
+                {identity.aadhaarNumber && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSensitiveField('aadhaarNumber')}
+                    title={visibleFields.aadhaarNumber ? 'Hide Details' : 'Show Details'}
+                    aria-label={visibleFields.aadhaarNumber ? 'Hide Details' : 'Show Details'}
+                    disabled={isLoadingField.aadhaarNumber}
+                    className="text-muted hover:text-foreground hover:bg-surface-subtle px-1.5 py-0.5 rounded-md text-[10px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all duration-150 group">
+                    {isLoadingField.aadhaarNumber ? (
+                      <i className="pi pi-spin pi-spinner text-[10px]" />
+                    ) : visibleFields.aadhaarNumber ? (
+                      <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                    )}
+                    <span>{visibleFields.aadhaarNumber ? 'Hide' : 'Reveal'}</span>
+                  </button>
+                )}
               </div>
               <span className="text-sm font-mono font-bold text-foreground tracking-wider">
-                {showAadhaar ? identity.aadhaarNumber : maskString(identity.aadhaarNumber)}
+                {getSensitiveDisplay(
+                  'aadhaarNumber',
+                  identity.aadhaarNumber,
+                  vaultUnmasked?.identity?.aadhaarNumber
+                )}
               </span>
               <span className="text-[10px] text-muted">Government Verified ID</span>
             </div>
 
             {/* Passport / DL */}
             <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white border border-border-subtle shadow-2xs">
-              <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider flex items-center gap-1">
-                <Globe size={12} /> Passport / DL
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider flex items-center gap-1">
+                  <Globe size={12} /> Passport / DL
+                </span>
+                {(identity.passportNumber || identity.drivingLicense) && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSensitiveField('passportNumber')}
+                    title={visibleFields.passportNumber ? 'Hide Details' : 'Show Details'}
+                    aria-label={visibleFields.passportNumber ? 'Hide Details' : 'Show Details'}
+                    disabled={isLoadingField.passportNumber}
+                    className="text-muted hover:text-foreground hover:bg-surface-subtle px-1.5 py-0.5 rounded-md text-[10px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all duration-150 group">
+                    {isLoadingField.passportNumber ? (
+                      <i className="pi pi-spin pi-spinner text-[10px]" />
+                    ) : visibleFields.passportNumber ? (
+                      <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                    )}
+                    <span>{visibleFields.passportNumber ? 'Hide' : 'Reveal'}</span>
+                  </button>
+                )}
+              </div>
               <span className="text-sm font-mono font-bold text-foreground">
-                {identity.passportNumber || identity.drivingLicense || 'Optional / Not added'}
+                {getSensitiveDisplay(
+                  'passportNumber',
+                  identity.passportNumber || identity.drivingLicense,
+                  vaultUnmasked?.identity?.passportNumber || vaultUnmasked?.identity?.drivingLicense
+                )}
               </span>
               <span className="text-[10px] text-muted">Travel & Driving Document</span>
             </div>
