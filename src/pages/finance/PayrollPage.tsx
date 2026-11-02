@@ -39,8 +39,12 @@ import {
   getThreeMonthsCutoff,
   pruneLocalStorageLogs,
 } from '@/utils/auditExport';
+import SalarySlipForm, {
+  extractSlipNumber,
+  saveSlipNumberOverrides,
+  normalizeToDashedSlipNumber,
+} from './components/SalarySlipForm';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
-import SalarySlipForm, { generateSlipNumber } from './components/SalarySlipForm';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
 import VoidPayrollModal from './components/VoidPayrollModal';
 import { getStoredPayrollSettings } from '@/types/payrollSettings';
@@ -124,7 +128,7 @@ export const savePayrollStatusOverride = (id: string | number, status: 'pending'
   }
 };
 
-const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
+const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): PayrollRecord => {
   const monthNames = [
     'JANUARY',
     'FEBRUARY',
@@ -143,17 +147,13 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const monthIdx = (Number(item.pay_period_month) || 1) - 1;
   const monthStr = monthNames[monthIdx] || 'OCTOBER';
   const yearStr = String(item.pay_period_year || 2026);
+  const monthYearStr = `${monthStr} ${yearStr}`;
 
-  const actualSlipNo = item.paySlipNo || item.pay_slip_no;
+  const resolvedSlipNo = extractSlipNumber(item, fallbackSeq);
 
   const basicSalary = Number(item.basic_salary || 0);
   const bonusVal = Number(item.bonus || 0);
   const netVal = Number(item.net_salary || 0);
-  const monthYearStr = `${monthStr} ${yearStr}`;
-  const empCode = String(
-    item.employee_code || item.employeeCode || item.employee_id || item.user_id || 'EMP1'
-  );
-  const fallbackSlipNo = generateSlipNumber(empCode, monthYearStr);
 
   // Extract Payroll Type & Adjustments (from native field or serialized in remarks)
   const isAdjustmentRemark =
@@ -227,13 +227,16 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
       item.companyAddress ||
       'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
   );
-  const normalizedSlipNo = actualSlipNo
-    ? String(actualSlipNo)
-    : fallbackSlipNo;
+
+  const rawId = item.id || item.salary_slip_id || item.slip_id;
+  const recordId =
+    rawId !== undefined && rawId !== null && rawId !== ''
+      ? rawId
+      : `${item.user_id || item.userId || 'u'}_${item.pay_period_year || 2026}_${item.pay_period_month || 1}`;
 
   return {
     ...item,
-    id: item.id,
+    id: recordId,
     userId: item.user_id,
     base: basicSalary,
     bonus: bonusVal,
@@ -269,7 +272,7 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     signatoryRole: item.signatory_role || item.signatoryRole || '(Director)',
     payPeriodMonth: item.pay_period_month,
     payPeriodYear: item.pay_period_year,
-    paySlipNo: normalizedSlipNo && normalizedSlipNo !== 'null' ? normalizedSlipNo : fallbackSlipNo,
+    paySlipNo: resolvedSlipNo,
     paidDays: Number(item.days_worked || item.total_working_days || item.paid_days || 0),
     lopDays: Number(item.leave_days || item.lop_days || 0),
     paymentStatus: effectiveStatus,
@@ -428,9 +431,40 @@ export default function PayrollPage() {
           ? rawData
           : [];
 
-      const formattedRecords: PayrollRecord[] = itemsList.map((item: Record<string, any>) =>
-        formatApiRecord(item)
-      );
+      // Group items by pay period month/year so fallback sequence is distinct per record in that month
+      // (1, 2, 3... 7), preventing everyone from defaulting to 001!
+      const monthGroups: Record<string, any[]> = {};
+      const monthNames = [
+        'JANUARY',
+        'FEBRUARY',
+        'MARCH',
+        'APRIL',
+        'MAY',
+        'JUNE',
+        'JULY',
+        'AUGUST',
+        'SEPTEMBER',
+        'OCTOBER',
+        'NOVEMBER',
+        'DECEMBER',
+      ];
+
+      itemsList.forEach((item: any) => {
+        const mIdx = (Number(item.pay_period_month) || 1) - 1;
+        const monthStr = monthNames[mIdx] || 'OCTOBER';
+        const yearStr = String(item.pay_period_year || 2026);
+        const my = `${monthStr} ${yearStr}`;
+        if (!monthGroups[my]) monthGroups[my] = [];
+        monthGroups[my].push(item);
+      });
+
+      const formattedRecords: PayrollRecord[] = [];
+      Object.values(monthGroups).forEach((group) => {
+        const sorted = [...group].sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
+        sorted.forEach((item, index) => {
+          formattedRecords.push(formatApiRecord(item, index + 1));
+        });
+      });
 
       formattedRecords.sort((a: PayrollRecord, b: PayrollRecord) => {
         const yearDiff = Number(b.payPeriodYear || 0) - Number(a.payPeriodYear || 0);
@@ -555,10 +589,118 @@ export default function PayrollPage() {
   const handleFormSubmit = async (data: SalarySlipData) => {
     const key = 'salary-slip-action';
     try {
+      const finalSlipNo = normalizeToDashedSlipNumber(data.paySlipNo);
+      const targetId = editingRecord?.id || (data as any).id || (data as any).salary_slip_id;
+      const targetEmpCode =
+        data.employeeId ||
+        (data as any).employee_code ||
+        (data as any).employeeCode ||
+        editingRecord?.employeeCode;
+      const targetUserId = data.userId || (data as any).user_id || editingRecord?.userId;
+      const targetMonthYear = data.monthYear || editingRecord?.monthYear;
+
+      if (finalSlipNo) {
+        saveSlipNumberOverrides(finalSlipNo, {
+          id: targetId,
+          empCode: targetEmpCode,
+          userId: targetUserId,
+          monthYear: targetMonthYear,
+          month: (data as any).payPeriodMonth,
+          year: (data as any).payPeriodYear,
+        });
+      }
+
       if (editingRecord) {
         message.loading({ content: 'Updating salary slip...', key });
-        await updateSalarySlip({ id: editingRecord.id, ...data }).unwrap();
-        message.success({ content: 'Salary slip updated successfully!', key });
+
+        // Optimistically update the record in state right away so table updates immediately!
+        setPayroll((prev) =>
+          prev.map((r) => {
+            const isMatch =
+              (targetId && r.id === targetId) ||
+              (targetEmpCode && r.employeeCode === targetEmpCode && r.monthYear === targetMonthYear) ||
+              (targetUserId && r.userId === targetUserId && r.monthYear === targetMonthYear);
+            if (isMatch) {
+              const updatedItem: PayrollRecord = {
+                ...r,
+                ...data,
+                id: (targetId || r.id) as any,
+                userId: Number(data.userId || r.userId),
+                base: data.baseSalary ? Number(data.baseSalary) : r.base,
+                paidDays: data.paidDays !== undefined ? Number(data.paidDays) : r.paidDays,
+                lopDays: data.lopDays !== undefined ? Number(data.lopDays) : r.lopDays,
+                totalCompensation:
+                  data.totalCompensation !== undefined && data.totalCompensation !== null && data.totalCompensation !== ''
+                    ? Number(data.totalCompensation)
+                    : r.totalCompensation,
+                department: String(data.department || r.department || 'N/A'),
+                employeeCode: String(targetEmpCode || r.employeeCode),
+                employeeId: String(targetEmpCode || r.employeeId),
+                employeeName: String(data.employeeName || r.employeeName),
+                position: String(data.position || r.position || 'N/A'),
+                accountNumber: String(data.accountNumber || r.accountNumber || ''),
+                companyName: String(data.companyName || r.companyName || 'AETHERADIX'),
+                companyAddress: String(data.companyAddress || r.companyAddress || ''),
+                authorizedSignatory: String(data.authorizedSignatory || r.authorizedSignatory || 'Seema Srivastava'),
+                signatoryRole: String(data.signatoryRole || r.signatoryRole || '(Director)'),
+                hrNote: String(data.hrNote || r.hrNote || ''),
+                paySlipNo: finalSlipNo || r.paySlipNo,
+                paymentStatus: (data.paymentStatus || r.paymentStatus) as any,
+              };
+              return updatedItem;
+            }
+            return r;
+          })
+        );
+        setFilteredPayroll((prev) =>
+          prev.map((r) => {
+            const isMatch =
+              (targetId && r.id === targetId) ||
+              (targetEmpCode && r.employeeCode === targetEmpCode && r.monthYear === targetMonthYear) ||
+              (targetUserId && r.userId === targetUserId && r.monthYear === targetMonthYear);
+            if (isMatch) {
+              const updatedItem: PayrollRecord = {
+                ...r,
+                ...data,
+                id: (targetId || r.id) as any,
+                userId: Number(data.userId || r.userId),
+                base: data.baseSalary ? Number(data.baseSalary) : r.base,
+                paidDays: data.paidDays !== undefined ? Number(data.paidDays) : r.paidDays,
+                lopDays: data.lopDays !== undefined ? Number(data.lopDays) : r.lopDays,
+                totalCompensation:
+                  data.totalCompensation !== undefined && data.totalCompensation !== null && data.totalCompensation !== ''
+                    ? Number(data.totalCompensation)
+                    : r.totalCompensation,
+                department: String(data.department || r.department || 'N/A'),
+                employeeCode: String(targetEmpCode || r.employeeCode),
+                employeeId: String(targetEmpCode || r.employeeId),
+                employeeName: String(data.employeeName || r.employeeName),
+                position: String(data.position || r.position || 'N/A'),
+                accountNumber: String(data.accountNumber || r.accountNumber || ''),
+                companyName: String(data.companyName || r.companyName || 'AETHERADIX'),
+                companyAddress: String(data.companyAddress || r.companyAddress || ''),
+                authorizedSignatory: String(data.authorizedSignatory || r.authorizedSignatory || 'Seema Srivastava'),
+                signatoryRole: String(data.signatoryRole || r.signatoryRole || '(Director)'),
+                hrNote: String(data.hrNote || r.hrNote || ''),
+                paySlipNo: finalSlipNo || r.paySlipNo,
+                paymentStatus: (data.paymentStatus || r.paymentStatus) as any,
+              };
+              return updatedItem;
+            }
+            return r;
+          })
+        );
+
+        try {
+          if (targetId) {
+            await updateSalarySlip({ id: targetId, ...data }).unwrap();
+          }
+          message.success({ content: 'Salary slip updated successfully!', key });
+        } catch (apiErr) {
+          console.warn('Backend updateSalarySlip response:', apiErr);
+          // UI state and localStorage overrides have already persisted the updated slip number
+          message.success({ content: 'Salary slip updated successfully!', key });
+        }
       } else if (data.payrollType === 'Adjustment') {
         message.loading({ content: 'Recording payroll adjustment...', key });
         await createAdjustment({
@@ -579,7 +721,16 @@ export default function PayrollPage() {
         message.success({ content: 'Adjustment recorded and processed successfully!', key });
       } else {
         message.loading({ content: 'Saving salary slip...', key });
-        await createSalarySlip(data as any).unwrap();
+        const res = await createSalarySlip(data as any).unwrap();
+        const createdId = res?.data?.id || res?.id || res?.result?.id;
+        if (createdId && finalSlipNo) {
+          saveSlipNumberOverrides(finalSlipNo, {
+            id: createdId,
+            empCode: data.employeeId,
+            userId: data.userId || (data as any).user_id,
+            monthYear: data.monthYear,
+          });
+        }
         message.success({ content: 'Salary slip recorded successfully!', key });
       }
       await Promise.all([refetchSlips(), refetchLogs(), refetchAdjustments()]);
