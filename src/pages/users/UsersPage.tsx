@@ -23,7 +23,7 @@ import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Button } from '@/components/ui/primitives/Button';
-import { Table, Dropdown, message, Tag, Tooltip } from 'antd';
+import { Table, Dropdown, message, Tag, Tooltip, Select as AntSelect } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 
@@ -59,6 +59,9 @@ export interface UserRecord {
   avatar: string;
   contactNo?: string;
   address?: string;
+  roles?: Array<{ id: number; name: string; is_system: boolean }>;
+  reportingManagerId?: number | null;
+  reportingManagerName?: string | null;
   createdAt?: string;
 }
 
@@ -268,6 +271,8 @@ export function UsersPage() {
       name: string;
       email: string;
       role: string;
+      roleIds: number[];
+      reportingManagerId: number | null;
       department: string;
       status: string;
       contactNo: string;
@@ -280,6 +285,8 @@ export function UsersPage() {
       name: '',
       email: '',
       role: 'Employee',
+      roleIds: [],
+      reportingManagerId: null,
       department: 'Engineering',
       status: 'Active',
       contactNo: '',
@@ -339,6 +346,9 @@ export function UsersPage() {
           avatar: initials,
           contactNo: (u as any).contact_number || (u as any).contactNo || '',
           address: (u as any).address || '',
+          roles: (u as any).roles || [],
+          reportingManagerId: (u as any).reporting_manager_id ?? (u as any).reportingManagerId ?? null,
+          reportingManagerName: (u as any).reporting_manager_name ?? (u as any).reportingManagerName ?? null,
           createdAt: u.join_date || u.joinDate || 'Recently',
         };
       });
@@ -543,6 +553,7 @@ export function UsersPage() {
 
   // Open Edit User modal
   const handleOpenEditUser = (record: UserRecord) => {
+    const roleIds = record.roles?.map((r) => r.id) || [];
     setEditUserModal({
       open: true,
       user: record,
@@ -550,6 +561,8 @@ export function UsersPage() {
         name: record.name,
         email: record.email,
         role: record.role,
+        roleIds: roleIds.length > 0 ? roleIds : [],
+        reportingManagerId: record.reportingManagerId ?? null,
         department: record.department,
         status: record.status,
         contactNo: record.contactNo || '',
@@ -600,7 +613,9 @@ export function UsersPage() {
         role: edited.role,
         department: edited.department,
         status: edited.status,
-      }).unwrap();
+        roleIds: edited.roleIds,
+        reporting_manager_id: edited.reportingManagerId,
+      } as any).unwrap();
     } catch {
       // Local fallback
     }
@@ -796,14 +811,48 @@ export function UsersPage() {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
-      render: (role) => (
-        <span
-          className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-            roleColors[role] || 'bg-surface-subtle text-muted border-border-subtle'
-          }`}>
-          {role}
-        </span>
-      ),
+      render: (role, record) => {
+        if (record.roles && record.roles.length > 0) {
+          return (
+            <div className="flex flex-wrap gap-1 max-w-[220px]">
+              {record.roles.map((r) => (
+                <Tag
+                  key={r.id}
+                  color={
+                    r.name?.toLowerCase().includes('admin') ||
+                    r.name?.toLowerCase().includes('founder')
+                      ? 'volcano'
+                      : 'blue'
+                  }
+                  className="text-[10px] font-bold uppercase tracking-wider rounded-md">
+                  {r.name}
+                </Tag>
+              ))}
+            </div>
+          );
+        }
+        return (
+          <span
+            className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+              roleColors[role] || 'bg-surface-subtle text-muted border-border-subtle'
+            }`}>
+            {role}
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Reporting Manager',
+      key: 'reportingManager',
+      render: (_, record) =>
+        record.reportingManagerName ? (
+          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0" />
+            {record.reportingManagerName}
+          </span>
+        ) : (
+          <span className="text-xs text-muted/60 italic">None (Root)</span>
+        ),
     },
     {
       title: 'Department',
@@ -1500,7 +1549,7 @@ export function UsersPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-                Role
+                Primary Role
               </label>
               <Select
                 options={availableRoles}
@@ -1529,6 +1578,62 @@ export function UsersPage() {
                 }
               />
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
+              Assigned Roles (RBAC Permissions)
+            </label>
+            <AntSelect
+              mode="multiple"
+              placeholder="Select assigned roles"
+              value={editUserModal.form.roleIds}
+              onChange={(vals) => {
+                const selectedRoles = (rolesData?.data || []).filter((r) => vals.includes(r.id));
+                const primaryRole = selectedRoles[0]?.name || editUserModal.form.role;
+                setEditUserModal({
+                  ...editUserModal,
+                  form: {
+                    ...editUserModal.form,
+                    roleIds: vals,
+                    role: primaryRole,
+                  },
+                });
+              }}
+              options={(rolesData?.data || []).map((r) => ({
+                label: r.name,
+                value: r.id,
+              }))}
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
+              Reporting Manager (Organization Hierarchy)
+            </label>
+            <AntSelect
+              allowClear
+              showSearch
+              placeholder="Select reporting manager (optional)"
+              filterOption={(input, option) =>
+                String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+              value={editUserModal.form.reportingManagerId ?? undefined}
+              onChange={(val) =>
+                setEditUserModal({
+                  ...editUserModal,
+                  form: { ...editUserModal.form, reportingManagerId: val ?? null },
+                })
+              }
+              options={mergedUsers
+                .filter((u) => String(u.id) !== String(editUserModal.user?.id))
+                .map((u) => ({
+                  label: `${u.name} (${u.role} - ${u.email})`,
+                  value: Number(u.id),
+                }))}
+              className="w-full"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

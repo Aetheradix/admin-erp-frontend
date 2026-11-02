@@ -31,6 +31,7 @@ import { motion } from 'framer-motion';
 import { Table, message, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { BranchesPage } from './BranchesPage';
+import { OrganizationHierarchyView } from './components/OrganizationHierarchyView';
 import { useUploadImageMutation } from '@/store/api/uploadSlice';
 
 // --- DATA STRUCTURES ---
@@ -250,6 +251,7 @@ export function OrganizationPage() {
 
   const TABS = [
     'Overview',
+    'Organization Hierarchy',
     'What We Do',
     'Company Policies',
     'Document Vault',
@@ -556,6 +558,13 @@ export function OrganizationPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── TAB 1.5: ORGANIZATION HIERARCHY ── */}
+      {activeTab === 'Organization Hierarchy' && (
+        <div className="flex flex-col gap-8">
+          <OrganizationHierarchyView />
         </div>
       )}
 

@@ -298,6 +298,12 @@ export interface StaffMember {
   join_date?: string;
   image?: string;
   image_url?: string;
+  roles?: Array<{ id: number; name: string; is_system: boolean }>;
+  reporting_manager_id?: number | null;
+  reporting_manager_name?: string | null;
+  reporting_manager_email?: string | null;
+  reporting_manager_role?: string | null;
+  reporting_manager_image?: string | null;
   skills: string[];
   employee_id?: string;
   employee_code?: string;

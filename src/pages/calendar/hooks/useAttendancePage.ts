@@ -24,6 +24,7 @@ export const useAttendancePage = () => {
   const [updateLeaveStatus, { isLoading: isUpdatingStatus }] = useUpdateLeaveStatusMutation();
 
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Show requests on calendar for both employee and admin
@@ -35,6 +36,7 @@ export const useAttendancePage = () => {
   const handleRequestSubmit = async (
     data: Partial<AttendanceRequest> & { startDate: string; endDate: string }
   ) => {
+    setSubmissionError(null);
     try {
       await createLeaveRequest({
         type: data.type,
@@ -54,6 +56,7 @@ export const useAttendancePage = () => {
       const errMsg =
         (error as { data?: { message?: string } })?.data?.message ||
         'Failed to submit request. Please try again.';
+      setSubmissionError(errMsg);
       showToast({
         severity: 'error',
         summary: 'Submission Failed',
@@ -116,6 +119,8 @@ export const useAttendancePage = () => {
     isUpdatingStatus,
     showRequestForm,
     setShowRequestForm,
+    submissionError,
+    setSubmissionError,
     selectedDate,
     setSelectedDate,
     handleRequestSubmit,

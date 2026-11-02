@@ -2,6 +2,51 @@ import type { AttendanceRequest } from '@/types/models';
 import type { DayApproval } from '@/types/dayApproval';
 import { apiSlice } from './apiSlice';
 
+export interface LeaveApproverConfig {
+  id: number | null;
+  rule_type: 'default_founder' | 'hr' | 'reporting_manager' | 'specific_user' | 'role';
+  target_role_id?: number | null;
+  target_role_name?: string | null;
+  specific_user_id?: number | null;
+  specific_user_name?: string | null;
+  specific_user_email?: string | null;
+  department_id?: number | null;
+  department_name?: string | null;
+  is_active: boolean | number;
+  priority: number;
+  description?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ResolvedLeaveApprover {
+  ruleType: string;
+  approverIds: number[];
+  approvers: Array<{
+    id: number;
+    username: string;
+    email: string;
+    role: string;
+    department?: string;
+    designation?: string;
+    image_url?: string;
+    reason: string;
+  }>;
+}
+
+export interface LeaveApprovalHistoryItem {
+  id: number;
+  leave_request_id: number;
+  approver_id: number;
+  action: string;
+  comments?: string | null;
+  created_at: string;
+  approver_name?: string;
+  approver_email?: string;
+  approver_role?: string;
+  approver_image?: string;
+}
+
 export const leaveSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getLeaves: builder.query<AttendanceRequest[], void>({
@@ -35,7 +80,7 @@ export const leaveSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { status, comment },
       }),
-      invalidatesTags: ['Leaves', 'Attendance', 'DayApprovals'],
+      invalidatesTags: ['Leaves', 'Attendance', 'DayApprovals', 'ApprovalLogs'],
     }),
 
     deleteLeaveRequest: builder.mutation<{ success: boolean }, string | number>({
@@ -47,8 +92,6 @@ export const leaveSlice = apiSlice.injectEndpoints({
     }),
 
     // Day-Wise Approval Endpoints
-
-    /** Fetch all day-level approval records for a specific leave request. GET /leaves/:id/days */
     getLeaveRequestDays: builder.query<DayApproval[], string | number>({
       query: (leaveRequestId) => `/leaves/${leaveRequestId}/days`,
       providesTags: (result, _err, leaveRequestId) =>
@@ -68,7 +111,6 @@ export const leaveSlice = apiSlice.injectEndpoints({
       },
     }),
 
-    /** Approve a single day. POST /leaves/:id/days/:date/approve  body: { remark? } */
     approveLeaveDay: builder.mutation<
       DayApproval,
       { leaveRequestId: string | number; date: string; remark?: string }
@@ -84,7 +126,6 @@ export const leaveSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-    /** Reject a single day. POST /leaves/:id/days/:date/reject  body: { remark } */
     rejectLeaveDay: builder.mutation<
       DayApproval,
       { leaveRequestId: string | number; date: string; remark: string }
@@ -100,7 +141,6 @@ export const leaveSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-    /** Bulk-approve all pending days. POST /leaves/:id/days/bulk-approve  body: { remark? } */
     bulkApproveLeave: builder.mutation<
       { updated: number },
       { leaveRequestId: string | number; remark?: string }
@@ -116,7 +156,6 @@ export const leaveSlice = apiSlice.injectEndpoints({
       ],
     }),
 
-    /** Bulk-reject selected days. POST /leaves/:id/days/bulk-reject  body: { dates?, remark } */
     bulkRejectLeave: builder.mutation<
       { updated: number },
       { leaveRequestId: string | number; dates?: string[]; remark: string }
@@ -130,6 +169,52 @@ export const leaveSlice = apiSlice.injectEndpoints({
         { type: 'DayApprovals', id: String(leaveRequestId) },
         'Leaves',
       ],
+    }),
+
+    // Leave Approver Configuration Endpoints
+    getLeaveApproverConfig: builder.query<
+      { success: boolean; data: LeaveApproverConfig },
+      { departmentId?: number } | void
+    >({
+      query: (params) => ({
+        url: '/leaves/approver-config',
+        params: params || {},
+      }),
+      providesTags: ['LeaveApproverConfig'],
+    }),
+
+    updateLeaveApproverConfig: builder.mutation<
+      { success: boolean; message: string; data: LeaveApproverConfig },
+      {
+        rule_type: string;
+        target_role_id?: number | null;
+        specific_user_id?: number | null;
+        department_id?: number | null;
+        description?: string | null;
+      }
+    >({
+      query: (body) => ({
+        url: '/leaves/approver-config',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['LeaveApproverConfig', 'Leaves', 'RoleAuditLogs'],
+    }),
+
+    getLeaveApproverForUser: builder.query<
+      { success: boolean; data: ResolvedLeaveApprover },
+      number | string | void
+    >({
+      query: (userId) => (userId ? `/leaves/approver-for-user/${userId}` : '/leaves/approver-for-me'),
+      providesTags: ['LeaveApproverConfig', 'User'],
+    }),
+
+    getLeaveHistory: builder.query<
+      { success: boolean; data: LeaveApprovalHistoryItem[] },
+      number | string
+    >({
+      query: (id) => `/leaves/${id}/history`,
+      providesTags: (_res, _err, id) => [{ type: 'Leaves', id }],
     }),
   }),
 });
@@ -145,4 +230,8 @@ export const {
   useRejectLeaveDayMutation,
   useBulkApproveLeaveMutation,
   useBulkRejectLeaveMutation,
+  useGetLeaveApproverConfigQuery,
+  useUpdateLeaveApproverConfigMutation,
+  useGetLeaveApproverForUserQuery,
+  useGetLeaveHistoryQuery,
 } = leaveSlice;

@@ -278,6 +278,21 @@ export const mapStaffMember = (member: Record<string, unknown>): StaffMember => 
     join_date: member.join_date ? String(member.join_date) : undefined,
     image: member.image ? String(member.image) : undefined,
     image_url: member.image_url ? String(member.image_url) : undefined,
+    roles: Array.isArray(member.roles) ? (member.roles as StaffMember['roles']) : undefined,
+    reporting_manager_id:
+      member.reporting_manager_id != null ? Number(member.reporting_manager_id) : undefined,
+    reporting_manager_name: member.reporting_manager_name
+      ? String(member.reporting_manager_name)
+      : undefined,
+    reporting_manager_email: member.reporting_manager_email
+      ? String(member.reporting_manager_email)
+      : undefined,
+    reporting_manager_role: member.reporting_manager_role
+      ? String(member.reporting_manager_role)
+      : undefined,
+    reporting_manager_image: member.reporting_manager_image
+      ? String(member.reporting_manager_image)
+      : undefined,
     skills: parseJsonArray(member.skills),
     employee_id: member.employee_id ? String(member.employee_id) : undefined,
     employee_code: member.employee_code
