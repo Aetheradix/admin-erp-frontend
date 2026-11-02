@@ -50,7 +50,8 @@ export const parseSlipNumber = (
 ): { employeeCode: string; month: string; year: string; slipNo: string; sequence: number } | null => {
   if (!slipNumber) return null;
   const trimmed = String(slipNumber).trim();
-  const match = trimmed.match(/^E[X]?([A-Za-z0-9]+)-(\d{2})(\d{2})(\d{3})$/);
+  // Support 3 or more digits for slip sequence (e.g. 001, 005, 042, 999, 1000...)
+  const match = trimmed.match(/^E[X]?([A-Za-z0-9]+)-(\d{2})(\d{2})(\d{3,})$/);
   if (!match) return null;
   return {
     employeeCode: formatEmployeeCode(match[1]),

@@ -769,7 +769,8 @@ const SalarySlipForm = ({
   };
 
   const handleSlipSequenceChange = (newSeq: number | string) => {
-    const num = Math.max(1, Math.min(999, Number(newSeq) || 1));
+    const raw = Number(newSeq);
+    const num = isNaN(raw) || raw < 1 ? 1 : Math.floor(raw);
     setSlipSequence(num);
     const empCode =
       formData.employeeId ||
@@ -2329,26 +2330,26 @@ const SalarySlipForm = ({
                   </select>
                 </div>
 
-                {/* Slip Number / Sequence Dropdown */}
+                {/* Slip Number / Sequence Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Slip No. <span className="text-xs text-gray-400 font-normal">(001, 002...)</span>
+                    Slip Seq. <span className="text-xs text-gray-400 font-normal">({String(slipSequence).padStart(3, '0')})</span>
                   </label>
-                  <select
-                    value={String(slipSequence).padStart(3, '0')}
-                    onChange={(e) => handleSlipSequenceChange(Number(e.target.value))}
-                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono font-bold text-slate-800">
-                    <option value="001">001 (Slip #1)</option>
-                    <option value="002">002 (Slip #2)</option>
-                    <option value="003">003 (Slip #3)</option>
-                    <option value="004">004 (Slip #4)</option>
-                    <option value="005">005 (Slip #5)</option>
-                    {slipSequence > 5 && (
-                      <option value={String(slipSequence).padStart(3, '0')}>
-                        {String(slipSequence).padStart(3, '0')} (Slip #{slipSequence})
-                      </option>
-                    )}
-                  </select>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={1}
+                      value={slipSequence}
+                      onChange={(e) => handleSlipSequenceChange(e.target.value)}
+                      placeholder="e.g. 1"
+                      className="w-full rounded-xl border border-gray-300 pl-3 pr-14 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono font-bold text-slate-800"
+                    />
+                    <div className="absolute right-2.5 top-2.5 flex items-center pointer-events-none">
+                      <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                        #{String(slipSequence).padStart(3, '0')}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Payment Status Dropdown */}
