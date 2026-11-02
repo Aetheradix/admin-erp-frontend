@@ -220,6 +220,9 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
       '001'
   );
   const fallbackSlipNo = generateSlipNumber(rawEmpCode, monthYear);
+  const normalizedSlipNo = actualSlipNo
+    ? actualSlipNo.replace(/^EX/i, 'E')
+    : fallbackSlipNo;
 
   return {
     id: Number(findDeepValue(item, ['id']) || Date.now()),
@@ -229,12 +232,12 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     total: netSalary || grossSalary || basicSalary + bonus,
     date: monthYear,
     monthYear: monthYear,
-    paySlipNo: actualSlipNo && actualSlipNo !== 'null' ? actualSlipNo : fallbackSlipNo,
-    payPeriod: monthYear,
+    paySlipNo: normalizedSlipNo && normalizedSlipNo !== 'null' ? normalizedSlipNo : fallbackSlipNo,
+    payPeriod: String(findDeepValue(item, ['pay_period', 'payPeriod']) || monthYear),
     companyName: String(findDeepValue(item, ['company_name', 'companyAddress']) || 'AETHERADIX'),
     companyAddress: String(
       findDeepValue(item, ['company_address', 'companyAddress']) ||
-        'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+        'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
     ),
     employeeId: String(
       findDeepValue(item, ['employee_code', 'employee_id', 'employeeId', 'user_id']) || userId

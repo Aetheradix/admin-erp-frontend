@@ -20,14 +20,16 @@ export const formatEmployeeCode = (employeeCode?: string | number | null): strin
   const str = String(employeeCode).trim();
   if (!str) return '';
 
-  // 1. Remove prefixes like 'SLIP-', 'EMP-', 'EMP_', 'EMP', 'E-', 'E_'
+  // 1. Remove prefixes like 'SLIP-', 'EMP-', 'EMP_', 'EMP', 'EX-', 'EX', 'E-', 'E_', 'X-', 'X'
   let cleaned = str
     .replace(/^SLIP[-_]?/i, '')
     .replace(/^EMP[-_]?/i, '')
-    .replace(/^E[-_]/i, '');
+    .replace(/^EX[-_]?/i, '')
+    .replace(/^E[-_]/i, '')
+    .replace(/^X[-_]?/i, '');
 
-  // 2. If it still starts with 'E' followed by digits (e.g. 'E002' or 'E2'), strip the 'E'
-  if (/^E\d+$/i.test(cleaned)) {
+  // 2. If it still starts with 'E' or 'X' followed by digits (e.g. 'E002', 'E2', 'X001'), strip it
+  if (/^[EX]\d+$/i.test(cleaned)) {
     cleaned = cleaned.substring(1);
   }
 
@@ -48,10 +50,10 @@ export const parseSlipNumber = (
 ): { employeeCode: string; month: string; year: string; slipNo: string; sequence: number } | null => {
   if (!slipNumber) return null;
   const trimmed = String(slipNumber).trim();
-  const match = trimmed.match(/^E([A-Za-z0-9]+)-(\d{2})(\d{2})(\d{3})$/);
+  const match = trimmed.match(/^E[X]?([A-Za-z0-9]+)-(\d{2})(\d{2})(\d{3})$/);
   if (!match) return null;
   return {
-    employeeCode: match[1],
+    employeeCode: formatEmployeeCode(match[1]),
     month: match[2],
     year: match[3],
     slipNo: match[4],

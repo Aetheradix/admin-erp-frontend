@@ -58,20 +58,31 @@ export interface PayrollRecord {
   total: number;
   date: string;
   monthYear: string;
+  month_year?: string;
   paySlipNo: string;
+  pay_slip_no?: string;
   payPeriod: string;
+  pay_period?: string;
   payrollType?: 'Regular' | 'Adjustment';
   adjustmentType?: string;
   payCycle?: string;
   taxRegime?: string;
+  panNumber?: string;
+  pan_number?: string;
+  pan?: string;
   totalCompensation?: number;
   referencedPeriod?: string;
   companyName: string;
+  company_name?: string;
   companyAddress: string;
+  company_address?: string;
   employeeId: string;
   employeeName: string;
   position: string;
   accountNumber: string;
+  account_number?: string;
+  bankAccountNumber?: string;
+  bank_account_number?: string;
   paidDays: number;
   lopDays: number;
   generatedOn: string;
@@ -190,7 +201,7 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     ? 'void'
     : overrideStatus
       ? overrideStatus
-      : rawStatus === 'paid' && overrideStatus === 'paid'
+      : rawStatus === 'paid'
         ? 'paid'
         : 'pending';
 
@@ -201,6 +212,25 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
       ? item.pay_frequency.charAt(0).toUpperCase() + item.pay_frequency.slice(1)
       : 'Monthly');
 
+  const rawPan = String(
+    item.pan_number || item.panNumber || item.pan || ''
+  ).trim();
+  const rawAccount = String(
+    item.bank_account_number ||
+      item.bankAccountNumber ||
+      item.account_number ||
+      item.accountNumber ||
+      ''
+  ).trim();
+  const fullAddress = String(
+    item.company_address ||
+      item.companyAddress ||
+      'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
+  );
+  const normalizedSlipNo = actualSlipNo
+    ? String(actualSlipNo).replace(/^EX/i, 'E')
+    : fallbackSlipNo;
+
   return {
     ...item,
     id: item.id,
@@ -210,30 +240,40 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
     total: netVal,
     date: monthYearStr,
     monthYear: monthYearStr,
-    payPeriod: item.payPeriod || monthYearStr,
+    payPeriod: item.pay_period || item.payPeriod || monthYearStr,
+    pay_period: item.pay_period || item.payPeriod || monthYearStr,
     payrollType: detectedPayrollType,
     adjustmentType: detectedAdjType,
     payCycle: detectedCycle,
     taxRegime: item.tax_regime || item.taxRegime || 'New Regime',
+    panNumber: rawPan,
+    pan_number: rawPan,
+    pan: rawPan,
     totalCompensation: Number(item.total_compensation || item.totalCompensation || 0),
     referencedPeriod: item.referenced_period || item.referencedPeriod || '',
-    companyName: 'AETHERADIX',
-    companyAddress: 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP',
+    companyName: item.company_name || item.companyName || 'AETHERADIX',
+    company_name: item.company_name || item.companyName || 'AETHERADIX',
+    companyAddress: fullAddress,
+    company_address: fullAddress,
     employeeId: String(item.employee_code || item.user_id),
-    employeeName: item.username || 'Unknown Employee',
+    employeeName: item.username || item.employee_name || item.employeeName || 'Unknown Employee',
     employeeCode: item.employee_code || String(item.user_id),
-    position: item.designation || 'N/A',
+    position: item.designation || item.position || 'N/A',
     department: item.department || 'N/A',
-    accountNumber: item.bank_account_number || 'N/A',
+    accountNumber: rawAccount || (item.bank_account_number && item.bank_account_number !== 'N/A' ? item.bank_account_number : ''),
+    account_number: rawAccount,
+    bankAccountNumber: rawAccount,
+    bank_account_number: rawAccount,
     authorizedSignatory:
       item.authorized_signatory || item.authorizedSignatory || 'Seema Srivastava',
     signatoryRole: item.signatory_role || item.signatoryRole || '(Director)',
     payPeriodMonth: item.pay_period_month,
     payPeriodYear: item.pay_period_year,
-    paySlipNo: actualSlipNo && actualSlipNo !== 'null' ? actualSlipNo : fallbackSlipNo,
-    paidDays: Number(item.days_worked || item.total_working_days || 0),
-    lopDays: Number(item.leave_days || 0),
+    paySlipNo: normalizedSlipNo && normalizedSlipNo !== 'null' ? normalizedSlipNo : fallbackSlipNo,
+    paidDays: Number(item.days_worked || item.total_working_days || item.paid_days || 0),
+    lopDays: Number(item.leave_days || item.lop_days || 0),
     paymentStatus: effectiveStatus,
+    rawRecord: item,
     isVoid,
     voidReason: detectedVoidReason,
     voidNotes: detectedVoidNotes,
@@ -717,6 +757,13 @@ export default function PayrollPage() {
     try {
       message.loading({ content: `Updating status to ${newStatus.toUpperCase()}...`, key });
       savePayrollStatusOverride(record.id, newStatus);
+      // Immediately reflect status update in component state without requiring a page refresh (PAY-10)
+      setPayroll((prev) =>
+        prev.map((r) => (r.id === record.id ? { ...r, paymentStatus: newStatus } : r))
+      );
+      setFilteredPayroll((prev) =>
+        prev.map((r) => (r.id === record.id ? { ...r, paymentStatus: newStatus } : r))
+      );
       await updateSalarySlip({
         id: record.id,
         payment_status: newStatus,
@@ -952,7 +999,8 @@ export default function PayrollPage() {
     {
       title: '',
       key: 'action',
-      width: 70,
+      width: 80,
+      fixed: 'right',
       render: (_, record) => {
         const isVoid = record.isVoid || record.paymentStatus === 'void';
 
@@ -1225,9 +1273,9 @@ export default function PayrollPage() {
         </div>
       </div>
 
-      <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <motion.div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-x-auto w-full">
         <Table
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 1300 }}
           columns={columns}
           dataSource={filteredPayroll}
           loading={isFetching}

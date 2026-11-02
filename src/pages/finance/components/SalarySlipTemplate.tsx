@@ -1,7 +1,6 @@
 import { forwardRef } from 'react';
-// import arxLogoFromAssets from '../../assets/ARX_Logo_White_v3.webp';
 import arxLogoFromAssets from '@/assets/ARX_Logo_White_v9SVG.svg';
-import { generateSlipNumber } from '@/utils/payroll';
+import { generateSlipNumber, formatEmployeeCode } from '@/utils/payroll';
 
 export interface EarningsItem {
   id?: string;
@@ -156,6 +155,43 @@ const getAmountInWords = (amount: number): string => {
   }
 
   return `${parts.join(' ')} Rupees Only`;
+};
+
+export const formatPayPeriodDisplay = (payPeriod?: string, monthYear?: string): string => {
+  if (payPeriod && payPeriod.trim() && (payPeriod.includes('-') || payPeriod.includes('–'))) {
+    return payPeriod;
+  }
+  const source = monthYear || payPeriod || '';
+  const months = [
+    'JANUARY',
+    'FEBRUARY',
+    'MARCH',
+    'APRIL',
+    'MAY',
+    'JUNE',
+    'JULY',
+    'AUGUST',
+    'SEPTEMBER',
+    'OCTOBER',
+    'NOVEMBER',
+    'DECEMBER',
+  ];
+  const parts = source.trim().split(/[\s\/\-]+/).filter(Boolean);
+  let foundMonth = 'DECEMBER';
+  let foundYear = new Date().getFullYear();
+  for (const p of parts) {
+    const num = Number(p);
+    if (!isNaN(num) && num >= 1900 && num <= 2100) {
+      foundYear = num;
+    } else {
+      const idx = months.findIndex((m) => m === p.toUpperCase() || m.startsWith(p.toUpperCase().slice(0, 3)));
+      if (idx !== -1) foundMonth = months[idx];
+    }
+  }
+  const mIndex = months.indexOf(foundMonth);
+  const totalDays = new Date(foundYear, mIndex + 1, 0).getDate();
+  const capMonth = foundMonth.charAt(0) + foundMonth.slice(1).toLowerCase();
+  return `01 ${capMonth} – ${totalDays} ${capMonth} ${foundYear}`;
 };
 
 const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>(({ data }, ref) => {
@@ -395,7 +431,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               <div
                 className="company-text-info"
                 style={{
-                  width: '210px',
+                  width: '260px',
+                  maxWidth: '280px',
                   paddingRight: '8px',
                   boxSizing: 'border-box',
                 }}>
@@ -416,16 +453,17 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 <p
                   className="company-address-text"
                   style={{
-                    margin: '7px 0 0',
-                    fontSize: '9px',
-                    lineHeight: '1.5',
+                    margin: '6px 0 0',
+                    fontSize: '9.5px',
+                    lineHeight: '1.45',
                     color: '#555555',
-                    whiteSpace: 'pre-line',
+                    whiteSpace: 'normal',
                     wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
                     paddingBottom: '2px',
                   }}>
                   {data.companyAddress ||
-                    'F-N 507, Crystal Tower, IBD Kings Park,\nBawadia Kalan, Bhopal, MP | 462039'}
+                    'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'}
                 </p>
               </div>
             </div>
@@ -497,8 +535,12 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               gridTemplateColumns: '1fr 1fr',
               minHeight: '28px',
             }}>
-            <MetaItem label="Pay Period" value={data.payPeriod || '01 June - 30 June'} />
-            <MetaItem label="Employee ID" value={data.employeeId || 'X001'} />
+            <MetaItem
+              label="Pay Period"
+              value={formatPayPeriodDisplay(data.payPeriod, data.monthYear)}
+              bold
+            />
+            <MetaItem label="Employee ID" value={formatEmployeeCode(data.employeeId) || '001'} />
           </div>
 
           <div
