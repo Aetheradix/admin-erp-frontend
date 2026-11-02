@@ -217,12 +217,10 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
       'user_id',
     ]) ||
       userId ||
-      '001'
+      'EMP1'
   );
   const fallbackSlipNo = generateSlipNumber(rawEmpCode, monthYear);
-  const normalizedSlipNo = actualSlipNo
-    ? actualSlipNo.replace(/^EX/i, 'E')
-    : fallbackSlipNo;
+  const normalizedSlipNo = actualSlipNo || fallbackSlipNo;
 
   return {
     id: Number(findDeepValue(item, ['id']) || Date.now()),
