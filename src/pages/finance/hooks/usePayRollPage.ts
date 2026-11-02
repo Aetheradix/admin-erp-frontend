@@ -5,7 +5,7 @@ import {
 } from '@/store/api/financeApiSlice';
 import type { CreateSalarySlipPayload } from '@/store/api/financeApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
-import { generateSlipNumber } from '@/utils/payroll';
+import { generateSlipNumber, extractSlipNumber } from '@/utils/payroll';
 import {
   isProfessionalTaxName,
   isIncomeTaxTdsName,
@@ -89,7 +89,7 @@ export const usePayrollPage = () => {
     const itemsList = rawData?.data || (Array.isArray(rawData) ? rawData : []);
     if (!Array.isArray(itemsList)) return [];
 
-    return itemsList.map((item: any) => {
+    return itemsList.map((item: any, index: number) => {
       const rawEarnings: BreakdownItem[] = Array.isArray(item.earnings) ? item.earnings : [];
       const rawDeductions: BreakdownItem[] = Array.isArray(item.deductions) ? item.deductions : [];
 
@@ -121,11 +121,13 @@ export const usePayrollPage = () => {
         date: monthYear,
         payPeriod: item.pay_period || item.payPeriod || monthYear,
         paySlipNo:
+          extractSlipNumber(item, index + 1) ||
           item.pay_slip_no ||
           item.paySlipNo ||
           generateSlipNumber(
             item.employee_code || item.employee_id || item.employeeId || item.user_id,
-            monthYear
+            monthYear,
+            index + 1
           ),
         accountNumber: item.account_number || item.accountNumber || 'N/A',
         paidDays: Number(item.paid_days || item.paidDays || 0),

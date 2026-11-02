@@ -1,6 +1,7 @@
 import type { Reimbursement } from '@/types/models';
 import { apiSlice } from './apiSlice';
 import { mapReimbursement } from './mappers';
+import { extractSlipNumber } from '@/utils/payroll';
 
 export type { Reimbursement };
 
@@ -185,12 +186,17 @@ export interface PayrollAdjustmentPayload {
 
 // Helper to normalize and map flat DB records into structured template data
 const mapSalarySlipResponse = (payload: any) => {
-  const normalize = (slip: any) => {
+  const normalize = (slip: any, index?: number) => {
     if (!slip) return slip;
     return {
       ...slip,
       employeeName: slip.username || slip.employeeName,
-      paySlipNo: slip.payslipNo || slip.pay_slip_no,
+      paySlipNo:
+        extractSlipNumber(slip, index) ||
+        slip.payslipNo ||
+        slip.pay_slip_no ||
+        slip.slipNo ||
+        slip.slip_no,
       earnings: [
         { name: 'Basic Salary', amount: Number(slip.basic_salary || 0) },
         { name: 'House Rent Allowance (HRA)', amount: Number(slip.house_rent_allowance || 0) },
@@ -209,7 +215,7 @@ const mapSalarySlipResponse = (payload: any) => {
   };
 
   if (Array.isArray(payload)) {
-    return payload.map(normalize);
+    return payload.map((item, idx) => normalize(item, idx + 1));
   }
   return normalize(payload);
 };

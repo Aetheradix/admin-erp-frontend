@@ -1,6 +1,11 @@
 import { forwardRef } from 'react';
 import arxLogoFromAssets from '@/assets/ARX_Logo_White_v9SVG.svg';
-import { generateSlipNumber, formatEmployeeCode } from '@/utils/payroll';
+import {
+  generateSlipNumber,
+  formatEmployeeCode,
+  extractSlipNumber,
+  normalizeToDashedSlipNumber,
+} from '@/utils/payroll';
 
 export interface EarningsItem {
   id?: string;
@@ -516,7 +521,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
                 :
               </span>
               <span className="ps-value" style={{ fontWeight: 700, lineHeight: '1.3' }}>
-                {data.paySlipNo || generateSlipNumber(data.employeeId, data.monthYear)}
+                {normalizeToDashedSlipNumber(extractSlipNumber(data) || data.paySlipNo) ||
+                  generateSlipNumber(data.employeeId, data.monthYear)}
               </span>
             </div>
           </div>

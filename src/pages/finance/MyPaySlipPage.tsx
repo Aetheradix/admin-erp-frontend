@@ -26,7 +26,7 @@ import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
-import { generateSlipNumber } from '@/utils/payroll';
+import { extractSlipNumber } from '@/utils/payroll';
 import { getPayrollStatusOverrides } from './PayrollPage';
 
 export interface PayrollRecord {
@@ -207,20 +207,7 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     ];
   }
 
-  const actualSlipNo = String(findDeepValue(item, ['paySlipNo', 'pay_slip_no', 'payslipNo']) || '');
-  const rawEmpCode = String(
-    findDeepValue(item, [
-      'employee_code',
-      'employeeCode',
-      'employee_id',
-      'employeeId',
-      'user_id',
-    ]) ||
-      userId ||
-      'EMP1'
-  );
-  const fallbackSlipNo = generateSlipNumber(rawEmpCode, monthYear);
-  const normalizedSlipNo = actualSlipNo || fallbackSlipNo;
+  const normalizedSlipNo = extractSlipNumber(item);
 
   return {
     id: Number(findDeepValue(item, ['id']) || Date.now()),
@@ -230,7 +217,7 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     total: netSalary || grossSalary || basicSalary + bonus,
     date: monthYear,
     monthYear: monthYear,
-    paySlipNo: normalizedSlipNo && normalizedSlipNo !== 'null' ? normalizedSlipNo : fallbackSlipNo,
+    paySlipNo: normalizedSlipNo,
     payPeriod: String(findDeepValue(item, ['pay_period', 'payPeriod']) || monthYear),
     companyName: String(findDeepValue(item, ['company_name', 'companyAddress']) || 'AETHERADIX'),
     companyAddress: String(
