@@ -16,6 +16,8 @@ interface AttendanceRequestFormProps {
     status: string;
   }) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
+  submissionError?: string | null;
 }
 
 const REQUEST_TYPES = [
@@ -32,7 +34,12 @@ const formatLocalDate = (d: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestFormProps) => {
+export const AttendanceRequestForm = ({
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+  submissionError = null,
+}: AttendanceRequestFormProps) => {
   const [formData, setFormData] = useState({
     type: 'Work from home',
     reason: '',
@@ -69,6 +76,8 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
       status: 'Pending',
     });
   };
+
+  const displayedError = errorMsg || submissionError;
 
   return (
     <div className="flex flex-col gap-8">
@@ -127,10 +136,10 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
         </div>
       </div>
 
-      {errorMsg && (
+      {displayedError && (
         <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-700 text-xs font-bold flex items-center gap-2 animate-in fade-in">
           <AlertCircle size={16} className="shrink-0" />
-          <span>{errorMsg}</span>
+          <span>{displayedError}</span>
         </div>
       )}
 
@@ -138,14 +147,17 @@ export const AttendanceRequestForm = ({ onSubmit, onCancel }: AttendanceRequestF
         <Button
           variant="ghost"
           onClick={onCancel}
+          disabled={isSubmitting}
           className="px-8! rounded-2xl! font-bold text-muted!">
           Discard
         </Button>
         <Button
           variant="primary"
           onClick={handleApply}
-          className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20">
-          Submit Request
+          disabled={isSubmitting}
+          className="px-10! h-12 rounded-2xl! font-black tracking-wide shadow-lg shadow-primary/20 flex items-center gap-2">
+          {isSubmitting && <i className="pi pi-spin pi-spinner text-sm" />}
+          <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
         </Button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Column, DataTable } from '@/components/ui/composed/DataTable';
 import { Dialog } from '@/components/ui/composed/Dialog';
@@ -6,8 +7,9 @@ import { Badge } from '@/components/ui/primitives/Badge';
 import { ApprovalDialog } from './components/ApprovalDialog';
 import { ApprovalStats } from './components/ApprovalStats';
 import { DayWiseApprovalTable } from './components/DayWiseApprovalTable';
+import { LeaveApproverConfigModal } from './components/LeaveApproverConfigModal';
 import { useApprovals } from './hooks/useApprovals';
-import { Clock, CheckCircle2, XCircle, Calendar, Layers, Eye, ShieldAlert } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, Calendar, Layers, Eye, ShieldAlert, Settings } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import { useNavigate } from 'react-router-dom';
 import { generateDateRange } from '@/types/dayApproval';
@@ -31,6 +33,8 @@ export function Approvals() {
     onConfirmAction,
     refetch,
   } = useApprovals();
+
+  const [showApproverConfigModal, setShowApproverConfigModal] = useState(false);
 
   const statusTemplate = (rowData: AttendanceRequest) => {
     const status = rowData.status || 'Pending';
@@ -172,26 +176,38 @@ export function Approvals() {
         }}
       />
 
-      <ApprovalStats counts={counts} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 -mt-4">
+        <ApprovalStats counts={counts} />
+        <Button
+          variant="outline"
+          size="small"
+          onClick={() => setShowApproverConfigModal(true)}
+          className="shrink-0 gap-2 h-11 px-4! rounded-xl! font-bold text-xs bg-white/80 hover:bg-white shadow-xs border-border-subtle">
+          <Settings size={14} className="text-primary" />
+          <span>Configure Approver Rules</span>
+        </Button>
+      </div>
 
       <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-border-subtle overflow-hidden shadow-2xl shadow-primary/5">
-        <DataTable
-          value={pendingLeaves}
-          loading={isLoading}
-          paginator
-          rows={10}
-          className="p-4"
-          emptyMessage="No pending requests requiring action found.">
-          <Column field="user" header="Employee" body={userTemplate} className="py-6" />
-          <Column field="dates" header="Duration" body={dateTemplate} />
-          <Column
-            field="reason"
-            header="Employee Reason"
-            className="text-xs font-medium text-foreground/80 max-w-xs italic line-clamp-2"
-          />
-          <Column field="status" header="Overall Status" body={statusTemplate} />
-          <Column header="Operations" body={actionTemplate} className="text-right" />
-        </DataTable>
+        <div className="overflow-x-auto">
+          <DataTable
+            value={pendingLeaves}
+            loading={isLoading}
+            paginator
+            rows={10}
+            className="p-4"
+            emptyMessage="No pending requests requiring action found.">
+            <Column field="user" header="Employee" body={userTemplate} className="py-6" />
+            <Column field="dates" header="Duration" body={dateTemplate} />
+            <Column
+              field="reason"
+              header="Employee Reason"
+              className="text-xs font-medium text-foreground/80 max-w-xs italic line-clamp-2"
+            />
+            <Column field="status" header="Overall Status" body={statusTemplate} />
+            <Column header="Operations" body={actionTemplate} className="text-right" />
+          </DataTable>
+        </div>
       </div>
 
       {/* ─── Day-Wise Approval Modal for Selected Request ─── */}
@@ -227,7 +243,7 @@ export function Approvals() {
         )}
       </Dialog>
 
-      {/* ─── Legacy Whole-Request Approve / Reject Confirmation Dialog ─── */}
+      {/* ─── Whole-Request Approve / Reject Confirmation Dialog ─── */}
       <Dialog
         visible={showApprovalDialog}
         onHide={() => setShowApprovalDialog(false)}
@@ -248,6 +264,12 @@ export function Approvals() {
           loading={isUpdating}
         />
       </Dialog>
+
+      {/* ─── Leave Approver Workflow Configuration Modal ─── */}
+      <LeaveApproverConfigModal
+        visible={showApproverConfigModal}
+        onClose={() => setShowApproverConfigModal(false)}
+      />
     </div>
   );
 }

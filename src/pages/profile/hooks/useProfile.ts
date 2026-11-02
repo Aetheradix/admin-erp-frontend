@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
-import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
-import { useGetUsersQuery } from '@/store/api/userSlice';
-import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { recordAuditLog } from '@/services/auditService';
 import { getEmployeeProfile } from '@/services/employeeProfileService';
+import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
+import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../../../hooks/useAuth';
 
 export interface ManagerInfo {
   name: string;
@@ -112,6 +112,7 @@ export const useProfile = () => {
   const isAdmin = authUser?.role === 'Admin';
 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+  // const [updateStaff] = useUpdateStaffMutation();
 
   const [updateAutoApprove, { isLoading: isUpdatingAutoApprove }] = useUpdateAutoApproveMutation();
 
@@ -321,7 +322,27 @@ export const useProfile = () => {
         emp?.personal?.permanentAddress ||
         prev.address,
 
-      manager: (record.manager as ManagerInfo) ?? prev.manager,
+      manager: matchedStaff?.reporting_manager_name
+        ? {
+            name: matchedStaff.reporting_manager_name,
+            role: matchedStaff.reporting_manager_role || 'Reporting Manager',
+            code: matchedStaff.reporting_manager_email || '',
+            reportsCount: 1,
+            image: matchedStaff.reporting_manager_image || undefined,
+          }
+        : (record.manager as ManagerInfo) ?? prev.manager,
+
+      roles:
+        matchedStaff?.roles && matchedStaff.roles.length > 0
+          ? (matchedStaff.roles as any[]).map((r) => ({
+              id: String(r.id),
+              name: r.name,
+              color:
+                r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
+                  ? 'red'
+                  : 'blue',
+            }))
+          : prev.roles,
 
       lineLeader: (record.line_leader as ManagerInfo) ?? prev.lineLeader,
 
