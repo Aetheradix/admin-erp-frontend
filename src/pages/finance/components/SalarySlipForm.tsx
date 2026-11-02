@@ -33,6 +33,7 @@ import { calculateTaxForEmployee, type TaxCalculationResult } from '@/utils/taxC
 import { TaxProjectionModal } from './TaxProjectionModal';
 
 import { Input } from '@/components/ui/composed/Input';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import { generateSlipNumber, formatEmployeeCode, parseSlipNumber } from '@/utils/payroll';
 export { generateSlipNumber, formatEmployeeCode, parseSlipNumber } from '@/utils/payroll';
 export interface EarningsItem {
@@ -171,7 +172,8 @@ const getDaysInMonth = (year: number, monthIndex: number): number => {
 const formatDateFormatted = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, '0');
   const monthName = date.toLocaleString('en-US', { month: 'long' });
-  return `${day} ${monthName}`;
+  const year = date.getFullYear();
+  return `${day} ${monthName} ${year}`;
 };
 
 // Helper to calculate pay period dates based on cycle
@@ -320,7 +322,7 @@ const getInitialForm = (): SalarySlipData => {
     payCycle: defaultCycle,
     payrollType: 'Regular',
     adjustmentType: 'wrong_rate',
-    adjustmentAmount: 0,
+    adjustmentAmount: '' as any,
     adjustmentReason: '',
     referencedPeriod: '',
     referencePeriod: '',
@@ -336,9 +338,10 @@ const getInitialForm = (): SalarySlipData => {
     employeeName: '',
     position: '',
     accountNumber: '',
-    baseSalary: 0,
+    baseSalary: '',
     totalCompensation: '',
     taxRegime: storedSettings.defaultTaxRegime,
+    panNumber: '',
 
     paidDays: defaultPaidDays,
     lopDays: 0,
@@ -391,6 +394,8 @@ const SalarySlipForm = ({
   const [customStart, setCustomStart] = useState<string>('');
   const [customEnd, setCustomEnd] = useState<string>('');
   const [selectedEmployeeObj, setSelectedEmployeeObj] = useState<any>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const [isCtcManualOverride, setIsCtcManualOverride] = useState<boolean>(Boolean(initialValues?.totalCompensation));
   const [showTaxProjectionModal, setShowTaxProjectionModal] = useState<boolean>(false);
   const [showTaxCalculator, setShowTaxCalculator] = useState<boolean>(true);
   const [deductIncomeTax, setDeductIncomeTax] = useState<boolean>(() => {
@@ -536,23 +541,48 @@ const SalarySlipForm = ({
 
     // 8. Financial Breakdown
     const basePay = Number(raw.basic_salary || initialValues.base || 0);
-    const hraPay = Number(raw.house_rent_allowance || raw.hra || 0);
+    let hraPay = Number(raw.house_rent_allowance || raw.hra || 0);
+    if (!hraPay && basePay > 0) {
+      hraPay = Math.round(basePay * 0.5);
+    }
     const specialPay = Number(raw.special_allowance || 0);
     const conveyancePay = Number(raw.conveyance_allowance || 0);
     const bonusPay = Number(raw.bonus || initialValues.bonus || 0);
     const otherEarnPay = Number(raw.other_earnings || 0);
 
-    const parsedEarnings =
+    let parsedEarnings =
       Array.isArray(initialValues.earnings) && initialValues.earnings.length > 0
-        ? initialValues.earnings
+        ? [...initialValues.earnings]
         : [
             { name: 'Basic Pay', amount: basePay },
-            ...(hraPay > 0 ? [{ name: 'HRA', amount: hraPay }] : []),
+            ...(hraPay > 0 ? [{ name: 'House Rent Allowance (HRA)', amount: hraPay }] : []),
             ...(specialPay > 0 ? [{ name: 'Special Allowance', amount: specialPay }] : []),
             ...(conveyancePay > 0 ? [{ name: 'Conveyance', amount: conveyancePay }] : []),
             ...(bonusPay > 0 ? [{ name: 'Bonus', amount: bonusPay }] : []),
             ...(otherEarnPay > 0 ? [{ name: 'Other Earnings', amount: otherEarnPay }] : []),
           ];
+
+    // PAY-08: Ensure HRA is calculated in the edit form if missing or 0
+    const existingHraIdx = parsedEarnings.findIndex(
+      (e) => e.name.toLowerCase().includes('hra') || e.name.toLowerCase().includes('house rent')
+    );
+    if (existingHraIdx !== -1) {
+      if (
+        (!parsedEarnings[existingHraIdx].amount ||
+          Number(parsedEarnings[existingHraIdx].amount) === 0) &&
+        basePay > 0
+      ) {
+        parsedEarnings[existingHraIdx] = {
+          ...parsedEarnings[existingHraIdx],
+          amount: Math.round(basePay * 0.5),
+        };
+      }
+    } else if (basePay > 0) {
+      parsedEarnings.push({
+        name: 'House Rent Allowance (HRA)',
+        amount: Math.round(basePay * 0.5),
+      });
+    }
 
     const pfDeduct = Number(raw.provident_fund || 0);
     const ptDeduct = Number(raw.professional_tax || 0);
@@ -570,7 +600,7 @@ const SalarySlipForm = ({
           ];
 
     // Generate proper professional slip number
-    const empCode = String(raw.employee_code || initialValues.employeeId || '');
+    const empCode = formatEmployeeCode(raw.employee_code || initialValues.employeeCode || initialValues.employeeId || '');
     const defaultMonthYear = `${monthVal} ${yearVal}`;
     const initialSlipNo = String(raw.pay_slip_no || initialValues.paySlipNo || '');
     const parsedSlip = parseSlipNumber(initialSlipNo);
@@ -579,7 +609,7 @@ const SalarySlipForm = ({
 
     const generatedSlipNo = empCode ? generateSlipNumber(empCode, defaultMonthYear, initialSlipSeq) : '';
 
-    // 9. Update Form State
+    // 9. Update Form State (Preserving all saved values including PAN, Status, and Account Number)
     setFormData({
       userId: Number(recipientId) || 0,
       employeeId: empCode,
@@ -591,17 +621,35 @@ const SalarySlipForm = ({
           raw.bankAccountNumber ||
           raw.account_number ||
           raw.accountNumber ||
-          initialValues.accountNumber ||
+          (initialValues.accountNumber && initialValues.accountNumber !== 'N/A'
+            ? initialValues.accountNumber
+            : '') ||
           ''
       ),
-      baseSalary: basePay,
+      baseSalary: basePay > 0 ? basePay : '',
+      totalCompensation:
+        raw.total_compensation ||
+        raw.totalCompensation ||
+        initialValues.totalCompensation ||
+        (basePay > 0 ? basePay * (cycle === 'Bi-Weekly' ? 26 : 12) : ''),
+      panNumber: String(
+        raw.pan_number ||
+          raw.panNumber ||
+          raw.pan ||
+          initialValues.panNumber ||
+          initialValues.pan_number ||
+          ''
+      ),
       payCycle: cycle as 'Bi-Weekly' | 'Monthly',
       monthYear: defaultMonthYear,
       payPeriod: String(computedPayPeriod || ''),
       paySlipNo: initialSlipNo || (isEditing && generatedSlipNo ? generatedSlipNo : ''),
       companyName: String(initialValues.companyName || 'AETHERADIX'),
       companyAddress: String(
-        initialValues.companyAddress || 'F-N 507, Crystal Tower, IBD Kings Park, Bhopal, MP'
+        initialValues.companyAddress ||
+          raw.company_address ||
+          raw.companyAddress ||
+          'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
       ),
       paidDays: Number(raw.days_worked ?? raw.paid_days ?? initialValues.paidDays ?? 30),
       lopDays: Number(raw.leave_days ?? raw.lop_days ?? initialValues.lopDays ?? 0),
@@ -627,8 +675,14 @@ const SalarySlipForm = ({
           initialValues.signatoryRole ||
           '(Director)'
       ),
-      paymentStatus: String(raw.payment_status || raw.paymentStatus || initialValues.paymentStatus || 'pending').toLowerCase(),
+      paymentStatus: String(
+        raw.payment_status || raw.paymentStatus || initialValues.paymentStatus || 'pending'
+      ).toLowerCase(),
     });
+
+    if (initialValues.totalCompensation || raw.total_compensation || raw.totalCompensation) {
+      setIsCtcManualOverride(true);
+    }
 
     const hasTds =
       tdsDeduct > 0 ||
@@ -715,7 +769,8 @@ const SalarySlipForm = ({
   };
 
   const handleSlipSequenceChange = (newSeq: number | string) => {
-    const num = Math.max(1, Math.min(999, Number(newSeq) || 1));
+    const raw = Number(newSeq);
+    const num = isNaN(raw) || raw < 1 ? 1 : Math.floor(raw);
     setSlipSequence(num);
     const empCode =
       formData.employeeId ||
@@ -1140,7 +1195,7 @@ const SalarySlipForm = ({
       applyFromSlip(sorted[0]);
     }
 
-    const empCode = String(
+    const empCode = formatEmployeeCode(
       user.employee_code || user.employee_id || user.employeeId || user.id || ''
     );
     const currentMonthYear =
@@ -1154,7 +1209,7 @@ const SalarySlipForm = ({
     );
     const detectedRegime = (user.taxRegime || user.tax_regime || 'New Regime') as
       'New Regime' | 'Old Regime';
-    const detectedPan = String(user.panNumber || user.pan_number || '');
+    const detectedPan = String(user.panNumber || user.pan_number || user.pan || '').trim();
 
     if (!detectedBaseSalary && detectedTotalComp > 0) {
       detectedBaseSalary = Math.round((detectedTotalComp / 12) * 0.5);
@@ -1163,12 +1218,17 @@ const SalarySlipForm = ({
     setSelectedEmployeeObj(user);
 
     setFormData((prev) => {
+      // PAY-04: Preserve all previously entered form data!
+      // Only merge employee-specific fields without clearing entered amounts or details
       const updatedEarnings = [...prev.earnings];
       const basicIndex = updatedEarnings.findIndex(
         (e) => e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
       );
 
-      if (detectedBaseSalary > 0) {
+      // Only auto-fill base salary if the user has NOT already entered one
+      let effectiveBaseSalary = prev.baseSalary;
+      if ((!prev.baseSalary || Number(prev.baseSalary) === 0) && detectedBaseSalary > 0) {
+        effectiveBaseSalary = detectedBaseSalary;
         if (basicIndex !== -1) {
           updatedEarnings[basicIndex] = {
             ...updatedEarnings[basicIndex],
@@ -1179,25 +1239,46 @@ const SalarySlipForm = ({
         } else {
           updatedEarnings.push({ name: 'Basic Pay', amount: detectedBaseSalary });
         }
+
+        // Auto-calculate HRA if not already filled
+        const hraIdx = updatedEarnings.findIndex(
+          (e) => e.name.toLowerCase().includes('hra') || e.name.toLowerCase().includes('house rent')
+        );
+        const hraAmount = Math.round(detectedBaseSalary * 0.5);
+        if (hraIdx !== -1 && (!updatedEarnings[hraIdx].amount || Number(updatedEarnings[hraIdx].amount) === 0)) {
+          updatedEarnings[hraIdx] = { ...updatedEarnings[hraIdx], amount: hraAmount };
+        }
       }
+
+      const sumEarn = updatedEarnings.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+      const mult =
+        prev.payCycle === 'Weekly' ? 52 :
+        prev.payCycle === 'Bi-Weekly' ? 26 :
+        prev.payCycle === 'Semi-Monthly' ? 24 : 12;
+      const effectiveCtc =
+        prev.totalCompensation ||
+        (detectedTotalComp > 0
+          ? detectedTotalComp
+          : sumEarn > 0
+            ? sumEarn * mult
+            : '');
 
       const updated = {
         ...prev,
         userId: isNaN(numericId) ? rawId : numericId,
         employeeId: empCode,
         employeeName: resolvedName,
-        position: user.designation || user.role || user.position || '',
-        department: user.department || '',
-        accountNumber: detectedAccount || '',
-        baseSalary: detectedBaseSalary > 0 ? detectedBaseSalary : prev.baseSalary || '',
-        totalCompensation: detectedTotalComp > 0 ? detectedTotalComp : prev.totalCompensation || '',
-        taxRegime: detectedRegime,
-        panNumber: detectedPan || prev.panNumber,
-        paySlipNo: isEditing && prev.paySlipNo ? prev.paySlipNo : generatedSlipNo,
+        position: user.designation || user.role || user.position || prev.position || '',
+        department: user.department || prev.department || '',
+        accountNumber: detectedAccount || prev.accountNumber || '',
+        baseSalary: effectiveBaseSalary,
+        totalCompensation: effectiveCtc,
+        taxRegime: detectedRegime || prev.taxRegime,
+        panNumber: detectedPan || prev.panNumber || '',
+        paySlipNo: isEditing && prev.paySlipNo ? prev.paySlipNo : (generatedSlipNo || prev.paySlipNo),
         earnings: updatedEarnings,
       };
 
-      console.log('2. New calculated formData state:', updated);
       return updated;
     });
 
@@ -1231,7 +1312,13 @@ const SalarySlipForm = ({
             const bIdx = updatedEarnings.findIndex(
               (e) => e.name.toLowerCase().includes('basic') || e.name.toLowerCase().includes('base')
             );
-            if (detectedBaseSalary > 0 && bIdx !== -1 && updatedEarnings[bIdx].amount === 0) {
+            // Only update if still empty
+            if (
+              (!prev.baseSalary || Number(prev.baseSalary) === 0) &&
+              detectedBaseSalary > 0 &&
+              bIdx !== -1 &&
+              (!updatedEarnings[bIdx].amount || updatedEarnings[bIdx].amount === 0)
+            ) {
               updatedEarnings[bIdx] = { ...updatedEarnings[bIdx], amount: detectedBaseSalary };
             }
 
@@ -1373,6 +1460,7 @@ const SalarySlipForm = ({
       position: '',
       department: '',
       accountNumber: '',
+      panNumber: '',
       baseSalary: '',
       paySlipNo: '',
     }));
@@ -1394,12 +1482,33 @@ const SalarySlipForm = ({
 
       if (isBasicItem && field === 'amount') {
         updatedBaseSalary = updatedValue === 0 ? '' : Number(updatedValue);
+        // PAY-08: Auto calculate HRA (50% of Basic Pay)
+        const hraIndex = updatedEarnings.findIndex(
+          (e) => e.name.toLowerCase().includes('hra') || e.name.toLowerCase().includes('house rent')
+        );
+        const calculatedHra =
+          Number(updatedValue) > 0 ? Math.round(Number(updatedValue) * 0.5) : 0;
+        if (hraIndex !== -1) {
+          updatedEarnings[hraIndex] = { ...updatedEarnings[hraIndex], amount: calculatedHra };
+        } else if (calculatedHra > 0) {
+          updatedEarnings.push({ name: 'House Rent Allowance (HRA)', amount: calculatedHra });
+        }
       }
+
+      // PAY-06: Auto-calculate Annual CTC from earnings
+      const sumEarn = updatedEarnings.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+      const mult =
+        prev.payCycle === 'Weekly' ? 52 :
+        prev.payCycle === 'Bi-Weekly' ? 26 :
+        prev.payCycle === 'Semi-Monthly' ? 24 : 12;
+      const newCtc =
+        !isCtcManualOverride && sumEarn > 0 ? sumEarn * mult : prev.totalCompensation;
 
       return {
         ...prev,
         baseSalary: updatedBaseSalary,
         earnings: updatedEarnings,
+        totalCompensation: newCtc,
       };
     });
   };
@@ -1458,8 +1567,7 @@ const SalarySlipForm = ({
       (isNaN(numericRecipientId) && !formData.employeeName) ||
       (!formData.employeeId && !formData.employeeName)
     ) {
-      newErrors.userId = 'Please select a valid employee from the list.';
-      newErrors.employeeId = 'Employee selection is required.';
+      newErrors.employeeId = 'Please select a valid employee from the list.';
     }
 
     // 2. Month and Year
@@ -1473,13 +1581,17 @@ const SalarySlipForm = ({
       newErrors.paidDays = 'Paid working days must be greater than 0.';
     }
 
-    // 4. Earnings / Basic Pay
+    // 4. Base Salary & Earnings
+    const baseSalaryNum = Number(formData.baseSalary);
+    if (!formData.baseSalary || isNaN(baseSalaryNum) || baseSalaryNum <= 0) {
+      newErrors.baseSalary = 'Base Salary is required and must be greater than 0.';
+    }
+
     const totalEarningsVal = formData.earnings.reduce(
       (sum, item) => sum + (Number(item.amount) || 0),
       0
     );
-    const basicAmt = Number(formData.baseSalary) || 0;
-    if (totalEarningsVal <= 0 && basicAmt <= 0) {
+    if (totalEarningsVal <= 0 && (!baseSalaryNum || baseSalaryNum <= 0)) {
       newErrors.earnings =
         'At least one earning component (e.g. Basic Pay) must be greater than 0.';
     }
@@ -1507,8 +1619,71 @@ const SalarySlipForm = ({
       }
     }
 
+    // 6. Pay Period Range
+    if (!formData.payPeriod || !formData.payPeriod.trim()) {
+      newErrors.payPeriod = 'Pay Period Range is required.';
+    }
+
+    // 7. Company Details
+    if (!formData.companyName || !formData.companyName.trim()) {
+      newErrors.companyName = 'Company Name is required.';
+    }
+    if (!formData.companyAddress || !formData.companyAddress.trim()) {
+      newErrors.companyAddress = 'Company Address is required.';
+    }
+
+    // 8. Adjustments if selected
+    if (formData.payrollType === 'Adjustment') {
+      if (!formData.adjustmentType) {
+        newErrors.adjustmentType = 'Adjustment type is required.';
+      }
+      if (!formData.adjustmentAmount || Number(formData.adjustmentAmount) === 0) {
+        newErrors.adjustmentAmount = 'Adjustment amount is required.';
+      }
+      if (!formData.adjustmentReason || !formData.adjustmentReason.trim()) {
+        newErrors.adjustmentReason = 'Adjustment reason is required.';
+      }
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      const errorList = Object.values(newErrors);
+      showToast({
+        severity: 'error',
+        summary: 'Missing Required Fields',
+        detail: `Please fill in all required fields: ${errorList.slice(0, 3).join(', ')}${errorList.length > 3 ? '...' : ''}`,
+      });
+
+      // Scroll to and focus the first invalid field
+      const fieldPriority = [
+        'employeeId',
+        'monthYear',
+        'paySlipNo',
+        'payPeriod',
+        'companyName',
+        'companyAddress',
+        'baseSalary',
+        'paidDays',
+        'adjustmentType',
+        'adjustmentAmount',
+        'adjustmentReason',
+        'earnings',
+      ];
+      const firstInvalid = fieldPriority.find((k) => newErrors[k]);
+      if (firstInvalid) {
+        setTimeout(() => {
+          const el =
+            document.querySelector(`[data-field="${firstInvalid}"]`) ||
+            document.querySelector(`[name="${firstInvalid}"]`) ||
+            document.getElementById(firstInvalid);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if ('focus' in el && typeof (el as any).focus === 'function') {
+              (el as any).focus();
+            }
+          }
+        }, 50);
+      }
       return;
     }
 
@@ -1617,7 +1792,19 @@ const SalarySlipForm = ({
 
         // 2. Slip Identifiers & Pay Period Metadata
         pay_slip_no: formData.paySlipNo || null,
+        paySlipNo: formData.paySlipNo || null,
         month_year: formData.monthYear,
+        monthYear: formData.monthYear,
+        pay_period: formData.payPeriod || null,
+        payPeriod: formData.payPeriod || null,
+        company_name: formData.companyName || 'AETHERADIX',
+        companyName: formData.companyName || 'AETHERADIX',
+        company_address:
+          formData.companyAddress ||
+          'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039',
+        companyAddress:
+          formData.companyAddress ||
+          'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039',
         pay_period_month: payPeriodMonth,
         payPeriodMonth: payPeriodMonth,
         pay_period_year: payPeriodYear,
@@ -1666,11 +1853,18 @@ const SalarySlipForm = ({
         // 4. Employee Profile Details
         employee_code: formData.employeeId ? String(formData.employeeId) : null,
         employeeCode: formData.employeeId ? String(formData.employeeId) : null,
+        employee_name: formData.employeeName || null,
+        employeeName: formData.employeeName || null,
         designation: formData.position || null,
         position: formData.position || null,
         department: formData.department || null,
         bank_account_number: formData.accountNumber || null,
         bankAccountNumber: formData.accountNumber || null,
+        account_number: formData.accountNumber || null,
+        accountNumber: formData.accountNumber || null,
+        pan_number: formData.panNumber || null,
+        panNumber: formData.panNumber || null,
+        pan: formData.panNumber || null,
 
         // 5. Breakdown Arrays
         earnings: formData.earnings.filter((e) => e.name.trim() !== ''),
@@ -1740,8 +1934,14 @@ const SalarySlipForm = ({
               <FileText size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Create Salary Slip</h1>
-              <p className="text-sm text-gray-500">Enter compensation and payroll details.</p>
+              <h1 className="text-xl font-bold text-gray-900">
+                {isEditing ? 'Edit Salary Slip' : 'Create Salary Slip'}
+              </h1>
+              <p className="text-sm text-gray-500">
+                {isEditing
+                  ? 'Update compensation and payroll details.'
+                  : 'Enter compensation and payroll details.'}
+              </p>
             </div>
           </div>
           <button
@@ -1761,9 +1961,16 @@ const SalarySlipForm = ({
                   <ul className="list-disc list-inside mt-1 space-y-0.5 text-xs text-red-600 font-medium">
                     {errors.employeeId && <li>{errors.employeeId}</li>}
                     {errors.monthYear && <li>{errors.monthYear}</li>}
+                    {errors.baseSalary && <li>{errors.baseSalary}</li>}
                     {errors.paidDays && <li>{errors.paidDays}</li>}
-                    {errors.earnings && <li>{errors.earnings}</li>}
                     {errors.paySlipNo && <li>{errors.paySlipNo}</li>}
+                    {errors.payPeriod && <li>{errors.payPeriod}</li>}
+                    {errors.companyName && <li>{errors.companyName}</li>}
+                    {errors.companyAddress && <li>{errors.companyAddress}</li>}
+                    {errors.adjustmentType && <li>{errors.adjustmentType}</li>}
+                    {errors.adjustmentAmount && <li>{errors.adjustmentAmount}</li>}
+                    {errors.adjustmentReason && <li>{errors.adjustmentReason}</li>}
+                    {errors.earnings && <li>{errors.earnings}</li>}
                   </ul>
                 </div>
               </div>
@@ -2089,6 +2296,7 @@ const SalarySlipForm = ({
                     Month <span className="text-red-500">*</span>
                   </label>
                   <select
+                    data-field="monthYear"
                     value={selectedMonth}
                     onChange={(e) => handleMonthChange(e.target.value)}
                     className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
@@ -2108,6 +2316,7 @@ const SalarySlipForm = ({
                     Year <span className="text-red-500">*</span>
                   </label>
                   <select
+                    data-field="monthYear"
                     value={selectedYear}
                     onChange={(e) => handleYearChange(e.target.value)}
                     className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black ${
@@ -2121,26 +2330,26 @@ const SalarySlipForm = ({
                   </select>
                 </div>
 
-                {/* Slip Number / Sequence Dropdown */}
+                {/* Slip Number / Sequence Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Slip No. <span className="text-xs text-gray-400 font-normal">(001, 002...)</span>
+                    Slip Seq. <span className="text-xs text-gray-400 font-normal">({String(slipSequence).padStart(3, '0')})</span>
                   </label>
-                  <select
-                    value={String(slipSequence).padStart(3, '0')}
-                    onChange={(e) => handleSlipSequenceChange(Number(e.target.value))}
-                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono font-bold text-slate-800">
-                    <option value="001">001 (Slip #1)</option>
-                    <option value="002">002 (Slip #2)</option>
-                    <option value="003">003 (Slip #3)</option>
-                    <option value="004">004 (Slip #4)</option>
-                    <option value="005">005 (Slip #5)</option>
-                    {slipSequence > 5 && (
-                      <option value={String(slipSequence).padStart(3, '0')}>
-                        {String(slipSequence).padStart(3, '0')} (Slip #{slipSequence})
-                      </option>
-                    )}
-                  </select>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={1}
+                      value={slipSequence}
+                      onChange={(e) => handleSlipSequenceChange(e.target.value)}
+                      placeholder="e.g. 1"
+                      className="w-full rounded-xl border border-gray-300 pl-3 pr-14 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono font-bold text-slate-800"
+                    />
+                    <div className="absolute right-2.5 top-2.5 flex items-center pointer-events-none">
+                      <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                        #{String(slipSequence).padStart(3, '0')}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Payment Status Dropdown */}
@@ -2172,6 +2381,7 @@ const SalarySlipForm = ({
                   <div className="relative">
                     <input
                       type="text"
+                      data-field="paySlipNo"
                       value={formData.paySlipNo}
                       placeholder={
                         formData.employeeId
@@ -2209,6 +2419,7 @@ const SalarySlipForm = ({
 
                 {/* Auto-Calculated Pay Period */}
                 <Input
+                  data-field="payPeriod"
                   label="Pay Period Range"
                   value={
                     formData.payPeriod ||
@@ -2237,6 +2448,7 @@ const SalarySlipForm = ({
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <Input
+                data-field="companyName"
                 label="Company Name"
                 value={formData.companyName}
                 onChange={(e) => updateField('companyName', e.target.value)}
@@ -2244,6 +2456,7 @@ const SalarySlipForm = ({
                 required
               />
               <Input
+                data-field="companyAddress"
                 label="Company Address"
                 value={formData.companyAddress}
                 onChange={(e) => updateField('companyAddress', e.target.value)}
@@ -2271,11 +2484,51 @@ const SalarySlipForm = ({
                 <Search className="absolute left-3.5 top-3 text-gray-400" size={16} />
                 <input
                   type="text"
+                  data-field="employeeId"
+                  id="employeeId"
                   value={searchTerm}
-                  onFocus={() => setIsDropdownOpen(true)}
+                  onFocus={() => {
+                    setIsDropdownOpen(true);
+                    if (highlightedIndex < 0 && displayedUsers.length > 0) {
+                      setHighlightedIndex(0);
+                    }
+                  }}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setIsDropdownOpen(true);
+                    setHighlightedIndex(0);
+                  }}
+                  onKeyDown={(e) => {
+                    if (!isDropdownOpen) {
+                      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        setIsDropdownOpen(true);
+                        setHighlightedIndex(0);
+                        return;
+                      }
+                    }
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setHighlightedIndex((prev) =>
+                        prev < displayedUsers.length - 1 ? prev + 1 : 0
+                      );
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setHighlightedIndex((prev) =>
+                        prev > 0 ? prev - 1 : displayedUsers.length - 1
+                      );
+                    } else if (e.key === 'Enter') {
+                      if (
+                        isDropdownOpen &&
+                        highlightedIndex >= 0 &&
+                        highlightedIndex < displayedUsers.length
+                      ) {
+                        e.preventDefault();
+                        handleSelectEmployee(displayedUsers[highlightedIndex]);
+                      }
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      setIsDropdownOpen(false);
+                    }
                   }}
                   placeholder="Type name or ID to search employee..."
                   className="w-full border border-gray-200 rounded-xl pl-9 pr-16 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition"
@@ -2332,15 +2585,19 @@ const SalarySlipForm = ({
                         user.baseSalary ||
                         user.salary ||
                         '';
+                      const isHighlighted = idx === highlightedIndex;
 
                       return (
                         <div
                           key={id}
+                          onMouseEnter={() => setHighlightedIndex(idx)}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSelectEmployee(user);
                           }}
-                          className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-none transition">
+                          className={`px-4 py-2.5 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-none transition ${
+                            isHighlighted ? 'bg-gray-100' : 'hover:bg-gray-50'
+                          }`}>
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{name}</p>
                             <p className="text-xs text-gray-500">
@@ -2414,6 +2671,7 @@ const SalarySlipForm = ({
                 placeholder="e.g. 123456789012"
               />
               <Input
+                data-field="baseSalary"
                 label="Base Salary (₹)"
                 type="number"
                 value={formData.baseSalary ?? ''}
@@ -2432,11 +2690,38 @@ const SalarySlipForm = ({
                       updated[bIdx] = { ...updated[bIdx], amount: numVal };
                     } else if (updated.length > 0) {
                       updated[0] = { ...updated[0], amount: numVal };
+                    } else {
+                      updated.push({ name: 'Basic Pay', amount: numVal });
                     }
-                    return { ...prev, baseSalary: val, earnings: updated };
+
+                    // PAY-08: Auto calculate HRA (50% of Basic Pay)
+                    const hraIdx = updated.findIndex(
+                      (item) =>
+                        item.name.toLowerCase().includes('hra') ||
+                        item.name.toLowerCase().includes('house rent')
+                    );
+                    const calculatedHra = numVal > 0 ? Math.round(numVal * 0.5) : 0;
+                    if (hraIdx !== -1) {
+                      updated[hraIdx] = { ...updated[hraIdx], amount: calculatedHra };
+                    } else if (calculatedHra > 0) {
+                      updated.push({ name: 'House Rent Allowance (HRA)', amount: calculatedHra });
+                    }
+
+                    // PAY-06: Auto-calculate Annual CTC from earnings
+                    const sumEarn = updated.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+                    const mult =
+                      prev.payCycle === 'Weekly' ? 52 :
+                      prev.payCycle === 'Bi-Weekly' ? 26 :
+                      prev.payCycle === 'Semi-Monthly' ? 24 : 12;
+                    const newCtc =
+                      !isCtcManualOverride && sumEarn > 0 ? sumEarn * mult : prev.totalCompensation;
+
+                    return { ...prev, baseSalary: val, earnings: updated, totalCompensation: newCtc };
                   });
                 }}
                 placeholder="e.g. 50000"
+                error={errors.baseSalary}
+                required
               />
             </div>
 
@@ -2446,7 +2731,15 @@ const SalarySlipForm = ({
                 label="Annual Total Comp / CTC (₹)"
                 type="number"
                 value={formData.totalCompensation ?? ''}
-                onChange={(e) => updateField('totalCompensation', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateField('totalCompensation', val);
+                  if (val !== '') {
+                    setIsCtcManualOverride(true);
+                  } else {
+                    setIsCtcManualOverride(false);
+                  }
+                }}
                 placeholder="e.g. 1200000"
               />
               <div>
@@ -2506,6 +2799,7 @@ const SalarySlipForm = ({
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <Input
+                data-field="paidDays"
                 label="Paid Days"
                 type="number"
                 value={formData.paidDays}
