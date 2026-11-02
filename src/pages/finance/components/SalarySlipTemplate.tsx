@@ -540,7 +540,7 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
               value={formatPayPeriodDisplay(data.payPeriod, data.monthYear)}
               bold
             />
-            <MetaItem label="Employee ID" value={formatEmployeeCode(data.employeeId) || '001'} />
+            <MetaItem label="Employee ID" value={formatEmployeeCode(data.employeeId) || 'EMP1'} />
           </div>
 
           <div

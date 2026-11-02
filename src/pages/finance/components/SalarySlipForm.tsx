@@ -2385,8 +2385,8 @@ const SalarySlipForm = ({
                       value={formData.paySlipNo}
                       placeholder={
                         formData.employeeId
-                          ? 'e.g. E002-0926001'
-                          : 'Select employee to generate (e.g. E002-0926001)'
+                          ? `e.g. ${formatEmployeeCode(formData.employeeId)}0926001`
+                          : 'Select employee to generate (e.g. EMP10926001 or X0010926001)'
                       }
                       onChange={(e) => handlePaySlipNoDirectChange(e.target.value)}
                       className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white font-mono font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-black ${
@@ -2412,7 +2412,7 @@ const SalarySlipForm = ({
                     </p>
                   ) : (
                     <p className="mt-1 text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-                      ✓ Generated in format E{formatEmployeeCode(formData.employeeId)}-{selectedMonth ? String(months.indexOf(selectedMonth.toUpperCase()) + 1).padStart(2, '0') : '09'}{String(selectedYear).slice(-2)}{String(slipSequence).padStart(3, '0')}
+                      ✓ Generated in format {formatEmployeeCode(formData.employeeId) || 'EMP1'}{selectedMonth ? String(months.indexOf(selectedMonth.toUpperCase()) + 1).padStart(2, '0') : '09'}{String(selectedYear).slice(-2)}{String(slipSequence).padStart(3, '0')}
                     </p>
                   )}
                 </div>

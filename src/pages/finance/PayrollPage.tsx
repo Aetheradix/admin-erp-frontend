@@ -151,7 +151,7 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
   const netVal = Number(item.net_salary || 0);
   const monthYearStr = `${monthStr} ${yearStr}`;
   const empCode = String(
-    item.employee_code || item.employeeCode || item.employee_id || item.user_id || '001'
+    item.employee_code || item.employeeCode || item.employee_id || item.user_id || 'EMP1'
   );
   const fallbackSlipNo = generateSlipNumber(empCode, monthYearStr);
 
@@ -228,7 +228,7 @@ const formatApiRecord = (item: Record<string, any>): PayrollRecord => {
       'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
   );
   const normalizedSlipNo = actualSlipNo
-    ? String(actualSlipNo).replace(/^EX/i, 'E')
+    ? String(actualSlipNo)
     : fallbackSlipNo;
 
   return {
