@@ -66,6 +66,13 @@ export const CheckInPage: React.FC = () => {
     setWorkMode,
     geoLocation,
     requestGeoLocation,
+    offices,
+    selectedOfficeId,
+    setSelectedOfficeId,
+    activeOffice,
+    distanceToOffice,
+    isInsideGeofence,
+    isVerifyingGeofence,
   } = useAttendance();
 
   const selectedMonthName = MONTH_NAMES[currentMonth.getMonth()];
@@ -168,6 +175,13 @@ export const CheckInPage: React.FC = () => {
             requestGeoLocation={requestGeoLocation}
             breakNote={breakNote}
             setBreakNote={setBreakNote}
+            offices={offices}
+            selectedOfficeId={selectedOfficeId}
+            setSelectedOfficeId={setSelectedOfficeId}
+            activeOffice={activeOffice}
+            distanceToOffice={distanceToOffice}
+            isInsideGeofence={isInsideGeofence}
+            isVerifyingGeofence={isVerifyingGeofence}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

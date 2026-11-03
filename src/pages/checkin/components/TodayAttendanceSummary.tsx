@@ -23,6 +23,9 @@ import {
 import { formatTime, formatFullDate } from '@/utils/date';
 import type { AttendanceStatus } from '@/types/models';
 import type { GeoLocationState } from '../hooks/useAttendance';
+import type { Office } from '@/store/api/attendanceSlice';
+import { LocationPinpointMap } from '@/components/common/LocationPinpointMap';
+import { Compass } from 'lucide-react';
 
 interface TodayAttendanceSummaryProps {
   time: Date;
@@ -50,6 +53,13 @@ interface TodayAttendanceSummaryProps {
   requestGeoLocation: () => void;
   breakNote: string;
   setBreakNote: (v: string) => void;
+  offices: Office[];
+  selectedOfficeId: number | null;
+  setSelectedOfficeId: (id: number | null) => void;
+  activeOffice: Office | null;
+  distanceToOffice: number | null;
+  isInsideGeofence: boolean | null;
+  isVerifyingGeofence: boolean;
 }
 
 const MOODS = [
@@ -86,8 +96,16 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
   requestGeoLocation,
   breakNote,
   setBreakNote,
+  offices,
+  selectedOfficeId,
+  setSelectedOfficeId,
+  activeOffice,
+  distanceToOffice,
+  isInsideGeofence,
+  isVerifyingGeofence,
 }) => {
   const [showBreakTray, setShowBreakTray] = useState(false);
+  const [showPinpointMap, setShowPinpointMap] = useState(false);
 
   const isCheckedIn = status?.status === 'checked-in';
   const isOnBreak = !!status?.onBreak;
@@ -210,11 +228,25 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
         </div>
 
         {/* GPS Status & Refresh */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
           {geoLocation.latitude && geoLocation.longitude ? (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-subtle border border-border-subtle text-[11px] font-bold text-foreground/80">
               <Navigation size={12} className="text-primary" />
-              <span>GPS Tagged: {geoLocation.latitude.toFixed(3)}°, {geoLocation.longitude.toFixed(3)}°</span>
+              <span>
+                GPS: {geoLocation.latitude.toFixed(4)}°, {geoLocation.longitude.toFixed(4)}°
+                {geoLocation.accuracy !== null && (
+                  <span className={`ml-1 font-extrabold ${
+                    geoLocation.accuracy <= 20
+                      ? 'text-emerald-500'
+                      : geoLocation.accuracy <= 50
+                      ? 'text-primary'
+                      : 'text-amber-500'
+                  }`}>
+                    ±{Math.round(geoLocation.accuracy)}m
+                    {geoLocation.accuracy <= 20 ? ' (High Precision)' : ''}
+                  </span>
+                )}
+              </span>
               <button
                 type="button"
                 onClick={requestGeoLocation}
@@ -242,11 +274,84 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               disabled={geoLocation.isFetching}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-surface-subtle border border-border-subtle text-muted text-[11px] font-bold hover:text-foreground transition-colors cursor-pointer">
               <Navigation size={12} className={geoLocation.isFetching ? 'animate-spin text-primary' : ''} />
-              <span>{geoLocation.isFetching ? 'Locating GPS...' : 'Verify GPS'}</span>
+              <span>{geoLocation.isFetching ? 'Locking High-Accuracy GPS...' : 'Acquire High-Accuracy GPS'}</span>
             </button>
+          )}
+          {/* Geofence status badge */}
+          {workMode === 'office' && !isCheckedIn && (
+            isInsideGeofence === true ? (
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                <CheckCircle2 size={12} />
+                <span>Inside geofence · {distanceToOffice !== null ? `${Math.round(distanceToOffice)}m` : ''} from {activeOffice?.name || 'office'}</span>
+              </div>
+            ) : isInsideGeofence === false ? (
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[11px] font-bold">
+                <AlertTriangle size={12} />
+                <span>Outside zone · {distanceToOffice !== null ? `${Math.round(distanceToOffice)}m` : '?'} from {activeOffice?.name || 'office'} (radius: {activeOffice?.radius ?? '?'}m)</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[11px] font-bold">
+                <MapPin size={12} />
+                <span>Enable GPS to verify office location</span>
+              </div>
+            )
           )}
         </div>
       </div>
+
+      {/* Live Pinpoint Location Strip & Map Drawer */}
+      {(geoLocation.latitude !== null && geoLocation.longitude !== null) && (
+        <div className="bg-surface-subtle/70 rounded-2xl border border-border-subtle p-3.5 space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <Compass size={16} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] font-black uppercase text-muted tracking-wider block">
+                  Current Pinpoint Location
+                </span>
+                <span className="text-xs font-bold text-foreground truncate block">
+                  {geoLocation.locationName || `${geoLocation.latitude.toFixed(4)}°, ${geoLocation.longitude.toFixed(4)}°`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              {distanceToOffice !== null && activeOffice && (
+                <span className="text-[11px] font-bold text-muted bg-surface-elevated px-2.5 py-1 rounded-xl border border-border-subtle">
+                  <strong>{Math.round(distanceToOffice)}m</strong> to {activeOffice.name}
+                </span>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setShowPinpointMap(!showPinpointMap)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-black transition-colors cursor-pointer">
+                <MapPin size={12} />
+                <span>{showPinpointMap ? 'Hide Map' : 'View Pinpoint Map'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Expandable Interactive Map Pinpoint */}
+          {showPinpointMap && (
+            <div className="space-y-1.5 pt-1 animate-in fade-in duration-200">
+              <LocationPinpointMap
+                latitude={geoLocation.latitude}
+                longitude={geoLocation.longitude}
+                accuracy={geoLocation.accuracy}
+                radius={workMode === 'office' ? activeOffice?.radius : undefined}
+                locationName={geoLocation.locationName || 'Your Current Position'}
+                height="190px"
+              />
+              {/* <p className="text-[10px] text-muted text-right">
+                Real-time device GPS coordinates mapped with high-accuracy satellite geocoding
+              </p> */}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Dynamic Centerpiece Hero: Progress Orb + Action Hub */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-2">
@@ -381,24 +486,71 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
             </div>
           )}
 
+          {/* Office selector — shown when mode=office, not yet checked in, offices available */}
+          {!isCheckedIn && workMode === 'office' && offices.length > 1 && (
+            <div className="flex items-center gap-2 self-start">
+              <MapPin size={13} className="text-primary shrink-0" />
+              <select
+                value={selectedOfficeId ?? ''}
+                onChange={(e) => setSelectedOfficeId(e.target.value ? Number(e.target.value) : null)}
+                className="bg-surface-subtle border border-border-subtle rounded-xl px-3 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:border-primary/50 cursor-pointer transition-colors">
+                <option value="">Auto-detect nearest office</option>
+                {offices.map((o) => (
+                  <option key={o.id} value={o.id}>{o.name}{o.address ? ` – ${o.address}` : ''}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Active office info strip when one office */}
+          {!isCheckedIn && workMode === 'office' && offices.length === 1 && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-subtle border border-border-subtle text-[11px] font-bold text-foreground/80 self-start">
+              <Building size={12} className="text-primary" />
+              <span>{offices[0].name}</span>
+              <span className="text-muted">· radius {offices[0].radius}m</span>
+            </div>
+          )}
+
           {/* Action Buttons Row */}
           <div className="flex flex-wrap items-center gap-3 pt-1">
             {!isCheckedIn ? (
-              /* PRIMARY PUNCH IN BUTTON */
-              <button
-                type="button"
-                onClick={handleAttendance}
-                disabled={isLoading}
-                className="w-full sm:w-auto min-w-[210px] h-13 px-8 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2.5">
-                {isLoading ? (
-                  <RefreshCw size={18} className="animate-spin" />
-                ) : (
-                  <LogIn size={18} />
+              <>
+                {/* Geofence warning when outside */}
+                {workMode === 'office' && isInsideGeofence === false && !isVerifyingGeofence && (
+                  <p className="w-full text-[11px] font-bold text-red-500 flex items-center gap-1">
+                    <AlertTriangle size={12} /> You are outside the permitted office zone. Move closer to check in.
+                  </p>
                 )}
-                <span>
-                  {workMode === 'wfh' ? 'Punch In (Remote)' : 'Punch In (Office)'}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  onClick={handleAttendance}
+                  disabled={isLoading || isVerifyingGeofence || (workMode === 'office' && isInsideGeofence === false)}
+                  title={workMode === 'office' && isInsideGeofence === false ? 'You are outside the office geofence' : undefined}
+                  className={`w-full sm:w-auto min-w-[210px] h-13 px-8 rounded-2xl font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-98 transition-all flex items-center justify-center gap-2.5 ${
+                    workMode === 'office' && isInsideGeofence === false
+                      ? 'bg-red-500/20 border border-red-500/40 text-red-500 cursor-not-allowed shadow-none'
+                      : 'bg-primary hover:bg-primary-hover text-white shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 cursor-pointer'
+                  }`}>
+                  {isVerifyingGeofence ? (
+                    <RefreshCw size={18} className="animate-spin" />
+                  ) : isLoading ? (
+                    <RefreshCw size={18} className="animate-spin" />
+                  ) : workMode === 'office' && isInsideGeofence === false ? (
+                    <AlertTriangle size={18} />
+                  ) : (
+                    <LogIn size={18} />
+                  )}
+                  <span>
+                    {isVerifyingGeofence
+                      ? 'Verifying location...'
+                      : workMode === 'wfh'
+                      ? 'Punch In (Remote)'
+                      : workMode === 'office' && isInsideGeofence === false
+                      ? 'Outside Office Zone'
+                      : 'Punch In (Office)'}
+                  </span>
+                </button>
+              </>
             ) : isOnBreak ? (
               /* RESUME FROM BREAK BUTTON */
               <button

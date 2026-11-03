@@ -6,10 +6,14 @@ import {
   useTakeBreakMutation,
   useEndBreakMutation,
   useGetAttendanceHistoryQuery,
+  useGetActiveOfficesQuery,
+  type Office,
 } from '@/store/api/attendanceSlice';
 import { useSubmitMoodMutation } from '@/store/api/moodSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { generateMonthAttendanceRecords, calculateMonthSummary } from '../utils/attendanceUtils';
+import { reverseGeocode } from '@/services/geocodingService';
+import { getUltraAccuratePosition } from '@/utils/highAccuracyGeolocation';
 
 // ---------- helpers ----------
 
@@ -36,6 +40,24 @@ const SHIFT_START_HOUR = 10;
 const SHIFT_START_MIN = 0;
 const SHIFT_DISPLAY = '10:00 AM – 05:00 PM';
 
+/**
+ * Haversine distance calculator between two GPS points in meters.
+ */
+export function computeDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(p1) * Math.cos(p2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+
 export interface GeoLocationState {
   latitude: number | null;
   longitude: number | null;
@@ -46,11 +68,25 @@ export interface GeoLocationState {
   permissionGranted: boolean;
 }
 
+
+/**
+ * Acquire high-accuracy position promise compatible with incognito and private browsing.
+ */
+async function acquireHighAccuracyPosition(timeoutMs = 7000): Promise<GeolocationPosition> {
+  const accurate = await getUltraAccuratePosition({ timeoutMs, desiredAccuracyMeters: 10 });
+  return accurate.rawPosition;
+}
+
 export const useAttendance = () => {
   const [time, setTime] = useState(new Date());
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // Office Geofencing & Location states
+  const { data: offices = [] } = useGetActiveOfficesQuery();
+  const [selectedOfficeId, setSelectedOfficeId] = useState<number | null>(null);
+  const [isVerifyingGeofence, setIsVerifyingGeofence] = useState<boolean>(false);
+
 
   // WFH vs Office Work Mode toggle (defaults to 'office')
   const [workMode, setWorkMode] = useState<'office' | 'wfh'>('office');
@@ -86,8 +122,8 @@ export const useAttendance = () => {
     }
   }, [status?.work_mode]);
 
-  // Request browser geolocation helper
-  const requestGeoLocation = () => {
+  // Request ultra-accurate browser geolocation with multi-sampling
+  const requestGeoLocation = async () => {
     if (!navigator.geolocation) {
       setGeoLocation((prev) => ({
         ...prev,
@@ -99,41 +135,45 @@ export const useAttendance = () => {
 
     setGeoLocation((prev) => ({ ...prev, isFetching: true, error: null }));
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
-        setGeoLocation({
-          latitude,
-          longitude,
-          accuracy,
-          error: null,
-          isFetching: false,
-          locationName: `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}° (GPS)`,
-          permissionGranted: true,
-        });
-      },
-      (err) => {
-        let msg = 'Failed to get location';
-        if (err.code === err.PERMISSION_DENIED) {
-          msg = 'Location permission denied';
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          msg = 'Location information unavailable';
-        } else if (err.code === err.TIMEOUT) {
-          msg = 'Location request timed out';
+    try {
+      const best = await getUltraAccuratePosition({ timeoutMs: 5000, desiredAccuracyMeters: 15 });
+      setGeoLocation({
+        latitude: best.latitude,
+        longitude: best.longitude,
+        accuracy: best.accuracy,
+        error: null,
+        isFetching: false,
+        locationName: `${best.latitude.toFixed(4)}°, ${best.longitude.toFixed(4)}° (GPS)`,
+        permissionGranted: true,
+      });
+
+      // Asynchronously fetch human-readable street address for pinpoint display
+      reverseGeocode(best.latitude, best.longitude).then((addr) => {
+        if (addr) {
+          setGeoLocation((prev) => ({
+            ...prev,
+            locationName: addr,
+          }));
         }
-        setGeoLocation((prev) => ({
-          ...prev,
-          error: msg,
-          isFetching: false,
-          permissionGranted: false,
-        }));
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
+      }).catch(() => {});
+    } catch (err: any) {
+      let msg = 'Failed to get location';
+      if (err.code === 1) {
+        msg = 'Location permission denied';
+      } else if (err.code === 2) {
+        msg = 'Location information unavailable. Check device GPS.';
+      } else if (err.code === 3) {
+        msg = 'Location request timed out';
+      } else if (err.message) {
+        msg = err.message;
       }
-    );
+      setGeoLocation((prev) => ({
+        ...prev,
+        error: msg,
+        isFetching: false,
+        permissionGranted: false,
+      }));
+    }
   };
 
   // Auto-detect geolocation on mount
@@ -190,6 +230,54 @@ export const useAttendance = () => {
   const monthSummary = useMemo(() => {
     return calculateMonthSummary(monthRecords);
   }, [monthRecords]);
+
+
+  // Target office for geofence verification (selected or closest)
+  const activeOffice: Office | null = useMemo(() => {
+    if (offices.length === 0) return null;
+    if (selectedOfficeId) {
+      const found = offices.find((o) => o.id === selectedOfficeId);
+      if (found) return found;
+    }
+    // If user has coords, find closest office automatically
+    if (geoLocation.latitude && geoLocation.longitude) {
+      let closest = offices[0];
+      let minDist = Infinity;
+      for (const off of offices) {
+        const d = computeDistanceMeters(
+          geoLocation.latitude,
+          geoLocation.longitude,
+          off.latitude,
+          off.longitude
+        );
+        if (d < minDist) {
+          minDist = d;
+          closest = off;
+        }
+      }
+      return closest;
+    }
+    return offices[0];
+  }, [offices, selectedOfficeId, geoLocation.latitude, geoLocation.longitude]);
+
+  // Live distance from active office
+  const distanceToOffice: number | null = useMemo(() => {
+    if (!activeOffice || geoLocation.latitude === null || geoLocation.longitude === null) {
+      return null;
+    }
+    return computeDistanceMeters(
+      geoLocation.latitude,
+      geoLocation.longitude,
+      activeOffice.latitude,
+      activeOffice.longitude
+    );
+  }, [activeOffice, geoLocation.latitude, geoLocation.longitude]);
+
+  // Whether employee is inside the active office's geofence
+  const isInsideGeofence: boolean | null = useMemo(() => {
+    if (distanceToOffice === null || !activeOffice) return null;
+    return distanceToOffice <= activeOffice.radius;
+  }, [distanceToOffice, activeOffice]);
 
   // Live session metrics calculation
   const isCheckedIn = status?.status === 'checked-in';
@@ -383,58 +471,149 @@ export const useAttendance = () => {
   const handleAttendance = async () => {
     try {
       if (status?.status === 'checked-in') {
+        let checkoutLat = geoLocation.latitude;
+        let checkoutLon = geoLocation.longitude;
+
+        try {
+          const freshPos = await acquireHighAccuracyPosition(4000);
+          checkoutLat = freshPos.coords.latitude;
+          checkoutLon = freshPos.coords.longitude;
+        } catch {
+          // fallback to current cached position
+        }
+
         await checkOut({
-          latitude: geoLocation.latitude,
-          longitude: geoLocation.longitude,
+          latitude: checkoutLat,
+          longitude: checkoutLon,
           location_name: geoLocation.locationName,
-          check_out_latitude: geoLocation.latitude,
-          check_out_longitude: geoLocation.longitude,
+          check_out_latitude: checkoutLat,
+          check_out_longitude: checkoutLon,
           check_out_location:
-            geoLocation.locationName || (workMode === 'wfh' ? 'Remote / Home' : 'Office HQ'),
+            geoLocation.locationName || (workMode === 'wfh' ? 'Remote / Home' : (activeOffice?.name || 'Office HQ')),
         }).unwrap();
+
         showToast({
           severity: 'success',
           summary: 'Checked Out',
-          detail: 'You have been successfully checked out with geo-verification.',
+          detail: 'You have been successfully checked out with location verification.',
           life: 3000,
         });
       } else {
         const isWfhSelected = workMode === 'wfh';
-        // Build device info from browser
+        setIsVerifyingGeofence(true);
+
+        let finalLat = geoLocation.latitude;
+        let finalLon = geoLocation.longitude;
+        let finalAcc = geoLocation.accuracy;
+
+        // For Office check-in: require fresh high-accuracy location
+        if (!isWfhSelected) {
+          try {
+            showToast({
+              severity: 'info',
+              summary: 'Verifying Location',
+              detail: 'Verifying your office location with GPS...',
+              life: 2500,
+            });
+            const freshPos = await acquireHighAccuracyPosition(10000);
+            finalLat = freshPos.coords.latitude;
+            finalLon = freshPos.coords.longitude;
+            finalAcc = freshPos.coords.accuracy;
+
+            setGeoLocation({
+              latitude: finalLat,
+              longitude: finalLon,
+              accuracy: finalAcc,
+              error: null,
+              isFetching: false,
+              locationName: `${finalLat.toFixed(4)}°, ${finalLon.toFixed(4)}° (GPS)`,
+              permissionGranted: true,
+            });
+
+            try {
+              const placeAddr = await reverseGeocode(finalLat, finalLon);
+              if (placeAddr) {
+                setGeoLocation((prev) => ({ ...prev, locationName: placeAddr }));
+              }
+            } catch {}
+          } catch (posErr: any) {
+            setIsVerifyingGeofence(false);
+            let userMsg = 'Unable to determine your current location.';
+            if (posErr?.code === 1) {
+              userMsg = 'Please enable location permission to check in.';
+            } else if (posErr?.code === 2) {
+              userMsg = 'Unable to determine your current location. Please verify device GPS is active.';
+            } else if (posErr?.code === 3) {
+              userMsg = 'Location request timed out. Please try again.';
+            }
+            showToast({
+              severity: 'error',
+              summary: 'Location Required',
+              detail: userMsg,
+              life: 5000,
+            });
+            return;
+          }
+        }
+
         const deviceInfo = [
           navigator.userAgent.slice(0, 120),
           `${screen.width}x${screen.height}`,
         ].join(' | ');
-        await checkIn({
+
+        const res: any = await checkIn({
           remark: isWfhSelected ? 'WFH Check-in' : 'Office Check-in',
           work_mode: workMode,
           is_wfh: isWfhSelected,
-          latitude: geoLocation.latitude,
-          longitude: geoLocation.longitude,
-          check_in_latitude: geoLocation.latitude,
-          check_in_longitude: geoLocation.longitude,
-          check_in_location:
-            geoLocation.locationName || (isWfhSelected ? 'Remote / Home' : 'Office HQ'),
-          location_name:
-            geoLocation.locationName || (isWfhSelected ? 'Remote / Home' : 'Office HQ'),
+          latitude: finalLat,
+          longitude: finalLon,
+          check_in_latitude: finalLat,
+          check_in_longitude: finalLon,
+          location_accuracy: finalAcc,
+          accuracy: finalAcc,
+          office_id: activeOffice?.id || null,
           device_info: deviceInfo,
         }).unwrap();
+
         showToast({
           severity: 'success',
-          summary: 'Checked In',
-          detail: `Welcome! Checked in as [${isWfhSelected ? 'Work From Home' : 'In Office'}].`,
-          life: 3000,
+          summary: 'Check-in Successful',
+          detail: isWfhSelected
+            ? 'Checked in successfully as Remote / WFH.'
+            : `Verified inside ${res?.office_name || activeOffice?.name || 'Office'} (${Math.round(res?.distance_from_office || distanceToOffice || 0)}m from center).`,
+          life: 4000,
         });
       }
     } catch (error: unknown) {
-      const apiError = error as { data?: { message?: string } };
       console.error('Attendance action failed:', error);
-      showToast({
-        severity: 'error',
-        summary: 'Attendance Error',
-        detail: apiError.data?.message || 'Action failed',
-        life: 3000,
-      });
+      const apiErr = error as { data?: { message?: string; code?: string; data?: any } };
+      const errCode = apiErr?.data?.code;
+      const errMsg = apiErr?.data?.message || 'Check-in failed. Please try again.';
+
+      if (errCode === 'OUTSIDE_GEOFENCE') {
+        showToast({
+          severity: 'error',
+          summary: 'Outside Office Geofence',
+          detail: errMsg,
+          life: 7000,
+        });
+      } else if (errCode === 'INACCURATE_LOCATION') {
+        showToast({
+          severity: 'warn',
+          summary: 'Inaccurate Location',
+          detail: errMsg,
+          life: 6000,
+        });
+      } else {
+        showToast({
+          severity: 'error',
+          summary: 'Check-in Failed',
+          detail: errMsg,
+          life: 4000,
+        });
+      }
+    } finally {
+      setIsVerifyingGeofence(false);
     }
   };
 
@@ -559,5 +738,12 @@ export const useAttendance = () => {
     setWorkMode,
     geoLocation,
     requestGeoLocation,
+    offices,
+    selectedOfficeId,
+    setSelectedOfficeId,
+    activeOffice,
+    distanceToOffice,
+    isInsideGeofence,
+    isVerifyingGeofence,
   };
 };
