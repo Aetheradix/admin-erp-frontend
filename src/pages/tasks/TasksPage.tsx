@@ -225,8 +225,8 @@ export function TasksPage() {
     if (usersData?.length) {
       setUsers(
         usersData.map((u: any) => ({
-          label: u.user_name,
-          value: u.user_id,
+          label: u.username,
+          value: u.id,
         }))
       );
     }
@@ -389,11 +389,10 @@ export function TasksPage() {
               type="button"
               id="kanban-view-btn"
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                viewMode === 'kanban'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${viewMode === 'kanban'
                   ? 'bg-white text-primary shadow-xs'
                   : 'text-muted hover:text-foreground'
-              }`}>
+                }`}>
               <Columns size={14} />
               <span>Kanban Board</span>
             </button>
@@ -401,11 +400,10 @@ export function TasksPage() {
               type="button"
               id="grid-view-btn"
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                viewMode === 'grid'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${viewMode === 'grid'
                   ? 'bg-white text-primary shadow-xs'
                   : 'text-muted hover:text-foreground'
-              }`}>
+                }`}>
               <LayoutGrid size={14} />
               <span>Grid View</span>
             </button>
