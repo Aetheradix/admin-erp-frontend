@@ -98,6 +98,7 @@ export const apiSlice = createApi({
     'OrganizationHierarchy',
     'Departments',
     'LeaveApproverConfig',
+    'Offices',
   ],
   endpoints: () => ({}),
 });

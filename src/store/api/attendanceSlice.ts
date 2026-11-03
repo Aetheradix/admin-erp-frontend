@@ -10,6 +10,51 @@ import { mapAttendanceRecord } from './mappers';
 
 export type { AttendanceRecord, AttendanceStatsData };
 
+export interface Office {
+  id: number;
+  name: string;
+  address?: string | null;
+  latitude: number;
+  longitude: number;
+  radius: number;
+  isActive?: boolean;
+  is_active?: boolean;
+  timezone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface VerifyLocationResponse {
+  allowed: boolean;
+  status: string;
+  distance: number | null;
+  accuracy?: number | null;
+  office: Office | null;
+  message: string;
+}
+
+export interface GeofenceAuditLog {
+  id: number;
+  user_id: number;
+  username?: string;
+  email?: string;
+  employee_code?: string;
+  office_id?: number | null;
+  office_name?: string | null;
+  action: string;
+  attempted_latitude?: number | null;
+  attempted_longitude?: number | null;
+  location_accuracy?: number | null;
+  distance_meters?: number | null;
+  allowed_radius_meters?: number | null;
+  status: string;
+  failure_reason?: string | null;
+  device_info?: string | null;
+  ip_address?: string | null;
+  created_at: string;
+}
+
+
 export interface CheckInPayload {
   remark?: string;
   work_mode?: 'office' | 'wfh' | 'field';
@@ -21,6 +66,10 @@ export interface CheckInPayload {
   location_name?: string | null;
   check_in_location?: string | null;
   device_info?: string | null;
+  office_id?: number | null;
+  officeId?: number | null;
+  location_accuracy?: number | null;
+  accuracy?: number | null;
 }
 
 export interface CheckOutPayload {
@@ -162,6 +211,70 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Attendance'],
     }),
 
+    
+    getActiveOffices: builder.query<Office[], void>({
+      query: () => '/attendance/offices',
+      transformResponse: (res: { data?: Office[] } | Office[]) => {
+        return (res as { data?: Office[] })?.data ?? (Array.isArray(res) ? res : []);
+      },
+      providesTags: ['Offices'],
+    }),
+
+    getAllOffices: builder.query<Office[], void>({
+      query: () => '/attendance/offices/all',
+      transformResponse: (res: { data?: Office[] } | Office[]) => {
+        return (res as { data?: Office[] })?.data ?? (Array.isArray(res) ? res : []);
+      },
+      providesTags: ['Offices'],
+    }),
+
+    createOffice: builder.mutation<Office, Partial<Office>>({
+      query: (body) => ({
+        url: '/attendance/offices',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Offices'],
+    }),
+
+    updateOffice: builder.mutation<Office, { id: number } & Partial<Office>>({
+      query: ({ id, ...body }) => ({
+        url: `/attendance/offices/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Offices'],
+    }),
+
+    deleteOffice: builder.mutation<{ success: boolean; message: string }, number>({
+      query: (id) => ({
+        url: `/attendance/offices/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Offices'],
+    }),
+
+    verifyLocation: builder.mutation<
+      VerifyLocationResponse,
+      { latitude: number; longitude: number; accuracy?: number | null; officeId?: number | null }
+    >({
+      query: (body) => ({
+        url: '/attendance/verify-location',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    getGeofenceLogs: builder.query<GeofenceAuditLog[], { limit?: number; offset?: number } | void>({
+      query: (params) => ({
+        url: '/attendance/geofence-logs',
+        params: params || {},
+      }),
+      transformResponse: (res: { data?: GeofenceAuditLog[] } | GeofenceAuditLog[]) => {
+        return (res as { data?: GeofenceAuditLog[] })?.data ?? (Array.isArray(res) ? res : []);
+      },
+    }),
+
     getTeamAvailability: builder.query<
       TeamAvailabilityResponse,
       { department?: string; status?: string; search?: string } | void
@@ -187,4 +300,11 @@ export const {
   useEndBreakMutation,
   useTakeBreakMutation,
   useGetTeamAvailabilityQuery,
+  useGetActiveOfficesQuery,
+  useGetAllOfficesQuery,
+  useCreateOfficeMutation,
+  useUpdateOfficeMutation,
+  useDeleteOfficeMutation,
+  useVerifyLocationMutation,
+  useGetGeofenceLogsQuery,
 } = attendanceSlice;
