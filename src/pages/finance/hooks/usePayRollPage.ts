@@ -227,6 +227,10 @@ export const usePayrollPage = () => {
         paymentStatus: 'pending',
         paymentDate: new Date().toISOString().split('T')[0],
         remarks: formData.hrNote || null,
+        authorized_signatory: formData.authorizedSignatory || 'Seema Srivastava',
+        authorizedSignatory: formData.authorizedSignatory || 'Seema Srivastava',
+        signatory_role: formData.signatoryRole || '(Director)',
+        signatoryRole: formData.signatoryRole || '(Director)',
       };
 
       // Direct RTK Query Mutation Call

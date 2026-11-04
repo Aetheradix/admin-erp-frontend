@@ -1152,6 +1152,65 @@ const SalarySlipForm = ({
     });
   }, [rawUsersList, searchTerm]);
 
+  // Filter only Admin, SuperAdmin, FinanceAdmin, HrAdmin for Authorized Signatories
+  const authorizedSignatories = useMemo(() => {
+    const list: Array<{ name: string; position: string; key: string }> = [
+      { name: 'Seema Srivastava', position: '(Director)', key: 'director-default' },
+    ];
+
+    if (Array.isArray(rawUsersList)) {
+      rawUsersList.forEach((u: any) => {
+        const name = String(u.name || u.username || u.user_name || '').trim();
+        if (!name) return;
+
+        const role = String(u.role || '').toLowerCase();
+        const designation = String(u.designation || u.position || '').toLowerCase();
+        const dept = String(u.department || '').toLowerCase();
+        const rolesArr = Array.isArray(u.roles)
+          ? u.roles.map((r: any) => String(r?.name || r || '').toLowerCase())
+          : [];
+
+        const combinedRole = [role, designation, dept, ...rolesArr].join(' ');
+
+        // Check if user is Admin, Super Admin, Finance Admin, or HR Admin
+        const isEligible =
+          combinedRole.includes('admin') ||
+          combinedRole.includes('super') ||
+          combinedRole.includes('finance') ||
+          combinedRole.includes('hr') ||
+          combinedRole.includes('director');
+
+        if (isEligible) {
+          const displayPosition = String(
+            u.designation ||
+              u.position ||
+              (combinedRole.includes('director')
+                ? 'Director'
+                : combinedRole.includes('super')
+                  ? 'Super Admin'
+                  : combinedRole.includes('finance')
+                    ? 'Finance Admin'
+                    : combinedRole.includes('hr')
+                      ? 'HR Admin'
+                      : 'Admin')
+          ).trim();
+
+          const formattedRole = displayPosition.startsWith('(') ? displayPosition : `(${displayPosition})`;
+
+          if (!list.some((existing) => existing.name.toLowerCase() === name.toLowerCase())) {
+            list.push({
+              name,
+              position: formattedRole,
+              key: String(u.id || u.user_id || name),
+            });
+          }
+        }
+      });
+    }
+
+    return list;
+  }, [rawUsersList]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -3218,36 +3277,45 @@ const SalarySlipForm = ({
                   <div>
                     <h4 className="text-sm font-bold text-gray-900">Signatory & HR Discrepancy Note</h4>
                     <p className="text-xs text-gray-500">
-                      Customize the authorized signatory name, title, and instructions shown on this salary slip.
+                      Select authorized signatory (Admin, Super Admin, Finance Admin, HR Admin) and review discrepancy note.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-gray-400 font-medium mr-1">Presets:</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateField('authorizedSignatory', 'Seema Srivastava');
-                      updateField('signatoryRole', '(Director)');
+              </div>
+
+              {/* Authorized Signatory Dropdown */}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Authorized Signatory (Admin / Super Admin / Finance Admin / HR Admin) <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={
+                      authorizedSignatories.find(
+                        (s) => s.name.toLowerCase() === (formData.authorizedSignatory || '').toLowerCase()
+                      )?.key || ''
+                    }
+                    onChange={(e) => {
+                      const selected = authorizedSignatories.find((s) => s.key === e.target.value);
+                      if (selected) {
+                        updateField('authorizedSignatory', selected.name);
+                        updateField('signatoryRole', selected.position);
+                      }
                     }}
-                    className="text-[11px] bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium px-2 py-0.5 rounded-md transition shadow-2xs">
-                    Director (Seema Srivastava)
-                  </button>
-                  {Boolean(loggedInUser?.name || (user as any)?.name || user?.username) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const userName = String(
-                          loggedInUser?.name || (user as any)?.name || user?.username || ''
-                        );
-                        updateField('authorizedSignatory', userName);
-                        updateField('signatoryRole', '(Authorized Signatory)');
-                      }}
-                      className="text-[11px] bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium px-2 py-0.5 rounded-md transition shadow-2xs">
-                      Current User ({String(loggedInUser?.name || (user as any)?.name || user?.username)})
-                    </button>
-                  )}
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-xs focus:border-black outline-none bg-white font-semibold text-gray-800 shadow-2xs">
+                    <option value="" disabled>
+                      -- Select Authorized Signatory --
+                    </option>
+                    {authorizedSignatories.map((sig) => (
+                      <option key={sig.key} value={sig.key}>
+                        {sig.name} — {sig.position}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Only verified administrators and directors appear in this authorized signatory list.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
