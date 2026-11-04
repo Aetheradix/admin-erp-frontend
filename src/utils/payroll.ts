@@ -22,7 +22,7 @@ export const formatEmployeeCode = (employeeCode?: string | number | null): strin
 
   // 3. If purely numeric, prefix with 'EMP'
   if (/^\d+$/.test(cleaned)) {
-    return `EMP${cleaned}`;
+    return `E${cleaned.padStart(3, '0')}`;
   }
 
   return cleaned.toUpperCase();

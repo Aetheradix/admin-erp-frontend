@@ -24,6 +24,7 @@ import {
   useLazyGetSalarySlipByIdQuery,
   useLazyGetEmployeeCompensationQuery,
   usePreviewEmployeeCompensationMutation,
+  useLazyGetNextPayslipNumberQuery,
 } from '@/store/api/financeApiSlice';
 import { useSelector } from 'react-redux'; // Added to access current logged-in user if available
 import { useAuth } from '@/hooks/useAuth';
@@ -446,6 +447,8 @@ const SalarySlipForm = ({
     useLazyGetEmployeeCompensationQuery();
   const [previewCompensation, { isLoading: isPreviewingCompensation }] =
     usePreviewEmployeeCompensationMutation();
+  const [fetchNextPayslipNo, { isLoading: isFetchingNextSlipNo }] =
+    useLazyGetNextPayslipNumberQuery();
 
   const [customUsersList, setCustomUsersList] = useState<any[]>([]);
   const [isCustomLoading, setIsCustomLoading] = useState<boolean>(false);
@@ -745,15 +748,15 @@ const SalarySlipForm = ({
     }
   };
 
-  const getNextSequenceForEmployee = (
-    empCode: string,
-    targetMonthYear: string,
-    existingSlips: any[]
-  ): number => {
-    if (!empCode || !Array.isArray(existingSlips)) return 1;
-    const cleanCode = formatEmployeeCode(empCode);
-
-    const parts = targetMonthYear.trim().split(/[\s\/\-]+/).filter(Boolean);
+  // Fetch next unique payslip number from backend guaranteed to be unique across all employees
+  const loadNextUniqueSlipNo = async (
+    targetEmpCode?: string | number,
+    targetUserId?: string | number,
+    targetMonthYear?: string
+  ): Promise<string | null> => {
+    const activeMonthYear =
+      targetMonthYear || formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
+    const parts = activeMonthYear.trim().split(/[\s\/\-]+/).filter(Boolean);
     let targetMonth = 0;
     let targetYear = 0;
     for (const p of parts) {
@@ -768,27 +771,57 @@ const SalarySlipForm = ({
         if (idx !== -1) targetMonth = idx + 1;
       }
     }
+    if (!targetMonth) targetMonth = new Date().getMonth() + 1;
+    if (!targetYear) targetYear = currentYear;
 
-    const mm = String(targetMonth).padStart(2, '0');
-    const yy = String(targetYear).slice(-2);
+    const empCode =
+      targetEmpCode ||
+      formData.employeeId ||
+      (selectedEmployeeObj
+        ? String(
+            selectedEmployeeObj.employee_code ||
+              selectedEmployeeObj.employee_id ||
+              selectedEmployeeObj.employeeId ||
+              selectedEmployeeObj.id ||
+              ''
+          )
+        : '');
 
-    let maxSeq = 0;
-    for (const s of existingSlips) {
-      const sCode = formatEmployeeCode(
-        s.employee_code || s.employeeCode || s.employee_id || s.employeeId || s.user_id
-      );
-      if (sCode !== cleanCode) continue;
+    const resolvedUserId = targetUserId || formData.userId || selectedEmployeeObj?.id;
 
-      const sNo = extractSlipNumber(s) || String(s.pay_slip_no || s.paySlipNo || '');
-      const parsed = parseSlipNumber(sNo);
-      if (parsed) {
-        if (parsed.month === mm && parsed.year === yy && parsed.sequence > maxSeq) {
-          maxSeq = parsed.sequence;
-        }
+    if (!empCode && !resolvedUserId) return null;
+
+    try {
+      const res = await fetchNextPayslipNo({
+        month: targetMonth,
+        year: targetYear,
+        userId: resolvedUserId ? Number(resolvedUserId) : undefined,
+        employeeCode: empCode ? String(empCode) : undefined,
+      }).unwrap();
+
+      const nextSlipNo = res?.nextPayslipNo;
+      if (nextSlipNo) {
+        setFormData((prev) => ({ ...prev, paySlipNo: nextSlipNo }));
+        const seq = res.sequence || parseSlipNumber(nextSlipNo)?.sequence || 1;
+        setSlipSequence(seq);
+        setSlipSeqInput(res.sequenceFormatted || String(seq).padStart(3, '0'));
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.paySlipNo;
+          return next;
+        });
+        return nextSlipNo;
+      }
+    } catch (err) {
+      console.warn('Backend next-payslip-no fetch failed, fallback to frontend format:', err);
+      const cleanEmpCode = formatEmployeeCode(empCode);
+      if (cleanEmpCode) {
+        const fallbackNo = generateSlipNumber(cleanEmpCode, activeMonthYear, slipSequence || 1);
+        setFormData((prev) => ({ ...prev, paySlipNo: fallbackNo }));
+        return fallbackNo;
       }
     }
-
-    return maxSeq > 0 ? maxSeq + 1 : 1;
+    return null;
   };
 
   const handleSlipSequenceInputChange = (val: string) => {
@@ -889,16 +922,7 @@ const SalarySlipForm = ({
       }));
       return;
     }
-    const newSlipNo = generateSlipNumber(empCode, formData.monthYear, slipSequence);
-    setFormData((prev) => ({ ...prev, paySlipNo: newSlipNo }));
-    setSlipSeqInput(String(slipSequence).padStart(3, '0'));
-    if (errors.paySlipNo) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next.paySlipNo;
-        return next;
-      });
-    }
+    loadNextUniqueSlipNo(empCode, formData.userId || selectedEmployeeObj?.id);
   };
 
   // Helper to update month or year and reflect back into formData.monthYear & payPeriod
@@ -911,27 +935,14 @@ const SalarySlipForm = ({
       formData.payCycle,
       biWeeklyPeriod
     );
-    setFormData((prev) => {
-      const empCode =
-        prev.employeeId ||
-        (selectedEmployeeObj
-          ? String(
-              selectedEmployeeObj.employee_code ||
-                selectedEmployeeObj.employee_id ||
-                selectedEmployeeObj.employeeId ||
-                selectedEmployeeObj.id ||
-                ''
-            )
-          : '');
-      const updatedSlipNo =
-        empCode ? generateSlipNumber(empCode, updatedMonthYear, slipSequence) : prev.paySlipNo;
-      return {
-        ...prev,
-        monthYear: updatedMonthYear,
-        payPeriod: newPayPeriod,
-        paySlipNo: updatedSlipNo,
-      };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      monthYear: updatedMonthYear,
+      payPeriod: newPayPeriod,
+    }));
+    if (formData.employeeId || selectedEmployeeObj) {
+      loadNextUniqueSlipNo(undefined, undefined, updatedMonthYear);
+    }
   };
 
   const handleYearChange = (selectedYear: string) => {
@@ -945,27 +956,14 @@ const SalarySlipForm = ({
       customStart,
       customEnd
     );
-    setFormData((prev) => {
-      const empCode =
-        prev.employeeId ||
-        (selectedEmployeeObj
-          ? String(
-              selectedEmployeeObj.employee_code ||
-                selectedEmployeeObj.employee_id ||
-                selectedEmployeeObj.employeeId ||
-                selectedEmployeeObj.id ||
-                ''
-            )
-          : '');
-      const updatedSlipNo =
-        empCode ? generateSlipNumber(empCode, updatedMonthYear, slipSequence) : prev.paySlipNo;
-      return {
-        ...prev,
-        monthYear: updatedMonthYear,
-        payPeriod: newPayPeriod,
-        paySlipNo: updatedSlipNo,
-      };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      monthYear: updatedMonthYear,
+      payPeriod: newPayPeriod,
+    }));
+    if (formData.employeeId || selectedEmployeeObj) {
+      loadNextUniqueSlipNo(undefined, undefined, updatedMonthYear);
+    }
   };
 
   const handleCycleChange = (cycle: PayCycleOption) => {
@@ -1266,11 +1264,14 @@ const SalarySlipForm = ({
     );
     const currentMonthYear =
       formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
-    const detectedSeq = getNextSequenceForEmployee(empCode, currentMonthYear, allSlips);
-    const effectiveSeq = slipSequence > 1 ? slipSequence : detectedSeq;
+    const effectiveSeq = slipSequence > 1 ? slipSequence : 1;
     setSlipSequence(effectiveSeq);
     setSlipSeqInput(String(effectiveSeq).padStart(3, '0'));
     const generatedSlipNo = generateSlipNumber(empCode, currentMonthYear, effectiveSeq);
+
+    if (!isEditing || !formData.paySlipNo) {
+      loadNextUniqueSlipNo(empCode, user.id, currentMonthYear);
+    }
 
     const detectedTotalComp = Number(
       user.totalCompensation ?? user.total_compensation ?? user.annualCtc ?? user.annual_ctc ?? 0
@@ -1668,6 +1669,10 @@ const SalarySlipForm = ({
     const parsedFromInput = parseInt(slipSeqInput, 10);
     const effectiveSeq = !isNaN(parsedFromInput) && parsedFromInput >= 1 ? parsedFromInput : slipSequence || 1;
     let finalSlipNo = formData.paySlipNo?.trim();
+    if (!finalSlipNo) {
+      const fetched = await loadNextUniqueSlipNo();
+      finalSlipNo = fetched || formData.paySlipNo?.trim();
+    }
     if (!finalSlipNo) {
       const empCode =
         formData.employeeId ||
@@ -2527,10 +2532,15 @@ const SalarySlipForm = ({
                       <button
                         type="button"
                         onClick={handleRegenerateSlipNumber}
-                        title="Regenerate Slip Number"
-                        className="absolute right-2 top-2 px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
-                        <Sparkles size={13} className="text-black" />
-                        Regenerate
+                        disabled={isFetchingNextSlipNo}
+                        title="Fetch Next Unique Payslip Number from backend"
+                        className="absolute right-2 top-2 px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition disabled:opacity-60 cursor-pointer">
+                        {isFetchingNextSlipNo ? (
+                          <Loader2 size={13} className="text-black animate-spin" />
+                        ) : (
+                          <Sparkles size={13} className="text-black" />
+                        )}
+                        {isFetchingNextSlipNo ? 'Fetching...' : 'Regenerate'}
                       </button>
                     )}
                   </div>
