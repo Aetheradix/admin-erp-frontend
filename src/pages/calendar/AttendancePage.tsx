@@ -15,6 +15,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { Globe, Lock, Check, Share2, ArrowLeft } from 'lucide-react';
 import type { AttendanceRequest } from '@/types/models';
+import { CompanyCalendarStudio } from './components/CompanyCalendarStudio';
+import { LeavePolicyStudio } from './components/LeavePolicyStudio';
+import { LeaveBalanceLedger } from './components/LeaveBalanceLedger';
+import { Calendar, Wallet, ShieldCheck, CalendarDays as CalendarDaysIcon } from 'lucide-react';
+
 
 export function AttendancePage() {
   const { user } = useAuth();
@@ -29,6 +34,7 @@ export function AttendancePage() {
     }
   });
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'schedule' | 'balances' | 'holidays' | 'policies'>('schedule');
   const [selectedDetailRequest, setSelectedDetailRequest] = useState<AttendanceRequest | null>(
     null
   );
@@ -48,6 +54,7 @@ export function AttendancePage() {
     handleReject,
   } = useAttendancePage();
 
+  
   const displayedRequests = targetUser
     ? requests.filter((r) => {
         const query = targetUser.toLowerCase();
@@ -179,6 +186,75 @@ export function AttendancePage() {
         )}
       </div>
 
+      
+      {/* Module Navigation Tabs */}
+      {!targetUser && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-border-subtle">
+          <button
+            type="button"
+            onClick={() => setActiveTab('schedule')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'schedule'
+                ? 'bg-foreground text-background shadow-md'
+                : 'bg-surface text-muted hover:text-foreground border border-border-subtle hover:bg-surface-elevated'
+            }`}>
+            <Calendar size={14} />
+            <span>Attendance & Schedule</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('balances')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'balances'
+                ? 'bg-foreground text-background shadow-md'
+                : 'bg-surface text-muted hover:text-foreground border border-border-subtle hover:bg-surface-elevated'
+            }`}>
+            <Wallet size={14} />
+            <span>Leave Balances & Simulator</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('holidays')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'holidays'
+                ? 'bg-foreground text-background shadow-md'
+                : 'bg-surface text-muted hover:text-foreground border border-border-subtle hover:bg-surface-elevated'
+            }`}>
+            <CalendarDaysIcon size={14} />
+            <span>Company Calendars & Holidays</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('policies')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'policies'
+                ? 'bg-foreground text-background shadow-md'
+                : 'bg-surface text-muted hover:text-foreground border border-border-subtle hover:bg-surface-elevated'
+            }`}>
+            <ShieldCheck size={14} />
+            <span>Leave Policy Studio</span>
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'balances' && !targetUser && (
+        <LeaveBalanceLedger onApplyClick={() => setShowRequestForm(true)} />
+      )}
+
+      {activeTab === 'holidays' && !targetUser && (
+        <CompanyCalendarStudio isAdmin={isAdmin} />
+      )}
+
+      {activeTab === 'policies' && !targetUser && (
+        <LeavePolicyStudio isAdmin={isAdmin} />
+      )}
+
+      {activeTab === 'schedule' && (
+        <>
+
       {!targetUser && <AttendanceStats />}
 
       {/* Main Calendar & Daily Planner Layout */}
@@ -262,6 +338,8 @@ export function AttendancePage() {
           onCancel={() => setShowRequestForm(false)}
         />
       </Dialog>
+        </>
+      )}
     </div>
   );
 }

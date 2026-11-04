@@ -125,7 +125,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       }
     }
     return {
-      maxSections: 12,
+      maxSections: 50,
       visibleSections: {} as Record<string, boolean>,
     };
   })();
@@ -231,14 +231,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       return false;
     }
 
-    // 2. Global Section Toggle from Settings
-    if (sectionConfig.visibleSections && sectionConfig.visibleSections[item.label] === false) {
+    // 2. Global Section Toggle from Settings (never hide Settings tab itself)
+    if (
+      item.label !== 'Settings' &&
+      sectionConfig.visibleSections &&
+      sectionConfig.visibleSections[item.label] === false
+    ) {
       return false;
     }
 
     // 3. Dynamic role permissions
     const permKey = labelToPermissionKey(item.label);
-    if (permKey) {
+    if (permKey && item.label !== 'Settings') {
       const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
       if (roleObj && roleObj.permissions && roleObj.permissions[permKey] === false) {
         return false;
@@ -248,7 +252,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return true;
   });
 
-  const slicedNavItems = filteredNavItems.slice(0, sectionConfig.maxSections || 12);
+  // Render all permitted items without arbitrary truncation
+  const slicedNavItems =
+    sectionConfig.maxSections && sectionConfig.maxSections > 20
+      ? filteredNavItems.slice(0, sectionConfig.maxSections)
+      : filteredNavItems;
 
   // 2. Filter children and parent modules based on Page Access Permissions and RBAC
   const navItemsWithBadge = slicedNavItems

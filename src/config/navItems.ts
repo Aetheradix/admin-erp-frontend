@@ -493,12 +493,12 @@ export const navItems: NavItem[] = [
     icon: Settings,
     category: 'SYSTEM',
     description: 'System preferences',
-    roles: ['SuperAdmin', 'Admin'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
     children: [
       {
         label: 'General',
         path: '/settings',
-        roles: ['SuperAdmin', 'Admin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
         label: 'Roles & Permissions',

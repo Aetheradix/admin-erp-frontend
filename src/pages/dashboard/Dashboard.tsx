@@ -13,6 +13,7 @@ import { AttendanceHeatmapCard } from './components/AttendanceHeatmapCard';
 import { PayrollOverviewCard } from './components/PayrollOverviewCard';
 import { UpcomingActivitiesCard } from './components/UpcomingActivitiesCard';
 import { InventoryOverviewCard } from './components/InventoryOverviewCard';
+import { HolidayCalendarCard } from './components/HolidayCalendarCard';
 import { QuickActionsBar } from './components/QuickActionsBar';
 import { ProjectList } from './components/ProjectList';
 
@@ -142,6 +143,13 @@ const Dashboard: React.FC = () => {
               inventory={summary?.inventory || null}
               isLoading={isLoading}
             />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.35 }}>
+            <HolidayCalendarCard />
           </motion.div>
         </div>
       </div>
