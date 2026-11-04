@@ -89,6 +89,10 @@ export interface CreateSalarySlipPayload {
   paymentStatus?: 'pending' | 'paid' | 'failed';
   paymentDate?: string;
   remarks?: string | null; // Maps to hrNote
+  authorized_signatory?: string | null;
+  authorizedSignatory?: string | null;
+  signatory_role?: string | null;
+  signatoryRole?: string | null;
 }
 
 export interface EmployeeCompensationPayload {
