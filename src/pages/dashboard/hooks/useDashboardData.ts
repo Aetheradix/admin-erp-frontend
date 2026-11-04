@@ -51,8 +51,12 @@ export const useDashboardData = () => {
           tasks: matchingTasks.length,
           value: p?.value || p?.project_status || p?.status || 'Active',
           color: p?.color || PRESET_COLORS[idx % PRESET_COLORS.length],
-          category: (p?.category || p?.project_status || p?.status || 'PROJECT').toUpperCase(),
+          category: (p?.category || p?.project_status || p?.status || 'Enterprise').toUpperCase(),
           participants: p?.participants || (Array.isArray(rawUsers) ? Math.min(rawUsers.length, 6) : 0),
+          startDate: p?.startDate || p?.start_date,
+          endDate: p?.endDate || p?.end_date,
+          status: p?.status || p?.project_status || 'Active',
+          progress: p?.progress ?? 0,
         };
       })
     : [];
@@ -92,6 +96,7 @@ export const useDashboardData = () => {
   return {
     summary,
     projects,
+    tasks: Array.isArray(rawTasks) ? rawTasks : [],
     stats,
     isLoading: isLoadingSummary || isLoadingProjects || isLoadingTasks,
     isFetching: isFetchingSummary,

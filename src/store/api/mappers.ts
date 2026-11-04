@@ -328,17 +328,17 @@ export const mapStaffMember = (member: Record<string, unknown>): StaffMember => 
 // });
 
 export const mapProject = (project: Record<string, unknown>): Project => ({
-  id: project.project_id as string | number,
+  id: (project.project_id ?? project.id ?? '') as string | number,
 
-  title: String(project.project_name ?? ''),
+  title: String(project.project_name ?? project.title ?? project.name ?? ''),
 
-  name: String(project.project_name ?? ''),
+  name: String(project.project_name ?? project.name ?? project.title ?? ''),
 
   client: 'Internal',
 
-  progress: 0,
+  progress: Number(project.progress ?? 0),
 
-  status: String(project.project_status ?? 'Planning'),
+  status: String(project.project_status ?? project.status ?? 'Active'),
 
   category: 'Enterprise',
 
@@ -346,5 +346,5 @@ export const mapProject = (project: Record<string, unknown>): Project => ({
 
   startDate: project.start_date ? String(project.start_date) : '',
 
-  endDate: project.end_date ? String(project.end_date) : undefined,
+  endDate: project.end_date ? String(project.end_date) : project.endDate ? String(project.endDate) : project.deadline ? String(project.deadline) : undefined,
 });
