@@ -199,6 +199,8 @@ export const usePayrollPage = () => {
         month_year: formData.monthYear || 'OCTOBER 2026',
         pay_frequency: 'monthly',
         cycle_number: 1,
+        pay_slip_no: formData.paySlipNo || null,
+        paySlipNo: formData.paySlipNo || null,
 
         // Attendance
         paid_days: Number(formData.paidDays) || 0,

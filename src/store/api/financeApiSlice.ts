@@ -16,6 +16,29 @@ export interface SalaryBreakdownItem {
   amount: number;
 }
 
+export interface NextPayslipNumberResponse {
+  nextPayslipNo: string;
+  sequence: number;
+  sequenceFormatted: string;
+  payPeriodMonth: number;
+  payPeriodYear: number;
+  monthName: string;
+  employeeCode: string;
+  prefix: string;
+  monthYearCode: string;
+  existingCountForMonth?: number;
+  existingSequences?: number[];
+  highestSequenceUsed?: number;
+  isUnique?: boolean;
+}
+
+export interface GetNextPayslipNumberParams {
+  month: string | number;
+  year?: number | string;
+  userId?: number | string;
+  employeeCode?: string;
+}
+
 export interface CreateSalarySlipPayload {
   // Target Employee (Recipient receiving slip)
   user_id: number;
@@ -27,6 +50,12 @@ export interface CreateSalarySlipPayload {
   month_year: string; // e.g., "OCTOBER 2026"
   pay_frequency?: string; // "monthly", "biweekly", etc.
   cycle_number?: number; // 1 or 2 (for biweekly)
+  pay_slip_no?: string | null;
+  paySlipNo?: string | null;
+  slip_no?: string | null;
+  slipNo?: string | null;
+  slip_sequence?: number | null;
+  slipSequence?: number | null;
 
   // Attendance
   paid_days: number;
@@ -580,6 +609,26 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       transformResponse: (response: any) => response?.data ?? response ?? [],
       providesTags: ['PayrollAdjustments'],
     }),
+
+    // Get Next Unique Payslip Number (Guaranteed month-wide uniqueness)
+    getNextPayslipNumber: builder.query<
+      NextPayslipNumberResponse,
+      GetNextPayslipNumberParams
+    >({
+      query: (params) => {
+        const search = new URLSearchParams();
+        if (params.month !== undefined && params.month !== null) {
+          search.append('month', String(params.month));
+        }
+        if (params.year) search.append('year', String(params.year));
+        if (params.userId) search.append('userId', String(params.userId));
+        if (params.employeeCode) search.append('employeeCode', String(params.employeeCode));
+        const q = search.toString();
+        return `/payroll/next-payslip-no${q ? `?${q}` : ''}`;
+      },
+      transformResponse: (response: any) => response?.data ?? response,
+      providesTags: ['SalarySlips'],
+    }),
   }),
 });
 
@@ -599,6 +648,8 @@ export const {
   useCreateSalarySlipMutation,
   useUpdateSalarySlipMutation,
   useDeleteSalarySlipMutation,
+  useGetNextPayslipNumberQuery,
+  useLazyGetNextPayslipNumberQuery,
 
   // Audit Logs Hooks
   useGetAuditLogsQuery,

@@ -224,19 +224,27 @@ export function TasksPage() {
   useEffect(() => {
     if (usersData?.length) {
       setUsers(
-        usersData.map((u: any) => ({
-          label: u.username,
-          value: u.id,
-        }))
+        usersData.map((u: any) => {
+          const id = Number(u.id ?? u.user_id ?? 0);
+          const name = u.name || u.username || u.user_name || u.email || `User #${id}`;
+          return {
+            label: name,
+            value: id,
+          };
+        })
       );
     }
 
     if (projectsData?.length) {
       setProjects(
-        projectsData.map((p: any) => ({
-          label: p.project_name,
-          value: p.project_id,
-        }))
+        projectsData.map((p: any) => {
+          const id = Number(p.id ?? p.project_id ?? 0);
+          const name = p.name || p.title || p.project_name || `Project #${id}`;
+          return {
+            label: name,
+            value: id,
+          };
+        })
       );
     }
   }, [usersData, projectsData]);
@@ -460,7 +468,7 @@ export function TasksPage() {
                         </span>
                       </div>
                       <span className="text-[10px] font-medium text-primary/80 bg-primary/5 self-start px-2 py-0.5 rounded-md border border-primary/10">
-                        Project #{task.project}
+                        {projects.find((p) => p.value === task.project)?.label || `Project #${task.project}`}
                       </span>
                       <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed line-clamp-2">
                         {task.description}
@@ -468,7 +476,7 @@ export function TasksPage() {
                       <div className="flex items-center justify-between pt-2.5 border-t border-border-subtle/50 text-muted text-xs">
                         <div className="flex items-center gap-1.5">
                           <User size={12} />
-                          <span>User #{task.assignee}</span>
+                          <span>{users.find((u) => u.value === task.assignee)?.label || `User #${task.assignee}`}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Calendar size={12} />
@@ -550,7 +558,7 @@ export function TasksPage() {
                 </span>
               </div>
               <span className="text-xs font-medium text-primary/80 bg-primary/5 self-start px-3 py-1 rounded">
-                Project #{task.project}
+                {projects.find((p) => p.value === task.project)?.label || `Project #${task.project}`}
               </span>
               <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed pt-1 line-clamp-3">
                 {task.description}
@@ -618,9 +626,11 @@ export function TasksPage() {
               {/* <Input placeholder="e.g. John Doe" value={form.assignee} onChange={(e) => setForm({ ...form, assignee: e.target.value })} /> */}
               <Select
                 options={users}
-                value={form.assignee}
+                value={form.assignee ?? undefined}
                 onChange={(e) => setForm({ ...form, assignee: e.value })}
                 placeholder="Assigned By"
+                showSearch
+                optionFilterProp="label"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -650,9 +660,11 @@ export function TasksPage() {
               {/* <Input placeholder="e.g. John Doe" value={form.assigneeTo} onChange={(e) => setForm({ ...form, assigneeTo: e.target.value })} /> */}
               <Select
                 options={users}
-                value={form.assigneeTo}
+                value={form.assigneeTo ?? undefined}
                 onChange={(e) => setForm({ ...form, assigneeTo: e.value })}
                 placeholder="Assigned To"
+                showSearch
+                optionFilterProp="label"
               />
             </div>
           </div>
@@ -685,9 +697,11 @@ export function TasksPage() {
               </label>
               <Select
                 options={projects}
-                value={form.project}
+                value={form.project ?? undefined}
                 onChange={(e) => setForm({ ...form, project: e.value })}
                 placeholder="Project"
+                showSearch
+                optionFilterProp="label"
               />
             </div>
           </div>
