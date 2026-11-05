@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Form, Select, DatePicker, Button as AntButton } from 'antd';
+import dayjs from 'dayjs';
 import {
   useGetMyBalancesQuery,
   usePreviewLeaveDeductionMutation,
@@ -20,24 +22,40 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
   const [previewDeduction, { isLoading: isPreviewing }] = usePreviewLeaveDeductionMutation();
   const [previewResult, setPreviewResult] = useState<LeaveDeductionPreview | null>(null);
 
-  // Preview form
-  const [selectedTypeId, setSelectedTypeId] = useState<number>(1);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [dayFraction] = useState<'FULL' | 'FIRST_HALF' | 'SECOND_HALF'>('FULL');
+  // Ant Design Form
+  const [form] = Form.useForm();
 
-  const handleCalculatePreview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!startDate || !endDate) {
+  useEffect(() => {
+    if (balances.length > 0 && !form.getFieldValue('leave_type_id')) {
+      form.setFieldsValue({
+        leave_type_id: balances[0].leave_type_id,
+      });
+    }
+  }, [balances, form]);
+
+  const handleCalculatePreview = async (values: {
+    leave_type_id: number;
+    start_date: dayjs.Dayjs;
+    end_date: dayjs.Dayjs;
+  }) => {
+    const startDateStr = dayjs.isDayjs(values.start_date)
+      ? values.start_date.format('YYYY-MM-DD')
+      : String(values.start_date || '');
+    const endDateStr = dayjs.isDayjs(values.end_date)
+      ? values.end_date.format('YYYY-MM-DD')
+      : String(values.end_date || '');
+
+    if (!startDateStr || !endDateStr) {
       showToast({ severity: 'warn', summary: 'Required', detail: 'Select start and end date' });
       return;
     }
+
     try {
       const res = await previewDeduction({
-        leave_type_id: Number(selectedTypeId),
-        start_date: startDate,
-        end_date: endDate,
-        day_fraction: dayFraction,
+        leave_type_id: Number(values.leave_type_id),
+        start_date: startDateStr,
+        end_date: endDateStr,
+        day_fraction: 'FULL',
       }).unwrap();
       setPreviewResult(res);
     } catch (err: any) {
@@ -138,53 +156,68 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
           Simulate an upcoming leave span to preview weekend skips, company holidays, sandwich rule deductions, and automatic Loss of Pay (LOP) splits.
         </p>
 
-        <form onSubmit={handleCalculatePreview} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <div>
-            <label className="text-xs font-bold text-foreground">Leave Type</label>
-            <select
-              value={selectedTypeId}
-              onChange={(e) => setSelectedTypeId(Number(e.target.value))}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-surface-elevated border border-border-subtle text-xs text-foreground font-medium">
-              {balances.map((b) => (
-                <option key={b.leave_type_id} value={b.leave_type_id}>
-                  {b.leave_type_name} ({b.leave_type_code})
-                </option>
-              ))}
-            </select>
-          </div>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleCalculatePreview}
+          className="w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+            <Form.Item
+              label={<span className="text-xs font-bold text-foreground">Leave Type</span>}
+              name="leave_type_id"
+              rules={[{ required: true, message: 'Select leave type' }]}
+              className="!mb-0">
+              <Select
+                size="large"
+                className="w-full"
+                placeholder="Select Leave Type"
+                options={balances.map((b) => ({
+                  value: b.leave_type_id,
+                  label: `${b.leave_type_name} (${b.leave_type_code})`,
+                }))}
+              />
+            </Form.Item>
 
-          <div>
-            <label className="text-xs font-bold text-foreground">Start Date</label>
-            <input
-              type="date"
-              required
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-surface-elevated border border-border-subtle text-xs text-foreground font-medium"
-            />
-          </div>
+            <Form.Item
+              label={<span className="text-xs font-bold text-foreground">Start Date</span>}
+              name="start_date"
+              rules={[{ required: true, message: 'Select start date' }]}
+              className="!mb-0">
+              <DatePicker
+                size="large"
+                className="w-full"
+                format="YYYY-MM-DD"
+                placeholder="Start Date"
+              />
+            </Form.Item>
 
-          <div>
-            <label className="text-xs font-bold text-foreground">End Date</label>
-            <input
-              type="date"
-              required
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-surface-elevated border border-border-subtle text-xs text-foreground font-medium"
-            />
-          </div>
+            <Form.Item
+              label={<span className="text-xs font-bold text-foreground">End Date</span>}
+              name="end_date"
+              rules={[{ required: true, message: 'Select end date' }]}
+              className="!mb-0">
+              <DatePicker
+                size="large"
+                className="w-full"
+                format="YYYY-MM-DD"
+                placeholder="End Date"
+              />
+            </Form.Item>
 
-          <div className="flex items-end">
-            <Button
-              type="submit"
-              disabled={isPreviewing}
-              className="w-full py-2 bg-primary text-white text-xs font-black shadow-md shadow-primary/20 hover:bg-primary-hover flex items-center justify-center gap-2">
-              <Sparkles size={14} />
-              <span>{isPreviewing ? 'Evaluating...' : 'Simulate'}</span>
-            </Button>
+            <Form.Item className="!mb-0">
+              <AntButton
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={isPreviewing}
+                icon={<Sparkles size={14} />}
+                className="w-full font-bold shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer"
+                style={{ backgroundColor: '#E8583A' }}>
+                Simulate
+              </AntButton>
+            </Form.Item>
           </div>
-        </form>
+        </Form>
 
         {/* Evaluation Output */}
         {previewResult && (
