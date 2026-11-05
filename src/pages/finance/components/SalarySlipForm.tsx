@@ -410,6 +410,7 @@ const SalarySlipForm = ({
   const [cyclePeriodPart, setCyclePeriodPart] = useState<number>(1);
   const [customStart, setCustomStart] = useState<string>('');
   const [customEnd, setCustomEnd] = useState<string>('');
+  const [isCompanyExpanded, setIsCompanyExpanded] = useState<boolean>(false);
   const [selectedEmployeeObj, setSelectedEmployeeObj] = useState<any>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const [isCtcManualOverride, setIsCtcManualOverride] = useState<boolean>(Boolean(initialValues?.totalCompensation));
@@ -2114,6 +2115,9 @@ const SalarySlipForm = ({
     }
   };
 
+  const hasCompanyErrors = Boolean(errors.companyName || errors.companyAddress);
+  const effectiveCompanyExpanded = isCompanyExpanded || hasCompanyErrors;
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -2167,6 +2171,63 @@ const SalarySlipForm = ({
                 </div>
               </div>
             )}
+
+            {/* Expandable Company Details Section at Top */}
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-2xs overflow-hidden transition-all">
+              <button
+                type="button"
+                onClick={() => setIsCompanyExpanded(!effectiveCompanyExpanded)}
+                className="w-full flex items-center justify-between p-4 bg-gray-50/80 hover:bg-gray-100/80 transition cursor-pointer text-left">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-200 text-gray-800 rounded-xl">
+                    <Building2 size={18} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-bold text-gray-900">Company Details</h2>
+                      <span className="text-[11px] font-semibold text-gray-600 bg-gray-200/70 px-2 py-0.5 rounded-md">
+                        {formData.companyName || 'AETHERADIX'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-1 max-w-md">
+                      {formData.companyAddress || 'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">
+                  <span className="hidden sm:inline">
+                    {effectiveCompanyExpanded ? 'Collapse' : 'Expand & Edit'}
+                  </span>
+                  <div className="p-1 rounded-lg bg-white border border-gray-200 text-gray-500">
+                    {effectiveCompanyExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
+                </div>
+              </button>
+
+              {effectiveCompanyExpanded && (
+                <div className="p-5 border-t border-gray-200 bg-white grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <Input
+                    data-field="companyName"
+                    label="Company Name"
+                    value={formData.companyName}
+                    onChange={(e) => updateField('companyName', e.target.value)}
+                    error={errors.companyName}
+                    placeholder="e.g. AETHERADIX"
+                    required
+                  />
+                  <Input
+                    data-field="companyAddress"
+                    label="Company Address"
+                    value={formData.companyAddress}
+                    onChange={(e) => updateField('companyAddress', e.target.value)}
+                    error={errors.companyAddress}
+                    placeholder="e.g. F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039"
+                    required
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Payroll Type Banner */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
@@ -2637,33 +2698,6 @@ const SalarySlipForm = ({
             </section>
           </div>
           {errors.monthYear && <p className="mt-1 text-xs text-red-500 px-6">{errors.monthYear}</p>}
-
-          {/* Company Details */}
-          <section className="px-6 pb-6">
-            <SectionTitle
-              icon={<Building2 size={18} />}
-              title="Company Details"
-              description="Organization information."
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <Input
-                data-field="companyName"
-                label="Company Name"
-                value={formData.companyName}
-                onChange={(e) => updateField('companyName', e.target.value)}
-                error={errors.companyName}
-                required
-              />
-              <Input
-                data-field="companyAddress"
-                label="Company Address"
-                value={formData.companyAddress}
-                onChange={(e) => updateField('companyAddress', e.target.value)}
-                error={errors.companyAddress}
-                required
-              />
-            </div>
-          </section>
 
           {/* Employee Details with Auto-Filling Dropdown */}
           <section className="px-6 pb-6">
