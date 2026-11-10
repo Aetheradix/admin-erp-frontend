@@ -127,18 +127,20 @@ export default function AppLayout() {
       document.head.appendChild(styleEl);
     }
 
+    const safeColor = /^#[0-9A-Fa-f]{3,8}$/.test(accentColor) ? accentColor : '#E8583A';
     const strokeColor = darkMode ? '%23ffffff' : '%23000000';
-    const encColor = encodeURIComponent(accentColor);
+    const encColor = encodeURIComponent(safeColor);
 
     const defaultSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 3l7 18 3-7 7-3L3 3z' fill='${encColor}' stroke='${strokeColor}' stroke-width='1.5' stroke-linejoin='round'/></svg>`;
     const pointerSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 3l7 18 3-7 7-3L3 3z' fill='${encColor}' stroke='${strokeColor}' stroke-width='1.5' stroke-linejoin='round'/><circle cx='16.5' cy='16.5' r='4' fill='${encColor}' stroke='${strokeColor}' stroke-width='1.2'/></svg>`;
 
-    styleEl.innerHTML = `
+    // SECURITY FIX (VULN-11): Use textContent with validated safe color to prevent CSS/DOM injection
+    styleEl.textContent = `
       * {
-        caret-color: ${accentColor} !important;
+        caret-color: ${safeColor} !important;
       }
       ::selection {
-        background-color: ${accentColor} !important;
+        background-color: ${safeColor} !important;
         color: #ffffff !important;
       }
       body, html {
@@ -230,18 +232,16 @@ export default function AppLayout() {
           isProfileIncomplete &&
           location.pathname !== '/profile-completion' && (
             <div
-              className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${
-                empProfile?.status === 'changes_required'
+              className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${empProfile?.status === 'changes_required'
                   ? 'bg-warning/10 border-warning/30 text-warning'
                   : 'bg-primary/10 border-primary/20 text-foreground'
-              }`}>
+                }`}>
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                    empProfile?.status === 'changes_required'
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${empProfile?.status === 'changes_required'
                       ? 'bg-warning/20 text-warning'
                       : 'bg-primary/20 text-primary'
-                  }`}>
+                    }`}>
                   {empProfile?.status === 'changes_required' ? (
                     <AlertTriangle size={13} />
                   ) : (
@@ -257,7 +257,7 @@ export default function AppLayout() {
                   <span className="truncate">
                     {empProfile?.status === 'changes_required'
                       ? empProfile.reviewNotes ||
-                        'The hiring team requested updates to your submitted onboarding documents.'
+                      'The hiring team requested updates to your submitted onboarding documents.'
                       : `Your employee profile is ${profilePct}% complete. Please submit mandatory bank & identity details.`}
                   </span>
                 </div>
@@ -267,11 +267,10 @@ export default function AppLayout() {
                 <button
                   type="button"
                   onClick={() => setIsProfileModalOpen(true)}
-                  className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${
-                    empProfile?.status === 'changes_required'
+                  className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${empProfile?.status === 'changes_required'
                       ? 'bg-warning text-white hover:bg-warning/90'
                       : 'bg-primary text-white hover:bg-primary/90'
-                  }`}>
+                    }`}>
                   <span>
                     {empProfile?.status === 'changes_required' ? 'Fix Now' : 'Complete Profile'}
                   </span>

@@ -2,23 +2,23 @@ import { Search, Filter, Briefcase } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { mockCareers } from '../hooks/mockCareers';
 
 interface CareerTableToolbarProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   activeDepartment: string;
   onDepartmentChange: (value: string) => void;
+  departments?: string[];
 }
-
-const DEPARTMENTS = ['All', ...new Set(mockCareers.map((c) => c.department))];
 
 export function CareerTableToolbar({
   searchQuery,
   onSearchChange,
   activeDepartment,
   onDepartmentChange,
+  departments,
 }: CareerTableToolbarProps) {
+  const tabs = departments && departments.length > 0 ? departments : ['All'];
   return (
     <div className="flex flex-col gap-6 bg-white p-6 rounded-[40px] border border-border-subtle shadow-soft transition-all duration-500 hover:shadow-lg">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
@@ -53,7 +53,7 @@ export function CareerTableToolbar({
 
       {/* Department Tabs */}
       <div className="overflow-x-auto pb-2 no-scrollbar">
-        <Tabs items={DEPARTMENTS} activeItem={activeDepartment} onItemChange={onDepartmentChange} />
+        <Tabs items={tabs} activeItem={activeDepartment} onItemChange={onDepartmentChange} />
       </div>
     </div>
   );

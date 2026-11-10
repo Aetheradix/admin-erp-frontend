@@ -42,60 +42,9 @@ export interface InvoiceAuditLog {
 const INVOICE_STORAGE_KEY = 'aether_erp_invoices_data';
 const INVOICE_LOGS_KEY = 'aether_erp_invoice_audit_logs';
 
-const initialInvoices: Invoice[] = [
-  {
-    id: 'INV-2026-001',
-    client: 'Acme Corp',
-    amount: 4500,
-    status: 'Paid',
-    date: '2026-06-01',
-  },
-  {
-    id: 'INV-2026-002',
-    client: 'Globex Inc',
-    amount: 1200,
-    status: 'Pending',
-    date: '2026-06-05',
-  },
-  {
-    id: 'INV-2026-003',
-    client: 'Soylent Corp',
-    amount: 8900,
-    status: 'Overdue',
-    date: '2026-05-15',
-  },
-  {
-    id: 'INV-2026-004',
-    client: 'Initech',
-    amount: 3200,
-    status: 'Paid',
-    date: '2026-05-28',
-  },
-];
+const initialInvoices: Invoice[] = [];
 
-const initialAuditLogs: InvoiceAuditLog[] = [
-  {
-    id: 'log-1',
-    action: 'CREATE_INVOICE',
-    description: 'Generated invoice INV-2026-004 for Initech (₹3,200.00)',
-    username: 'Pratyush Shrivastava',
-    createdAt: '2026-05-28T14:32:00Z',
-  },
-  {
-    id: 'log-2',
-    action: 'STATUS_UPDATE',
-    description: 'Marked invoice INV-2026-001 as Paid for Acme Corp',
-    username: 'Accounts Dept',
-    createdAt: '2026-06-01T11:15:00Z',
-  },
-  {
-    id: 'log-3',
-    action: 'CREATE_INVOICE',
-    description: 'Generated invoice INV-2026-002 for Globex Inc (₹1,200.00)',
-    username: 'Pratyush Shrivastava',
-    createdAt: '2026-06-05T09:45:00Z',
-  },
-];
+const initialAuditLogs: InvoiceAuditLog[] = [];
 
 /**
  * Intelligent invoice number generator:

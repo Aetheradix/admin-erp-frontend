@@ -63,222 +63,6 @@ export interface AuditLogEntry {
 const INVITATIONS_STORAGE_KEY = 'aether_user_invitations';
 const AUDIT_LOGS_STORAGE_KEY = 'aether_system_audit_logs';
 
-// Default initial seeded invitations to illustrate complete audit history
-const SEEDED_INVITATIONS: InvitationRecord[] = [
-  {
-    id: 'inv-deedee',
-    email: 'deedee@yopmail.com',
-    name: 'DeeDee User',
-    role: 'Employee',
-    department: 'Operations',
-    invitedBy: {
-      name: 'Hasmukh',
-      email: 'hasmukh.arx@gmail.com',
-      role: 'SuperAdmin',
-    },
-    invitedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'accepted',
-    token: 'tok_deedee_onboarded',
-    acceptedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    resendCount: 0,
-  },
-  {
-    id: 'inv-101',
-    email: 'marcus.vance@aetheradix.com',
-    name: 'Marcus Vance',
-    role: 'Employee',
-    department: 'Engineering',
-    invitedBy: {
-      name: 'Hasmukh',
-      email: 'hasmukh.arx@gmail.com',
-      role: 'SuperAdmin',
-    },
-    invitedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-    token: 'tok_marcus_vance_2026',
-    tempPassword: 'Aether@Temp9821!',
-    resendCount: 0,
-  },
-  {
-    id: 'inv-102',
-    email: 'elena.rostova@aetheradix.com',
-    name: 'Elena Rostova',
-    role: 'Manager',
-    department: 'Design',
-    invitedBy: {
-      name: 'Hasmukh',
-      email: 'hasmukh.arx@gmail.com',
-      role: 'SuperAdmin',
-    },
-    invitedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'accepted',
-    token: 'tok_elena_rostova_2026',
-    acceptedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    resendCount: 0,
-  },
-  {
-    id: 'inv-103',
-    email: 'claire.dubois@aetheradix.com',
-    name: 'Claire Dubois',
-    role: 'HrAdmin',
-    department: 'HR',
-    invitedBy: {
-      name: 'James Wilson',
-      email: 'james.wilson@aetheradix.com',
-      role: 'Admin',
-    },
-    invitedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'expired',
-    token: 'tok_claire_dubois_expired',
-    resendCount: 1,
-  },
-  {
-    id: 'inv-104',
-    email: 'contractor.guest@external.com',
-    name: 'Contractor Guest',
-    role: 'Employee',
-    department: 'Operations',
-    invitedBy: {
-      name: 'James Wilson',
-      email: 'james.wilson@aetheradix.com',
-      role: 'Admin',
-    },
-    invitedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now()).toISOString(),
-    status: 'revoked',
-    token: 'tok_contractor_revoked',
-    revokedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-    revokedBy: {
-      name: 'Hasmukh',
-      email: 'hasmukh.arx@gmail.com',
-    },
-  },
-];
-
-// Default initial seeded audit logs
-const SEEDED_AUDIT_LOGS: AuditLogEntry[] = [
-  {
-    id: 'log-deedee-1',
-    action: 'User Invitation Dispatched',
-    category: 'invitation',
-    user: 'Hasmukh',
-    userEmail: 'hasmukh.arx@gmail.com',
-    target: 'DeeDee User (deedee@yopmail.com)',
-    targetEmail: 'deedee@yopmail.com',
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.45',
-    status: 'Success',
-    details:
-      'Dispatched onboarding email invitation to deedee@yopmail.com with role Employee in Operations department.',
-  },
-  {
-    id: 'log-deedee-2',
-    action: 'Temporary Password Changed',
-    category: 'security',
-    user: 'DeeDee User',
-    userEmail: 'deedee@yopmail.com',
-    target: 'deedee@yopmail.com (Account Security)',
-    targetEmail: 'deedee@yopmail.com',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.105',
-    status: 'Success',
-    details:
-      'Invited user successfully changed temporary password. Single-use credential invalidated. Onboarding step 1 of 2 complete.',
-  },
-  {
-    id: 'log-deedee-3',
-    action: 'Onboarding Completed — Profile Activated',
-    category: 'invitation',
-    user: 'DeeDee User',
-    userEmail: 'deedee@yopmail.com',
-    target: 'DeeDee User (Account)',
-    targetEmail: 'deedee@yopmail.com',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.105',
-    status: 'Success',
-    details:
-      'User completed mandatory onboarding. Profile details submitted and account fully activated. Department: Operations, Designation: Operations Coordinator.',
-    changes: [
-      { field: 'Full Name', from: '(not set)', to: 'DeeDee User' },
-      { field: 'Contact Number', from: '(not set)', to: '+1 (555) 234-5678' },
-      { field: 'Department', from: '(not set)', to: 'Operations' },
-      { field: 'Designation', from: '(not set)', to: 'Operations Coordinator' },
-      { field: 'Onboarding Status', from: 'Incomplete', to: 'Fully Activated' },
-    ],
-  },
-  {
-    id: 'log-101',
-    action: 'User Invitation Dispatched',
-    category: 'invitation',
-    user: 'Hasmukh',
-    userEmail: 'hasmukh.arx@gmail.com',
-    target: 'marcus.vance@aetheradix.com',
-    targetEmail: 'marcus.vance@aetheradix.com',
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.45',
-    status: 'Success',
-    details: 'Dispatched onboarding invitation with role Employee in Engineering department.',
-  },
-  {
-    id: 'log-102',
-    action: 'Invitation Accepted & Onboarding Completed',
-    category: 'invitation',
-    user: 'Elena Rostova',
-    userEmail: 'elena.rostova@aetheradix.com',
-    target: 'Elena Rostova (Account)',
-    targetEmail: 'elena.rostova@aetheradix.com',
-    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.88',
-    status: 'Success',
-    details:
-      'User successfully verified invitation token, set secure password, and completed profile onboarding.',
-  },
-  {
-    id: 'log-103',
-    action: 'User Invitation Revoked',
-    category: 'invitation',
-    user: 'Hasmukh',
-    userEmail: 'hasmukh.arx@gmail.com',
-    target: 'contractor.guest@external.com',
-    targetEmail: 'contractor.guest@external.com',
-    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.45',
-    status: 'Warning',
-    details: 'Revoked active invitation token before account registration was completed.',
-  },
-  {
-    id: 'log-104',
-    action: 'Password Changed',
-    category: 'security',
-    user: 'Hasmukh',
-    userEmail: 'hasmukh.arx@gmail.com',
-    target: 'Account Security Credentials',
-    timestamp: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.45',
-    status: 'Success',
-    details: 'User successfully updated account password meeting all complexity requirements.',
-  },
-  {
-    id: 'log-105',
-    action: 'Profile Updated',
-    category: 'profile',
-    user: 'James Wilson',
-    userEmail: 'james.wilson@aetheradix.com',
-    target: 'James Wilson Profile',
-    timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    ip: '192.168.1.12',
-    status: 'Success',
-    details: 'Modified contact number and office work location.',
-    changes: [
-      { field: 'contactNo', from: '+1 555-0100', to: '+1 555-0199' },
-      { field: 'workLocation', from: 'Regional Office', to: 'Headquarters Plant' },
-    ],
-  },
-];
 
 // Helper to notify all listening components that audit logs or invitations changed
 const notifyChange = (event: 'invitations' | 'audit_logs') => {
@@ -300,7 +84,8 @@ const notifyChange = (event: 'invitations' | 'audit_logs') => {
 export function getInvitations(): InvitationRecord[] {
   try {
     const raw = localStorage.getItem(INVITATIONS_STORAGE_KEY);
-    let list: InvitationRecord[] = raw ? JSON.parse(raw) : SEEDED_INVITATIONS;
+    if (!raw) return [];
+    let list: InvitationRecord[] = JSON.parse(raw);
 
     // Check expiration status against current time
     const now = Date.now();
@@ -317,18 +102,12 @@ export function getInvitations(): InvitationRecord[] {
       return inv;
     });
 
-    // Ensure deedee@yopmail.com is present for monitoring demo
-    if (!list.some((inv) => inv.email.toLowerCase() === 'deedee@yopmail.com')) {
-      list = [SEEDED_INVITATIONS[0], ...list];
-      updated = true;
-    }
-
-    if (updated || !raw) {
+    if (updated) {
       localStorage.setItem(INVITATIONS_STORAGE_KEY, JSON.stringify(list));
     }
     return list;
   } catch {
-    return SEEDED_INVITATIONS;
+    return [];
   }
 }
 
@@ -508,22 +287,23 @@ export function validateInvitation(
     | 'duplicate_account';
   invitation?: InvitationRecord;
 } {
-  if (!token && !email) {
+  // SECURITY FIX (VULN-07): A cryptographically valid invitation token is mandatory.
+  // Never permit claiming or validating an invitation using email alone without a valid token.
+  if (!token || token.trim().length < 8) {
     return { valid: false, reason: 'missing_token' };
   }
 
   const invitations = getInvitations();
 
-  // Match by token first, then email
-  let inv: InvitationRecord | undefined;
-  if (token) {
-    inv = invitations.find((i) => i.token === token);
-  }
-  if (!inv && email) {
-    inv = invitations.find((i) => i.email.toLowerCase() === email.toLowerCase());
-  }
+  // Strict match by token only
+  const inv = invitations.find((i) => i.token === token.trim());
 
   if (!inv) {
+    return { valid: false, reason: 'not_found' };
+  }
+
+  // If email was provided, ensure it strictly matches the token's assigned email
+  if (email && inv.email.toLowerCase() !== email.trim().toLowerCase()) {
     return { valid: false, reason: 'not_found' };
   }
 
@@ -557,10 +337,11 @@ export function acceptInvitation(
     contactNo?: string;
   }
 ): boolean {
+  if (!token || token.trim().length < 8) return false;
+
   const invitations = getInvitations();
-  const target = invitations.find(
-    (i) => i.token === token || i.email.toLowerCase() === completedProfile.email.toLowerCase()
-  );
+  // SECURITY FIX: Match strictly on token to prevent account takeover by email guessing
+  const target = invitations.find((i) => i.token === token.trim());
   if (target) {
     const updatedList = invitations.map((inv) => {
       if (inv.id === target.id) {
@@ -616,25 +397,8 @@ export function acceptInvitation(
 export function getAuditLogs(): AuditLogEntry[] {
   try {
     const raw = localStorage.getItem(AUDIT_LOGS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(SEEDED_AUDIT_LOGS));
-      return SEEDED_AUDIT_LOGS;
-    }
-    let list: AuditLogEntry[] = JSON.parse(raw);
-    const hasDeedee = list.some(
-      (l) =>
-        l.targetEmail?.toLowerCase() === 'deedee@yopmail.com' ||
-        l.userEmail?.toLowerCase() === 'deedee@yopmail.com'
-    );
-    if (!hasDeedee) {
-      const deedeeLogs = SEEDED_AUDIT_LOGS.filter(
-        (l) =>
-          l.targetEmail?.toLowerCase() === 'deedee@yopmail.com' ||
-          l.userEmail?.toLowerCase() === 'deedee@yopmail.com'
-      );
-      list = [...deedeeLogs, ...list];
-      localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(list));
-    }
+    if (!raw) return [];
+    const list: AuditLogEntry[] = JSON.parse(raw);
     // Enforce 3-month (90 days) retention policy: prune logs older than 3 months
     const retainedList = filterLogsByRetention(list);
     if (retainedList.length !== list.length) {
@@ -642,7 +406,7 @@ export function getAuditLogs(): AuditLogEntry[] {
     }
     return retainedList;
   } catch {
-    return filterLogsByRetention(SEEDED_AUDIT_LOGS);
+    return [];
   }
 }
 

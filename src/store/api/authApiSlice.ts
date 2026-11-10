@@ -96,7 +96,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
-    getDepartments: builder.query({
+    getDepartments: builder.query<any, any>({
       query: () => '/metadata/departments',
     }),
     requestAdminElevation: builder.mutation({

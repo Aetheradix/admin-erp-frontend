@@ -487,182 +487,8 @@ function notifyChange(event: string) {
   }
 }
 
-// ─── Seeded Onboarding Profiles ───────────────────────────────────────────────
-
-export const SEEDED_PROFILES: ProfileCompletionData[] = [
-  {
-    userId: 99,
-    userEmail: 'luna@yopmail.com',
-    status: 'in_progress',
-    lastSavedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    completedSections: {
-      personal: true,
-      bank: true,
-      identity: false,
-      employment: false,
-      education: false,
-      certifications: false,
-      profile_picture: false,
-    },
-    personal: {
-      fullName: 'Luna',
-      email: 'luna@yopmail.com',
-      contactNumber: '92129787364',
-      dateOfBirth: '1998-05-14',
-      gender: 'Female',
-      currentAddress: 'Flat 402, Green Valley Apartments, Mumbai, Maharashtra 400076',
-      permanentAddress: 'Flat 402, Green Valley Apartments, Mumbai, Maharashtra 400076',
-      sameAsCurrentAddress: true,
-      emergencyContactName: 'Ramesh Patel',
-      emergencyContactPhone: '+91 9820011223',
-      emergencyContactRelation: 'Parent',
-    },
-    bank: {
-      accountHolderName: 'Luna',
-      bankName: 'HDFC Bank',
-      accountNumber: '50100492817263',
-      confirmAccountNumber: '50100492817263',
-      ifscCode: 'HDFC0001234',
-      branchName: 'Hiranandani Powai Branch',
-      accountType: 'Savings',
-    },
-    identity: {
-      panNumber: 'ABCPL1234D',
-      aadhaarNumber: '987654321098',
-    },
-    documents: [
-      {
-        id: 'doc-pan-luna',
-        type: 'pan_card',
-        label: 'PAN Card Copy',
-        fileName: 'luna_pan_card.pdf',
-        fileSize: 420000,
-        uploadedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-        status: 'uploaded',
-        url: '#',
-      },
-      {
-        id: 'doc-cheque-luna',
-        type: 'bank_document',
-        label: 'Cancelled Cheque',
-        fileName: 'hdfc_cancelled_cheque.pdf',
-        fileSize: 310000,
-        uploadedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-        status: 'uploaded',
-        url: '#',
-      },
-    ],
-  },
-  {
-    userId: 101,
-    userEmail: 'marcus.vance@aetheradix.com',
-    status: 'in_progress',
-    lastSavedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    completedSections: {
-      personal: true,
-      bank: false,
-      identity: false,
-      employment: false,
-      education: false,
-      certifications: false,
-      profile_picture: false,
-    },
-    personal: {
-      fullName: 'Marcus Vance',
-      email: 'marcus.vance@aetheradix.com',
-      contactNumber: '+1 (555) 018-2231',
-      dateOfBirth: '1995-11-20',
-      gender: 'Male',
-      currentAddress: '742 Evergreen Terrace, Austin, TX',
-      permanentAddress: '742 Evergreen Terrace, Austin, TX',
-      sameAsCurrentAddress: true,
-      emergencyContactName: 'Sarah Vance',
-      emergencyContactPhone: '+1 (555) 018-9900',
-      emergencyContactRelation: 'Spouse',
-    },
-  },
-  {
-    userId: 102,
-    userEmail: 'elena.rostova@aetheradix.com',
-    status: 'id_assigned',
-    employeeId: 'EMP-0042',
-    lastSavedAt: new Date(Date.now() - 4 * 86400 * 1000).toISOString(),
-    submittedAt: new Date(Date.now() - 4 * 86400 * 1000).toISOString(),
-    completedSections: {
-      personal: true,
-      bank: true,
-      identity: true,
-      employment: true,
-      education: true,
-      certifications: true,
-      profile_picture: true,
-    },
-    personal: {
-      fullName: 'Elena Rostova',
-      email: 'elena.rostova@aetheradix.com',
-      contactNumber: '+1 (555) 012-4411',
-      dateOfBirth: '1992-08-15',
-      gender: 'Female',
-      currentAddress: '78 Market St, New York, NY',
-      permanentAddress: '78 Market St, New York, NY',
-      sameAsCurrentAddress: true,
-      emergencyContactName: 'Mikhail Rostov',
-      emergencyContactPhone: '+1 (555) 012-9988',
-      emergencyContactRelation: 'Parent',
-    },
-    bank: {
-      accountHolderName: 'Elena Rostova',
-      bankName: 'Chase Bank',
-      accountNumber: '123456789012',
-      ifscCode: 'CHAS0001010',
-      branchName: 'Manhattan Financial Center',
-      accountType: 'Checking',
-    },
-    identity: {
-      panNumber: 'ELNPR9988K',
-      aadhaarNumber: '112233445566',
-      passportNumber: 'Z8765432',
-    },
-  },
-  {
-    userId: 103,
-    userEmail: 'deedee@yopmail.com',
-    status: 'submitted',
-    lastSavedAt: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
-    submittedAt: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
-    completedSections: {
-      personal: true,
-      bank: true,
-      identity: true,
-      employment: true,
-      education: true,
-      certifications: false,
-      profile_picture: false,
-    },
-    personal: {
-      fullName: 'DeeDee User',
-      email: 'deedee@yopmail.com',
-      contactNumber: '+91 9876543210',
-      currentAddress: 'Sector 62, Noida, Uttar Pradesh',
-      permanentAddress: 'Sector 62, Noida, Uttar Pradesh',
-      emergencyContactName: 'Sunita User',
-      emergencyContactPhone: '+91 9876500000',
-      emergencyContactRelation: 'Parent',
-    },
-    bank: {
-      accountHolderName: 'DeeDee User',
-      bankName: 'State Bank of India',
-      accountNumber: '302918273645',
-      ifscCode: 'SBIN0004567',
-      branchName: 'Noida Sector 62',
-      accountType: 'Savings',
-    },
-    identity: {
-      panNumber: 'DEEDE1234Z',
-      aadhaarNumber: '445566778899',
-    },
-  },
-];
+// ─── Seeded Onboarding Profiles (Empty default for production) ────────────────
+export const SEEDED_PROFILES: ProfileCompletionData[] = [];
 
 // ─── Profile CRUD ─────────────────────────────────────────────────────────────
 
@@ -719,18 +545,7 @@ export function getAllEmployeeProfiles(): ProfileCompletionData[] {
   try {
     const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
     const existing: ProfileCompletionData[] = raw ? JSON.parse(raw) : [];
-
-    // Ensure all seeded profiles exist in list
     const combined = [...existing];
-    for (const seed of SEEDED_PROFILES) {
-      const matchIdx = combined.findIndex(
-        (p) =>
-          p.userEmail?.toLowerCase() === seed.userEmail?.toLowerCase() || p.userId === seed.userId
-      );
-      if (matchIdx === -1) {
-        combined.push(seed);
-      }
-    }
 
     // Include newly invited users so hiring team can monitor their onboarding status
     try {
@@ -818,7 +633,7 @@ export function getAllEmployeeProfiles(): ProfileCompletionData[] {
     }
     return combined;
   } catch {
-    return SEEDED_PROFILES;
+    return [];
   }
 }
 

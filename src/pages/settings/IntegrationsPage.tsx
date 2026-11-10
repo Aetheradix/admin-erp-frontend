@@ -286,17 +286,13 @@ export function IntegrationsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 rounded-xl bg-surface-subtle border border-border-subtle mt-2">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mt-2">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-bold text-foreground">Relay Via CORS Proxy</span>
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Direct API Integration (Secure)</span>
               <span className="text-[10px] text-muted italic">
-                Bypasses strict web browser CORS blocking rules automatically.
+                Credentials are sent directly to your Jira host over TLS. Public third-party CORS proxies are blocked.
               </span>
             </div>
-            <InputSwitch
-              checked={jiraConfig.useProxy}
-              onChange={() => setJiraConfig({ ...jiraConfig, useProxy: !jiraConfig.useProxy })}
-            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">

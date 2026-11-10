@@ -9,7 +9,6 @@ import {
   useDeleteBlogMutation,
 } from '@/store/api/blogSlice';
 import type { Blog } from '@/types/models';
-import { mockBlogs } from './mockBlogs';
 
 export const useBlogs = (id?: string) => {
   const navigate = useNavigate();
@@ -22,11 +21,10 @@ export const useBlogs = (id?: string) => {
     isError: isSingleError,
   } = useGetBlogQuery(id as string, { skip: !id });
 
-  // Fallback to list cache or mock if single query fails or isn't populated
+  // Fallback to list cache if single query isn't populated
   const blog =
     fetchedBlog ||
-    (id ? blogs.find((b) => String(b.id) === String(id)) : undefined) ||
-    (id ? mockBlogs.find((b) => String(b.id) === String(id)) : undefined);
+    (id ? blogs.find((b) => String(b.id) === String(id)) : undefined);
 
   // Mutations
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
@@ -89,11 +87,11 @@ export const useBlogs = (id?: string) => {
   };
 
   return {
-    blogs: blogs.length > 0 ? blogs : mockBlogs,
+    blogs,
     blog,
     isLoading:
       isFetchingList || (Boolean(id) && isFetchingSingle && !blog) || isCreating || isUpdating,
-    isError: Boolean(id) ? isSingleError && !blog : isListError && blogs.length === 0,
+    isError: Boolean(id) ? isSingleError && !blog : isListError,
     handleSave,
     handleDelete,
     navigate,

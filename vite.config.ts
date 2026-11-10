@@ -21,17 +21,36 @@ function permissionsSyncPlugin(): Plugin {
     name: 'permissions-sync-plugin',
     configureServer(server) {
       server.middlewares.use('/__erp_permissions', (req, res) => {
+        // SECURITY FIX: Restrict to local origin to mitigate CSRF/DNS rebinding attacks
+        const host = req.headers.host || '';
+        if (!host.startsWith('localhost') && !host.startsWith('127.0.0.1')) {
+          res.statusCode = 403;
+          res.setHeader('Content-Type', 'application/json');
+          return res.end(JSON.stringify({ error: 'Access restricted to localhost' }));
+        }
+
         if (req.method === 'POST') {
           let body = '';
           req.on('data', (chunk) => (body += chunk));
           req.on('end', () => {
             try {
-              inMemory = JSON.parse(body);
+              const parsed = JSON.parse(body);
+              // Validate schema: must be an object with route path keys and array values
+              if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                throw new Error('Invalid permissions structure');
+              }
+              for (const [key, val] of Object.entries(parsed)) {
+                if (!key.startsWith('/') || !Array.isArray(val)) {
+                  throw new Error(`Invalid permission entry for route: ${key}`);
+                }
+              }
+              inMemory = parsed;
               fs.writeFileSync(cacheFile, JSON.stringify(inMemory, null, 2));
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ success: true }));
             } catch (err: any) {
               res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ error: err.message }));
             }
           });

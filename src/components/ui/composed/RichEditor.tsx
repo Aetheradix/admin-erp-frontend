@@ -100,9 +100,6 @@
 //     //   const htmlValue = quillRef.current?.root.innerHTML || '';
 //     //   const textValue = quillRef.current?.getText() || '';
 
-//     //   console.log("Quill HTML:", htmlValue);
-//     //   console.log("Quill TEXT:", textValue);
-
 //     //   // CHANGED: Use ref callback instead of direct callback
 //     //   onTextChangeRef.current?.({
 //     //     htmlValue,
@@ -239,9 +236,6 @@ export const RichEditor = React.forwardRef<HTMLDivElement, RichEditorProps>(
       quillRef.current.on('text-change', () => {
         const htmlValue = quillRef.current?.root.innerHTML || '';
         const textValue = quillRef.current?.getText() || '';
-
-        console.log('Quill HTML:', htmlValue);
-        console.log('Quill TEXT:', textValue);
 
         onTextChangeRef.current?.({
           htmlValue,

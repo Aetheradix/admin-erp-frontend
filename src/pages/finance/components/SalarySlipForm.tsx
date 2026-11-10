@@ -1223,8 +1223,6 @@ const SalarySlipForm = ({
   }, []);
 
   const handleSelectEmployee = async (user: any) => {
-    console.log('1. Clicked user object:', user);
-
     const rawId = user.id || user.employee_code || user.employee_id || user.employeeId;
     const numericId = Number(rawId);
     const resolvedName = getEmployeeName(user);

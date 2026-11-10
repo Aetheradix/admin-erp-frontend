@@ -43,6 +43,7 @@ import {
   useCreateSystemInvitationMutation,
   useRevokeSystemInvitationMutation,
   useResendSystemInvitationMutation,
+  useGetDepartmentsQuery,
 } from '@/store/api/authApiSlice';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import type { UserRole } from '@/config/navItems';
@@ -65,134 +66,71 @@ export interface UserRecord {
   createdAt?: string;
 }
 
-export const initialUsers: UserRecord[] = [
-  {
-    id: 1,
-    name: 'Sarah Chen',
-    email: 'sarah.chen@aetheradix.com',
-    role: 'SuperAdmin',
-    department: 'Engineering',
-    status: 'Active',
-    avatar: 'SC',
-    contactNo: '+1 (555) 019-2831',
-    address: '100 Silicon Blvd, San Francisco, CA',
-    createdAt: '2026-01-10',
-  },
-  {
-    id: 2,
-    name: 'James Wilson',
-    email: 'james.wilson@aetheradix.com',
-    role: 'Admin',
-    department: 'Operations',
-    status: 'Active',
-    avatar: 'JW',
-    contactNo: '+1 (555) 018-9923',
-    address: '450 Innovation Way, Austin, TX',
-    createdAt: '2026-02-15',
-  },
-  {
-    id: 3,
-    name: 'Maya Johnson',
-    email: 'maya.johnson@aetheradix.com',
-    role: 'Manager',
-    department: 'Design',
-    status: 'Active',
-    avatar: 'MJ',
-    contactNo: '+1 (555) 012-4411',
-    address: '78 Market St, New York, NY',
-    createdAt: '2026-03-01',
-  },
-  {
-    id: 4,
-    name: 'David Kim',
-    email: 'david.kim@aetheradix.com',
-    role: 'Employee',
-    department: 'Engineering',
-    status: 'Active',
-    avatar: 'DK',
-    contactNo: '+1 (555) 014-8832',
-    address: '320 Tech Row, Seattle, WA',
-    createdAt: '2026-03-12',
-  },
-  {
-    id: 5,
-    name: 'Lisa Park',
-    email: 'lisa.park@aetheradix.com',
-    role: 'HrAdmin',
-    department: 'HR',
-    status: 'Active',
-    avatar: 'LP',
-    contactNo: '+1 (555) 019-1100',
-    address: '500 People Plaza, Chicago, IL',
-    createdAt: '2026-04-05',
-  },
-  {
-    id: 6,
-    name: 'Alex Rivera',
-    email: 'alex.rivera@aetheradix.com',
-    role: 'Inventory operator',
-    department: 'Operations',
-    status: 'Away',
-    avatar: 'AR',
-    contactNo: '+1 (555) 016-5599',
-    address: '88 Depot Rd, Dallas, TX',
-    createdAt: '2026-04-20',
-  },
-  {
-    id: 7,
-    name: 'Emily Davis',
-    email: 'emily.davis@aetheradix.com',
-    role: 'FinanceAdmin',
-    department: 'Finance',
-    status: 'Active',
-    avatar: 'ED',
-    contactNo: '+1 (555) 017-7721',
-    address: '250 Wall Street, New York, NY',
-    createdAt: '2026-05-18',
-  },
-  {
-    id: 8,
-    name: 'Rahul Patel',
-    email: 'rahul.patel@aetheradix.com',
-    role: 'Employee',
-    department: 'Engineering',
-    status: 'Inactive',
-    avatar: 'RP',
-    contactNo: '+1 (555) 013-3390',
-    address: '12 Pioneer Ave, San Jose, CA',
-    createdAt: '2026-06-01',
-  },
+export const initialUsers: UserRecord[] = [];
+
+const BADGE_PALETTES = [
+  { bg: 'bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-500/20' },
+  { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20' },
+  { bg: 'bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-500/20' },
+  { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/20' },
+  { bg: 'bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400', border: 'border-sky-500/20' },
+  { bg: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-500/20' },
+  { bg: 'bg-cyan-500/10', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-500/20' },
+  { bg: 'bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-500/20' },
+  { bg: 'bg-teal-500/10', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-500/20' },
+  { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/20' },
+  { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-600 dark:text-fuchsia-400', border: 'border-fuchsia-500/20' },
+  { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/20' },
 ];
 
-const DEFAULT_ROLES = [
-  { label: 'SuperAdmin', value: 'SuperAdmin' },
-  { label: 'Admin', value: 'Admin' },
-  { label: 'HrAdmin', value: 'HrAdmin' },
-  { label: 'FinanceAdmin', value: 'FinanceAdmin' },
-  { label: 'Manager', value: 'Manager' },
-  { label: 'Employee', value: 'Employee' },
-  { label: 'Inventory operator', value: 'Inventory operator' },
-];
+export function getRoleBadgeClass(role?: string): string {
+  if (!role) return 'bg-surface-subtle text-muted border-border-subtle';
+  const clean = role.toLowerCase().replace(/[\s_-]/g, '');
+  if (clean.includes('superadmin') || clean.includes('founder') || clean.includes('ceo')) {
+    return 'bg-error/10 text-error border-error/20';
+  }
+  if (clean.includes('admin') && !clean.includes('hr') && !clean.includes('finance')) {
+    return 'bg-warning/10 text-warning border-warning/20';
+  }
+  if (clean.includes('hr')) {
+    return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
+  }
+  if (clean.includes('finance')) {
+    return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+  }
+  if (clean.includes('manager') || clean.includes('lead')) {
+    return 'bg-primary/10 text-primary border-primary/20';
+  }
+  if (clean.includes('developer') || clean.includes('engineer') || clean.includes('devops')) {
+    return 'bg-sky-500/10 text-sky-600 border-sky-500/20';
+  }
+  if (clean.includes('analyst') || clean.includes('design') || clean.includes('ui') || clean.includes('ux')) {
+    return 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
+  }
+  if (clean.includes('employee') || clean.includes('staff')) {
+    return 'bg-info/10 text-info border-info/20';
+  }
+  if (clean.includes('inventory') || clean.includes('operator')) {
+    return 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20';
+  }
 
-const DEPTS = [
-  { label: 'Engineering', value: 'Engineering' },
-  { label: 'Design', value: 'Design' },
-  { label: 'Marketing', value: 'Marketing' },
-  { label: 'HR', value: 'HR' },
-  { label: 'Finance', value: 'Finance' },
-  { label: 'Operations', value: 'Operations' },
-];
+  let hash = 0;
+  for (let i = 0; i < role.length; i++) {
+    hash = role.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const palette = BADGE_PALETTES[Math.abs(hash) % BADGE_PALETTES.length];
+  return `${palette.bg} ${palette.text} border ${palette.border}`;
+}
 
-const roleColors: Record<string, string> = {
-  SuperAdmin: 'bg-error/10 text-error border-error/20',
-  Admin: 'bg-warning/10 text-warning border-warning/20',
-  HrAdmin: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-  FinanceAdmin: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  Manager: 'bg-primary/10 text-primary border-primary/20',
-  Employee: 'bg-info/10 text-info border-info/20',
-  'Inventory operator': 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
-  Viewer: 'bg-surface-subtle text-muted border-border-subtle',
-};
+export function getDepartmentBadgeClass(dept?: string): string {
+  if (!dept) return 'bg-surface-subtle text-muted border-border-subtle';
+  let hash = 0;
+  for (let i = 0; i < dept.length; i++) {
+    hash = dept.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const palette = BADGE_PALETTES[Math.abs(hash) % BADGE_PALETTES.length];
+  return `${palette.bg} ${palette.text} border ${palette.border}`;
+}
 
 const statusColors: Record<string, string> = {
   Active: 'text-success bg-success/10 border-success/20',
@@ -200,7 +138,7 @@ const statusColors: Record<string, string> = {
   Inactive: 'text-muted bg-surface-subtle border-border-subtle',
 };
 
-const emptyForm = { name: '', email: '', role: 'Employee', department: 'Engineering' };
+const emptyForm = { name: '', email: '', role: '', department: '' };
 
 export function UsersPage() {
   const { user: currentAuthUser } = useAuth();
@@ -214,6 +152,7 @@ export function UsersPage() {
   // --- RTK QUERY HOOKS ---
   const { data: apiUsers, isLoading: isUsersLoading, refetch: refetchUsers } = useGetUsersQuery();
   const { data: rolesData } = useGetRolesQuery();
+  const { data: deptResponse } = useGetDepartmentsQuery({});
   const { refetch: refetchLogs } = useGetApprovalLogsQuery();
 
   const [sendInvitation, { isLoading: isSendingInvite }] = useSendInvitationMutation();
@@ -316,18 +255,63 @@ export function UsersPage() {
     'System Audit Trail',
   ];
 
-  // Role Options (dynamically merge with backend roles if available)
+  // Role Options (dynamically merged from backend /api/roles and live database users)
   const availableRoles = useMemo(() => {
-    if (rolesData?.data && rolesData.data.length > 0) {
-      return rolesData.data.map((r) => ({ label: r.name, value: r.name }));
+    const rolesMap = new Map<string, string>();
+
+    if (rolesData?.data && Array.isArray(rolesData.data)) {
+      rolesData.data.forEach((r) => {
+        if (r.name && r.name.trim()) {
+          rolesMap.set(r.name.trim().toLowerCase(), r.name.trim());
+        }
+      });
     }
-    return DEFAULT_ROLES;
-  }, [rolesData]);
+
+    if (apiUsers && Array.isArray(apiUsers)) {
+      apiUsers.forEach((u: any) => {
+        const role = u.role || u.designation;
+        if (role && typeof role === 'string' && role.trim()) {
+          rolesMap.set(role.trim().toLowerCase(), role.trim());
+        }
+      });
+    }
+
+    return Array.from(rolesMap.values())
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ label: name, value: name }));
+  }, [rolesData, apiUsers]);
+
+  // Department Options (dynamically merged from backend /metadata/departments and live database users)
+  const availableDepartments = useMemo(() => {
+    const deptsMap = new Map<string, string>();
+
+    const rawDepts = deptResponse?.data ?? deptResponse ?? [];
+    if (Array.isArray(rawDepts)) {
+      rawDepts.forEach((d: any) => {
+        const name = typeof d === 'string' ? d : d.department_name || d.name;
+        if (name && typeof name === 'string' && name.trim()) {
+          deptsMap.set(name.trim().toLowerCase(), name.trim());
+        }
+      });
+    }
+
+    if (apiUsers && Array.isArray(apiUsers)) {
+      apiUsers.forEach((u: any) => {
+        if (u.department && typeof u.department === 'string' && u.department.trim()) {
+          deptsMap.set(u.department.trim().toLowerCase(), u.department.trim());
+        }
+      });
+    }
+
+    return Array.from(deptsMap.values())
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ label: name, value: name }));
+  }, [deptResponse, apiUsers]);
 
   // Combine API users with local users
   const mergedUsers: UserRecord[] = useMemo(() => {
-    if (apiUsers && apiUsers.length > 0) {
-      return apiUsers.map((u) => {
+    if (apiUsers) {
+      const mapped = apiUsers.map((u) => {
         const name = u.name || u.username || u.email.split('@')[0];
         const initials =
           name
@@ -352,6 +336,9 @@ export function UsersPage() {
           createdAt: u.join_date || u.joinDate || 'Recently',
         };
       });
+      const apiEmails = new Set(mapped.map((u) => u.email.toLowerCase()));
+      const extraLocal = localUsers.filter((lu) => !apiEmails.has(lu.email.toLowerCase()));
+      return [...extraLocal, ...mapped];
     }
     return localUsers;
   }, [apiUsers, localUsers]);
@@ -413,11 +400,13 @@ export function UsersPage() {
     }
 
     try {
-      const adminActor = {
-        name: (currentAuthUser?.username || 'Hasmukh').trim(),
-        email: currentAuthUser?.email || 'hasmukh.arx@gmail.com',
-        role: currentAuthUser?.role || 'SuperAdmin',
-      };
+      const adminActor = currentAuthUser
+        ? {
+            name: (currentAuthUser.username || 'Administrator').trim(),
+            email: currentAuthUser.email || 'admin@aetheradix.com',
+            role: currentAuthUser.role || 'SuperAdmin',
+          }
+        : undefined;
 
       // 1. Create invitation in backend MySQL
       let serverLink = `${window.location.origin}/auth/onboarding?email=${encodeURIComponent(form.email)}`;
@@ -816,26 +805,22 @@ export function UsersPage() {
           return (
             <div className="flex flex-wrap gap-1 max-w-[220px]">
               {record.roles.map((r) => (
-                <Tag
+                <span
                   key={r.id}
-                  color={
-                    r.name?.toLowerCase().includes('admin') ||
-                    r.name?.toLowerCase().includes('founder')
-                      ? 'volcano'
-                      : 'blue'
-                  }
-                  className="text-[10px] font-bold uppercase tracking-wider rounded-md">
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getRoleBadgeClass(
+                    r.name
+                  )}`}>
                   {r.name}
-                </Tag>
+                </span>
               ))}
             </div>
           );
         }
         return (
           <span
-            className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-              roleColors[role] || 'bg-surface-subtle text-muted border-border-subtle'
-            }`}>
+            className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${getRoleBadgeClass(
+              role
+            )}`}>
             {role}
           </span>
         );
@@ -858,7 +843,14 @@ export function UsersPage() {
       title: 'Department',
       dataIndex: 'department',
       key: 'department',
-      render: (text) => <span className="text-sm font-medium text-muted">{text}</span>,
+      render: (text) => (
+        <span
+          className={`px-2.5 py-1 rounded text-xs font-semibold border inline-block ${getDepartmentBadgeClass(
+            text
+          )}`}>
+          {text || 'Unassigned'}
+        </span>
+      ),
     },
     {
       title: 'Status',
@@ -913,14 +905,19 @@ export function UsersPage() {
       title: 'Assigned Role & Dept',
       key: 'roleDept',
       render: (_, record) => (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           <span
-            className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border w-fit ${
-              roleColors[record.role] || 'bg-surface-subtle text-muted border-border-subtle'
-            }`}>
+            className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border w-fit ${getRoleBadgeClass(
+              record.role
+            )}`}>
             {record.role}
           </span>
-          <span className="text-xs text-muted">{record.department}</span>
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] font-semibold border w-fit ${getDepartmentBadgeClass(
+              record.department
+            )}`}>
+            {record.department}
+          </span>
         </div>
       ),
     },
@@ -928,22 +925,9 @@ export function UsersPage() {
       title: 'Invited By (Admin)',
       key: 'invitedBy',
       render: (_, record) => {
-        const invName =
-          record.invitedBy?.name &&
-          record.invitedBy.name !== 'Sarah Chen' &&
-          record.invitedBy.name !== 'Admin'
-            ? record.invitedBy.name
-            : (currentAuthUser?.username || 'Hasmukh').trim();
-        const invEmail =
-          record.invitedBy?.email &&
-          !record.invitedBy.email.includes('sarah') &&
-          !record.invitedBy.email.includes('admin@')
-            ? record.invitedBy.email
-            : currentAuthUser?.email || 'hasmukh.arx@gmail.com';
-        const invRole =
-          record.invitedBy?.role && record.invitedBy.role !== 'Admin'
-            ? record.invitedBy.role
-            : currentAuthUser?.role || 'SuperAdmin';
+        const invName = record.invitedBy?.name || (currentAuthUser?.username || 'Administrator').trim();
+        const invEmail = record.invitedBy?.email || currentAuthUser?.email || 'admin@aetheradix.com';
+        const invRole = record.invitedBy?.role || currentAuthUser?.role || 'SuperAdmin';
 
         return (
           <div className="flex flex-col">
@@ -1158,7 +1142,15 @@ export function UsersPage() {
         breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'Users' }]}
         primaryAction={{
           label: 'Invite User',
-          onClick: () => setShowForm(true),
+          onClick: () => {
+            setForm({
+              name: '',
+              email: '',
+              role: availableRoles[0]?.value || 'Employee',
+              department: availableDepartments[0]?.value || 'Engineering',
+            });
+            setShowForm(true);
+          },
           icon: 'pi pi-user-plus',
         }}
       />
@@ -1370,7 +1362,7 @@ export function UsersPage() {
                 Department
               </label>
               <Select
-                options={DEPTS}
+                options={availableDepartments}
                 value={form.department}
                 onChange={(e) => setForm({ ...form, department: e.value })}
                 placeholder="Select dept"
@@ -1568,7 +1560,7 @@ export function UsersPage() {
                 Department
               </label>
               <Select
-                options={DEPTS}
+                options={availableDepartments}
                 value={editUserModal.form.department}
                 onChange={(e) =>
                   setEditUserModal({

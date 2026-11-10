@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
@@ -11,6 +12,7 @@ import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 
 export function CareerList() {
   const {
+    careers,
     filteredCareers,
     isLoading,
     showForm,
@@ -25,6 +27,11 @@ export function CareerList() {
     handleDelete,
     handleSubmit,
   } = useCareerList();
+
+  const departments = useMemo(() => {
+    const fromCareers = (careers || []).map((c) => c.department).filter(Boolean);
+    return ['All', ...new Set(fromCareers)];
+  }, [careers]);
 
   if (isLoading) {
     return (
@@ -54,6 +61,7 @@ export function CareerList() {
           onSearchChange={setSearchQuery}
           activeDepartment={activeDepartment}
           onDepartmentChange={setActiveDepartment}
+          departments={departments}
         />
 
         <div className="flex items-center justify-between px-2">
@@ -75,7 +83,7 @@ export function CareerList() {
             <CareerCard
               key={career.id}
               career={career}
-              onViewDetails={(id) => console.log('view', id)}
+              onViewDetails={handleEdit}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />

@@ -18,6 +18,8 @@ import { message as antMessage, Table as AntTable } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useGetInvoicesQuery } from '@/store/api/financeApiSlice';
+import { useGetAllExpensesQuery } from '@/store/api/expenseSlice';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -26,59 +28,6 @@ interface FinancialEntry {
   currentPeriod: number;
   previousPeriod?: number;
   category: 'income' | 'expense' | 'asset' | 'liability';
-}
-
-// ─── Mock Financial Data ─────────────────────────────────────────────────────
-
-function generateAuditData(year: string, quarter: string) {
-  const seed = (year + quarter).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const r = (base: number, variance: number) => base + (seed % variance) - variance / 2;
-
-  const income: FinancialEntry[] = [
-    { particulars: 'Service Revenue', currentPeriod: r(4800000, 200000), category: 'income' },
-    { particulars: 'Product Sales', currentPeriod: r(1200000, 150000), category: 'income' },
-    { particulars: 'Consulting Fees', currentPeriod: r(380000, 80000), category: 'income' },
-    { particulars: 'Interest Income', currentPeriod: r(45000, 10000), category: 'income' },
-    { particulars: 'Other Income', currentPeriod: r(62000, 20000), category: 'income' },
-  ];
-
-  const expenses: FinancialEntry[] = [
-    {
-      particulars: 'Employee Salaries & Wages',
-      currentPeriod: r(2100000, 100000),
-      category: 'expense',
-    },
-    { particulars: 'Rent & Office Expenses', currentPeriod: r(420000, 30000), category: 'expense' },
-    {
-      particulars: 'Travel & Transportation',
-      currentPeriod: r(185000, 40000),
-      category: 'expense',
-    },
-    {
-      particulars: 'Software & Subscriptions',
-      currentPeriod: r(95000, 20000),
-      category: 'expense',
-    },
-    {
-      particulars: 'Marketing & Advertising',
-      currentPeriod: r(240000, 60000),
-      category: 'expense',
-    },
-    {
-      particulars: 'Utilities & Communication',
-      currentPeriod: r(68000, 15000),
-      category: 'expense',
-    },
-    {
-      particulars: 'Professional Fees (Legal/CA)',
-      currentPeriod: r(120000, 25000),
-      category: 'expense',
-    },
-    { particulars: 'Depreciation', currentPeriod: r(75000, 10000), category: 'expense' },
-    { particulars: 'Miscellaneous Expenses', currentPeriod: r(48000, 12000), category: 'expense' },
-  ];
-
-  return { income, expenses };
 }
 
 const QUARTERS = ['Q1 (Jan–Mar)', 'Q2 (Apr–Jun)', 'Q3 (Jul–Sep)', 'Q4 (Oct–Dec)', 'Full Year'];
@@ -283,10 +232,68 @@ export default function AuditBookPage() {
   const [selectedQuarter, setSelectedQuarter] = useState('Q3 (Jul–Sep)');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const { income, expenses: expenseEntries } = useMemo(
-    () => generateAuditData(selectedYear, selectedQuarter),
-    [selectedYear, selectedQuarter]
-  );
+  const { data: invoicesData = [] } = useGetInvoicesQuery();
+  const { data: expensesData = [] } = useGetAllExpensesQuery();
+
+  const { income, expenses: expenseEntries } = useMemo(() => {
+    let startMonth = 0;
+    let endMonth = 11;
+    if (selectedQuarter.startsWith('Q1')) {
+      startMonth = 0;
+      endMonth = 2;
+    } else if (selectedQuarter.startsWith('Q2')) {
+      startMonth = 3;
+      endMonth = 5;
+    } else if (selectedQuarter.startsWith('Q3')) {
+      startMonth = 6;
+      endMonth = 8;
+    } else if (selectedQuarter.startsWith('Q4')) {
+      startMonth = 9;
+      endMonth = 11;
+    }
+
+    const isMatch = (dateStr?: string) => {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return false;
+      if (d.getFullYear().toString() !== selectedYear) return false;
+      if (selectedQuarter === 'Full Year') return true;
+      const m = d.getMonth();
+      return m >= startMonth && m <= endMonth;
+    };
+
+    const incomeMap = new Map<string, number>();
+    (invoicesData || []).forEach((inv: any) => {
+      const date = inv.date || inv.invoice_date || inv.invoiceDate || inv.created_at;
+      if (!isMatch(date)) return;
+      const particulars = inv.client || inv.bill_to_name || inv.clientName || 'Invoice Revenue';
+      const amt = Number(inv.amount || inv.total || 0);
+      incomeMap.set(particulars, (incomeMap.get(particulars) || 0) + amt);
+    });
+
+    const incomeList: FinancialEntry[] = Array.from(incomeMap.entries()).map(([particulars, currentPeriod]) => ({
+      particulars,
+      currentPeriod,
+      category: 'income',
+    }));
+
+    const expenseMap = new Map<string, number>();
+    (expensesData || []).forEach((exp: any) => {
+      const date = exp.expense_date || exp.created_at || exp.date;
+      if (!isMatch(date)) return;
+      const cat = exp.category || exp.title || exp.description || 'General Expense';
+      const amt = Number(exp.amount || 0);
+      expenseMap.set(cat, (expenseMap.get(cat) || 0) + amt);
+    });
+
+    const expList: FinancialEntry[] = Array.from(expenseMap.entries()).map(([particulars, currentPeriod]) => ({
+      particulars,
+      currentPeriod,
+      category: 'expense',
+    }));
+
+    return { income: incomeList, expenses: expList };
+  }, [invoicesData, expensesData, selectedYear, selectedQuarter]);
 
   const totalRevenue = income.reduce((s, e) => s + e.currentPeriod, 0);
   const totalExpenses = expenseEntries.reduce((s, e) => s + e.currentPeriod, 0);

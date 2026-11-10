@@ -78,128 +78,6 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-// ─── Mock data for offline/demo ──────────────────────────────────────────────
-
-const DEMO_CHANNELS: Channel[] = [
-  {
-    id: 1,
-    name: 'general',
-    description: 'Company-wide announcements and updates',
-    type: 'public',
-    members: [],
-    memberCount: 24,
-    unreadCount: 3,
-    isPinned: true,
-    createdAt: '2026-01-01T00:00:00Z',
-    lastActivity: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 2,
-    name: 'engineering',
-    description: 'Technical discussions and code reviews',
-    type: 'public',
-    members: [],
-    memberCount: 12,
-    unreadCount: 0,
-    createdAt: '2026-01-01T00:00:00Z',
-    lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 3,
-    name: 'finance-team',
-    description: 'Finance department internal channel',
-    type: 'private',
-    members: [],
-    memberCount: 6,
-    unreadCount: 1,
-    createdAt: '2026-01-01T00:00:00Z',
-    lastActivity: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 4,
-    name: 'hr-announcements',
-    description: 'HR policies, benefits, and notices',
-    type: 'public',
-    members: [],
-    memberCount: 24,
-    unreadCount: 0,
-    createdAt: '2026-01-01T00:00:00Z',
-    lastActivity: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 5,
-    name: 'project-erp-alpha',
-    description: 'ERP Alpha project coordination',
-    type: 'project',
-    members: [],
-    memberCount: 8,
-    unreadCount: 7,
-    createdAt: '2026-01-01T00:00:00Z',
-    lastActivity: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-  },
-];
-
-function generateDemoMessages(channelId: number): ChatMessage[] {
-  const names = ['Aryan Sharma', 'Priya Mehta', 'Rahul Singh', 'Sneha Patel', 'Admin User'];
-  const desigs = ['CEO', 'HR Manager', 'Lead Engineer', 'Finance Head', 'Super Admin'];
-  const sampleMessages: Record<number, string[]> = {
-    1: [
-      'Good morning everyone! Hope you all had a great weekend 🌟',
-      'Reminder: All-hands meeting today at 3 PM in the conference room.',
-      "Don't forget to submit your timesheets by end of day Friday.",
-      'Welcome to our newest team member joining the Engineering team! 🎉',
-      'The Q3 reports are now live on the Finance dashboard.',
-    ],
-    2: [
-      'Just pushed the new inventory deduction feature to staging.',
-      'Can someone review PR #142? It fixes the invoice export bug.',
-      'Build pipeline is green ✅ — deploying to prod tonight at 11 PM.',
-      'Using jsPDF for the expense reports — works great, highly recommend.',
-      'We should add WebSocket support for real-time channel updates in v2.',
-    ],
-    3: [
-      'Q3 expense reports are ready for review.',
-      'Payroll run scheduled for October 25th. Please confirm all attendance.',
-      'New reimbursement policy effective from November 1st.',
-    ],
-    4: [
-      'New leave policy update: 2 extra casual leaves added for all staff.',
-      'Performance review cycle starts November 1st.',
-      'Benefits enrollment window closes on October 30th.',
-    ],
-    5: [
-      'Sprint 4 kickoff tomorrow at 10 AM.',
-      'ERP Alpha staging URL is now live for QA testing.',
-      'Blocking issue on inventory CSV import — will fix tonight.',
-      'UAT feedback round: 14 items resolved, 3 pending.',
-      '🚀 Feature: Communication Channels just landed on main!',
-      'Great work team — we are 80% through MVP features!',
-      'Next milestone: December 7th. Stay focused! 💪',
-    ],
-  };
-  const msgs = sampleMessages[channelId] || sampleMessages[1];
-  return msgs.map((content, i) => ({
-    id: i + 1,
-    channelId,
-    senderId: (i % names.length) + 1,
-    senderName: names[i % names.length],
-    senderDesignation: desigs[i % desigs.length],
-    content,
-    type: 'text' as const,
-    reactions:
-      i === 0
-        ? [{ emoji: '👍', count: 3, users: [1, 2, 3] }]
-        : i === 1
-          ? [
-              { emoji: '✅', count: 5, users: [1, 2, 3, 4, 5] },
-              { emoji: '🔥', count: 2, users: [3, 4] },
-            ]
-          : [],
-    createdAt: new Date(Date.now() - (msgs.length - i) * 15 * 60 * 1000).toISOString(),
-    isPinned: i === 1,
-  }));
-}
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 interface AvatarProps {
@@ -608,21 +486,8 @@ function CreateChannelModal({ onClose, onCreated }: CreateChannelModalProps) {
       onCreated(result);
       antMessage.success(`Channel #${name} created!`);
       onClose();
-    } catch {
-      // Simulate locally for demo
-      const mock: Channel = {
-        id: Date.now(),
-        name: name.toLowerCase().replace(/\s+/g, '-'),
-        description,
-        type,
-        members: [],
-        memberCount: 1,
-        createdAt: new Date().toISOString(),
-        unreadCount: 0,
-      };
-      onCreated(mock);
-      antMessage.success(`Channel #${mock.name} created!`);
-      onClose();
+    } catch (err: any) {
+      antMessage.error(err?.data?.message || 'Failed to create channel');
     }
   };
 
@@ -860,7 +725,7 @@ export default function ChannelsPage() {
 
   // State
   const [activeChannelId, setActiveChannelId] = useState<number>(
-    channelIdParam ? parseInt(channelIdParam) : 1
+    channelIdParam ? parseInt(channelIdParam) : 0
   );
   const [messageInput, setMessageInput] = useState('');
   const [editingMsgId, setEditingMsgId] = useState<number | null>(null);
@@ -868,10 +733,8 @@ export default function ChannelsPage() {
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [channelSearch, setChannelSearch] = useState('');
-  const [localChannels, setLocalChannels] = useState<Channel[]>(DEMO_CHANNELS);
-  const [localMessages, setLocalMessages] = useState<Record<number, ChatMessage[]>>(
-    Object.fromEntries(DEMO_CHANNELS.map((c) => [c.id, generateDemoMessages(c.id)]))
-  );
+  const [localChannels, setLocalChannels] = useState<Channel[]>([]);
+  const [localMessages, setLocalMessages] = useState<Record<number, ChatMessage[]>>({});
   const [showMembers, setShowMembers] = useState(false);
   const [publicCollapsed, setPublicCollapsed] = useState(false);
   const [privateCollapsed, setPrivateCollapsed] = useState(false);
@@ -892,14 +755,28 @@ export default function ChannelsPage() {
   const [pinMessage] = usePinMessageMutation();
   const [markChannelRead] = useMarkChannelReadMutation();
 
-  // Merge API data with demo data
   const channels = useMemo(() => {
-    if (apiChannels && apiChannels.length > 0) return apiChannels;
+    if (apiChannels) {
+      const apiIds = new Set(apiChannels.map((c) => c.id));
+      const extra = localChannels.filter((c) => !apiIds.has(c.id));
+      return [...extra, ...apiChannels];
+    }
     return localChannels;
   }, [apiChannels, localChannels]);
 
+  useEffect(() => {
+    if ((!activeChannelId || activeChannelId === 0) && channels.length > 0) {
+      setActiveChannelId(channels[0].id);
+    }
+  }, [activeChannelId, channels]);
+
   const messages = useMemo(() => {
-    if (apiMessages && apiMessages.length > 0) return apiMessages;
+    if (apiMessages) {
+      const extra = localMessages[activeChannelId] || [];
+      const apiIds = new Set(apiMessages.map((m) => m.id));
+      const uniqueExtra = extra.filter((m) => !apiIds.has(m.id));
+      return [...apiMessages, ...uniqueExtra];
+    }
     return localMessages[activeChannelId] || [];
   }, [apiMessages, activeChannelId, localMessages]);
 

@@ -42,8 +42,6 @@ const AddResourceModal = ({
       is_active: true,
     };
 
-    console.log('Resource data:', data);
-
     // THIS IS THE IMPORTANT PART
     await onSubmit(data);
   };

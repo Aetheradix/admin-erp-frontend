@@ -5,8 +5,7 @@ interface OrgChartProps {
 }
 
 export function OrgChart({ nodes }: OrgChartProps) {
-  // Simple hierarchical rendering for demonstration
-  const root = nodes.find((n) => !n.parentId);
+  // Simple hierarchical rendering
   const getChildren = (id: string) => nodes.filter((n) => n.parentId === id);
 
   const renderNode = (node: Node, level = 0) => {
@@ -57,7 +56,13 @@ export function OrgChart({ nodes }: OrgChartProps) {
             Visualizing team leadership and reporting lines
           </p>
         </div>
-        {root && renderNode(root)}
+        {nodes.length === 0 ? (
+          <div className="py-12 text-center text-muted text-sm">
+            No organizational hierarchy records found in the database.
+          </div>
+        ) : (
+          nodes.filter((n) => !n.parentId).map((rootNode) => renderNode(rootNode))
+        )}
       </div>
     </div>
   );

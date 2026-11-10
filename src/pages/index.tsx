@@ -118,13 +118,6 @@ const AppFeature = () => {
       map[f] = check(f);
     }
 
-    console.log('🔍 [allowedMap Calculation]:', {
-      userDesignation: user?.designation,
-      currentUserRoleName,
-      roleObjFound: !!roleObj,
-      visibleSections,
-      resourceBookingAllowed: map['Resource Booking'],
-    });
     return map;
   }, [user]);
 

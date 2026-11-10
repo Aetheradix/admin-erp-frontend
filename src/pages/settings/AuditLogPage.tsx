@@ -57,26 +57,13 @@ function buildJourney(
 ): JourneyStep[] {
   const email = invitation.email.toLowerCase();
 
-  const fallbackAdminName = currentAuthUser?.username || currentAuthUser?.name || 'Hasmukh';
+  const fallbackAdminName = currentAuthUser?.username || currentAuthUser?.name || 'Administrator';
   const fallbackAdminRole = currentAuthUser?.role || 'SuperAdmin';
-  const fallbackAdminEmail = currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+  const fallbackAdminEmail = currentAuthUser?.email || 'admin@aetheradix.com';
 
-  const adminName =
-    invitation.invitedBy?.name &&
-    invitation.invitedBy.name !== 'Sarah Chen' &&
-    invitation.invitedBy.name !== 'Admin'
-      ? invitation.invitedBy.name
-      : fallbackAdminName;
-  const adminRole =
-    invitation.invitedBy?.role && invitation.invitedBy.role !== 'Admin'
-      ? invitation.invitedBy.role
-      : fallbackAdminRole;
-  const adminEmail =
-    invitation.invitedBy?.email &&
-    !invitation.invitedBy.email.includes('sarah') &&
-    !invitation.invitedBy.email.includes('admin@')
-      ? invitation.invitedBy.email
-      : fallbackAdminEmail;
+  const adminName = invitation.invitedBy?.name || fallbackAdminName;
+  const adminRole = invitation.invitedBy?.role || fallbackAdminRole;
+  const adminEmail = invitation.invitedBy?.email || fallbackAdminEmail;
 
   // Find relevant log entries for this email
   const inviteSentLog = logs.find(
@@ -178,26 +165,13 @@ function JourneyCard({
   const steps = buildJourney(invitation, logs, currentAuthUser);
   const doneCount = steps.filter((s) => s.status === 'done').length;
 
-  const fallbackAdminName = currentAuthUser?.username || 'Hasmukh';
+  const fallbackAdminName = currentAuthUser?.username || 'Administrator';
   const fallbackAdminRole = currentAuthUser?.role || 'SuperAdmin';
-  const fallbackAdminEmail = currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+  const fallbackAdminEmail = currentAuthUser?.email || 'admin@aetheradix.com';
 
-  const adminName =
-    invitation.invitedBy?.name &&
-    invitation.invitedBy.name !== 'Sarah Chen' &&
-    invitation.invitedBy.name !== 'Admin'
-      ? invitation.invitedBy.name
-      : fallbackAdminName;
-  const adminRole =
-    invitation.invitedBy?.role && invitation.invitedBy.role !== 'Admin'
-      ? invitation.invitedBy.role
-      : fallbackAdminRole;
-  const adminEmail =
-    invitation.invitedBy?.email &&
-    !invitation.invitedBy.email.includes('sarah') &&
-    !invitation.invitedBy.email.includes('admin@')
-      ? invitation.invitedBy.email
-      : fallbackAdminEmail;
+  const adminName = invitation.invitedBy?.name || fallbackAdminName;
+  const adminRole = invitation.invitedBy?.role || fallbackAdminRole;
+  const adminEmail = invitation.invitedBy?.email || fallbackAdminEmail;
   const progress = Math.round((doneCount / steps.length) * 100);
 
   return (
@@ -389,9 +363,9 @@ function JourneyCard({
 
 export function AuditLogPage() {
   const { user: currentAuthUser } = useAuth();
-  const activeAdminName = currentAuthUser?.username || 'Hasmukh';
+  const activeAdminName = currentAuthUser?.username || 'Administrator';
   const activeAdminRole = currentAuthUser?.role || 'SuperAdmin';
-  const activeAdminEmail = currentAuthUser?.email || 'hasmukh.arx@gmail.com';
+  const activeAdminEmail = currentAuthUser?.email || 'admin@aetheradix.com';
   // ─── Backend-driven data (MySQL via RTK Query) ──────────────────────────────
   const {
     data: auditLogsResponse,
@@ -513,40 +487,27 @@ export function AuditLogPage() {
         const isSelf =
           currentAuthUser &&
           (record.userEmail?.toLowerCase() === currentAuthUser.email?.toLowerCase() ||
-            record.user === currentAuthUser.username ||
-            record.user === 'Sarah Chen' ||
-            record.user === 'Admin');
+            record.user === currentAuthUser.username);
         const displayName = isSelf
           ? activeAdminName
-          : isAdminAction &&
-              inv?.invitedBy?.name &&
-              inv.invitedBy.name !== 'Sarah Chen' &&
-              inv.invitedBy.name !== 'Admin'
+          : isAdminAction && inv?.invitedBy?.name
             ? inv.invitedBy.name
-            : record.user === 'Sarah Chen' || record.user === 'Admin'
-              ? activeAdminName
-              : record.user;
+            : record.user || activeAdminName;
         const displayEmail = isSelf
           ? activeAdminEmail
-          : isAdminAction &&
-              inv?.invitedBy?.email &&
-              !inv.invitedBy.email.includes('sarah') &&
-              !inv.invitedBy.email.includes('admin@')
+          : isAdminAction && inv?.invitedBy?.email
             ? inv.invitedBy.email
-            : record.userEmail?.includes('sarah') || record.userEmail === 'admin@aetheradix.com'
-              ? activeAdminEmail
-              : record.userEmail;
+            : record.userEmail || activeAdminEmail;
         const displayRole =
-          isAdminAction && inv?.invitedBy?.role && inv.invitedBy.role !== 'Admin'
+          isAdminAction && inv?.invitedBy?.role
             ? inv.invitedBy.role
             : role;
 
         return (
           <div className="flex items-center gap-2.5">
             <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                isAdminAction ? 'bg-primary/10 text-primary' : 'bg-surface-subtle text-muted'
-              }`}>
+              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isAdminAction ? 'bg-primary/10 text-primary' : 'bg-surface-subtle text-muted'
+                }`}>
               {isAdminAction ? <Shield size={14} /> : <User size={14} />}
             </div>
             <div className="flex flex-col">
@@ -576,16 +537,8 @@ export function AuditLogPage() {
       key: 'target',
       render: (_, record) => {
         const inv = getMatchingInvitation(record);
-        const adminName =
-          inv?.invitedBy?.name &&
-          inv.invitedBy.name !== 'Sarah Chen' &&
-          inv.invitedBy.name !== 'Admin'
-            ? inv.invitedBy.name
-            : activeAdminName;
-        const adminRole =
-          inv?.invitedBy?.role && inv.invitedBy.role !== 'Admin'
-            ? inv.invitedBy.role
-            : activeAdminRole;
+        const adminName = inv?.invitedBy?.name || activeAdminName;
+        const adminRole = inv?.invitedBy?.role || activeAdminRole;
 
         return (
           <div className="flex flex-col gap-1 max-w-xs">
@@ -638,9 +591,8 @@ export function AuditLogPage() {
       key: 'status',
       render: (status: string) => (
         <span
-          className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-            statusColors[status] || 'text-muted border-border-subtle'
-          }`}>
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${statusColors[status] || 'text-muted border-border-subtle'
+            }`}>
           {status}
         </span>
       ),
@@ -705,21 +657,19 @@ export function AuditLogPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => setActiveView('stream')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeView === 'stream'
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeView === 'stream'
               ? 'bg-primary text-white shadow-md shadow-primary/20'
               : 'bg-white border border-border-subtle text-muted hover:text-foreground'
-          }`}>
+            }`}>
           <Terminal size={14} />
           Activity Stream
         </button>
         <button
           onClick={() => setActiveView('journey')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeView === 'journey'
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeView === 'journey'
               ? 'bg-primary text-white shadow-md shadow-primary/20'
               : 'bg-white border border-border-subtle text-muted hover:text-foreground'
-          }`}>
+            }`}>
           <Zap size={14} />
           Onboarding Journeys
           <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[9px] font-black">
@@ -751,11 +701,10 @@ export function AuditLogPage() {
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    statusFilter === st
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${statusFilter === st
                       ? 'bg-foreground text-background shadow-sm'
                       : 'bg-surface-subtle text-muted hover:text-foreground'
-                  }`}>
+                    }`}>
                   {st === 'all' ? 'All Outcomes' : st}
                 </button>
               ))}
@@ -779,11 +728,10 @@ export function AuditLogPage() {
                 <button
                   key={cat.id}
                   onClick={() => setCategoryFilter(cat.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                    active
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${active
                       ? 'bg-primary text-white shadow-md shadow-primary/20'
                       : 'bg-surface-subtle text-muted hover:text-foreground hover:bg-surface-subtle/80'
-                  }`}>
+                    }`}>
                   <Icon size={13} />
                   <span>{cat.label}</span>
                 </button>
@@ -921,9 +869,8 @@ export function AuditLogPage() {
               <div className="flex justify-between">
                 <span className="text-muted font-semibold">Outcome:</span>
                 <span
-                  className={`font-black uppercase text-[10px] px-2 py-0.5 rounded ${
-                    statusColors[selectedLog.status]
-                  }`}>
+                  className={`font-black uppercase text-[10px] px-2 py-0.5 rounded ${statusColors[selectedLog.status]
+                    }`}>
                   {selectedLog.status}
                 </span>
               </div>

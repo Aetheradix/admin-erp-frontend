@@ -55,7 +55,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [isSuperadmin, setIsSuperadmin] = useState<boolean>(() => {
-    return localStorage.getItem('erp_is_superadmin') === 'true';
+    try {
+      const savedUserStr = localStorage.getItem('user');
+      if (savedUserStr) {
+        const parsed = JSON.parse(savedUserStr);
+        return (
+          (parsed?.role === 'SuperAdmin' || parsed?.role === 'Superadmin') &&
+          localStorage.getItem('erp_is_superadmin') === 'true'
+        );
+      }
+    } catch {
+      return false;
+    }
+    return false;
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -107,8 +119,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn('[RBAC] Could not fetch permissions from /me/permissions:', err);
+      // Reset permissions if server rejected verification
+      if (err?.status === 401 || err?.status === 403) {
+        setPermissions([]);
+        setRoles([]);
+        setIsSuperadmin(false);
+        localStorage.removeItem('erp_permissions');
+        localStorage.removeItem('erp_roles_list');
+        localStorage.removeItem('erp_is_superadmin');
+      }
     }
   }, [fetchMyPermissionsTrigger]);
 
@@ -174,11 +195,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hasPermission = useCallback(
     (permissionKey: string): boolean => {
-      if (isSuperadmin) return true;
-      if (roles.includes('Superadmin') || roles.includes('SuperAdmin')) return true;
+      const userRole = (user?.role || '') as string;
+      const isVerifiedSuperadmin =
+        isSuperadmin && (userRole === 'SuperAdmin' || userRole === 'Superadmin');
+      if (isVerifiedSuperadmin) return true;
+      if (roles.includes('Superadmin') || roles.includes('SuperAdmin')) {
+        if (userRole === 'SuperAdmin' || userRole === 'Superadmin') return true;
+      }
       return permissions.includes(permissionKey);
     },
-    [isSuperadmin, roles, permissions]
+    [isSuperadmin, roles, permissions, user]
   );
 
   useEffect(() => {

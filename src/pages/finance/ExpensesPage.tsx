@@ -202,6 +202,7 @@
 import React, { useState, useMemo } from 'react';
 import { useExpensesPage, EXPENSE_CATEGORIES, EXPENSE_STATUSES } from './hooks/useExpensesPage'; // Adjust import path as needed
 import type { ExpenseRecord } from '@/store/api/expenseSlice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
 import { Download, FileText } from 'lucide-react';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -215,19 +216,20 @@ export interface UserOption {
   department?: string;
 }
 
-const MOCK_USERS: UserOption[] = [
-  { id: 1, name: 'Sarah Connor', department: 'Engineering' },
-  { id: 2, name: 'John Doe', department: 'Product' },
-  { id: 3, name: 'Alex Rivera', department: 'Marketing' },
-  { id: 4, name: 'Emily Chen', department: 'Design' },
-  { id: 5, name: 'Michael Scott', department: 'Management' },
-];
-
 const MULTI_USER_CATEGORIES = ['Travel', 'Team Outing', 'Meals & Entertainment', 'Events'];
 
 type DateRangePreset = 'all' | '7days' | '30days' | 'last_month' | '1year' | '3years' | 'custom';
 
 export const ExpensesPage: React.FC = () => {
+  const { data: apiUsers = [] } = useGetUsersQuery();
+  const availableUsers: UserOption[] = useMemo(() => {
+    return (apiUsers || []).map((u: any) => ({
+      id: u.id,
+      name: u.name || u.username || u.email,
+      department: u.department || 'General',
+      email: u.email,
+    }));
+  }, [apiUsers]);
   const {
     filteredExpenses,
     stats,
@@ -411,10 +413,10 @@ export const ExpensesPage: React.FC = () => {
   };
 
   const handleSelectAllUsers = () => {
-    if (selectedUserIds.length === MOCK_USERS.length) {
+    if (selectedUserIds.length === availableUsers.length) {
       setSelectedUserIds([]);
     } else {
-      setSelectedUserIds(MOCK_USERS.map((u) => u.id));
+      setSelectedUserIds(availableUsers.map((u) => u.id));
     }
   };
 
@@ -1031,14 +1033,14 @@ export const ExpensesPage: React.FC = () => {
                         type="button"
                         onClick={handleSelectAllUsers}
                         className="text-xs text-blue-700 hover:text-blue-900 font-medium underline">
-                        {selectedUserIds.length === MOCK_USERS.length
+                        {selectedUserIds.length === availableUsers.length
                           ? 'Deselect All'
                           : 'Select All'}
                       </button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
-                      {MOCK_USERS.map((user) => {
+                      {availableUsers.map((user) => {
                         const isChecked = selectedUserIds.includes(user.id);
                         return (
                           <div
@@ -1178,7 +1180,7 @@ export const ExpensesPage: React.FC = () => {
                   <div className="col-span-2 pt-2 border-t border-gray-100">
                     <p className="text-xs text-gray-500 mb-1 font-medium">Involved Team Members</p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {MOCK_USERS.filter((u) =>
+                      {availableUsers.filter((u) =>
                         ((selectedExpense as any).participant_ids || []).includes(u.id)
                       ).map((user) => (
                         <span

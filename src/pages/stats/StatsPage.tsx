@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { CalloutBanner } from '@/components/ui/composed/CalloutBanner';
 import { EmptySlate } from '@/components/ui/composed/EmptySlate';
 import { OrgChart } from './components/OrgChart';
 import { ProjectCard } from './components/ProjectCard';
-import { mockHierarchy } from './hooks/mockStats';
+import type { Node } from './hooks/mockStats';
 import { useGetProjectsQuery, useGetProjectStatsQuery } from '@/store/api/projectApiSlice';
+import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { PieChart, TrendingUp, Layers, Archive as ArchiveIcon, Sparkles } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives/Tabs';
@@ -13,6 +14,7 @@ import { Tabs } from '@/components/ui/primitives/Tabs';
 export function StatsPage() {
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
   const { data: statsData, isLoading: statsLoading } = useGetProjectStatsQuery();
+  const { data: hierarchyData, isLoading: hierarchyLoading } = useGetOrganizationHierarchyQuery();
 
   const [activeTab, setActiveTab] = useState('Hierarchy');
   const TABS = ['Hierarchy', 'Ongoing Projects', 'Archive'];
@@ -20,7 +22,26 @@ export function StatsPage() {
   const ongoingProjects = projects.filter((p: any) => p.status !== 'Archived');
   const archivedProjects = projects.filter((p: any) => p.status === 'Archived');
 
-  if (projectsLoading || statsLoading) {
+  const hierarchyNodes: Node[] = useMemo(() => {
+    const flat = hierarchyData?.data?.flatUsers || [];
+    return flat.map((u) => ({
+      id: String(u.id),
+      name: u.username || u.email,
+      role: u.role || u.designation || 'Staff',
+      parentId: u.reporting_manager_id ? String(u.reporting_manager_id) : undefined,
+      image:
+        u.image_url ||
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.username || u.email)}`,
+    }));
+  }, [hierarchyData]);
+
+  const completionRate = useMemo(() => {
+    if (projects.length === 0) return '0%';
+    const completed = projects.filter((p: any) => p.status === 'Completed').length;
+    return `${Math.round((completed / projects.length) * 100)}%`;
+  }, [projects]);
+
+  if (projectsLoading || statsLoading || hierarchyLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <ProgressSpinner />
@@ -41,17 +62,20 @@ export function StatsPage() {
         {[
           {
             label: 'Active Projects',
-            value: statsData?.projects?.active ?? 0,
+            value: statsData?.projects?.active ?? ongoingProjects.length,
             icon: Layers,
             color: 'text-primary',
           },
           {
             label: 'Total Employees',
-            value: statsData?.employees?.total ?? mockHierarchy.length,
+            value:
+              statsData?.employees?.total ??
+              hierarchyData?.data?.stats?.totalEmployees ??
+              hierarchyNodes.length,
             icon: PieChart,
             color: 'text-info',
           },
-          { label: 'Completion Rate', value: '92%', icon: TrendingUp, color: 'text-success' },
+          { label: 'Completion Rate', value: completionRate, icon: TrendingUp, color: 'text-success' },
           {
             label: 'Historical Data',
             value: archivedProjects.length,
@@ -92,7 +116,7 @@ export function StatsPage() {
 
         {/* Tab Content */}
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-          {activeTab === 'Hierarchy' && <OrgChart nodes={mockHierarchy} />}
+          {activeTab === 'Hierarchy' && <OrgChart nodes={hierarchyNodes} />}
 
           {activeTab === 'Ongoing Projects' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

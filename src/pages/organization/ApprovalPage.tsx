@@ -1,11 +1,18 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 import { usePendingUsers } from '../settings/hooks/usePendingUsers';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import type { User } from '@/types/auth';
 import type { UserRole } from '@/config/navItems';
 
 function ApprovalPage() {
+  const { user: currentAuthUser } = useAuth();
+  const isAuthorized = useMemo(() => {
+    const role = currentAuthUser?.role || '';
+    return ['SuperAdmin', 'Admin', 'HrAdmin'].includes(role);
+  }, [currentAuthUser]);
+
   const { data: backendRolesData } = useGetRolesQuery();
 
   const userroles = useMemo(() => {
@@ -36,6 +43,7 @@ function ApprovalPage() {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+  const [lastInviteTime, setLastInviteTime] = useState<number>(0);
 
   const handleRoleChange = (userId: number, role: UserRole) => {
     setSelectedRoles((prev) => ({
@@ -48,8 +56,29 @@ function ApprovalPage() {
     e.preventDefault();
     if (!inviteEmail) return;
 
+    // Rate-limit invitation dispatches: minimum 10 seconds between invites
+    const now = Date.now();
+    if (now - lastInviteTime < 10000) {
+      setInviteStatus({
+        type: 'error',
+        message: 'Rate limit active: Please wait 10 seconds before dispatching another invitation.',
+      });
+      return;
+    }
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail.trim())) {
+      setInviteStatus({
+        type: 'error',
+        message: 'Please provide a valid recipient email address.',
+      });
+      return;
+    }
+
     setInviteStatus(null);
-    const success = await handleSendInvite(inviteEmail, inviteRole);
+    setLastInviteTime(now);
+    const success = await handleSendInvite(inviteEmail.trim(), inviteRole);
 
     if (success) {
       setInviteStatus({
@@ -60,10 +89,21 @@ function ApprovalPage() {
     } else {
       setInviteStatus({
         type: 'error',
-        message: 'Failed to send invitation email. Please try again.',
+        message: 'Failed to send invitation email. Please verify backend SMTP settings.',
       });
     }
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="p-8 text-center bg-white rounded-2xl border border-border-subtle shadow-sm my-8">
+        <h3 className="text-base font-bold text-foreground">Access Restricted</h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          You do not have administrative privileges to manage user account approvals or dispatch invitations.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <div className="p-6 text-xs text-muted-foreground">Loading approval data...</div>;

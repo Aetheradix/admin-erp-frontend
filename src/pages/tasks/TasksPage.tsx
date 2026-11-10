@@ -264,14 +264,12 @@ export function TasksPage() {
     if (syncToJira && isJiraConnected && jiraConfigStr) {
       try {
         const config = JSON.parse(jiraConfigStr);
-        const { hostUrl, email, apiToken, projectKey, issueType, useProxy } = config;
+        const { hostUrl, email, apiToken, projectKey, issueType } = config;
 
         if (hostUrl && email && apiToken && projectKey) {
           const cleanHostUrl = hostUrl.replace(/\/$/, '');
-          let targetUrl = `${cleanHostUrl}/rest/api/2/issue`;
-          if (useProxy) {
-            targetUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-          }
+          // SECURITY FIX: Never transmit corporate credentials through untrusted third-party CORS proxies (e.g. allorigins.win)
+          const targetUrl = `${cleanHostUrl}/rest/api/2/issue`;
 
           const credentialsBase64 = btoa(`${email}:${apiToken}`);
           const response = await fetch(targetUrl, {
@@ -301,7 +299,7 @@ export function TasksPage() {
             const issueLink = `${cleanHostUrl}/browse/${issueKey}`;
             finalDescription =
               (form.description ? form.description + '\n\n' : '') +
-              `🔗 **Jira Issue:** [${issueKey}](${issueLink})`;
+              `**Jira Issue:** [${issueKey}](${issueLink})`;
             message.success(`Successfully created Jira issue ${issueKey}!`);
           } else {
             const errText = await response.text();

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
@@ -14,18 +14,62 @@ const ForgotPasswordPage = () => {
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [cooldown, setCooldown] = useState(0);
 
   const navigate = useNavigate();
   const [requestOTP, { isLoading: isOtpRequestLoading }] = useRequestOTPMutation();
   const [resetPassword, { isLoading: isResetLoading }] = useResetPasswordMutation();
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
   const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (cooldown > 0) {
+      showToast({
+        severity: 'warn',
+        summary: 'Rate Limit Active',
+        detail: `Please wait ${cooldown} seconds before requesting another code.`,
+        life: 3000,
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      showToast({
+        severity: 'error',
+        summary: 'Invalid Email',
+        detail: 'Please enter a valid work email address.',
+        life: 3000,
+      });
+      return;
+    }
+
     try {
-      await requestOTP({ email }).unwrap();
+      await requestOTP({ email: email.trim() }).unwrap();
+      setCooldown(60);
       setStep(2);
+      showToast({
+        severity: 'info',
+        summary: 'Code Dispatched',
+        detail: 'If this email belongs to an account, a verification code has been sent.',
+        life: 4000,
+      });
     } catch (err) {
       console.error('OTP Request failed', err);
+      showToast({
+        severity: 'error',
+        summary: 'Request Failed',
+        detail: 'Unable to dispatch code. Please try again later.',
+        life: 3000,
+      });
     }
   };
 
@@ -78,9 +122,10 @@ const ForgotPasswordPage = () => {
             <Button
               type="submit"
               variant="primary"
-              className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm"
+              className="w-full h-14 rounded-2xl! shadow-lg shadow-primary/20 font-black tracking-widest text-sm disabled:opacity-60"
+              disabled={cooldown > 0}
               loading={isOtpRequestLoading}>
-              SEND RESET CODE
+              {cooldown > 0 ? `WAIT ${cooldown}s TO RESEND` : 'SEND RESET CODE'}
             </Button>
           </motion.form>
         ) : (

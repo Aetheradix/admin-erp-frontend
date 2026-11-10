@@ -19,7 +19,6 @@ export function StaffTableToolbar({
   const { data: departmentsData } = useGetDepartmentsQuery({});
   const departments = departmentsData?.data ?? [];
   const DEPARTMENTS = ['All', ...departments.map((d: any) => d.department_name)];
-  console.log(DEPARTMENTS);
 
   return (
     <div className="flex flex-col gap-6 bg-white p-6 rounded-[40px] border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500">

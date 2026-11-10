@@ -58,18 +58,22 @@ export const AntdProvider = ({ children }: { children: ReactNode }) => {
       document.head.appendChild(styleEl);
     }
 
+    const safeColor = /^#[0-9A-Fa-f]{3,8}$/.test(accentColor || '')
+      ? (accentColor as string)
+      : '#E8583A';
     const strokeColor = darkMode ? '%23ffffff' : '%23000000';
-    const encColor = encodeURIComponent(accentColor || '#E8583A');
+    const encColor = encodeURIComponent(safeColor);
 
     const defaultSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 3l7 18 3-7 7-3L3 3z' fill='${encColor}' stroke='${strokeColor}' stroke-width='1.5' stroke-linejoin='round'/></svg>`;
     const pointerSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3 3l7 18 3-7 7-3L3 3z' fill='${encColor}' stroke='${strokeColor}' stroke-width='1.5' stroke-linejoin='round'/><circle cx='16.5' cy='16.5' r='4' fill='${encColor}' stroke='${strokeColor}' stroke-width='1.2'/></svg>`;
 
-    styleEl.innerHTML = `
+    // SECURITY FIX (VULN-11): Use textContent with validated safe color to prevent CSS/DOM injection
+    styleEl.textContent = `
       * {
-        caret-color: ${accentColor || '#E8583A'} !important;
+        caret-color: ${safeColor} !important;
       }
       ::selection {
-        background-color: ${accentColor || '#E8583A'} !important;
+        background-color: ${safeColor} !important;
         color: #ffffff !important;
       }
       body, html {

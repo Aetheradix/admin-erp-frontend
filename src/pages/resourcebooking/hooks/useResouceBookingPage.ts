@@ -106,14 +106,8 @@ export const useResourceBookingPage = () => {
   };
 
   const handleCreateResource = async (data: CreateResourceRequest) => {
-    console.log('1. Resource data:', data);
-
-    console.log('2. About to call API mutation');
-
     try {
       const result = await createResource(data).unwrap();
-
-      console.log('3. API SUCCESS:', result);
 
       showToast({
         severity: 'success',
@@ -124,7 +118,7 @@ export const useResourceBookingPage = () => {
 
       return result;
     } catch (error) {
-      console.error('3. API ERROR:', error);
+      console.error('API Error creating resource:', error);
 
       throw error;
     }
