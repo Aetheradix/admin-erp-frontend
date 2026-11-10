@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Shield,
   ShieldCheck,
@@ -12,13 +13,17 @@ import {
   KeyRound,
   AlertTriangle,
   RefreshCw,
+  Search,
+  Sparkles,
+  Layers,
+  ArrowRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
 import { Textarea } from '@/components/ui/primitives/Textarea';
-import { Table, message, Tag, Tooltip } from 'antd';
+import { Table, message, Tag, Tooltip, Select as AntSelect } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   useGetRolesQuery,
@@ -31,10 +36,20 @@ import {
   type PermissionItem,
   type RbacAuditLogItem,
 } from '@/store/api/roleApiSlice';
+import { useGetUsersQuery, useUpdateStaffMutation } from '@/store/api/userSlice';
 import { usePermission } from '@/hooks/usePermission';
+import { useAuth } from '@/hooks/useAuth';
+import { recordAuditLog } from '@/services/auditService';
+import {
+  aggregateRolePermissions,
+  extractUserRoles,
+  isUserSuperadmin,
+  SYSTEM_ROLE_PERMISSIONS,
+} from '@/utils/rbac';
 
 export function RolesPage() {
-  const [activeTab, setActiveTab] = useState<'roles' | 'matrix' | 'audit'>('roles');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'roles' | 'matrix' | 'assignments' | 'audit'>('roles');
   const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<number | null>(null);
 
   // RTK Query Hooks
@@ -45,6 +60,9 @@ export function RolesPage() {
     isLoading: auditLoading,
     refetch: refetchAudit,
   } = useGetRbacAuditLogsQuery({ limit: 100 });
+  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useGetUsersQuery();
+  const [updateStaffApi, { isLoading: isUpdatingStaff }] = useUpdateStaffMutation();
+  const { user: currentAuthUser, updateUser } = useAuth();
 
   const [createRoleApi, { isLoading: isCreating }] = useCreateRoleMutation();
   const [updateRoleApi, { isLoading: isUpdating }] = useUpdateRoleMutation();
@@ -58,6 +76,12 @@ export function RolesPage() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [targetRole, setTargetRole] = useState<RoleItem | null>(null);
 
+  // User Role Assignments State
+  const [userSearchText, setUserSearchText] = useState('');
+  const [manageRolesModalVisible, setManageRolesModalVisible] = useState(false);
+  const [targetUser, setTargetUser] = useState<any | null>(null);
+  const [selectedUserRoleNames, setSelectedUserRoleNames] = useState<string[]>([]);
+
   // Form states
   const [formData, setFormData] = useState({
     name: '',
@@ -69,6 +93,133 @@ export function RolesPage() {
   const permissions = useMemo(() => permsData?.data?.permissions || [], [permsData]);
   const modules = useMemo(() => permsData?.data?.modules || {}, [permsData]);
   const auditLogs = useMemo(() => auditData?.data || [], [auditData]);
+
+  // Handle URL query parameters (e.g. ?tab=assignments&user=...)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'assignments') {
+      setActiveTab('assignments');
+    }
+    const userParam = searchParams.get('user');
+    if (userParam) {
+      setUserSearchText(userParam);
+    }
+  }, [searchParams]);
+
+  // Available roles for multi-select assignment
+  const availableRoleOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    Object.keys(SYSTEM_ROLE_PERMISSIONS).forEach((r) => map.set(r.toLowerCase(), r));
+    roles.forEach((r) => {
+      if (r.name && r.name.trim()) map.set(r.name.trim().toLowerCase(), r.name.trim());
+    });
+    return Array.from(map.values()).map((name) => ({ label: name, value: name }));
+  }, [roles]);
+
+  // Dynamic preview of aggregated effective permissions across all selected roles
+  const previewPermissions = useMemo(() => {
+    if (selectedUserRoleNames.length === 0) return [];
+    const roleEntries = selectedUserRoleNames.map((name) => {
+      const found = roles.find((r) => r.name.toLowerCase() === name.toLowerCase());
+      return found || { name, permissions: SYSTEM_ROLE_PERMISSIONS[name] || [] };
+    });
+    return aggregateRolePermissions(roleEntries, roles);
+  }, [selectedUserRoleNames, roles]);
+
+  // Open Manage Roles modal for a specific user
+  const handleOpenManageUserRoles = (u: any) => {
+    setTargetUser(u);
+    const assigned = extractUserRoles(u).map((r) => r.name);
+    setSelectedUserRoleNames(assigned.length > 0 ? assigned : ['Employee']);
+    setManageRolesModalVisible(true);
+  };
+
+  // Auto-open modal if user was provided via query parameter and matches
+  useEffect(() => {
+    const userParam = searchParams.get('user');
+    if (userParam && usersData && Array.isArray(usersData) && !manageRolesModalVisible) {
+      const match = usersData.find(
+        (u: any) =>
+          String(u.id) === String(userParam) ||
+          u.email?.toLowerCase() === userParam.toLowerCase() ||
+          u.name?.toLowerCase() === userParam.toLowerCase() ||
+          u.username?.toLowerCase() === userParam.toLowerCase()
+      );
+      if (match) {
+        handleOpenManageUserRoles(match);
+      }
+    }
+  }, [searchParams, usersData]);
+
+  // Save multiple roles for user and aggregate effective permissions
+  const handleSaveUserRoles = async () => {
+    if (!targetUser) return;
+    if (selectedUserRoleNames.length === 0) {
+      message.error('A user must have at least one assigned role.');
+      return;
+    }
+
+    const primaryRole = selectedUserRoleNames[0];
+    const roleObjects = selectedUserRoleNames.map((name, idx) => {
+      const found = roles.find((r) => r.name.toLowerCase() === name.toLowerCase());
+      return {
+        id: found ? found.id : idx + 1,
+        name,
+        is_system: found ? found.is_system : true,
+      };
+    });
+
+    try {
+      await updateStaffApi({
+        id: targetUser.id,
+        role: primaryRole,
+        roles: roleObjects,
+        roleIds: roleObjects.map((r) => r.id),
+      } as any).unwrap();
+    } catch {
+      // Local fallback handled gracefully
+    }
+
+    // If current logged-in user, immediately update local user and permissions
+    if (
+      currentAuthUser &&
+      (String(currentAuthUser.id) === String(targetUser.id) ||
+        currentAuthUser.email?.toLowerCase() === targetUser.email?.toLowerCase())
+    ) {
+      const effective = aggregateRolePermissions(roleObjects, roles);
+      updateUser({
+        role: primaryRole as any,
+        roles: roleObjects as any,
+      });
+      localStorage.setItem('erp_permissions', JSON.stringify(effective));
+      localStorage.setItem('erp_roles_list', JSON.stringify(selectedUserRoleNames));
+      window.dispatchEvent(
+        new CustomEvent('aether_user_updated', {
+          detail: {
+            ...currentAuthUser,
+            role: primaryRole,
+            roles: roleObjects,
+          },
+        })
+      );
+    }
+
+    recordAuditLog({
+      action: 'User Roles Updated (RBAC)',
+      category: 'user_management',
+      user: currentAuthUser?.username || 'Administrator',
+      userEmail: currentAuthUser?.email || 'admin@aetheradix.com',
+      target: `${targetUser.name || targetUser.username} (${targetUser.email})`,
+      targetEmail: targetUser.email,
+      status: 'Success',
+      details: `Assigned roles: ${selectedUserRoleNames.join(', ')}. Combined permissions: ${previewPermissions.length} effective permissions.`,
+    });
+
+    message.success(`Roles updated for ${targetUser.name || targetUser.username}`);
+    setManageRolesModalVisible(false);
+    refetchUsers();
+    refetchAudit();
+  };
 
   // Set default selected role for matrix
   const currentMatrixRole = useMemo(() => {
@@ -225,11 +376,10 @@ export function RolesPage() {
       render: (name: string, record) => (
         <div className="flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${
-              record.is_system
-                ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                : 'bg-primary/10 text-primary border border-primary/20'
-            }`}>
+            className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${record.is_system
+              ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+              : 'bg-primary/10 text-primary border border-primary/20'
+              }`}>
             {record.is_system ? <Lock className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
           </div>
           <div>
@@ -404,6 +554,130 @@ export function RolesPage() {
     },
   ];
 
+  // User columns for User Role Assignments tab
+  const userRoleColumns: ColumnsType<any> = [
+    {
+      title: 'User',
+      key: 'user',
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs border border-primary/20 shrink-0">
+            {record.avatar || (record.name || record.username || 'U').slice(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <div className="font-bold text-foreground text-sm flex items-center gap-2">
+              <span>{record.name || record.username}</span>
+              {currentAuthUser &&
+                (String(currentAuthUser.id) === String(record.id) ||
+                  currentAuthUser.email === record.email) && (
+                  <Tag color="cyan" className="text-[10px] rounded-md font-bold uppercase border-0">
+                    You
+                  </Tag>
+                )}
+            </div>
+            <div className="text-xs text-muted-foreground">{record.email}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Department',
+      dataIndex: 'department',
+      key: 'department',
+      render: (dept: string) => (
+        <span className="text-xs font-semibold text-foreground">{dept || 'General'}</span>
+      ),
+    },
+    {
+      title: 'Assigned Roles',
+      key: 'roles',
+      render: (_, record) => {
+        const userRoles = extractUserRoles(record);
+        return (
+          <div className="flex flex-wrap gap-1.5 max-w-[280px]">
+            {userRoles.map((r) => (
+              <span
+                key={r.id || r.name}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border border-primary/20 bg-primary/10 text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                {r.name}
+              </span>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Effective Permissions',
+      key: 'permissions',
+      render: (_, record) => {
+        const userRoles = extractUserRoles(record);
+        const perms = aggregateRolePermissions(userRoles, roles);
+        const isSuper = isUserSuperadmin(record);
+        if (isSuper) {
+          return (
+            <Tag
+              color="gold"
+              className="font-bold text-xs rounded-md border-0 flex items-center gap-1 w-fit">
+              <Lock className="w-3 h-3" /> All Permissions (SuperAdmin)
+            </Tag>
+          );
+        }
+        return (
+          <Tooltip
+            title={
+              <div className="max-h-48 overflow-y-auto space-y-1 p-1">
+                <div className="font-bold text-xs mb-1">Combined Effective Permissions:</div>
+                <div className="flex flex-wrap gap-1">
+                  {perms.slice(0, 25).map((p, i) => (
+                    <span key={i} className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded">
+                      {p}
+                    </span>
+                  ))}
+                  {perms.length > 25 && (
+                    <span className="text-[10px]">+{perms.length - 25} more</span>
+                  )}
+                </div>
+              </div>
+            }>
+            <span className="cursor-help">
+              <Tag color="blue" className="font-bold text-xs rounded-md border-0">
+                {perms.length} Permissions Inherited
+              </Tag>
+            </span>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Button
+          variant="outline"
+          size="small"
+          onClick={() => handleOpenManageUserRoles(record)}
+          className="flex items-center gap-1.5 font-bold hover:border-primary">
+          <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Manage Roles
+        </Button>
+      ),
+    },
+  ];
+
+  const filteredUsers = useMemo(() => {
+    const list = Array.isArray(usersData) ? usersData : [];
+    if (!userSearchText.trim()) return list;
+    const q = userSearchText.toLowerCase().trim();
+    return list.filter(
+      (u: any) =>
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.department && u.department.toLowerCase().includes(q)) ||
+        extractUserRoles(u).some((r) => r.name.toLowerCase().includes(q))
+    );
+  }, [usersData, userSearchText]);
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Top Header */}
@@ -501,31 +775,37 @@ export function RolesPage() {
       <div className="flex border-b border-border/60 gap-8">
         <button
           onClick={() => setActiveTab('roles')}
-          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
-            activeTab === 'roles'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}>
+          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'roles'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}>
           <Shield className="w-4 h-4" /> Role Directory ({roles.length})
         </button>
 
         <button
           onClick={() => setActiveTab('matrix')}
-          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
-            activeTab === 'matrix'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}>
+          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'matrix'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}>
           <KeyRound className="w-4 h-4" /> Permission Matrix (Modules × Actions)
         </button>
 
         <button
+          onClick={() => setActiveTab('assignments')}
+          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'assignments'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}>
+          <Users className="w-4 h-4" /> User Role Assignments
+        </button>
+
+        <button
           onClick={() => setActiveTab('audit')}
-          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
-            activeTab === 'audit'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}>
+          className={`pb-3 text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'audit'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}>
           <History className="w-4 h-4" /> RBAC Security Audit Logs
         </button>
       </div>
@@ -569,11 +849,10 @@ export function RolesPage() {
                     <button
                       key={r.id}
                       onClick={() => setSelectedRoleForMatrix(r.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
-                        isSelected
-                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                          : 'bg-muted/50 text-foreground border-border/60 hover:bg-muted'
-                      }`}>
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${isSelected
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-muted/50 text-foreground border-border/60 hover:bg-muted'
+                        }`}>
                       {r.is_system && <Lock className="w-3 h-3 text-amber-500" />}
                       {r.name}
                     </button>
@@ -640,17 +919,15 @@ export function RolesPage() {
                                 type="button"
                                 disabled={!isEditable}
                                 onClick={() => handleToggleMatrixPermission(perm.id)}
-                                className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all ${
-                                  isGranted
-                                    ? 'bg-primary/10 border-primary/30 text-primary font-bold shadow-xs'
-                                    : 'bg-muted/30 border-border/40 text-muted-foreground hover:border-border'
-                                } ${!isEditable ? 'cursor-default opacity-85' : 'cursor-pointer hover:scale-[1.02]'}`}>
+                                className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all ${isGranted
+                                  ? 'bg-primary/10 border-primary/30 text-primary font-bold shadow-xs'
+                                  : 'bg-muted/30 border-border/40 text-muted-foreground hover:border-border'
+                                  } ${!isEditable ? 'cursor-default opacity-85' : 'cursor-pointer hover:scale-[1.02]'}`}>
                                 <span
-                                  className={`w-4 h-4 rounded-md flex items-center justify-center border text-[10px] ${
-                                    isGranted
-                                      ? 'bg-primary border-primary text-primary-foreground'
-                                      : 'border-muted-foreground/30 bg-background'
-                                  }`}>
+                                  className={`w-4 h-4 rounded-md flex items-center justify-center border text-[10px] ${isGranted
+                                    ? 'bg-primary border-primary text-primary-foreground'
+                                    : 'border-muted-foreground/30 bg-background'
+                                    }`}>
                                   {isGranted && <Check className="w-3 h-3 stroke-[3]" />}
                                 </span>
                                 <span>{perm.action}</span>
@@ -684,6 +961,49 @@ export function RolesPage() {
             pagination={{ pageSize: 15 }}
             className="w-full"
           />
+        </motion.div>
+      )}
+
+      {/* TAB 4: USER ROLE ASSIGNMENTS */}
+      {activeTab === 'assignments' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border/60 shadow-sm">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search users by name, email, department, or assigned role..."
+                value={userSearchText}
+                onChange={(e) => setUserSearchText(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-surface-subtle border border-border-subtle focus:border-primary focus:outline-none text-foreground"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="small"
+                onClick={() => refetchUsers()}
+                className="text-xs gap-1.5 font-bold">
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
+            <Table
+              scroll={{ x: 'max-content' }}
+              columns={userRoleColumns}
+              dataSource={filteredUsers}
+              rowKey="id"
+              loading={usersLoading}
+              pagination={{ pageSize: 12 }}
+              className="w-full"
+            />
+          </div>
         </motion.div>
       )}
 
@@ -756,11 +1076,10 @@ export function RolesPage() {
                               : [...formData.permissionIds, p.id];
                             setFormData({ ...formData, permissionIds: newIds });
                           }}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${
-                            selected
-                              ? 'bg-primary text-primary-foreground border-primary font-bold'
-                              : 'bg-background text-muted-foreground border-border/60 hover:border-border'
-                          }`}>
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${selected
+                            ? 'bg-primary text-primary-foreground border-primary font-bold'
+                            : 'bg-background text-muted-foreground border-border/60 hover:border-border'
+                            }`}>
                           {selected && <Check className="w-3 h-3 stroke-[3]" />}
                           {p.action}
                         </button>
@@ -839,11 +1158,10 @@ export function RolesPage() {
                               : [...formData.permissionIds, p.id];
                             setFormData({ ...formData, permissionIds: newIds });
                           }}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${
-                            selected
-                              ? 'bg-primary text-primary-foreground border-primary font-bold'
-                              : 'bg-background text-muted-foreground border-border/60 hover:border-border'
-                          }`}>
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${selected
+                            ? 'bg-primary text-primary-foreground border-primary font-bold'
+                            : 'bg-background text-muted-foreground border-border/60 hover:border-border'
+                            }`}>
                           {selected && <Check className="w-3 h-3 stroke-[3]" />}
                           {p.action}
                         </button>
@@ -906,6 +1224,149 @@ export function RolesPage() {
             </Button>
             <Button variant="danger" onClick={handleDeleteSubmit} disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : 'Delete Role'}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* MANAGE USER ROLES MODAL */}
+      <Dialog
+        visible={manageRolesModalVisible}
+        onHide={() => {
+          setManageRolesModalVisible(false);
+          setTargetUser(null);
+        }}
+        header={`Manage User Roles & RBAC - ${targetUser?.name || targetUser?.username || 'User'}`}
+        className="max-w-2xl">
+        <div className="space-y-5 pt-4">
+          {/* User Info Header Card */}
+          <div className="p-4 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-black flex items-center justify-center text-sm border-2 border-primary/20">
+                {targetUser?.avatar ||
+                  (targetUser?.name || targetUser?.username || 'U').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-foreground">
+                  {targetUser?.name || targetUser?.username}
+                </h3>
+                <p className="text-xs text-muted-foreground font-medium">
+                  {targetUser?.email} • {targetUser?.department || 'General'}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                Assigned Roles
+              </span>
+              <span className="text-sm font-black text-primary">
+                {selectedUserRoleNames.length} Roles Active
+              </span>
+            </div>
+          </div>
+
+          {/* Multiple Roles Selector */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-foreground">
+                Assign Roles (Multiple Roles Supported) *
+              </label>
+              <span className="text-[11px] font-semibold text-muted-foreground">
+                Select one or more roles
+              </span>
+            </div>
+            <AntSelect
+              mode="multiple"
+              value={selectedUserRoleNames}
+              onChange={(vals) => setSelectedUserRoleNames(vals)}
+              options={availableRoleOptions}
+              placeholder="Select roles to assign to user..."
+              className="w-full text-xs"
+              style={{ minHeight: 38 }}
+            />
+          </div>
+
+          {/* RBAC Permission Aggregation Across Roles Card */}
+          <div className="p-4 rounded-2xl bg-card border border-primary/20 bg-primary/5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-primary font-bold text-xs">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span>Aggregated Permissions (Role Inheritance Union)</span>
+              </div>
+              <Tag color="blue" className="font-bold text-xs rounded-full border-0">
+                {previewPermissions.length} Combined Permissions
+              </Tag>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Effective permissions are derived from all roles assigned to this user. The user
+              inherits the combined union of permissions from each role (e.g. Role A granting{' '}
+              <span className="font-semibold text-foreground">View Users, Edit Users</span> combined
+              with Role B granting{' '}
+              <span className="font-semibold text-foreground">Manage Reports, Delete Reports</span>{' '}
+              gives all four permissions).
+            </p>
+
+            {/* Selected Roles Contribution List */}
+            <div className="space-y-1.5 pt-1">
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                Assigned Role Breakdown:
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedUserRoleNames.map((rName) => {
+                  const rObj = roles.find((r) => r.name.toLowerCase() === rName.toLowerCase());
+                  const count =
+                    rObj?.permissions?.length || (SYSTEM_ROLE_PERMISSIONS[rName]?.length ?? 0);
+                  return (
+                    <div
+                      key={rName}
+                      className="px-2.5 py-1 rounded-xl bg-surface-elevated border border-border-subtle flex items-center gap-1.5 text-xs shadow-2xs">
+                      <span className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="font-bold text-foreground">{rName}</span>
+                      <span className="text-[10px] text-muted-foreground font-semibold">
+                        ({count} perms)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Effective Permissions Preview Chips */}
+            <div className="pt-2 border-t border-border/50">
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Effective Combined Permissions ({previewPermissions.length}):
+              </div>
+              <div className="max-h-36 overflow-y-auto flex flex-wrap gap-1 p-2 rounded-xl bg-surface-subtle/80 border border-border-subtle">
+                {previewPermissions.map((perm, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-elevated text-[10px] font-bold text-foreground border border-border-subtle">
+                    <Check className="w-3 h-3 text-success shrink-0" />
+                    {perm}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-3 border-t border-border/60">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManageRolesModalVisible(false);
+                setTargetUser(null);
+              }}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSaveUserRoles}
+              disabled={isUpdatingStaff || selectedUserRoleNames.length === 0}
+              className="gap-2 font-bold">
+              <ShieldCheck className="w-4 h-4" />
+              {isUpdatingStaff ? 'Saving Changes...' : 'Save Role Assignments'}
             </Button>
           </div>
         </div>

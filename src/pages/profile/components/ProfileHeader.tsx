@@ -66,6 +66,8 @@ export const ProfileHeader = ({
               {/* Dynamic Role Badges */}
               <ProfileRoleBadges
                 roles={user.roles}
+                userId={user.id || user.employeeId}
+                userEmail={user.email}
                 onAddRole={onAddRole}
                 onRemoveRole={onRemoveRole}
               />

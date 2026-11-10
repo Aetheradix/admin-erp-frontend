@@ -1,29 +1,43 @@
-import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, X } from 'lucide-react';
+import { usePermission } from '@/hooks/usePermission';
+import { useAuth } from '@/hooks/useAuth';
 
-interface RoleItem {
+export interface RoleItem {
   id: string;
   name: string;
   color?: string;
 }
 
-interface ProfileRoleBadgesProps {
+export interface ProfileRoleBadgesProps {
   roles: RoleItem[];
-  onAddRole: (roleName: string) => void;
-  onRemoveRole: (roleId: string) => void;
+  onAddRole?: (roleName: string) => void;
+  onRemoveRole?: (roleId: string) => void;
+  userId?: string | number;
+  userEmail?: string;
+  canManage?: boolean;
+  onManageRoles?: () => void;
 }
 
-export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRoleBadgesProps) => {
-  const [isAddingRole, setIsAddingRole] = useState(false);
-  const [newRoleInput, setNewRoleInput] = useState('');
+export const ProfileRoleBadges = ({
+  roles,
+  onRemoveRole,
+  userId,
+  userEmail,
+  canManage,
+  onManageRoles,
+}: ProfileRoleBadgesProps) => {
+  const navigate = useNavigate();
+  const { can, isSuperadmin } = usePermission();
+  const { user: currentAuthUser } = useAuth();
 
-  const handleAddRoleSubmit = () => {
-    if (newRoleInput.trim()) {
-      onAddRole(newRoleInput.trim());
-      setNewRoleInput('');
-      setIsAddingRole(false);
-    }
-  };
+  const isAuthorized =
+    canManage ??
+    (isSuperadmin ||
+      can('role:view') ||
+      can('role:assign') ||
+      can('role:edit') ||
+      ['admin', 'superadmin'].includes((currentAuthUser?.role || '').toLowerCase()));
 
   // Filter out redundant 'Employee' badge if user already has an admin/superadmin role
   const visibleRoles = roles.filter(
@@ -34,6 +48,18 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
       )
   );
 
+  const handleManageRolesClick = () => {
+    if (onManageRoles) {
+      onManageRoles();
+      return;
+    }
+    const targetIdentifier = userId || userEmail || '';
+    const query = targetIdentifier
+      ? `?tab=assignments&user=${encodeURIComponent(targetIdentifier)}`
+      : `?tab=assignments`;
+    navigate(`/settings/roles${query}`);
+  };
+
   return (
     <div className="flex items-center gap-2 flex-wrap mt-1">
       {visibleRoles.map((role) => (
@@ -42,46 +68,25 @@ export const ProfileRoleBadges = ({ roles, onAddRole, onRemoveRole }: ProfileRol
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle border border-border-subtle text-xs font-bold text-foreground shadow-2xs hover:border-primary/40 transition-all">
           <span className="w-2 h-2 rounded-full bg-primary" />
           <span>{role.name}</span>
-          <button
-            onClick={() => onRemoveRole(role.id)}
-            className="text-muted hover:text-danger cursor-pointer rounded-full p-0.5 hover:bg-danger-soft/30 transition-colors"
-            title={`Remove ${role.name} role`}>
-            <X size={12} />
-          </button>
+          {isAuthorized && onRemoveRole && (
+            <button
+              onClick={() => onRemoveRole(role.id)}
+              className="text-muted hover:text-danger cursor-pointer rounded-full p-0.5 hover:bg-danger-soft/30 transition-colors"
+              title={`Remove ${role.name} role`}>
+              <X size={12} />
+            </button>
+          )}
         </span>
       ))}
 
-      {isAddingRole ? (
-        <div className="flex items-center gap-1 bg-surface-elevated border border-primary rounded-full px-2 py-0.5 shadow-sm animate-in fade-in zoom-in-95 duration-150">
-          <input
-            type="text"
-            value={newRoleInput}
-            onChange={(e) => setNewRoleInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAddRoleSubmit();
-              if (e.key === 'Escape') setIsAddingRole(false);
-            }}
-            placeholder="Role name..."
-            className="text-xs font-semibold px-2 py-0.5 outline-none w-28 text-foreground bg-transparent"
-            autoFocus
-          />
-          <button
-            onClick={handleAddRoleSubmit}
-            className="text-xs font-black bg-primary text-white px-2 py-0.5 rounded-full hover:bg-primary/90 cursor-pointer">
-            Add
-          </button>
-          <button
-            onClick={() => setIsAddingRole(false)}
-            className="text-xs text-muted hover:text-foreground px-1 cursor-pointer">
-            <X size={12} />
-          </button>
-        </div>
-      ) : (
+      {/* "Manage Roles" Button replacing the old "+" button */}
+      {isAuthorized && (
         <button
-          onClick={() => setIsAddingRole(true)}
-          className="w-7 h-7 rounded-full bg-surface-subtle border border-dashed border-border-subtle hover:border-primary text-muted hover:text-primary flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-          title="Add Role">
-          <Plus size={14} />
+          onClick={handleManageRolesClick}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 hover:border-primary text-xs font-bold text-primary hover:bg-primary/20 transition-all cursor-pointer shadow-2xs group"
+          title="Manage Roles & Permissions">
+          <ShieldCheck size={13} className="text-primary group-hover:scale-110 transition-transform" />
+          <span>Manage Roles</span>
         </button>
       )}
     </div>

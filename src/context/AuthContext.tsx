@@ -5,6 +5,12 @@ import {
   useLazyGetMyPermissionsQuery,
 } from '../store/api/authApiSlice';
 import type { User, LoginCredentials, TeamScope } from '../types/auth';
+import {
+  aggregateRolePermissions,
+  matchesPermission,
+  isUserSuperadmin,
+  extractUserRoles,
+} from '@/utils/rbac';
 
 import { AuthContext } from './AuthContext.base';
 
@@ -29,8 +35,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [permissions, setPermissions] = useState<string[]>(() => {
     try {
+      const savedUserStr = localStorage.getItem('user');
+      const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
       const saved = localStorage.getItem('erp_permissions');
-      return saved ? JSON.parse(saved) : [];
+      const directPerms = saved ? JSON.parse(saved) : [];
+      if (savedUser) {
+        const userRoles = extractUserRoles(savedUser);
+        return aggregateRolePermissions(userRoles, undefined, directPerms);
+      }
+      return directPerms;
     } catch {
       return [];
     }
@@ -38,8 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [roles, setRoles] = useState<string[]>(() => {
     try {
+      const savedUserStr = localStorage.getItem('user');
+      const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
       const saved = localStorage.getItem('erp_roles_list');
-      return saved ? JSON.parse(saved) : [];
+      const parsedRoles = saved ? JSON.parse(saved) : [];
+      if (savedUser) {
+        const userRoles = extractUserRoles(savedUser).map((r) => r.name);
+        return Array.from(new Set([...parsedRoles, ...userRoles]));
+      }
+      return parsedRoles;
     } catch {
       return [];
     }
@@ -59,10 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const savedUserStr = localStorage.getItem('user');
       if (savedUserStr) {
         const parsed = JSON.parse(savedUserStr);
-        return (
-          (parsed?.role === 'SuperAdmin' || parsed?.role === 'Superadmin') &&
-          localStorage.getItem('erp_is_superadmin') === 'true'
-        );
+        return isUserSuperadmin(parsed) || localStorage.getItem('erp_is_superadmin') === 'true';
       }
     } catch {
       return false;
@@ -83,18 +100,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = await fetchMyPermissionsTrigger().unwrap();
       if (result && result.data) {
-        const perms = result.data.permissions || [];
+        const rawPerms = result.data.permissions || [];
         const roleList = result.data.roles || [];
         const scopes = result.data.teamScopes || [];
-        const superadmin = Boolean(result.data.isSuperadmin);
 
-        setPermissions(perms);
-        setRoles(roleList);
+        // Extract all roles assigned to user
+        const assignedRoleList = extractUserRoles(result.data.user || user);
+        const combinedRoles = Array.from(
+          new Set([...roleList, ...assignedRoleList.map((r) => r.name)])
+        );
+
+        // Aggregate permissions across all assigned roles into a union
+        const effectivePerms = aggregateRolePermissions(combinedRoles, undefined, rawPerms);
+        const superadmin =
+          Boolean(result.data.isSuperadmin) ||
+          isUserSuperadmin(result.data.user || user, combinedRoles);
+
+        setPermissions(effectivePerms);
+        setRoles(combinedRoles);
         setTeamScopes(scopes);
         setIsSuperadmin(superadmin);
 
-        localStorage.setItem('erp_permissions', JSON.stringify(perms));
-        localStorage.setItem('erp_roles_list', JSON.stringify(roleList));
+        localStorage.setItem('erp_permissions', JSON.stringify(effectivePerms));
+        localStorage.setItem('erp_roles_list', JSON.stringify(combinedRoles));
         localStorage.setItem('erp_team_scopes', JSON.stringify(scopes));
         localStorage.setItem('erp_is_superadmin', String(superadmin));
 
@@ -163,6 +191,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!prev) return prev;
       const updated = { ...prev, ...partial };
       localStorage.setItem('user', JSON.stringify(updated));
+
+      // Re-aggregate permissions if roles, role, or permissions updated
+      if (
+        partial.roles !== undefined ||
+        partial.role !== undefined ||
+        partial.permissions !== undefined
+      ) {
+        const assignedRoleList = extractUserRoles(updated);
+        const combinedRoles = Array.from(
+          new Set([
+            ...assignedRoleList.map((r) => r.name),
+            ...(Array.isArray(partial.roles)
+              ? partial.roles.map((r) => (typeof r === 'string' ? r : (r as any).name))
+              : []),
+          ])
+        );
+        const effectivePerms = aggregateRolePermissions(
+          assignedRoleList,
+          undefined,
+          partial.permissions || updated.permissions || []
+        );
+        const superadmin = isUserSuperadmin(updated, combinedRoles);
+
+        setPermissions(effectivePerms);
+        setRoles(combinedRoles);
+        setIsSuperadmin(superadmin);
+
+        localStorage.setItem('erp_permissions', JSON.stringify(effectivePerms));
+        localStorage.setItem('erp_roles_list', JSON.stringify(combinedRoles));
+        localStorage.setItem('erp_is_superadmin', String(superadmin));
+      }
+
       return updated;
     });
     if (newToken) {
@@ -195,14 +255,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hasPermission = useCallback(
     (permissionKey: string): boolean => {
-      const userRole = (user?.role || '') as string;
-      const isVerifiedSuperadmin =
-        isSuperadmin && (userRole === 'SuperAdmin' || userRole === 'Superadmin');
-      if (isVerifiedSuperadmin) return true;
-      if (roles.includes('Superadmin') || roles.includes('SuperAdmin')) {
-        if (userRole === 'SuperAdmin' || userRole === 'Superadmin') return true;
-      }
-      return permissions.includes(permissionKey);
+      const isSuper = isSuperadmin || isUserSuperadmin(user, roles);
+      if (isSuper) return true;
+      return matchesPermission(permissions, permissionKey, false);
     },
     [isSuperadmin, roles, permissions, user]
   );

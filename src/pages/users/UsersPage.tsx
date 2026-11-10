@@ -141,7 +141,7 @@ const statusColors: Record<string, string> = {
 const emptyForm = { name: '', email: '', role: '', department: '' };
 
 export function UsersPage() {
-  const { user: currentAuthUser } = useAuth();
+  const { user: currentAuthUser, updateUser } = useAuth();
 
   // Role authorization: only Admin, SuperAdmin, or HrAdmin can manage users & audit history
   const isAuthorizedAdmin = useMemo(() => {
@@ -594,6 +594,10 @@ export function UsersPage() {
       changedFields.push({ field: 'address', from: orig.address || '', to: edited.address || '' });
     }
 
+    const selectedRoles = (rolesData?.data || [])
+      .filter((r) => edited.roleIds.includes(r.id))
+      .map((r) => ({ id: r.id, name: r.name, is_system: r.is_system }));
+
     try {
       await updateStaff({
         id: orig.id,
@@ -603,6 +607,7 @@ export function UsersPage() {
         department: edited.department,
         status: edited.status,
         roleIds: edited.roleIds,
+        roles: selectedRoles,
         reporting_manager_id: edited.reportingManagerId,
       } as any).unwrap();
     } catch {
@@ -610,7 +615,29 @@ export function UsersPage() {
     }
 
     // Update local state
-    setLocalUsers((prev) => prev.map((u) => (u.id === orig.id ? { ...u, ...edited } : u)));
+    setLocalUsers((prev) =>
+      prev.map((u) =>
+        u.id === orig.id
+          ? {
+              ...u,
+              ...edited,
+              roles: selectedRoles.length > 0 ? selectedRoles : u.roles,
+            }
+          : u
+      )
+    );
+
+    // If current logged-in user was updated, sync AuthContext
+    if (
+      currentAuthUser &&
+      (String(currentAuthUser.id) === String(orig.id) ||
+        currentAuthUser.email?.toLowerCase() === orig.email?.toLowerCase())
+    ) {
+      updateUser({
+        ...edited,
+        roles: selectedRoles.length > 0 ? selectedRoles : undefined,
+      });
+    }
 
     // Record in centralized audit log
     if (changedFields.length > 0) {
