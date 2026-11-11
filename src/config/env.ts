@@ -32,9 +32,9 @@ const getApiBaseUrl = (): string => {
   return import.meta.env.DEV ? 'http://localhost:5000' : '';
 };
 
-export const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl().replace(/\/$/, ''); // strip any trailing slash
 
-// Fixes double slash issues by checking if base URL already ends with a slash
+// Append /api — API_BASE_URL is guaranteed no trailing slash so no double-slash can occur
 export const API_URL = API_BASE_URL + '/api';
 
 // Gemini AI API Key from environment variables (safe fallback if unset)
