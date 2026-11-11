@@ -1,6 +1,13 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # If Apache mod_proxy is enabled, forward API and uploads to backend
+  <IfModule mod_proxy.c>
+    RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+    RewriteRule ^uploads/(.*)$ http://127.0.0.1:5000/uploads/$1 [P,L]
+  </IfModule>
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
