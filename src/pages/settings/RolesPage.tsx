@@ -15,8 +15,6 @@ import {
   RefreshCw,
   Search,
   Sparkles,
-  Layers,
-  ArrowRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
@@ -160,21 +158,25 @@ export function RolesPage() {
     }
 
     const primaryRole = selectedUserRoleNames[0];
-    const roleObjects = selectedUserRoleNames.map((name, idx) => {
+    const roleObjects = selectedUserRoleNames.map((name) => {
       const found = roles.find((r) => r.name.toLowerCase() === name.toLowerCase());
       return {
-        id: found ? found.id : idx + 1,
-        name,
+        id: found ? found.id : undefined,
+        name: found ? found.name : name,
         is_system: found ? found.is_system : true,
       };
     });
+
+    const validRoleIds = roleObjects
+      .map((r) => Number(r.id))
+      .filter((id) => !isNaN(id) && id > 0);
 
     try {
       await updateStaffApi({
         id: targetUser.id,
         role: primaryRole,
         roles: roleObjects,
-        roleIds: roleObjects.map((r) => r.id),
+        roleIds: validRoleIds,
       } as any).unwrap();
     } catch {
       // Local fallback handled gracefully

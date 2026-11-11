@@ -337,17 +337,59 @@ export const useProfile = () => {
           }
         : (record.manager as ManagerInfo) ?? prev.manager,
 
-      roles:
-        matchedStaff?.roles && matchedStaff.roles.length > 0
-          ? (matchedStaff.roles as any[]).map((r) => ({
-              id: String(r.id),
-              name: r.name,
-              color:
-                r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
-                  ? 'red'
-                  : 'blue',
-            }))
-          : prev.roles,
+      roles: (() => {
+        // Priority 1: Check if in-memory user already has multiple assigned roles
+        if (prev.roles && prev.roles.length > 1) {
+          return prev.roles;
+        }
+
+        // Priority 2: authUser.roles from AuthContext / localStorage
+        const authRoles = (authUserRecord?.roles as any[]) || (authUser as any)?.roles;
+        if (Array.isArray(authRoles) && authRoles.length > 0) {
+          const seen = new Set<string>();
+          const list: any[] = [];
+          for (const r of authRoles) {
+            const name = typeof r === 'string' ? r : r.name;
+            const id = typeof r === 'string' ? r : r.id;
+            const k = (name || '').trim().toLowerCase();
+            if (k && !seen.has(k)) {
+              seen.add(k);
+              list.push({
+                id: String(id || k),
+                name,
+                color:
+                  name?.toLowerCase().includes('admin') || name?.toLowerCase().includes('founder')
+                    ? 'red'
+                    : 'blue',
+              });
+            }
+          }
+          if (list.length > 0) return list;
+        }
+
+        // Priority 3: matchedStaff.roles from database
+        if (matchedStaff?.roles && matchedStaff.roles.length > 0) {
+          const seen = new Set<string>();
+          const list: any[] = [];
+          for (const r of matchedStaff.roles as any[]) {
+            const k = (r.name || '').trim().toLowerCase();
+            if (k && !seen.has(k)) {
+              seen.add(k);
+              list.push({
+                id: String(r.id),
+                name: r.name,
+                color:
+                  r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
+                    ? 'red'
+                    : 'blue',
+              });
+            }
+          }
+          if (list.length > 0) return list;
+        }
+
+        return prev.roles;
+      })(),
 
       lineLeader: (record.line_leader as ManagerInfo) ?? prev.lineLeader,
 
@@ -682,6 +724,33 @@ export const useProfile = () => {
     }
   };
 
+  const updateRolesLocally = (newRoles: Array<{ id: string | number; name: string; color?: string }>) => {
+    const formatted = newRoles.map((r) => ({
+      id: String(r.id),
+      name: r.name,
+      color:
+        r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
+          ? 'red'
+          : 'blue',
+    }));
+    setUser((prev) => ({
+      ...prev,
+      roles: formatted,
+    }));
+    updateUser({
+      roles: formatted as any,
+    });
+    try {
+      const stored = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...stored, roles: formatted }));
+      window.dispatchEvent(
+        new CustomEvent('aether_user_updated', {
+          detail: { ...stored, roles: formatted },
+        })
+      );
+    } catch {}
+  };
+
   return {
     user,
 
@@ -707,5 +776,6 @@ export const useProfile = () => {
     handleLogout,
     addRole,
     removeRole,
+    updateRolesLocally,
   };
 };

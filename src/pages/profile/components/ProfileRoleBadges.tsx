@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, X } from 'lucide-react';
 import { usePermission } from '@/hooks/usePermission';
@@ -39,14 +40,30 @@ export const ProfileRoleBadges = ({
       can('role:edit') ||
       ['admin', 'superadmin'].includes((currentAuthUser?.role || '').toLowerCase()));
 
+  // Deduplicate roles by normalized name so the same role never appears twice
+  const uniqueRoles = useMemo(() => {
+    const seen = new Set<string>();
+    const res: RoleItem[] = [];
+    for (const role of roles || []) {
+      const key = (role.name || '').trim().toLowerCase();
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        res.push(role);
+      }
+    }
+    return res;
+  }, [roles]);
+
   // Filter out redundant 'Employee' badge if user already has an admin/superadmin role
-  const visibleRoles = roles.filter(
-    (role) =>
-      !(
-        role.name.toLowerCase() === 'employee' &&
-        roles.some((r) => ['superadmin', 'admin', 'hradmin'].includes(r.name.toLowerCase()))
-      )
-  );
+  const visibleRoles = useMemo(() => {
+    return uniqueRoles.filter(
+      (role) =>
+        !(
+          role.name.toLowerCase() === 'employee' &&
+          uniqueRoles.some((r) => ['superadmin', 'admin', 'hradmin'].includes(r.name.toLowerCase()))
+        )
+    );
+  }, [uniqueRoles]);
 
   const handleManageRolesClick = () => {
     if (onManageRoles) {

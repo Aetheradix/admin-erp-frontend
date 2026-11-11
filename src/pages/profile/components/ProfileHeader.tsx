@@ -14,6 +14,7 @@ interface ProfileHeaderProps {
   onChangePassword?: () => void;
   onAddRole: (roleName: string) => void;
   onRemoveRole: (roleId: string) => void;
+  onManageRoles?: () => void;
 }
 
 export const ProfileHeader = ({
@@ -25,6 +26,7 @@ export const ProfileHeader = ({
   onChangePassword,
   onAddRole,
   onRemoveRole,
+  onManageRoles,
 }: ProfileHeaderProps) => {
   return (
     <div className="bg-surface-elevated rounded-3xl border border-border-subtle shadow-soft overflow-hidden">
@@ -70,6 +72,7 @@ export const ProfileHeader = ({
                 userEmail={user.email}
                 onAddRole={onAddRole}
                 onRemoveRole={onRemoveRole}
+                onManageRoles={onManageRoles}
               />
 
               <div className="flex items-center gap-3 text-xs font-medium text-muted mt-1 flex-wrap">

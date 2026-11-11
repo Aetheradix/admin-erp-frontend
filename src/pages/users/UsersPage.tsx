@@ -143,7 +143,7 @@ const statusColors: Record<string, string> = {
 const emptyForm = { name: '', email: '', role: '', department: '' };
 
 export function UsersPage() {
-  const { user: currentAuthUser } = useAuth();
+  const { user: currentAuthUser, updateUser } = useAuth();
   const { isSuperadmin: isRbacSuperadmin, can } = usePermission();
 
   // Role authorization: only Admin, SuperAdmin, or HrAdmin can manage users & audit history
@@ -640,8 +640,9 @@ export function UsersPage() {
     ) {
       updateUser({
         ...edited,
-        roles: selectedRoles.length > 0 ? selectedRoles : undefined,
-      });
+        role: edited.role as UserRole,
+        roles: selectedRoles.length > 0 ? selectedRoles.map((r) => r.name) : undefined,
+      } as any);
     }
 
     // Record in centralized audit log

@@ -142,32 +142,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return [];
   })();
 
-  const currentUserRoleName = (() => {
-    if (!user) return 'Viewer';
-    const primaryRole = getUserRoles(user)[0] || 'Employee';
-
-    switch (primaryRole) {
-      case 'SuperAdmin':
-        return 'Super Admin';
-
-      case 'Admin':
-        return 'Admin';
-
-      case 'HrAdmin':
-        return 'HR Admin';
-
-      case 'FinanceAdmin':
-        return 'Finance Admin';
-
-      case 'Manager':
-        return 'Manager';
-
-      case 'Employee':
-      default:
-        return 'Employee';
-    }
-  })();
-
   const labelToPermissionKey = (label: string): string | null => {
     const lower = label.toLowerCase();
     if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
