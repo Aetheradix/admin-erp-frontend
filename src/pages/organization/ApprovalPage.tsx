@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermission } from '@/hooks/usePermission';
+import { isSuperAdmin, getUserRoles } from '@/utils/pagePermissions';
 import { usePendingUsers } from '../settings/hooks/usePendingUsers';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import type { User } from '@/types/auth';
@@ -8,10 +10,14 @@ import type { UserRole } from '@/config/navItems';
 
 function ApprovalPage() {
   const { user: currentAuthUser } = useAuth();
+  const { isSuperadmin: isRbacSuperadmin, can } = usePermission();
+
   const isAuthorized = useMemo(() => {
-    const role = currentAuthUser?.role || '';
-    return ['SuperAdmin', 'Admin', 'HrAdmin'].includes(role);
-  }, [currentAuthUser]);
+    if (isSuperAdmin(currentAuthUser) || isRbacSuperadmin) return true;
+    if (can('user:approve') || can('user:invite') || can('user:manage') || can('user:view')) return true;
+    const userRoles = getUserRoles(currentAuthUser);
+    return userRoles.some((r) => ['SuperAdmin', 'Admin', 'HrAdmin'].includes(r));
+  }, [currentAuthUser, isRbacSuperadmin, can]);
 
   const { data: backendRolesData } = useGetRolesQuery();
 
