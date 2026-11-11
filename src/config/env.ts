@@ -4,17 +4,19 @@
 
 const HOST_MAPPING: Record<string, string> = {
   'erp.aetheradix.com': 'https://erp.aetheradix.com',
-  'test.aetheradix.com': 'https://test.aetheradix.com',
+  'arx.aetheradix.com': 'https://arx.aetheradix.com',
   localhost: 'http://localhost:5000',
 };
 
 const getApiBaseUrl = (): string => {
   const hostname = window.location.hostname;
+  console.log(import.meta.env.VITE_API_BASE_URL, hostname, HOST_MAPPING[hostname]);
 
   // Priority 1: Environment Variable (you can override if needed)
   if (import.meta.env.VITE_API_BASE_URL !== undefined && import.meta.env.VITE_API_BASE_URL !== '') {
     return import.meta.env.VITE_API_BASE_URL;
   }
+
 
   // Priority 2: Host-based mapping
   if (HOST_MAPPING[hostname]) {
