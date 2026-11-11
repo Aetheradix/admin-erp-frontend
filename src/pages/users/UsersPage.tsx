@@ -28,6 +28,8 @@ import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 
 import { useAuth } from '@/hooks/useAuth';
+import { usePermission } from '@/hooks/usePermission';
+import { isSuperAdmin, getUserRoles } from '@/utils/pagePermissions';
 import {
   useGetUsersQuery,
   useCreateStaffMutation,
@@ -141,13 +143,16 @@ const statusColors: Record<string, string> = {
 const emptyForm = { name: '', email: '', role: '', department: '' };
 
 export function UsersPage() {
-  const { user: currentAuthUser, updateUser } = useAuth();
+  const { user: currentAuthUser } = useAuth();
+  const { isSuperadmin: isRbacSuperadmin, can } = usePermission();
 
   // Role authorization: only Admin, SuperAdmin, or HrAdmin can manage users & audit history
   const isAuthorizedAdmin = useMemo(() => {
-    const role = currentAuthUser?.role || '';
-    return ['Admin', 'SuperAdmin', 'HrAdmin'].includes(role);
-  }, [currentAuthUser]);
+    if (isSuperAdmin(currentAuthUser) || isRbacSuperadmin) return true;
+    if (can('user:manage') || can('user:edit') || can('role:assign')) return true;
+    const userRoles = getUserRoles(currentAuthUser);
+    return userRoles.some((r) => ['Admin', 'SuperAdmin', 'HrAdmin'].includes(r));
+  }, [currentAuthUser, isRbacSuperadmin, can]);
 
   // --- RTK QUERY HOOKS ---
   const { data: apiUsers, isLoading: isUsersLoading, refetch: refetchUsers } = useGetUsersQuery();

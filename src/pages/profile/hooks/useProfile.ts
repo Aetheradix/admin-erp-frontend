@@ -6,6 +6,7 @@ import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/ap
 import { useGetUsersQuery, useUpdateStaffMutation } from '@/store/api/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
+import { isSuperAdmin, getUserRoles } from '@/utils/pagePermissions';
 
 export interface ManagerInfo {
   name: string;
@@ -107,9 +108,13 @@ export const useProfile = () => {
   /**
    * Only these roles can manage Auto Approve.
    */
-  const canManageAutoApprove = ['Admin', 'SuperAdmin', 'HrAdmin'].includes(authUser?.role ?? '');
+  const userRolesList = useMemo(() => getUserRoles(authUser), [authUser]);
+  const isSuper = useMemo(() => isSuperAdmin(authUser), [authUser]);
 
-  const isAdmin = authUser?.role === 'Admin';
+  const canManageAutoApprove =
+    isSuper || userRolesList.some((r) => ['Admin', 'SuperAdmin', 'HrAdmin'].includes(r));
+
+  const isAdmin = isSuper || userRolesList.includes('Admin');
 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [updateStaff] = useUpdateStaffMutation();

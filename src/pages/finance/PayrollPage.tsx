@@ -692,14 +692,18 @@ export default function PayrollPage() {
         );
 
         try {
-          if (targetId) {
-            await updateSalarySlip({ id: targetId, ...data }).unwrap();
+          if (!targetId) {
+            throw new Error('Salary slip ID is missing. Unable to update.');
           }
+          await updateSalarySlip({ id: targetId, ...data }).unwrap();
           message.success({ content: 'Salary slip updated successfully!', key });
-        } catch (apiErr) {
-          console.warn('Backend updateSalarySlip response:', apiErr);
-          // UI state and localStorage overrides have already persisted the updated slip number
-          message.success({ content: 'Salary slip updated successfully!', key });
+        } catch (apiErr: any) {
+          console.error('Backend updateSalarySlip response:', apiErr);
+          message.error({
+            content: apiErr?.data?.message || apiErr?.message || 'Failed to update salary slip on server.',
+            key,
+          });
+          throw apiErr;
         }
       } else if (data.payrollType === 'Adjustment') {
         message.loading({ content: 'Recording payroll adjustment...', key });
