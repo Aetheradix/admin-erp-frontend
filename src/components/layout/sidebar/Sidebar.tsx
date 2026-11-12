@@ -34,13 +34,22 @@ interface SidebarProps {
 const NAV_CATEGORIES = ['OVERVIEW', 'MANAGEMENT', 'SYSTEM'] as const;
 
 const ROUTE_RBAC_MAP: Record<string, string> = {
+  '/users': 'user:view',
+  '/org/approvals': 'user:view',
+  '/org': 'organization:view',
+  '/teams': 'team:view',
+  '/staff': 'user:view',
   '/settings/roles': 'role:view',
   '/settings/audit-log': 'audit:view',
   '/finance/payroll': 'payroll:view',
   '/finance/invoices': 'invoice:view',
   '/finance/expenses': 'expense:view',
+  '/finance/audit': 'finance:manage',
   '/tasks': 'task:view',
   '/inventory': 'inventory:view',
+  '/events': 'event:view',
+  '/resource-booking': 'resource:view',
+  '/benefits-perks': 'perk:view',
 };
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -264,8 +273,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       if (item.children && item.children.length > 0) {
         const allowedChildren = item.children
           .filter((child) => {
-            if (ROUTE_RBAC_MAP[child.path] && !hasPermission(ROUTE_RBAC_MAP[child.path])) {
-              return false;
+            if (ROUTE_RBAC_MAP[child.path]) {
+              return hasPermission(ROUTE_RBAC_MAP[child.path]);
             }
             return canAccessPage(child.path, user, child.roles?.map(String));
           })
@@ -297,15 +306,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           return true;
         }
         // If all sub-pages were restricted, check if the parent path itself is explicitly accessible
-        if (ROUTE_RBAC_MAP[item.path] && !hasPermission(ROUTE_RBAC_MAP[item.path])) {
-          return false;
+        if (ROUTE_RBAC_MAP[item.path]) {
+          return hasPermission(ROUTE_RBAC_MAP[item.path]);
         }
         return canAccessPage(item.path, user, item.roles?.map(String));
       }
 
       // Single-page module (no sub-pages, e.g. Tasks, Blogs, Gallery):
-      if (ROUTE_RBAC_MAP[item.path] && !hasPermission(ROUTE_RBAC_MAP[item.path])) {
-        return false;
+      if (ROUTE_RBAC_MAP[item.path]) {
+        return hasPermission(ROUTE_RBAC_MAP[item.path]);
       }
       return canAccessPage(item.path, user, item.roles?.map(String));
     });

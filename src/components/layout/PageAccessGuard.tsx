@@ -20,20 +20,26 @@ interface PageAccessGuardProps {
 const ROUTE_RBAC_MAP: Record<string, string> = {
   '/users': 'user:view',
   '/org/approvals': 'user:view',
+  '/org': 'organization:view',
+  '/teams': 'team:view',
+  '/staff': 'user:view',
   '/settings/roles': 'role:view',
   '/settings/audit-log': 'audit:view',
   '/finance/payroll': 'payroll:view',
-  '/finance/invoices': 'finance:view',
+  '/finance/invoices': 'invoice:view',
   '/finance/expenses': 'expense:view',
   '/finance/audit': 'finance:manage',
   '/tasks': 'task:view',
   '/inventory': 'inventory:view',
+  '/events': 'event:view',
+  '/resource-booking': 'resource:view',
+  '/benefits-perks': 'perk:view',
 };
 
 /**
  * Wraps page routes to enforce page-level RBAC.
  * Super Admin always has full access.
- * Other roles are checked against saved page permissions or navItem defaults.
+ * Other roles are checked against dynamic RBAC permissions, saved page permissions, or navItem defaults.
  */
 export function PageAccessGuard({ children }: PageAccessGuardProps) {
   const { user } = useAuth();
@@ -49,32 +55,43 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
   // Find the current pathname's default roles from navItems for context
   const currentPath = location.pathname;
 
-  // RBAC permission check
-  const matchedRbacKey = Object.keys(ROUTE_RBAC_MAP).find(
-    (prefix) => currentPath === prefix || currentPath.startsWith(prefix + '/')
-  );
+  // RBAC permission check: sort by length descending to match most specific sub-path first
+  const matchedRbacKey = Object.keys(ROUTE_RBAC_MAP)
+    .filter((prefix) => currentPath === prefix || currentPath.startsWith(prefix + '/'))
+    .sort((a, b) => b.length - a.length)[0];
 
-  if (matchedRbacKey && !hasPermission(ROUTE_RBAC_MAP[matchedRbacKey])) {
-    return <Forbidden403Page />;
+  if (matchedRbacKey) {
+    if (!hasPermission(ROUTE_RBAC_MAP[matchedRbacKey])) {
+      return <Forbidden403Page />;
+    }
+    // Explicitly allowed by dynamic RBAC matrix
+    return <>{children}</>;
   }
 
   // Get default roles from the matching navItem child or parent
   let defaultRoles: string[] | undefined;
   for (const item of navItems) {
+    if (item.children && item.children.length > 0) {
+      // 1. Exact match child first!
+      const exactChild = item.children.find((c) => c.path === currentPath);
+      if (exactChild) {
+        defaultRoles = exactChild.roles?.map(String);
+        break;
+      }
+      // 2. Longest matching sub-path child
+      const matchingChild = [...item.children]
+        .filter((c) => c.path !== '/' && currentPath.startsWith(c.path + '/'))
+        .sort((a, b) => b.path.length - a.path.length)[0];
+      if (matchingChild) {
+        defaultRoles = matchingChild.roles?.map(String);
+        break;
+      }
+    }
     if (item.path === currentPath) {
       defaultRoles = item.roles?.map(String);
       break;
     }
-    if (item.children) {
-      const child = item.children.find(
-        (c) => c.path === currentPath || currentPath.startsWith(c.path + '/')
-      );
-      if (child) {
-        defaultRoles = child.roles?.map(String);
-        break;
-      }
-    }
-    if (item.path && item.path !== '/' && currentPath.startsWith(item.path)) {
+    if (item.path && item.path !== '/' && currentPath.startsWith(item.path + '/')) {
       defaultRoles = item.roles?.map(String);
     }
   }
@@ -83,8 +100,12 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
   if (!defaultRoles) {
     if (currentPath.startsWith('/users')) {
       defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin'];
-    } else if (currentPath.startsWith('/org')) {
+    } else if (currentPath === '/org/approvals' || currentPath.startsWith('/org/approvals/')) {
       defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin'];
+    } else if (currentPath.startsWith('/org')) {
+      defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'];
+    } else if (currentPath.startsWith('/teams') || currentPath.startsWith('/staff')) {
+      defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'];
     } else if (currentPath.startsWith('/settings')) {
       defaultRoles = ['SuperAdmin', 'Admin'];
     } else if (currentPath.startsWith('/analytics')) {

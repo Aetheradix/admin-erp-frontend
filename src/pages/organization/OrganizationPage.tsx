@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Dialog } from '@/components/ui/composed/Dialog';
@@ -33,6 +33,8 @@ import type { ColumnsType } from 'antd/es/table';
 import { BranchesPage } from './BranchesPage';
 import { OrganizationHierarchyView } from './components/OrganizationHierarchyView';
 import { useUploadImageMutation } from '@/store/api/uploadSlice';
+import { useAuth } from '@/hooks/useAuth';
+import { usePermission } from '@/hooks/usePermission';
 
 // --- DATA STRUCTURES ---
 export interface CompanyDocument {
@@ -226,10 +228,41 @@ const categoryBadgeColors: Record<string, string> = {
 };
 
 export function OrganizationPage() {
+  const { isSuperadmin: isAuthSuper, roles } = useAuth();
+  const { can, isSuperadmin: isPermSuper } = usePermission();
+  const canManageOrg =
+    isAuthSuper ||
+    isPermSuper ||
+    can('organization:manage') ||
+    Boolean(
+      roles?.some((r) => {
+        const lr = String(r).toLowerCase().replace(/[\s_-]/g, '');
+        return lr.includes('admin') || lr.includes('hr');
+      })
+    );
+
   const [activeTab, setActiveTab] = useState('Overview');
   const [companyInfo, setCompanyInfo] = useState(initialCompanyInfo);
-  const [documents, setDocuments] = useState<CompanyDocument[]>(initialDocuments);
+  const [documents, setDocuments] = useState<CompanyDocument[]>(() => {
+    try {
+      const saved = localStorage.getItem('erp_compliance_documents');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return initialDocuments;
+  });
   const [policies] = useState<PolicyItem[]>(initialPolicies);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('erp_compliance_documents', JSON.stringify(documents));
+    } catch {}
+  }, [documents]);
+
+  // Documents visible to the current user (employees only see Public docs, admins see all)
+  const visibleDocuments = useMemo(() => {
+    if (canManageOrg) return documents;
+    return documents.filter((d) => d.visibility === 'Public');
+  }, [canManageOrg, documents]);
 
   // Upload mutation
   const [uploadImage, { isLoading: isUploading }] = useUploadImageMutation();
@@ -379,27 +412,51 @@ export function OrganizationPage() {
     {
       title: 'Visibility Control',
       key: 'visibility',
-      render: (_, record) => (
-        <button
-          onClick={() => handleToggleVisibility(record.id)}
-          className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 transition-all border ${
-            record.visibility === 'Public'
-              ? 'bg-success/10 text-success border-success/20 hover:bg-success/20'
-              : 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20'
-          }`}>
-          {record.visibility === 'Public' ? (
-            <>
-              <Unlock size={12} />
-              <span>Public (All Staff)</span>
-            </>
-          ) : (
-            <>
-              <Lock size={12} />
-              <span>Private (Admin Only)</span>
-            </>
-          )}
-        </button>
-      ),
+      render: (_, record) => {
+        if (!canManageOrg) {
+          return (
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 border select-none ${
+                record.visibility === 'Public'
+                  ? 'bg-success/10 text-success border-success/20'
+                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+              }`}>
+              {record.visibility === 'Public' ? (
+                <>
+                  <Unlock size={12} />
+                  <span>Public (All Staff)</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={12} />
+                  <span>Private (Admin Only)</span>
+                </>
+              )}
+            </span>
+          );
+        }
+        return (
+          <button
+            onClick={() => handleToggleVisibility(record.id)}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 transition-all border cursor-pointer ${
+              record.visibility === 'Public'
+                ? 'bg-success/10 text-success border-success/20 hover:bg-success/20'
+                : 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20'
+            }`}>
+            {record.visibility === 'Public' ? (
+              <>
+                <Unlock size={12} />
+                <span>Public (All Staff)</span>
+              </>
+            ) : (
+              <>
+                <Lock size={12} />
+                <span>Private (Admin Only)</span>
+              </>
+            )}
+          </button>
+        );
+      },
     },
     {
       title: 'Actions',
@@ -412,16 +469,18 @@ export function OrganizationPage() {
             target="_blank"
             rel="noopener noreferrer"
             download
-            className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors"
+            className="p-2 rounded-lg hover:bg-surface-subtle text-muted hover:text-foreground transition-colors cursor-pointer"
             title="Download Document">
             <Download size={16} />
           </a>
-          <button
-            onClick={() => setDeleteDocId(record.id)}
-            className="p-2 rounded-lg hover:bg-error/10 text-muted hover:text-error transition-colors"
-            title="Delete Document">
-            <Trash2 size={16} />
-          </button>
+          {canManageOrg && (
+            <button
+              onClick={() => setDeleteDocId(record.id)}
+              className="p-2 rounded-lg hover:bg-error/10 text-muted hover:text-error transition-colors cursor-pointer"
+              title="Delete Document">
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
       ),
     },
@@ -433,14 +492,18 @@ export function OrganizationPage() {
         title="Company Profile & Governance"
         description="Unified organizational intelligence: corporate identity, policies, compliance vault, and regional branches."
         breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'Organization' }]}
-        primaryAction={{
-          label: 'Edit Profile',
-          onClick: () => {
-            setEditForm(companyInfo);
-            setShowEditProfileModal(true);
-          },
-          icon: 'pi pi-pencil',
-        }}
+        primaryAction={
+          canManageOrg
+            ? {
+                label: 'Edit Profile',
+                onClick: () => {
+                  setEditForm(companyInfo);
+                  setShowEditProfileModal(true);
+                },
+                icon: 'pi pi-pencil',
+              }
+            : undefined
+        }
       />
 
       {/* Tabs Navigation */}
@@ -736,12 +799,14 @@ export function OrganizationPage() {
                 access visibility controls.
               </p>
             </div>
-            <Button
-              label="Upload Document"
-              icon="pi pi-upload"
-              onClick={() => setShowUploadModal(true)}
-              className="rounded-md! px-6!"
-            />
+            {canManageOrg && (
+              <Button
+                label="Upload Document"
+                icon="pi pi-upload"
+                onClick={() => setShowUploadModal(true)}
+                className="rounded-md! px-6! cursor-pointer"
+              />
+            )}
           </div>
 
           <motion.div
@@ -751,7 +816,7 @@ export function OrganizationPage() {
             <Table
               scroll={{ x: 'max-content' }}
               columns={docColumns}
-              dataSource={documents}
+              dataSource={visibleDocuments}
               rowKey="id"
               pagination={{ pageSize: 8 }}
               className="premium-table"

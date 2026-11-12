@@ -219,12 +219,12 @@ export const navItems: NavItem[] = [
     icon: Building2,
     category: 'MANAGEMENT',
     description: 'Company profile',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
     children: [
       {
         label: 'Company Profile',
         path: '/org',
-        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
       {
         label: 'User Management',
@@ -239,12 +239,12 @@ export const navItems: NavItem[] = [
       {
         label: 'Teams',
         path: '/teams',
-        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
       {
         label: 'Employee Directory',
         path: '/staff',
-        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
     ],
   },

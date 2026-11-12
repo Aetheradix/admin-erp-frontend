@@ -33,6 +33,7 @@ import {
 } from '@/store/api/attendanceSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermission } from '@/hooks/usePermission';
 import { searchLocations, type GeocodingResult } from '@/services/geocodingService';
 import { LocationPinpointMap } from '@/components/common/LocationPinpointMap';
 import { getUltraAccuratePosition } from '@/utils/highAccuracyGeolocation';
@@ -59,8 +60,18 @@ const emptyForm: OfficeFormData = {
 };
 
 export function BranchesPage() {
-  const { isSuperadmin, roles } = useAuth();
-  const canManage = isSuperadmin || roles?.some((r) => ['Admin', 'Superadmin', 'HR Admin'].includes(r));
+  const { isSuperadmin: isAuthSuper, roles } = useAuth();
+  const { can, isSuperadmin: isPermSuper } = usePermission();
+  const canManage =
+    isAuthSuper ||
+    isPermSuper ||
+    can('organization:manage') ||
+    Boolean(
+      roles?.some((r) => {
+        const lr = String(r).toLowerCase().replace(/[\s_-]/g, '');
+        return lr.includes('admin') || lr.includes('hr');
+      })
+    );
 
   const [activeSubTab, setActiveSubTab] = useState<'offices' | 'logs'>('offices');
   const [showModal, setShowModal] = useState(false);
@@ -301,16 +312,18 @@ export function BranchesPage() {
               <Building size={13} />
               <span>Registered Hubs ({offices.length})</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setActiveSubTab('logs')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${activeSubTab === 'logs'
-                ? 'bg-surface-elevated text-foreground shadow-xs border border-border-subtle'
-                : 'text-muted hover:text-foreground'
-                }`}>
-              <Activity size={13} />
-              <span>Audit Logs</span>
-            </button>
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => setActiveSubTab('logs')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${activeSubTab === 'logs'
+                  ? 'bg-surface-elevated text-foreground shadow-xs border border-border-subtle'
+                  : 'text-muted hover:text-foreground'
+                  }`}>
+                <Activity size={13} />
+                <span>Audit Logs</span>
+              </button>
+            )}
           </div>
 
           <button
