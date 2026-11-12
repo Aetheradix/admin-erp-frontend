@@ -126,26 +126,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('erp_team_scopes', JSON.stringify(scopes));
         localStorage.setItem('erp_is_superadmin', String(superadmin));
 
-        if (result.data.user) {
-          setUser((prev) => {
-            const updated = {
-              ...(prev || {}),
-              ...result.data.user,
-              employeeId:
-                result.data.user.employee_code ||
-                result.data.user.employeeId ||
-                (prev as any)?.employeeId,
-              employee_id:
-                result.data.user.employee_code ||
-                result.data.user.employee_id ||
-                (prev as any)?.employee_id,
-            };
-            try {
-              localStorage.setItem('user', JSON.stringify(updated));
-            } catch {}
-            return updated as User;
-          });
-        }
+        // Always sync combined roles into AuthContext user and localStorage
+        setUser((prev) => {
+          if (!prev) return prev;
+          const roleObjs = combinedRoles.map((rName) => ({
+            id: rName,
+            name: rName,
+          }));
+          const updated: User = {
+            ...prev,
+            ...(result.data.user || {}),
+            role: (prev.role || combinedRoles[0] || 'Employee') as any,
+            roles: roleObjs as any,
+            employeeId:
+              result.data.user?.employee_code ||
+              result.data.user?.employeeId ||
+              (prev as any)?.employeeId,
+            employee_id:
+              result.data.user?.employee_code ||
+              result.data.user?.employee_id ||
+              (prev as any)?.employee_id,
+          };
+          try {
+            localStorage.setItem('user', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
       }
     } catch (err: any) {
       console.warn('[RBAC] Could not fetch permissions from /me/permissions:', err);

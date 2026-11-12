@@ -163,17 +163,30 @@ export const useProfile = () => {
     const email = authUser?.email || '';
 
     const userRole = authUser?.role || 'User';
-    const initialRoles = (authUserRecord?.roles as Array<{
-      id: string;
-      name: string;
-      color?: string;
-    }>) || [
-      {
-        id: '1',
-        name: userRole,
-        color: userRole === 'SuperAdmin' ? 'red' : userRole === 'Admin' ? 'blue' : 'emerald',
-      },
-    ];
+    const dbRoles = (matchedStaff?.roles as any[]) || (currentDbUser?.roles as any);
+    const initialRoles =
+      (Array.isArray(dbRoles) && dbRoles.length > 0
+        ? dbRoles.map((r: any) => ({
+            id: String(r.id || r.name),
+            name: typeof r === 'string' ? r : r.name,
+            color:
+              (r.name || r)?.toLowerCase().includes('admin') ||
+              (r.name || r)?.toLowerCase().includes('founder')
+                ? 'red'
+                : 'blue',
+          }))
+        : null) ||
+      (authUserRecord?.roles as Array<{
+        id: string;
+        name: string;
+        color?: string;
+      }>) || [
+        {
+          id: '1',
+          name: userRole,
+          color: userRole === 'SuperAdmin' ? 'red' : userRole === 'Admin' ? 'blue' : 'emerald',
+        },
+      ];
 
     const initialCode = resolveEmployeeCode(authUser, authUserRecord);
     const initialId = resolveEmployeeId(authUser, authUserRecord);
@@ -338,12 +351,35 @@ export const useProfile = () => {
         : (record.manager as ManagerInfo) ?? prev.manager,
 
       roles: (() => {
-        // Priority 1: Check if in-memory user already has multiple assigned roles
+        // Priority 1: matchedStaff.roles from database (Single source of truth!)
+        if (matchedStaff?.roles && matchedStaff.roles.length > 0) {
+          const seen = new Set<string>();
+          const list: any[] = [];
+          for (const r of matchedStaff.roles as any[]) {
+            const name = typeof r === 'string' ? r : r.name;
+            const id = typeof r === 'string' ? r : r.id;
+            const k = (name || '').trim().toLowerCase();
+            if (k && !seen.has(k)) {
+              seen.add(k);
+              list.push({
+                id: String(id || k),
+                name,
+                color:
+                  name?.toLowerCase().includes('admin') || name?.toLowerCase().includes('founder')
+                    ? 'red'
+                    : 'blue',
+              });
+            }
+          }
+          if (list.length > 0) return list;
+        }
+
+        // Priority 2: Check if in-memory user already has multiple assigned roles
         if (prev.roles && prev.roles.length > 1) {
           return prev.roles;
         }
 
-        // Priority 2: authUser.roles from AuthContext / localStorage
+        // Priority 3: authUser.roles from AuthContext / localStorage
         const authRoles = (authUserRecord?.roles as any[]) || (authUser as any)?.roles;
         if (Array.isArray(authRoles) && authRoles.length > 0) {
           const seen = new Set<string>();
@@ -367,27 +403,6 @@ export const useProfile = () => {
           if (list.length > 0) return list;
         }
 
-        // Priority 3: matchedStaff.roles from database
-        if (matchedStaff?.roles && matchedStaff.roles.length > 0) {
-          const seen = new Set<string>();
-          const list: any[] = [];
-          for (const r of matchedStaff.roles as any[]) {
-            const k = (r.name || '').trim().toLowerCase();
-            if (k && !seen.has(k)) {
-              seen.add(k);
-              list.push({
-                id: String(r.id),
-                name: r.name,
-                color:
-                  r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
-                    ? 'red'
-                    : 'blue',
-              });
-            }
-          }
-          if (list.length > 0) return list;
-        }
-
         return prev.roles;
       })(),
 
@@ -399,6 +414,14 @@ export const useProfile = () => {
     // If authUser does not yet have employee_code, populate it into AuthContext + localStorage
     if (code && code !== 'N/A' && !authUser.employee_code) {
       updateUser({ employee_code: code, employeeCode: code });
+    }
+
+    // Sync database roles into authUser if matchedStaff has fresh roles from DB
+    if (matchedStaff?.roles && matchedStaff.roles.length > 0) {
+      const authRoleCount = Array.isArray(authUser.roles) ? authUser.roles.length : 1;
+      if (matchedStaff.roles.length !== authRoleCount) {
+        updateUser({ roles: matchedStaff.roles as any });
+      }
     }
   }, [authUser, matchedStaff, isAdmin, updateUser]);
 

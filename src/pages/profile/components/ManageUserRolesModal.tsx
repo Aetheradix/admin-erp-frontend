@@ -107,18 +107,24 @@ export const ManageUserRolesModal: React.FC<ManageUserRolesModalProps> = ({
 
     try {
       if (userId) {
+        // Send both roleIds (direct DB IDs) AND roleNames (name-based lookup fallback).
+        // The backend resolves names → IDs for any role not matched by ID alone.
         await updateStaffApi({
           id: userId,
           role: primaryRole,
           roles: roleObjects,
           roleIds: validRoleIds,
+          roleNames: selectedUserRoleNames, // ← key fix: backend looks up by name too
         } as any).unwrap();
       }
 
       message.success('User roles updated successfully.');
-    } catch {
-      // Local fallback handled gracefully
-      message.info('Roles updated in active session.');
+    } catch (err: unknown) {
+      const errMsg = (err as { data?: { message?: string }; error?: string })?.data?.message
+        || (err as { error?: string })?.error
+        || 'Save failed';
+      message.error(`Failed to save roles: ${errMsg}`);
+      return; // Don't close modal or update local state if backend failed
     }
 
     // If current logged-in user, immediately update local user and permissions
