@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
+import { extractUserRoles, isUserSuperadmin } from '@/utils/rbac';
 
 const BlogsModule = lazy(() => import('@/pages/blogs'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
@@ -70,18 +71,27 @@ const AppFeature = () => {
       }
     }
 
-    const currentUserRoleName = (() => {
-      if (!user) return 'Viewer';
-      const desc = user.designation?.toLowerCase() || '';
-      if (desc.includes('super admin')) return 'Super Admin';
-      if (desc.includes('admin')) return 'Admin';
-      if (desc.includes('manager')) return 'Manager';
-      if (desc.includes('developer') || desc.includes('engineer')) return 'Developer';
-      if (user.role === 'Admin') return 'Admin';
-      return 'Viewer';
-    })();
+    if (isUserSuperadmin(user)) {
+      const features = [
+        'Blogs',
+        'Gallery',
+        'Events',
+        'Careers',
+        'Attendance',
+        'Finance',
+        'Grievances',
+        'Guest Pass',
+        'Resource Booking',
+        'Inventory',
+      ];
+      for (const f of features) map[f] = true;
+      return map;
+    }
 
-    const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
+    const assignedRoles = extractUserRoles(user).map((r) => r.name);
+    const assignedRoleObjs = erpRoles.filter((r) =>
+      assignedRoles.some((ar) => ar.toLowerCase() === r.name?.toLowerCase())
+    );
 
     const check = (feature: string) => {
       if (visibleSections[feature] === false) return false;
@@ -96,8 +106,17 @@ const AppFeature = () => {
       else if (lower === 'settings') permKey = 'settings';
       else if (lower === 'analytics') permKey = 'reports';
 
-      if (permKey && roleObj && roleObj.permissions && roleObj.permissions[permKey] === false) {
-        return false;
+      // If user has multiple roles, access is granted if ANY assigned role allows it
+      if (permKey && assignedRoleObjs.length > 0) {
+        const hasExplicitGrant = assignedRoleObjs.some(
+          (roleObj) => roleObj.permissions && roleObj.permissions[permKey] === true
+        );
+        if (hasExplicitGrant) return true;
+
+        const allDeny = assignedRoleObjs.every(
+          (roleObj) => roleObj.permissions && roleObj.permissions[permKey] === false
+        );
+        if (allDeny) return false;
       }
       return true;
     };

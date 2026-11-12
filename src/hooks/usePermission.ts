@@ -25,6 +25,16 @@ export const usePermission = () => {
     return requiredPermissions.every((perm) => hasPermission(perm));
   };
 
+  const hasRole = (roleName: string): boolean => {
+    if (isSuperadmin && roleName.toLowerCase() === 'superadmin') return true;
+    const cleanTarget = roleName.toLowerCase().replace(/[\s_-]/g, '');
+    return roles.some((r) => r.toLowerCase().replace(/[\s_-]/g, '') === cleanTarget);
+  };
+
+  const hasAnyRole = (roleNames: string[]): boolean => {
+    return roleNames.some((r) => hasRole(r));
+  };
+
   return {
     permissions,
     roles,
@@ -35,6 +45,8 @@ export const usePermission = () => {
     cannot,
     hasAnyPermission,
     hasAllPermissions,
+    hasRole,
+    hasAnyRole,
     refreshPermissions,
   };
 };

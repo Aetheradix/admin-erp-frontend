@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   GitBranch,
   Users,
@@ -253,48 +254,66 @@ export function OrganizationHierarchyView() {
       return {
         key: String(node.id),
         title: (
-          <div className="inline-flex items-center gap-2.5 py-1.5 px-2 rounded-xl hover:bg-muted/40 transition-colors">
-            <div
-              className={`w-7 h-7 rounded-lg font-black text-[10px] flex items-center justify-center shrink-0 ${
-                isFounder
-                  ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-xs'
-                  : 'bg-primary/10 text-primary'
-              }`}>
-              {isFounder ? <Crown size={13} className="text-white" /> : node.username.slice(0, 2).toUpperCase()}
+          <div className="inline-flex items-center justify-between gap-4 p-2.5 my-1 rounded-xl bg-card border border-border/60 hover:border-primary/40 hover:shadow-xs transition-all w-full max-w-2xl">
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-9 h-9 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${
+                  isFounder
+                    ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-xs'
+                    : 'bg-primary/10 text-primary border border-primary/20'
+                }`}>
+                {isFounder ? (
+                  <Crown size={15} className="text-white" />
+                ) : (
+                  node.username ? node.username.slice(0, 2).toUpperCase() : 'U'
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-foreground text-xs">{node.username}</span>
+                  {isFounder ? (
+                    <Tag color="gold" className="text-[10px] font-black m-0 px-2 py-0 border-amber-300 inline-flex items-center gap-1">
+                      <Crown size={10} className="text-amber-600" /> Founder
+                    </Tag>
+                  ) : (
+                    <Tag color="volcano" className="text-[10px] font-bold m-0 px-1.5 py-0">
+                      {node.role || 'Staff'}
+                    </Tag>
+                  )}
+                  {node.department && (
+                    <span className="text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md bg-muted/50 border border-border/40">
+                      {node.department}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-0.5 text-muted-foreground">
+                  <span className="text-[11px]">{node.email}</span>
+                  {node.designation && (
+                    <span className="text-[10px] text-muted-foreground/80">• {node.designation}</span>
+                  )}
+                </div>
+              </div>
             </div>
-            <span className="font-bold text-foreground text-xs">{node.username}</span>
-            {isFounder ? (
-              <Tag color="gold" className="text-[10px] font-black m-0 px-2 py-0 border-amber-300 inline-flex items-center gap-1">
-                <Crown size={10} className="text-amber-600" /> Founder
-              </Tag>
-            ) : (
-              <Tag color="volcano" className="text-[10px] font-bold m-0 px-1.5 py-0">
-                {node.role || 'Staff'}
-              </Tag>
-            )}
-            <span className="text-[10px] text-muted-foreground hidden sm:inline">({node.email})</span>
-            {node.department && (
-              <span className="text-[10px] text-foreground font-bold px-2 py-0.5 rounded-md border border-border/80">
-                {node.department}
-              </span>
-            )}
-            {hasReports && (
-              <Tag color="blue" className="text-[10px] font-bold m-0 px-1.5 py-0">
-                {node.directReports!.length} {node.directReports!.length === 1 ? 'Report' : 'Reports'}
-              </Tag>
-            )}
-            {canManageHierarchy && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenEditManager(node);
-                }}
-                title="Change Reporting Manager"
-                className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors ml-1">
-                <Edit2 size={11} />
-              </button>
-            )}
+
+            <div className="flex items-center gap-2 shrink-0">
+              {hasReports && (
+                <Tag color="blue" className="text-[10px] font-bold m-0 px-2 py-0.5 rounded-full border-0">
+                  {node.directReports!.length} {node.directReports!.length === 1 ? 'Direct Report' : 'Direct Reports'}
+                </Tag>
+              )}
+              {canManageHierarchy && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenEditManager(node);
+                  }}
+                  title="Change Reporting Manager"
+                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 transition-colors">
+                  <Edit2 size={12} />
+                </button>
+              )}
+            </div>
           </div>
         ),
         children: hasReports ? node.directReports!.map(mapNode) : undefined,
@@ -371,6 +390,254 @@ export function OrganizationHierarchyView() {
         ),
     },
   ];
+
+  // Modern Hierarchy Pillar Colors
+  const DEPARTMENT_COLORS: Record<string, string> = {
+    technology: '#3B82F6',
+    engineering: '#3B82F6',
+    product: '#8B5CF6',
+    design: '#8B5CF6',
+    creative: '#8B5CF6',
+    research: '#06B6D4',
+    growth: '#10B981',
+    sales: '#10B981',
+    marketing: '#F59E0B',
+    finance: '#F59E0B',
+    operations: '#EC4899',
+    hr: '#EC4899',
+    people: '#EC4899',
+    management: '#6366F1',
+  };
+
+  const getDeptColor = (dept?: string, index: number = 0) => {
+    const fallbacks = ['#3B82F6', '#8B5CF6', '#10B981', '#EC4899', '#F59E0B', '#06B6D4', '#6366F1'];
+    if (!dept) return fallbacks[index % fallbacks.length];
+    const d = dept.toLowerCase();
+    for (const [k, v] of Object.entries(DEPARTMENT_COLORS)) {
+      if (d.includes(k)) return v;
+    }
+    return fallbacks[index % fallbacks.length];
+  };
+
+  // Modern Multi-Tier Organizational Chart Renderer (Matching Teams Page Aesthetics)
+  const renderModernOrgChart = (root: HierarchyNodeUser) => {
+    const isRootFounder =
+      root.username.toLowerCase().includes('pratyush') ||
+      root.designation?.toLowerCase().includes('founder') ||
+      root.role === 'SuperAdmin';
+    const isRootExpanded = expandedNodes[root.id] !== false;
+    const level2Pillars = root.directReports || [];
+
+    return (
+      <div key={root.id} className="flex flex-col items-center w-full py-2">
+        {/* Level 1: Apex CEO / Founder Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center relative z-20">
+          <div className="bg-card rounded-3xl border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all p-5 sm:p-6 flex items-center justify-between gap-6 min-w-[320px] max-w-md relative overflow-hidden group">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-primary to-orange-500" />
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl shadow-inner shrink-0 relative">
+                {root.username
+                  ? root.username
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase()
+                  : 'PS'}
+                {isRootFounder && (
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                    <Crown size={11} className="text-white" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-foreground truncate">{root.username}</h3>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    <Crown size={11} className="text-amber-600" /> Founder
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-primary truncate">
+                  {root.designation || (isRootFounder ? 'Founder & Chief Executive Officer' : root.role)}
+                </span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">
+                  {root.department ? `${root.department} • ` : ''}Executive Leadership
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {level2Pillars.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => toggleNode(root.id)}
+                  className="p-1.5 rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  title={isRootExpanded ? 'Collapse Organization' : 'Expand Organization'}>
+                  {isRootExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Trunk connector line descending from CEO */}
+          {level2Pillars.length > 0 && isRootExpanded && (
+            <div className="w-0.5 h-10 bg-primary/40 my-0.5" />
+          )}
+        </motion.div>
+
+        {/* Level 2: Department / Manager Pillars Grid */}
+        <AnimatePresence>
+          {level2Pillars.length > 0 && isRootExpanded && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              className="flex flex-col items-center w-full max-w-7xl">
+              {/* Horizontal connecting busbar across top of pillars */}
+              {level2Pillars.length > 1 && (
+                <div className="w-11/12 max-w-5xl h-0.5 bg-primary/30 mb-6 hidden md:block" />
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full">
+                {level2Pillars.map((pillar, pIdx) => {
+                  const pColor = getDeptColor(pillar.department, pIdx);
+                  const isPillarExpanded = expandedNodes[pillar.id] !== false;
+                  const pillarReports = pillar.directReports || [];
+
+                  return (
+                    <div key={pillar.id} className="flex flex-col items-center gap-4">
+                      {/* Pillar Lead Card */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: pIdx * 0.05 }}
+                        className="w-full bg-card rounded-2xl border border-border shadow-xs hover:shadow-md transition-all p-5 flex flex-col gap-3 relative overflow-hidden">
+                        <div
+                          className="absolute top-0 left-0 right-0 h-1.5"
+                          style={{ backgroundColor: pColor }}
+                        />
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md truncate max-w-[170px]"
+                            style={{ backgroundColor: `${pColor}18`, color: pColor }}>
+                            {pillar.department || 'GENERAL POD'}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {canManageHierarchy && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenEditManager(pillar);
+                                }}
+                                title="Change Reporting Manager"
+                                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                                <Edit2 size={12} />
+                              </button>
+                            )}
+                            {pillarReports.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => toggleNode(pillar.id)}
+                                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                                title={isPillarExpanded ? 'Collapse Team' : 'Expand Team'}>
+                                {isPillarExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-xs shadow-xs shrink-0"
+                            style={{ backgroundColor: pColor }}>
+                            {pillar.username.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-black text-foreground truncate">
+                              {pillar.username}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-medium truncate">
+                              {pillar.designation || pillar.role || 'Team Lead'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+                          <span className="font-semibold truncate max-w-[130px]">{pillar.email}</span>
+                          <span className="font-bold text-foreground">
+                            {pillarReports.length} {pillarReports.length === 1 ? 'Member' : 'Members'}
+                          </span>
+                        </div>
+                      </motion.div>
+
+                      {/* Drop connector line down to team pods */}
+                      {pillarReports.length > 0 && isPillarExpanded && (
+                        <div className="w-0.5 h-6 bg-border -my-2" />
+                      )}
+
+                      {/* Level 3: Child Pods / Employees under this pillar */}
+                      <AnimatePresence>
+                        {pillarReports.length > 0 && isPillarExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="flex flex-col gap-2.5 w-full">
+                            {pillarReports.map((member) => (
+                              <div
+                                key={member.id}
+                                className="w-full p-3 rounded-xl bg-muted/20 hover:bg-muted/40 border border-border/60 hover:border-primary/40 transition-all flex items-center justify-between gap-3 shadow-2xs">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] text-white shrink-0"
+                                    style={{ backgroundColor: pColor }}>
+                                    {member.username.slice(0, 2).toUpperCase()}
+                                  </div>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-bold text-foreground truncate">
+                                      {member.username}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground truncate">
+                                      {member.designation || member.role || 'Member'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {member.directReports && member.directReports.length > 0 && (
+                                    <Tag color="blue" className="text-[10px] font-bold m-0 px-1.5 py-0 rounded-md">
+                                      {member.directReports.length}
+                                    </Tag>
+                                  )}
+                                  {canManageHierarchy && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditManager(member)}
+                                      title="Change Reporting Manager"
+                                      className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                                      <Edit2 size={11} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   // Visual Tree Node Renderer with Connected SVG/CSS Branch Lines
   const renderVisualTreeNode = (
@@ -688,19 +955,18 @@ export function OrganizationHierarchyView() {
               <p className="text-xs text-muted-foreground">Adjust search filter or assign managers.</p>
             </div>
           ) : treeLayout === 'directory' ? (
-            <div className="p-4 bg-muted/10 rounded-2xl border border-border/40">
+            <div className="p-6 bg-muted/10 rounded-2xl border border-border/40 min-h-[450px]">
               <Tree
                 showLine={{ showLeafIcon: false }}
                 defaultExpandAll
                 treeData={antdTreeData}
+                blockNode
                 className="bg-transparent"
               />
             </div>
           ) : (
-            <div className="flex items-start justify-center min-w-max py-4">
-              {filteredTree.map((root) =>
-                renderVisualTreeNode(root, 0, false, false, true)
-              )}
+            <div className="flex flex-col items-center justify-center w-full py-4 overflow-x-auto">
+              {filteredTree.map((root) => renderModernOrgChart(root))}
             </div>
           )}
         </div>

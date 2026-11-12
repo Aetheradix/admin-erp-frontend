@@ -3,7 +3,7 @@ import { recordAuditLog } from '@/services/auditService';
 import { getEmployeeProfile } from '@/services/employeeProfileService';
 import { useUpdateProfileMutation } from '@/store/api/authApiSlice';
 import { useGetAutoApproveQuery, useUpdateAutoApproveMutation } from '@/store/api/settingslice';
-import { useGetUsersQuery } from '@/store/api/userSlice';
+import { useGetUsersQuery, useUpdateStaffMutation } from '@/store/api/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { isSuperAdmin, getUserRoles } from '@/utils/pagePermissions';
@@ -117,7 +117,7 @@ export const useProfile = () => {
   const isAdmin = isSuper || userRolesList.includes('Admin');
 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
-  // const [updateStaff] = useUpdateStaffMutation();
+  const [updateStaff] = useUpdateStaffMutation();
 
   const [updateAutoApprove, { isLoading: isUpdatingAutoApprove }] = useUpdateAutoApproveMutation();
 
@@ -163,17 +163,30 @@ export const useProfile = () => {
     const email = authUser?.email || '';
 
     const userRole = authUser?.role || 'User';
-    const initialRoles = (authUserRecord?.roles as Array<{
-      id: string;
-      name: string;
-      color?: string;
-    }>) || [
-      {
-        id: '1',
-        name: userRole,
-        color: userRole === 'SuperAdmin' ? 'red' : userRole === 'Admin' ? 'blue' : 'emerald',
-      },
-    ];
+    const dbRoles = (matchedStaff?.roles as any[]) || (currentDbUser?.roles as any);
+    const initialRoles =
+      (Array.isArray(dbRoles) && dbRoles.length > 0
+        ? dbRoles.map((r: any) => ({
+            id: String(r.id || r.name),
+            name: typeof r === 'string' ? r : r.name,
+            color:
+              (r.name || r)?.toLowerCase().includes('admin') ||
+              (r.name || r)?.toLowerCase().includes('founder')
+                ? 'red'
+                : 'blue',
+          }))
+        : null) ||
+      (authUserRecord?.roles as Array<{
+        id: string;
+        name: string;
+        color?: string;
+      }>) || [
+        {
+          id: '1',
+          name: userRole,
+          color: userRole === 'SuperAdmin' ? 'red' : userRole === 'Admin' ? 'blue' : 'emerald',
+        },
+      ];
 
     const initialCode = resolveEmployeeCode(authUser, authUserRecord);
     const initialId = resolveEmployeeId(authUser, authUserRecord);
@@ -337,17 +350,61 @@ export const useProfile = () => {
           }
         : (record.manager as ManagerInfo) ?? prev.manager,
 
-      roles:
-        matchedStaff?.roles && matchedStaff.roles.length > 0
-          ? (matchedStaff.roles as any[]).map((r) => ({
-              id: String(r.id),
-              name: r.name,
-              color:
-                r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
-                  ? 'red'
-                  : 'blue',
-            }))
-          : prev.roles,
+      roles: (() => {
+        // Priority 1: matchedStaff.roles from database (Single source of truth!)
+        if (matchedStaff?.roles && matchedStaff.roles.length > 0) {
+          const seen = new Set<string>();
+          const list: any[] = [];
+          for (const r of matchedStaff.roles as any[]) {
+            const name = typeof r === 'string' ? r : r.name;
+            const id = typeof r === 'string' ? r : r.id;
+            const k = (name || '').trim().toLowerCase();
+            if (k && !seen.has(k)) {
+              seen.add(k);
+              list.push({
+                id: String(id || k),
+                name,
+                color:
+                  name?.toLowerCase().includes('admin') || name?.toLowerCase().includes('founder')
+                    ? 'red'
+                    : 'blue',
+              });
+            }
+          }
+          if (list.length > 0) return list;
+        }
+
+        // Priority 2: Check if in-memory user already has multiple assigned roles
+        if (prev.roles && prev.roles.length > 1) {
+          return prev.roles;
+        }
+
+        // Priority 3: authUser.roles from AuthContext / localStorage
+        const authRoles = (authUserRecord?.roles as any[]) || (authUser as any)?.roles;
+        if (Array.isArray(authRoles) && authRoles.length > 0) {
+          const seen = new Set<string>();
+          const list: any[] = [];
+          for (const r of authRoles) {
+            const name = typeof r === 'string' ? r : r.name;
+            const id = typeof r === 'string' ? r : r.id;
+            const k = (name || '').trim().toLowerCase();
+            if (k && !seen.has(k)) {
+              seen.add(k);
+              list.push({
+                id: String(id || k),
+                name,
+                color:
+                  name?.toLowerCase().includes('admin') || name?.toLowerCase().includes('founder')
+                    ? 'red'
+                    : 'blue',
+              });
+            }
+          }
+          if (list.length > 0) return list;
+        }
+
+        return prev.roles;
+      })(),
 
       lineLeader: (record.line_leader as ManagerInfo) ?? prev.lineLeader,
 
@@ -357,6 +414,14 @@ export const useProfile = () => {
     // If authUser does not yet have employee_code, populate it into AuthContext + localStorage
     if (code && code !== 'N/A' && !authUser.employee_code) {
       updateUser({ employee_code: code, employeeCode: code });
+    }
+
+    // Sync database roles into authUser if matchedStaff has fresh roles from DB
+    if (matchedStaff?.roles && matchedStaff.roles.length > 0) {
+      const authRoleCount = Array.isArray(authUser.roles) ? authUser.roles.length : 1;
+      if (matchedStaff.roles.length !== authRoleCount) {
+        updateUser({ roles: matchedStaff.roles as any });
+      }
     }
   }, [authUser, matchedStaff, isAdmin, updateUser]);
 
@@ -423,7 +488,6 @@ export const useProfile = () => {
     if (!roleName.trim()) return;
 
     const colors = ['emerald', 'amber', 'indigo', 'rose', 'sky', 'purple', 'teal'];
-
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
     const newRole = {
@@ -432,14 +496,41 @@ export const useProfile = () => {
       color: randomColor,
     };
 
+    const updatedRoles = [
+      ...user.roles.filter((r) => r.name.toLowerCase() !== roleName.trim().toLowerCase()),
+      newRole,
+    ];
+
     setUser((prev) => ({
       ...prev,
-
-      roles: [
-        ...prev.roles.filter((r) => r.name.toLowerCase() !== roleName.trim().toLowerCase()),
-        newRole,
-      ],
+      roles: updatedRoles,
     }));
+
+    // Persist in localStorage and AuthContext
+    const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const updatedUser = {
+      ...existingUser,
+      roles: updatedRoles,
+    };
+    updateUser(updatedUser);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('aether_user_updated', { detail: updatedUser }));
+    }
+
+    // Sync with database if user ID exists
+    if (user.id) {
+      const validRoleIds = updatedRoles
+        .map((r) => Number(r.id))
+        .filter((id) => !isNaN(id) && id > 0);
+      updateStaff({
+        id: user.id,
+        roles: updatedRoles,
+        ...(validRoleIds.length > 0 ? { roleIds: validRoleIds } : {}),
+      } as any)
+        .unwrap()
+        .catch(() => {});
+    }
 
     showToast({
       severity: 'success',
@@ -453,11 +544,38 @@ export const useProfile = () => {
    * Remove role.
    */
   const removeRole = (roleId: string) => {
+    const updatedRoles = user.roles.filter((r) => r.id !== roleId);
+
     setUser((prev) => ({
       ...prev,
-
-      roles: prev.roles.filter((r) => r.id !== roleId),
+      roles: updatedRoles,
     }));
+
+    // Persist in localStorage and AuthContext
+    const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const updatedUser = {
+      ...existingUser,
+      roles: updatedRoles,
+    };
+    updateUser(updatedUser);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('aether_user_updated', { detail: updatedUser }));
+    }
+
+    // Sync with database if user ID exists
+    if (user.id) {
+      const validRoleIds = updatedRoles
+        .map((r) => Number(r.id))
+        .filter((id) => !isNaN(id) && id > 0);
+      updateStaff({
+        id: user.id,
+        roles: updatedRoles,
+        ...(validRoleIds.length > 0 ? { roleIds: validRoleIds } : {}),
+      } as any)
+        .unwrap()
+        .catch(() => {});
+    }
 
     showToast({
       severity: 'info',
@@ -629,6 +747,33 @@ export const useProfile = () => {
     }
   };
 
+  const updateRolesLocally = (newRoles: Array<{ id: string | number; name: string; color?: string }>) => {
+    const formatted = newRoles.map((r) => ({
+      id: String(r.id),
+      name: r.name,
+      color:
+        r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('founder')
+          ? 'red'
+          : 'blue',
+    }));
+    setUser((prev) => ({
+      ...prev,
+      roles: formatted,
+    }));
+    updateUser({
+      roles: formatted as any,
+    });
+    try {
+      const stored = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...stored, roles: formatted }));
+      window.dispatchEvent(
+        new CustomEvent('aether_user_updated', {
+          detail: { ...stored, roles: formatted },
+        })
+      );
+    } catch {}
+  };
+
   return {
     user,
 
@@ -654,5 +799,6 @@ export const useProfile = () => {
     handleLogout,
     addRole,
     removeRole,
+    updateRolesLocally,
   };
 };

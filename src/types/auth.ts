@@ -31,7 +31,7 @@ export interface User {
   contact_number?: string;
   department?: string;
   join_date?: string;
-  roles?: string[];
+  roles?: Array<string | { id?: number | string; name: string; is_system?: boolean }>;
   permissions?: string[];
   work_location?: string;
   workLocation?: string;

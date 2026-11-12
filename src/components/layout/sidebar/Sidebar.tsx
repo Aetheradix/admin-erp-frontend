@@ -142,32 +142,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return [];
   })();
 
-  const currentUserRoleName = (() => {
-    if (!user) return 'Viewer';
-    const primaryRole = getUserRoles(user)[0] || 'Employee';
-
-    switch (primaryRole) {
-      case 'SuperAdmin':
-        return 'Super Admin';
-
-      case 'Admin':
-        return 'Admin';
-
-      case 'HrAdmin':
-        return 'HR Admin';
-
-      case 'FinanceAdmin':
-        return 'Finance Admin';
-
-      case 'Manager':
-        return 'Manager';
-
-      case 'Employee':
-      default:
-        return 'Employee';
-    }
-  })();
-
   const labelToPermissionKey = (label: string): string | null => {
     const lower = label.toLowerCase();
     if (lower === 'organization' || lower === 'teams' || lower === 'team') return 'users';
@@ -240,12 +214,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       return false;
     }
 
-    // 3. Dynamic role permissions
+    // 3. Dynamic role permissions across multiple assigned roles (RBAC aggregation)
     const permKey = labelToPermissionKey(item.label);
     if (permKey && item.label !== 'Settings') {
-      const roleObj = erpRoles.find((r) => r.name === currentUserRoleName);
-      if (roleObj && roleObj.permissions && roleObj.permissions[permKey] === false) {
-        return false;
+      const userRoles = getUserRoles(user);
+      const matchingRoleObjs = erpRoles.filter((r) =>
+        userRoles.some(
+          (ur) =>
+            ur.toLowerCase() === (r.name || '').toLowerCase().replace(/[\s_-]/g, '') ||
+            ur.toLowerCase() === (r.name || '').toLowerCase()
+        )
+      );
+      if (matchingRoleObjs.length > 0) {
+        const hasGrant = matchingRoleObjs.some(
+          (r) => r.permissions && r.permissions[permKey] === true
+        );
+        if (!hasGrant) {
+          const allDeny = matchingRoleObjs.every(
+            (r) => r.permissions && r.permissions[permKey] === false
+          );
+          if (allDeny) return false;
+        }
       }
     }
 

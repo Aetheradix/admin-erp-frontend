@@ -11,6 +11,7 @@ import { OrganizationTab } from './components/OrganizationTab';
 import { OverviewTab } from './components/OverviewTab';
 import { ProfileForm } from './components/ProfileForm';
 import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
+import { ManageUserRolesModal } from './components/ManageUserRolesModal';
 import {
   getEmployeeProfile,
   getFormConfiguration,
@@ -31,10 +32,13 @@ const Profile = () => {
     handleEditSave,
     addRole,
     removeRole,
+    updateRolesLocally,
     handleAutoApproveToggle,
     isUpdatingAutoApprove,
     isLoadingAutoApprove,
   } = useProfile();
+
+  const [showManageRolesModal, setShowManageRolesModal] = useState(false);
 
   const { data: myProfileRes } = useGetMyProfileCompletionQuery(undefined, {
     pollingInterval: 10000,
@@ -214,6 +218,7 @@ const Profile = () => {
         onChangePassword={() => setShowPasswordModal(true)}
         onAddRole={addRole}
         onRemoveRole={removeRole}
+        onManageRoles={() => setShowManageRolesModal(true)}
       />
 
       {/* Main Tab Content / Form View */}
@@ -280,6 +285,14 @@ const Profile = () => {
         visible={showPasswordModal}
         onHide={() => setShowPasswordModal(false)}
         requireCurrentPassword={true}
+      />
+
+      {/* Role Management Dialog right on User Profile */}
+      <ManageUserRolesModal
+        visible={showManageRolesModal}
+        onClose={() => setShowManageRolesModal(false)}
+        user={effectiveUser}
+        onSaved={updateRolesLocally}
       />
     </div>
   );
