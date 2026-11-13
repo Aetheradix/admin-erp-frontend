@@ -142,6 +142,7 @@ export function OrganizationHierarchyView() {
       await updateReportingManager({
         userId: editManagerModal.user.id,
         reportingManagerId: editManagerModal.selectedManagerId,
+        reason: 'Reporting line updated via Organization Chart',
       }).unwrap();
       message.success(`Reporting relationship updated for ${editManagerModal.user.username}`);
       setEditManagerModal({ open: false, user: null, selectedManagerId: null });

@@ -34,9 +34,14 @@ import {
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermission } from '@/hooks/usePermission';
-import { searchLocations, type GeocodingResult } from '@/services/geocodingService';
+import { searchLocations, reverseGeocode, type GeocodingResult } from '@/services/geocodingService';
 import { LocationPinpointMap } from '@/components/common/LocationPinpointMap';
 import { getUltraAccuratePosition } from '@/utils/highAccuracyGeolocation';
+
+export interface BranchesPageProps {
+  autoOpenHQ?: boolean;
+  onClearAutoOpen?: () => void;
+}
 
 interface OfficeFormData {
   id?: number;
@@ -47,6 +52,7 @@ interface OfficeFormData {
   radius: number;
   timezone: string;
   is_active: boolean;
+  is_hq: boolean;
 }
 
 const emptyForm: OfficeFormData = {
@@ -57,9 +63,10 @@ const emptyForm: OfficeFormData = {
   radius: 100,
   timezone: 'Asia/Kolkata',
   is_active: true,
+  is_hq: false,
 };
 
-export function BranchesPage() {
+export function BranchesPage({ autoOpenHQ, onClearAutoOpen }: BranchesPageProps = {}) {
   const { isSuperadmin: isAuthSuper, roles } = useAuth();
   const { can, isSuperadmin: isPermSuper } = usePermission();
   const canManage =
@@ -97,6 +104,21 @@ export function BranchesPage() {
   const [createOffice, { isLoading: isCreating }] = useCreateOfficeMutation();
   const [updateOffice, { isLoading: isUpdating }] = useUpdateOfficeMutation();
   const [deleteOffice, { isLoading: isDeleting }] = useDeleteOfficeMutation();
+
+  // Handle auto-open Global HQ modal if redirected from Company Profile
+  useEffect(() => {
+    if (autoOpenHQ && !isLoadingOffices) {
+      const hq = offices.find((o) => o.is_hq || o.isHq) || offices[0];
+      if (hq) {
+        handleOpenEdit(hq);
+        setFormData((prev) => ({ ...prev, is_hq: true }));
+      } else {
+        handleOpenCreate();
+        setFormData((prev) => ({ ...prev, name: 'Global Headquarters', is_hq: true }));
+      }
+      onClearAutoOpen?.();
+    }
+  }, [autoOpenHQ, isLoadingOffices, offices]);
 
   // Debounced search for place autocomplete
   useEffect(() => {
@@ -154,6 +176,7 @@ export function BranchesPage() {
   const handleOpenEdit = (office: Office) => {
     setEditingOffice(office);
     const active = office.is_active ?? office.isActive ?? true;
+    const isHq = Boolean(office.is_hq ?? office.isHq);
     setFormData({
       id: office.id,
       name: office.name,
@@ -163,6 +186,7 @@ export function BranchesPage() {
       radius: office.radius,
       timezone: office.timezone || 'Asia/Kolkata',
       is_active: active,
+      is_hq: isHq,
     });
     setSearchQuery(office.address || office.name);
     setSearchResults([]);
@@ -178,18 +202,32 @@ export function BranchesPage() {
     setIsDetectingLocation(true);
     try {
       const pos = await getUltraAccuratePosition({ timeoutMs: 6000, desiredAccuracyMeters: 10 });
-      setIsDetectingLocation(false);
       const lat = Math.round(pos.latitude * 1e6) / 1e6;
       const lon = Math.round(pos.longitude * 1e6) / 1e6;
+
+      let resolvedAddress = '';
+      try {
+        const addr = await reverseGeocode(lat, lon);
+        if (addr) resolvedAddress = addr;
+      } catch (e) {
+        console.warn('Reverse geocode error:', e);
+      }
+
+      setIsDetectingLocation(false);
       setFormData((prev) => ({
         ...prev,
         latitude: lat,
         longitude: lon,
+        address: prev.address ? prev.address : resolvedAddress,
+        name: prev.name ? prev.name : (resolvedAddress ? resolvedAddress.split(',')[0] : prev.name),
       }));
+      if (resolvedAddress) {
+        setSearchQuery(resolvedAddress);
+      }
       showToast({
         severity: 'success',
         summary: 'Location Detected (Ultra-Accurate)',
-        detail: `Locked high-precision GPS (${lat.toFixed(4)}°, ${lon.toFixed(4)}°) with accuracy ±${Math.round(pos.accuracy)}m`,
+        detail: `Locked GPS (${lat.toFixed(4)}°, ${lon.toFixed(4)}) ±${Math.round(pos.accuracy)}m${resolvedAddress ? ` • ${resolvedAddress.slice(0, 35)}...` : ''}`,
       });
     } catch (err: any) {
       setIsDetectingLocation(false);
@@ -240,6 +278,7 @@ export function BranchesPage() {
           timezone: formData.timezone,
           is_active: formData.is_active,
           isActive: formData.is_active,
+          is_hq: Boolean(formData.is_hq),
         }).unwrap();
         showToast({ severity: 'success', summary: 'Updated', detail: `Office "${formData.name}" geofence updated.` });
       } else {
@@ -252,6 +291,7 @@ export function BranchesPage() {
           timezone: formData.timezone,
           is_active: formData.is_active,
           isActive: formData.is_active,
+          is_hq: Boolean(formData.is_hq),
         }).unwrap();
         showToast({ severity: 'success', summary: 'Created', detail: `New office "${formData.name}" registered.` });
       }
@@ -401,14 +441,22 @@ export function BranchesPage() {
                           </p>
                         )}
                       </div>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${isActive
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-surface-subtle text-muted border border-border-subtle'
-                          }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-muted'}`} />
-                        {isActive ? 'Active' : 'Inactive'}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${isActive
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-surface-subtle text-muted border border-border-subtle'
+                            }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-muted'}`} />
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        {Boolean(office.is_hq || office.isHq) && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                            <Building size={11} className="text-amber-600 dark:text-amber-400" />
+                            Global HQ
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Geofence Parameters Card */}
@@ -772,6 +820,23 @@ export function BranchesPage() {
                 height="170px"
               />
             </div>
+          </div>
+
+          {/* Global HQ Designation Toggle */}
+          <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25">
+            <input
+              type="checkbox"
+              id="office_hq_checkbox"
+              checked={formData.is_hq}
+              onChange={(e) => setFormData({ ...formData, is_hq: e.target.checked })}
+              className="rounded accent-amber-500 w-4 h-4 cursor-pointer"
+            />
+            <label htmlFor="office_hq_checkbox" className="text-xs font-black text-amber-900 dark:text-amber-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-1">
+              <span>Designate as Organization Global Headquarters (Global HQ)</span>
+              <span className="text-[10px] font-semibold text-muted font-normal">
+                (Automatically syncs with Company Profile Overview)
+              </span>
+            </label>
           </div>
 
           {/* Active Status Checkbox */}

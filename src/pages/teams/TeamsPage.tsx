@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import {
@@ -8,7 +8,11 @@ import {
   Pencil,
   Trash2,
   Search,
+  LayoutGrid,
+  Table as TableIcon,
 } from 'lucide-react';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
@@ -22,6 +26,8 @@ import {
 } from '@/store/api/teamsApiSlice';
 import type { Team, CreateTeamPayload } from '@/store/api/teamsApiSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
+import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
+import { useGetDepartmentsQuery } from '@/store/api/authApiSlice';
 import { useAuth } from '@/hooks/useAuth';
 
 const COLORS = [
@@ -33,15 +39,6 @@ const COLORS = [
   '#06B6D4',
   '#6366F1',
   '#14B8A6',
-];
-
-const DEPARTMENTS = [
-  { label: 'Technology', value: 'Technology' },
-  { label: 'Creative', value: 'Creative' },
-  { label: 'Growth', value: 'Growth' },
-  { label: 'Revenue', value: 'Revenue' },
-  { label: 'People', value: 'People' },
-  { label: 'Infrastructure', value: 'Infrastructure' },
 ];
 
 interface TeamFormState {
@@ -70,32 +67,90 @@ export function TeamsPage() {
 
   const { data: teams = [], isLoading, isError, refetch } = useGetTeamsQuery();
   const { data: users = [] } = useGetUsersQuery();
+  const { data: hierarchyData } = useGetOrganizationHierarchyQuery();
+  const { data: deptResponse } = useGetDepartmentsQuery();
 
   const [createTeam, { isLoading: creating }] = useCreateTeamMutation();
   const [updateTeam, { isLoading: updating }] = useUpdateTeamMutation();
   const [deleteTeam] = useDeleteTeamMutation();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState('ALL');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [form, setForm] = useState<TeamFormState>(emptyForm);
 
+  // Dynamic Departments from Database (departments table, hierarchy, users, teams)
+  const departmentOptions = useMemo(() => {
+    const list: string[] = [];
+
+    // 1. From departments table via hierarchy
+    if (hierarchyData?.data?.departments) {
+      hierarchyData.data.departments.forEach((d) => {
+        if (d.department_name && !list.includes(d.department_name)) {
+          list.push(d.department_name);
+        }
+      });
+    }
+
+    // 2. From metadata departments
+    const rawDepts = (deptResponse as any)?.data || deptResponse || [];
+    if (Array.isArray(rawDepts)) {
+      rawDepts.forEach((d: any) => {
+        const name = d.department_name || d.name;
+        if (name && !list.includes(name)) {
+          list.push(name);
+        }
+      });
+    }
+
+    // 3. From users' departments
+    users.forEach((u) => {
+      if (u.department && !list.includes(u.department)) {
+        list.push(u.department);
+      }
+    });
+
+    // 4. From existing teams' departments
+    teams.forEach((t) => {
+      if (t.department && !list.includes(t.department)) {
+        list.push(t.department);
+      }
+    });
+
+    return list.sort().map((d) => ({ label: d, value: d }));
+  }, [hierarchyData, deptResponse, users, teams]);
+
+  // Dynamic User Options with real Roles and Designations from DB
+  const userOptions = useMemo(() => {
+    return users.map((u) => {
+      const roleStr = [u.role, (u as any).designation].filter(Boolean).join(' • ');
+      return {
+        label: `${u.name || u.username || u.email}${roleStr ? ` (${roleStr})` : ''}`,
+        value: String(u.id),
+      };
+    });
+  }, [users]);
+
   const filteredTeams = teams.filter((t) => {
+    if (selectedDeptFilter !== 'ALL' && t.department !== selectedDeptFilter) {
+      return false;
+    }
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return t.name.toLowerCase().includes(q) || t.department.toLowerCase().includes(q);
+    return (
+      t.name.toLowerCase().includes(q) ||
+      t.department.toLowerCase().includes(q) ||
+      (t.manager_name && t.manager_name.toLowerCase().includes(q))
+    );
   });
 
   const totalMembers = teams.reduce((s, t) => s + t.member_count, 0);
   const totalProjects = teams.reduce((s, t) => s + t.project_count, 0);
   const uniqueDepts = new Set(teams.map((t) => t.department)).size;
-
-  const userOptions = users.map((u) => ({
-    label: u.name || u.username || u.email,
-    value: String(u.id),
-  }));
 
   const openCreate = () => {
     setForm({ ...emptyForm, color: COLORS[teams.length % COLORS.length] });
@@ -148,6 +203,141 @@ export function TeamsPage() {
     await deleteTeam(team.id).unwrap().catch(() => null);
   };
 
+  const teamColumns: ColumnsType<Team> = [
+    {
+      title: 'Team',
+      key: 'team',
+      render: (_, team) => (
+        <div className="flex items-center gap-3 py-1">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-white text-xs shadow-xs"
+            style={{ backgroundColor: team.color }}
+          >
+            <Users size={18} />
+          </div>
+          <div className="flex flex-col">
+            <span
+              onClick={() => navigate(`/teams/${team.id}`)}
+              className="text-sm font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
+            >
+              {team.name}
+            </span>
+            {team.description && (
+              <span className="text-xs text-muted line-clamp-1 max-w-[280px]">
+                {team.description}
+              </span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Department',
+      dataIndex: 'department',
+      key: 'department',
+      render: (dept: string) => (
+        <span className="inline-block px-2.5 py-0.5 rounded-lg bg-surface-subtle border border-border-subtle text-xs font-bold text-foreground">
+          {dept}
+        </span>
+      ),
+    },
+    {
+      title: 'Manager',
+      key: 'manager',
+      render: (_, team) => (
+        <div className="flex items-center gap-2">
+          <Crown size={14} className="text-amber-500 shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-foreground">
+              {team.manager_name || 'No manager'}
+            </span>
+            {(team.manager_role || team.manager_designation) && (
+              <span className="text-[10px] text-muted">
+                {[team.manager_role, team.manager_designation].filter(Boolean).join(' • ')}
+              </span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Members',
+      dataIndex: 'member_count',
+      key: 'member_count',
+      align: 'center' as const,
+      render: (count: number) => (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-subtle text-xs font-bold text-foreground">
+          <Users size={12} className="text-muted" />
+          {count}
+        </span>
+      ),
+    },
+    {
+      title: 'Projects',
+      dataIndex: 'project_count',
+      key: 'project_count',
+      align: 'center' as const,
+      render: (count: number) => (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-subtle text-xs font-bold text-foreground">
+          <Folder size={12} className="text-muted" />
+          {count}
+        </span>
+      ),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => (
+        <span
+          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+            status === 'Active'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-muted/10 text-muted border border-border-subtle'
+          }`}
+        >
+          {status || 'Active'}
+        </span>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'right' as const,
+      render: (_, team) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(`/teams/${team.id}`)}
+            className="text-xs font-bold text-primary hover:underline cursor-pointer px-2 py-1"
+          >
+            View →
+          </button>
+          {canManage && (
+            <>
+              <button
+                type="button"
+                onClick={() => openEdit(team)}
+                className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                title="Edit team"
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(team)}
+                className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                title="Delete team"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   const TeamFormFields = () => (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
@@ -165,7 +355,7 @@ export function TeamsPage() {
           Department *
         </label>
         <Select
-          options={DEPARTMENTS}
+          options={departmentOptions}
           value={form.department}
           onChange={(e) => setForm({ ...form, department: e.value as string })}
           placeholder="Select department"
@@ -276,30 +466,90 @@ export function TeamsPage() {
         ))}
       </div>
 
-      {/* Directory Header + Search */}
-      <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-4 px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span className="text-sm font-black text-foreground uppercase tracking-wider">
-          Directory View
-        </span>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search teams..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1.5 rounded-xl border border-border-subtle bg-surface-subtle text-xs font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 w-48"
-            />
+      {/* Directory Header + Search + View Mode */}
+      <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-4 px-6 flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-black text-foreground uppercase tracking-wider">
+              Directory View
+            </span>
+            <div className="flex items-center gap-1 p-1 bg-surface-subtle rounded-xl border border-border-subtle">
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-white text-foreground shadow-xs'
+                    : 'text-muted hover:text-foreground'
+                }`}
+              >
+                <TableIcon size={14} />
+                Table
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'cards'
+                    ? 'bg-white text-foreground shadow-xs'
+                    : 'text-muted hover:text-foreground'
+                }`}
+              >
+                <LayoutGrid size={14} />
+                Cards
+              </button>
+            </div>
           </div>
-          <span className="text-xs text-muted font-bold whitespace-nowrap">
-            {filteredTeams.length} Active Teams
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search teams..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 rounded-xl border border-border-subtle bg-surface-subtle text-xs font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 w-48"
+              />
+            </div>
+            <span className="text-xs text-muted font-bold whitespace-nowrap">
+              {filteredTeams.length} Active Teams
+            </span>
+          </div>
         </div>
+        {/* Department Filter Chips */}
+        {departmentOptions.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setSelectedDeptFilter('ALL')}
+              className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide cursor-pointer transition-all border ${
+                selectedDeptFilter === 'ALL'
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-surface-subtle text-muted border-transparent hover:text-foreground hover:border-border-subtle'
+              }`}
+            >
+              All
+            </button>
+            {departmentOptions.map((d) => (
+              <button
+                key={d.value}
+                type="button"
+                onClick={() => setSelectedDeptFilter(selectedDeptFilter === d.value ? 'ALL' : d.value)}
+                className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide cursor-pointer transition-all border ${
+                  selectedDeptFilter === d.value
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-surface-subtle text-muted border-transparent hover:text-foreground hover:border-border-subtle'
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {filteredTeams.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-muted">
+        <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-muted bg-white rounded-2xl border border-border-subtle p-8">
           <Users size={40} className="opacity-30" />
           <span className="font-bold text-sm">
             {searchQuery ? `No teams matching "${searchQuery}"` : 'No teams yet'}
@@ -307,6 +557,21 @@ export function TeamsPage() {
           {!searchQuery && canManage && (
             <Button label="Create First Team" onClick={openCreate} />
           )}
+        </div>
+      ) : viewMode === 'table' ? (
+        <div className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden p-2">
+          <Table
+            columns={teamColumns}
+            dataSource={filteredTeams}
+            rowKey="id"
+            pagination={{
+              pageSize: 8,
+              showSizeChanger: true,
+              pageSizeOptions: ['5', '8', '15', '25'],
+            }}
+            className="premium-table"
+            scroll={{ x: 'max-content' }}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

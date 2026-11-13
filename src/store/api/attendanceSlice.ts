@@ -17,6 +17,8 @@ export interface Office {
   latitude: number;
   longitude: number;
   radius: number;
+  is_hq?: boolean;
+  isHq?: boolean;
   isActive?: boolean;
   is_active?: boolean;
   timezone?: string;

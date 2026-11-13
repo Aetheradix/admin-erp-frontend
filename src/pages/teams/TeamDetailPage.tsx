@@ -14,7 +14,16 @@ import {
   Search,
   Folder,
 } from 'lucide-react';
-import { useGetTeamByIdQuery, useGetTeamMembersQuery, useAddTeamMemberMutation, useRemoveTeamMemberMutation, useChangeTeamManagerMutation } from '@/store/api/teamsApiSlice';
+import {
+  useGetTeamByIdQuery,
+  useGetTeamMembersQuery,
+  useAddTeamMemberMutation,
+  useRemoveTeamMemberMutation,
+  useChangeTeamManagerMutation,
+  type TeamMember,
+} from '@/store/api/teamsApiSlice';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useAuth } from '@/hooks/useAuth';
 import type { StaffMember } from '@/types/models';
@@ -108,6 +117,106 @@ export function TeamDetailPage() {
     member.name || member.username || member.email;
 
   const getUserDisplayName = (u: StaffMember) => u.name || u.username || u.email;
+
+  const memberColumns: ColumnsType<TeamMember> = [
+    {
+      title: 'Member',
+      key: 'member',
+      render: (_, member) => {
+        const displayName = getDisplayName(member);
+        const initials = getInitials(member);
+        const isManager = team && member.id === team.manager_id;
+        return (
+          <div className="flex items-center gap-3 py-1">
+            {member.image_url || member.image ? (
+              <img
+                src={member.image_url || member.image}
+                alt={displayName}
+                className="w-9 h-9 rounded-full object-cover border border-border-subtle shrink-0"
+              />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-xs shrink-0"
+                style={{ backgroundColor: team?.color || '#3B82F6' }}
+              >
+                {initials}
+              </div>
+            )}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-foreground">{displayName}</span>
+                {isManager && (
+                  <span title="Team Manager">
+                    <Crown size={12} className="text-amber-500 shrink-0" />
+                  </span>
+                )}
+              </div>
+              {member.username && member.name && (
+                <span className="text-xs text-muted">@{member.username}</span>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      render: (email: string) => <span className="text-sm text-muted font-medium">{email}</span>,
+    },
+    {
+      title: 'Designation',
+      dataIndex: 'designation',
+      key: 'designation',
+      render: (desig: string) => <span className="text-sm text-muted font-medium">{desig || '—'}</span>,
+    },
+    {
+      title: 'Role',
+      dataIndex: 'role',
+      key: 'role',
+      render: (role: string) => (
+        <span className="inline-block px-2.5 py-0.5 rounded-md bg-surface-subtle border border-border-subtle text-xs font-semibold text-foreground">
+          {role || '—'}
+        </span>
+      ),
+    },
+    {
+      title: 'Department',
+      dataIndex: 'department',
+      key: 'department',
+      render: (dept: string) => <span className="text-sm text-muted font-medium">{dept || '—'}</span>,
+    },
+    {
+      title: 'Joined',
+      dataIndex: 'assigned_at',
+      key: 'assigned_at',
+      render: (date: string) => (
+        <span className="text-xs text-muted font-medium">
+          {date ? new Date(date).toLocaleDateString() : '—'}
+        </span>
+      ),
+    },
+    ...(canManage
+      ? [
+          {
+            title: 'Action',
+            key: 'action',
+            align: 'right' as const,
+            render: (_: any, member: TeamMember) => (
+              <button
+                type="button"
+                onClick={() => handleRemoveMember(member.id, getDisplayName(member))}
+                className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                title="Remove member"
+              >
+                <Trash2 size={15} />
+              </button>
+            ),
+          },
+        ]
+      : []),
+  ];
 
   if (teamLoading || membersLoading) {
     return (
@@ -245,102 +354,19 @@ export function TeamDetailPage() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border-subtle bg-surface-subtle/40">
-                  <th className="px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted">
-                    Member
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted">
-                    Designation
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted">
-                    Department
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted">
-                    Joined
-                  </th>
-                  {canManage && (
-                    <th className="px-6 py-3 text-right text-[10px] font-black uppercase tracking-widest text-muted">
-                      Action
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((member, i) => {
-                  const displayName = getDisplayName(member);
-                  const initials = getInitials(member);
-                  const isManager = member.id === team.manager_id;
-                  return (
-                    <tr
-                      key={member.id}
-                      className={`border-b border-border-subtle/50 hover:bg-surface-subtle/30 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-subtle/10'}`}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {member.image_url || member.image ? (
-                            <img
-                              src={member.image_url || member.image}
-                              alt={displayName}
-                              className="w-9 h-9 rounded-full object-cover border border-border-subtle"
-                            />
-                          ) : (
-                            <div
-                              className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-sm"
-                              style={{ backgroundColor: team.color }}
-                            >
-                              {initials}
-                            </div>
-                          )}
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-bold text-foreground">{displayName}</span>
-                              {isManager && (
-                                <span title="Team Manager">
-                                  <Crown size={12} className="text-amber-500" />
-                                </span>
-                              )}
-                            </div>
-                            {member.username && member.name && (
-                              <span className="text-xs text-muted">@{member.username}</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted font-medium">{member.email}</td>
-                      <td className="px-6 py-4 text-sm text-muted font-medium">
-                        {member.designation || '—'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted font-medium">
-                        {member.department || '—'}
-                      </td>
-                      <td className="px-6 py-4 text-xs text-muted font-medium">
-                        {member.assigned_at
-                          ? new Date(member.assigned_at).toLocaleDateString()
-                          : '—'}
-                      </td>
-                      {canManage && (
-                        <td className="px-6 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMember(member.id, displayName)}
-                            className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                            title="Remove member"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="p-2">
+            <Table
+              columns={memberColumns}
+              dataSource={members}
+              rowKey="id"
+              pagination={{
+                pageSize: 8,
+                showSizeChanger: true,
+                pageSizeOptions: ['5', '8', '15', '30'],
+              }}
+              className="premium-table"
+              scroll={{ x: 'max-content' }}
+            />
           </div>
         )}
       </motion.div>

@@ -33,6 +33,9 @@ import type { ColumnsType } from 'antd/es/table';
 import { BranchesPage } from './BranchesPage';
 import { OrganizationHierarchyView } from './components/OrganizationHierarchyView';
 import { useUploadImageMutation } from '@/store/api/uploadSlice';
+import { useGetAllOfficesQuery } from '@/store/api/attendanceSlice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
+import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermission } from '@/hooks/usePermission';
 
@@ -68,7 +71,7 @@ const initialCompanyInfo = {
   website: 'https://aetheradix.com',
   email: 'contact@aetheradix.com',
   phone: '+1 (555) 234-5678',
-  employees: 156,
+  employees: 0,
   address: '42 Innovation Drive, Tech City, CA 94043',
   description:
     'Aetheradix Technologies provides next-generation enterprise resource planning and intelligent automation solutions. We empower modern teams with streamlined project execution, high-velocity financial workflows, and end-to-end operational visibility.',
@@ -242,12 +245,28 @@ export function OrganizationPage() {
     );
 
   const [activeTab, setActiveTab] = useState('Overview');
+  const [autoOpenHQ, setAutoOpenHQ] = useState(false);
+  const { data: offices = [] } = useGetAllOfficesQuery();
+  const { data: users = [], isLoading: isLoadingUsers } = useGetUsersQuery();
+  const { data: hierarchyData } = useGetOrganizationHierarchyQuery();
+
+  const totalEmployeesCount = useMemo(() => {
+    if (users.length > 0) return users.length;
+    if (hierarchyData?.data?.stats?.totalEmployees) return hierarchyData.data.stats.totalEmployees;
+    if (hierarchyData?.data?.flatUsers?.length) return hierarchyData.data.flatUsers.length;
+    return 0;
+  }, [users, hierarchyData]);
+
+  const hqOffice = useMemo(() => {
+    return offices.find((o) => o.is_hq || o.isHq) || offices[0];
+  }, [offices]);
+
   const [companyInfo, setCompanyInfo] = useState(initialCompanyInfo);
   const [documents, setDocuments] = useState<CompanyDocument[]>(() => {
     try {
       const saved = localStorage.getItem('erp_compliance_documents');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return initialDocuments;
   });
   const [policies] = useState<PolicyItem[]>(initialPolicies);
@@ -255,7 +274,7 @@ export function OrganizationPage() {
   useEffect(() => {
     try {
       localStorage.setItem('erp_compliance_documents', JSON.stringify(documents));
-    } catch {}
+    } catch { }
   }, [documents]);
 
   // Documents visible to the current user (employees only see Public docs, admins see all)
@@ -390,9 +409,8 @@ export function OrganizationPage() {
       key: 'category',
       render: (cat: string) => (
         <span
-          className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-            categoryBadgeColors[cat] || 'bg-surface-subtle text-muted'
-          }`}>
+          className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${categoryBadgeColors[cat] || 'bg-surface-subtle text-muted'
+            }`}>
           {cat}
         </span>
       ),
@@ -416,11 +434,10 @@ export function OrganizationPage() {
         if (!canManageOrg) {
           return (
             <span
-              className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 border select-none ${
-                record.visibility === 'Public'
+              className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 border select-none ${record.visibility === 'Public'
                   ? 'bg-success/10 text-success border-success/20'
                   : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-              }`}>
+                }`}>
               {record.visibility === 'Public' ? (
                 <>
                   <Unlock size={12} />
@@ -438,11 +455,10 @@ export function OrganizationPage() {
         return (
           <button
             onClick={() => handleToggleVisibility(record.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 transition-all border cursor-pointer ${
-              record.visibility === 'Public'
+            className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 transition-all border cursor-pointer ${record.visibility === 'Public'
                 ? 'bg-success/10 text-success border-success/20 hover:bg-success/20'
                 : 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20'
-            }`}>
+              }`}>
             {record.visibility === 'Public' ? (
               <>
                 <Unlock size={12} />
@@ -495,13 +511,13 @@ export function OrganizationPage() {
         primaryAction={
           canManageOrg
             ? {
-                label: 'Edit Profile',
-                onClick: () => {
-                  setEditForm(companyInfo);
-                  setShowEditProfileModal(true);
-                },
-                icon: 'pi pi-pencil',
-              }
+              label: 'Edit Profile',
+              onClick: () => {
+                setEditForm(companyInfo);
+                setShowEditProfileModal(true);
+              },
+              icon: 'pi pi-pencil',
+            }
             : undefined
         }
       />
@@ -561,8 +577,16 @@ export function OrganizationPage() {
           {/* Key Metric Highlights */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: 'Workforce Strength', val: `${companyInfo.employees}+`, icon: Users },
-              { label: 'Active Branches', val: '6 Locations', icon: MapPin },
+              {
+                label: 'Workforce Strength',
+                val: isLoadingUsers && totalEmployeesCount === 0 ? '...' : `${totalEmployeesCount}`,
+                icon: Users,
+              },
+              {
+                label: 'Active Branches',
+                val: `${offices.length} Location${offices.length === 1 ? '' : 's'}`,
+                icon: MapPin,
+              },
               { label: 'Published Policies', val: `${policies.length} Active`, icon: BookOpen },
               { label: 'Compliance Docs', val: `${documents.length} Verified`, icon: Shield },
             ].map((m, i) => (
@@ -585,10 +609,49 @@ export function OrganizationPage() {
 
           {/* Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Global HQ Interactive Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => {
+                setActiveTab('Offices & Branches');
+                setAutoOpenHQ(true);
+              }}
+              title="Click to view & select Global HQ geolocation in Office Geofencing"
+              className="bg-white rounded-[28px] border-2 border-primary/30 hover:border-primary shadow-soft p-8 flex items-start gap-5 group hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-bl-xl border-l border-b border-primary/20 flex items-center gap-1">
+                <Sparkles size={11} />
+                <span>Geofenced HQ</span>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shrink-0">
+                <MapPin size={22} />
+              </div>
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em] flex items-center gap-1.5">
+                  Global HQ
+                  <span className="text-primary text-[10px] font-bold group-hover:translate-x-0.5 transition-transform inline-flex items-center">
+                    (Edit &rarr;)
+                  </span>
+                </span>
+                <span className="text-sm font-bold text-foreground line-clamp-2">
+                  {hqOffice?.address || hqOffice?.name || companyInfo.address}
+                </span>
+                {hqOffice && (
+                  <span className="text-[11px] font-mono font-semibold text-muted mt-0.5">
+                    {Number(hqOffice.latitude).toFixed(4)}°, {Number(hqOffice.longitude).toFixed(4)}° • {hqOffice.radius}m zone
+                  </span>
+                )}
+              </div>
+            </motion.div>
+
             {[
-              { icon: MapPin, label: 'Global HQ', value: companyInfo.address },
               { icon: Calendar, label: 'Established', value: companyInfo.founded },
-              { icon: Users, label: 'Headcount', value: `${companyInfo.employees} Employees` },
+              {
+                icon: Users,
+                label: 'Headcount',
+                value: isLoadingUsers && totalEmployeesCount === 0 ? 'Loading...' : `${totalEmployeesCount} Employees`,
+              },
               { icon: Globe, label: 'Official Portal', value: companyInfo.website, isLink: true },
               { icon: Mail, label: 'Corporate Email', value: companyInfo.email },
               { icon: Phone, label: 'Direct Line', value: companyInfo.phone },
@@ -597,7 +660,7 @@ export function OrganizationPage() {
                 key={item.label}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
+                transition={{ duration: 0.3, delay: (i + 1) * 0.05 }}
                 className="bg-white rounded-[28px] border border-border-subtle shadow-soft p-8 flex items-start gap-5 group hover:shadow-lg transition-all duration-300">
                 <div className="w-12 h-12 rounded-2xl bg-surface-subtle flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 shrink-0">
                   <item.icon size={22} />
@@ -826,7 +889,12 @@ export function OrganizationPage() {
       )}
 
       {/* ── TAB 5: OFFICES & BRANCHES ── */}
-      {activeTab === 'Offices & Branches' && <BranchesPage />}
+      {activeTab === 'Offices & Branches' && (
+        <BranchesPage
+          autoOpenHQ={autoOpenHQ}
+          onClearAutoOpen={() => setAutoOpenHQ(false)}
+        />
+      )}
 
       {/* ── EDIT PROFILE MODAL ── */}
       <Dialog

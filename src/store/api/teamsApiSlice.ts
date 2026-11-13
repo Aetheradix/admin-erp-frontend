@@ -7,6 +7,8 @@ export interface Team {
   description?: string;
   manager_id?: number;
   manager_name?: string;
+  manager_role?: string;
+  manager_designation?: string;
   color: string;
   status: string;
   created_at?: string;
@@ -19,6 +21,7 @@ export interface TeamMember {
   username?: string;
   name?: string;
   email: string;
+  role?: string;
   designation?: string;
   department?: string;
   image_url?: string;
