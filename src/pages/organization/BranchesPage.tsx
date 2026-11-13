@@ -833,9 +833,9 @@ export function BranchesPage({ autoOpenHQ, onClearAutoOpen }: BranchesPageProps 
             />
             <label htmlFor="office_hq_checkbox" className="text-xs font-black text-amber-900 dark:text-amber-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-1">
               <span>Designate as Organization Global Headquarters (Global HQ)</span>
-              <span className="text-[10px] font-semibold text-muted font-normal">
+              {/* <span className="text-[10px] font-semibold text-muted font-normal">
                 (Automatically syncs with Company Profile Overview)
-              </span>
+              </span> */}
             </label>
           </div>
 
