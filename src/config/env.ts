@@ -10,7 +10,6 @@ const HOST_MAPPING: Record<string, string> = {
 
 const getApiBaseUrl = (): string => {
   const hostname = window.location.hostname;
-  console.log(import.meta.env.VITE_API_BASE_URL, hostname, HOST_MAPPING[hostname]);
 
   // Priority 1: Environment Variable (you can override if needed)
   if (import.meta.env.VITE_API_BASE_URL !== undefined && import.meta.env.VITE_API_BASE_URL !== '') {
