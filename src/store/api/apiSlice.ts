@@ -99,6 +99,8 @@ export const apiSlice = createApi({
     'Departments',
     'LeaveApproverConfig',
     'Offices',
+    'Teams',
+    'TeamMembers',
   ],
   endpoints: () => ({}),
 });
