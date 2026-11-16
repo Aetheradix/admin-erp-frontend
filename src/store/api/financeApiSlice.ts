@@ -353,8 +353,14 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Fetch all salary slips
-    getAllSalarySlips: builder.query<any, void>({
-      query: () => '/finance/salary-slips',
+    getAllSalarySlips: builder.query<any, void | { scope?: string; all?: boolean }>({
+      query: (params) => {
+        if (params && typeof params === 'object') {
+          const qs = new URLSearchParams(params as any).toString();
+          return `/finance/salary-slips?${qs}`;
+        }
+        return '/finance/salary-slips?scope=all&all=true';
+      },
       transformResponse: (response: any) => {
         const payload = response?.data ?? response?.result ?? response;
         return mapSalarySlipResponse(payload);
