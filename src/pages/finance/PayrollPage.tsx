@@ -131,6 +131,31 @@ export const savePayrollStatusOverride = (id: string | number, status: 'pending'
   }
 };
 
+export const resolvePayrollStatus = (item: Record<string, any>): 'void' | 'paid' | 'pending' => {
+  const isVoid =
+    item.is_void === true ||
+    item.is_void === 1 ||
+    item.isVoid === true ||
+    String(item.payment_status || item.paymentStatus || '').toLowerCase() === 'void' ||
+    String(item.hr_note || item.hrNote || item.remarks || '').includes('[VOID');
+
+  if (isVoid) return 'void';
+
+  const itemId = String(item.id || item.salary_slip_id || item.salarySlipId || '');
+  const statusOverrides = getPayrollStatusOverrides();
+  const overrideStatus = itemId ? statusOverrides[itemId] : undefined;
+
+  // 1. If explicit override was set by user action, prioritize it for instant reactivity across pages
+  if (overrideStatus === 'paid' || overrideStatus === 'pending') {
+    return overrideStatus;
+  }
+
+  // 2. Fall back to server payment_status
+  const raw = String(item.payment_status || item.paymentStatus || item.status || '').toLowerCase().trim();
+  if (raw === 'paid') return 'paid';
+  return 'pending';
+};
+
 const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): PayrollRecord => {
   const monthNames = [
     'JANUARY',
@@ -196,17 +221,7 @@ const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): Payro
     }
   }
 
-  const statusOverrides = getPayrollStatusOverrides();
-  const overrideStatus = statusOverrides[String(item.id)];
-  const rawStatus = (item.payment_status || item.paymentStatus || overrideStatus || '').toLowerCase();
-  // Server payment_status takes precedence over localStorage overrides
-  const effectiveStatus = isVoid
-    ? 'void'
-    : rawStatus === 'paid'
-      ? 'paid'
-      : overrideStatus
-        ? overrideStatus
-        : 'pending';
+  const effectiveStatus = resolvePayrollStatus(item);
 
   const detectedCycle =
     item.pay_cycle ||
@@ -432,9 +447,11 @@ export default function PayrollPage() {
       refetchLogs();
     };
     window.addEventListener('payroll_data_updated', handleSync);
+    window.addEventListener('payroll_status_updated', handleSync);
     window.addEventListener('storage', handleSync);
     return () => {
       window.removeEventListener('payroll_data_updated', handleSync);
+      window.removeEventListener('payroll_status_updated', handleSync);
       window.removeEventListener('storage', handleSync);
     };
   }, [refetchSlips, refetchLogs]);
@@ -503,7 +520,8 @@ export default function PayrollPage() {
           item.employeeName?.toLowerCase().includes(query) ||
           item.employeeCode?.toLowerCase().includes(query) ||
           item.department?.toLowerCase().includes(query) ||
-          item.paySlipNo?.toLowerCase().includes(query)
+          item.paySlipNo?.toLowerCase().includes(query) ||
+          item.paymentStatus?.toLowerCase().includes(query)
       );
     }
 

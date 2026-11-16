@@ -27,7 +27,7 @@ import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 import SalarySlipTemplate from './components/SalarySlipTemplate';
 import { TaxProjectionModal } from './components/TaxProjectionModal';
 import { extractSlipNumber } from '@/utils/payroll';
-import { getPayrollStatusOverrides } from './PayrollPage';
+import { resolvePayrollStatus } from './PayrollPage';
 
 export interface PayrollRecord {
   id: number;
@@ -248,11 +248,7 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
       findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) ||
         'For any discrepancies, please contact the HR department within 3 working days.'
     ),
-    isVoid: Boolean(
-      findDeepValue(item, ['is_void', 'isVoid']) === true ||
-      findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
-      String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID')
-    ),
+    isVoid: resolvePayrollStatus(item) === 'void',
     voidReason: String(
       findDeepValue(item, ['void_reason', 'voidReason']) ||
       (String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID: ')
@@ -263,23 +259,7 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
             ?.trim()
         : '')
     ),
-    paymentStatus: (() => {
-      const isVoid =
-        findDeepValue(item, ['is_void', 'isVoid']) === true ||
-        findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
-        String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID');
-      if (isVoid) return 'void';
-      const raw = String(findDeepValue(item, ['payment_status', 'paymentStatus']) || '').toLowerCase();
-      if (raw === 'paid' || raw === 'pending') {
-        return raw;
-      }
-      const overrides = getPayrollStatusOverrides();
-      const itemId = findDeepValue(item, ['id', 'salary_slip_id', 'salarySlipId']);
-      if (itemId && overrides[String(itemId)]) {
-        return overrides[String(itemId)];
-      }
-      return 'pending';
-    })(),
+    paymentStatus: resolvePayrollStatus(item),
   };
 };
 
@@ -575,6 +555,7 @@ const MyPaySlipPage = () => {
         slip.paySlipNo.toLowerCase().includes(query) ||
         slip.monthYear.toLowerCase().includes(query) ||
         slip.employeeName.toLowerCase().includes(query) ||
+        (slip.paymentStatus && slip.paymentStatus.toLowerCase().includes(query)) ||
         String(slip.netSalary).includes(query) ||
         String(slip.id).includes(query)
       );
