@@ -14,7 +14,7 @@ interface ProjectCardProps {
 export default function ProjectCard({
   title,
   tasks = 0,
-  value = '$ 0',
+  value = '₹ 0',
   color = '#4F46E5',
   category = 'GENERAL',
   participants = 0,

@@ -1084,17 +1084,26 @@ const SalarySlipForm = ({
 
   const liveTaxResult: TaxCalculationResult | null = useMemo(() => {
     if (estimatedAnnualGross <= 0) return null;
+    const mult =
+      formData.payCycle === 'Weekly' ? 52 :
+      formData.payCycle === 'Bi-Weekly' ? 26 :
+      formData.payCycle === 'Semi-Monthly' ? 24 : 12;
+    const annualBasic =
+      Number(formData.baseSalary) > 0
+        ? Number(formData.baseSalary) * mult
+        : Math.round(estimatedAnnualGross * 0.5);
+
     return calculateTaxForEmployee({
       annualGrossSalary: estimatedAnnualGross,
       regime: formData.taxRegime || 'New Regime',
-      basicSalary: Number(formData.baseSalary) || Math.round(estimatedAnnualGross * 0.5),
+      basicSalary: annualBasic,
       isMidYearJoiner: Boolean(
         selectedEmployeeObj?.isMidYearJoiner ?? selectedEmployeeObj?.is_mid_year_joiner
       ),
       previousEmployerYtd:
         selectedEmployeeObj?.previousEmployerYtd || selectedEmployeeObj?.previous_employer_ytd,
     });
-  }, [estimatedAnnualGross, formData.taxRegime, formData.baseSalary, selectedEmployeeObj]);
+  }, [estimatedAnnualGross, formData.taxRegime, formData.baseSalary, formData.payCycle, selectedEmployeeObj]);
 
   const handleToggleDeductIncomeTax = (checked: boolean) => {
     setDeductIncomeTax(checked);
@@ -3441,20 +3450,23 @@ const SalarySlipForm = ({
         <TaxProjectionModal
           isOpen={showTaxProjectionModal}
           onClose={() => setShowTaxProjectionModal(false)}
-          initialEmployee={
-            selectedEmployeeObj || {
-              id: formData.employeeId,
-              name: formData.employeeName,
-              employeeName: formData.employeeName,
-              employeeId: formData.employeeId,
-              department: formData.department,
-              designation: formData.position,
-              totalCompensation: Number(formData.totalCompensation) || estimatedAnnualGross,
-              annualCtc: Number(formData.totalCompensation) || estimatedAnnualGross,
-              taxRegime: formData.taxRegime,
-              panNumber: formData.panNumber,
-            }
-          }
+          initialEmployee={{
+            ...(selectedEmployeeObj || {}),
+            id: selectedEmployeeObj?.id || formData.employeeId || formData.userId,
+            userId: selectedEmployeeObj?.id || formData.employeeId || formData.userId,
+            user_id: selectedEmployeeObj?.id || formData.employeeId || formData.userId,
+            name: formData.employeeName || selectedEmployeeObj?.username || selectedEmployeeObj?.name,
+            employeeName: formData.employeeName || selectedEmployeeObj?.username,
+            employeeId: formData.employeeId || selectedEmployeeObj?.employee_code || selectedEmployeeObj?.id,
+            department: formData.department || selectedEmployeeObj?.department,
+            designation: formData.position || selectedEmployeeObj?.designation,
+            totalCompensation: Number(formData.totalCompensation) || estimatedAnnualGross,
+            total_compensation: Number(formData.totalCompensation) || estimatedAnnualGross,
+            annualCtc: Number(formData.totalCompensation) || estimatedAnnualGross,
+            annual_ctc: Number(formData.totalCompensation) || estimatedAnnualGross,
+            taxRegime: formData.taxRegime || selectedEmployeeObj?.taxRegime || 'New Regime',
+            panNumber: formData.panNumber || selectedEmployeeObj?.panNumber,
+          }}
         />
       )}
     </div>

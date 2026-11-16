@@ -4,28 +4,28 @@ export function FinanceStats() {
   const stats = [
     {
       label: 'Total Pending',
-      value: '$52.99',
+      value: '₹52.99',
       icon: Clock,
       color: 'text-warning',
       bg: 'bg-warning/10',
     },
     {
       label: 'Total Approved',
-      value: '$250.00',
+      value: '₹250.00',
       icon: CheckCircle2,
       color: 'text-success',
       bg: 'bg-success/10',
     },
     {
       label: 'Paid Reimbursements',
-      value: '$1,240.50',
+      value: '₹1,240.50',
       icon: History,
       color: 'text-primary',
       bg: 'bg-primary/10',
     },
     {
       label: 'Rejected Requests',
-      value: '$75.20',
+      value: '₹75.20',
       icon: XCircle,
       color: 'text-error',
       bg: 'bg-error/10',

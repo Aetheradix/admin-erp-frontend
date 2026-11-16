@@ -3,17 +3,17 @@ import {
   BarChart3,
   TrendingUp,
   Users,
-  DollarSign,
+  IndianRupee,
   ArrowUpRight,
   ArrowDownRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const stats = [
-  { label: 'Total Revenue', value: '$1.2M', growth: '+12.5%', trend: 'up', icon: DollarSign },
+  { label: 'Total Revenue', value: '₹1.2M', growth: '+12.5%', trend: 'up', icon: IndianRupee },
   { label: 'Active Users', value: '4.2k', growth: '+5.2%', trend: 'up', icon: Users },
   { label: 'Conversion Rate', value: '3.1%', growth: '-0.4%', trend: 'down', icon: TrendingUp },
-  { label: 'Avg Order Value', value: '$280', growth: '+2.1%', trend: 'up', icon: BarChart3 },
+  { label: 'Avg Order Value', value: '₹280', growth: '+2.1%', trend: 'up', icon: BarChart3 },
 ];
 
 export function AnalyticsOverview() {

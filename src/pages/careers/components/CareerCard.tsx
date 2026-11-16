@@ -1,4 +1,4 @@
-import { MapPin, Clock, DollarSign, ArrowRight, Briefcase, Edit2, Trash2 } from 'lucide-react';
+import { MapPin, Clock, IndianRupee, ArrowRight, Briefcase, Edit2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/primitives/Button';
 import type { Career } from '../hooks/mockCareers';
 
@@ -68,7 +68,7 @@ export function CareerCard({ career, onViewDetails, onEdit, onDelete }: CareerCa
           </div>
           <div className="flex items-center gap-2.5 text-muted/80 col-span-2">
             <div className="w-8 h-8 rounded-lg bg-surface-subtle flex items-center justify-center">
-              <DollarSign size={14} className="text-primary/70" />
+              <IndianRupee size={14} className="text-primary/70" />
             </div>
             <span className="text-xs font-black text-foreground/80">{career.salary}</span>
           </div>

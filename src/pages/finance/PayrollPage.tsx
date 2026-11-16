@@ -118,11 +118,14 @@ export const getPayrollStatusOverrides = (): Record<string, 'pending' | 'paid'> 
   }
 };
 
-export const savePayrollStatusOverride = (id: string | number, status: 'pending' | 'paid') => {
+export const savePayrollStatusOverride = (id: string | number, status: 'pending' | 'paid' | 'void') => {
   try {
     const current = getPayrollStatusOverrides();
-    current[String(id)] = status;
+    current[String(id)] = status as any;
     localStorage.setItem(PAYROLL_STATUS_STORAGE_KEY, JSON.stringify(current));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id, status } }));
+    }
   } catch (e) {
     console.warn('Failed to save payroll status override:', e);
   }
@@ -792,6 +795,7 @@ export default function PayrollPage() {
     try {
       message.loading({ content: 'Marking salary slip as void...', key });
       const voidRemark = `[VOID: ${reason}${notes ? ` | ${notes}` : ''}] ${voidingRecord.hrNote || ''}`;
+      savePayrollStatusOverride(voidingRecord.id, 'void');
 
       await updateSalarySlip({
         id: voidingRecord.id,

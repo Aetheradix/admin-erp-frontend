@@ -763,7 +763,7 @@ function formatAmount(amount?: unknown, currency = 'INR'): string {
   if (amount === null || amount === undefined) return '-';
   const numericAmount = getNumericValue(amount);
   if (numericAmount === 0 && displayValue(amount, '') !== '0') return '-';
-  const symbol = currency === 'INR' ? '₹' : '$';
+  const symbol = currency === 'USD' ? '$' : '₹';
   return `${symbol}${numericAmount.toLocaleString('en-IN')}`;
 }
 

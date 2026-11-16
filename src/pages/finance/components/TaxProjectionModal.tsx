@@ -58,7 +58,15 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     return '';
   });
 
-  // Find active employee record
+  // Sync selectedUserId if initialEmployee changes
+  useEffect(() => {
+    const nextId = initialEmployee?.userId || initialEmployee?.user_id || initialEmployee?.id || '';
+    if (nextId) {
+      setSelectedUserId(nextId);
+    }
+  }, [initialEmployee]);
+
+  // Find active employee record - merge initialEmployee so updated form values (like newly typed CTC) take priority
   const currentEmployee = useMemo(() => {
     if (selectedUserId && usersList.length > 0) {
       const match = usersList.find(
@@ -68,7 +76,16 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
           String(u.employee_id) === String(selectedUserId) ||
           String(u.employee_code) === String(selectedUserId)
       );
-      if (match) return match;
+      if (match) {
+        const isSameEmp =
+          initialEmployee &&
+          (String(initialEmployee.id) === String(selectedUserId) ||
+            String(initialEmployee.userId) === String(selectedUserId) ||
+            String(initialEmployee.user_id) === String(selectedUserId) ||
+            String(initialEmployee.employeeId) === String(selectedUserId) ||
+            String(initialEmployee.employee_code) === String(selectedUserId));
+        return isSameEmp ? { ...match, ...initialEmployee } : match;
+      }
     }
     return initialEmployee || (usersList.length > 0 ? usersList[0] : null);
   }, [selectedUserId, usersList, initialEmployee]);
@@ -113,17 +130,16 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
   const [prevTds, setPrevTds] = useState<number>(Number(prevYtd.tdsDeducted || 0));
   const [prevPf, setPrevPf] = useState<number>(Number(prevYtd.pfDeducted || 0));
 
-  // Sync when currentEmployee changes
+  // Sync annualGross whenever current employee / initialEmployee ctc changes
+  useEffect(() => {
+    if (annualGrossFromEmp && annualGrossFromEmp > 0) {
+      setAnnualGross(annualGrossFromEmp);
+    }
+  }, [annualGrossFromEmp]);
+
+  // Sync other parameters when currentEmployee changes
   useEffect(() => {
     if (currentEmployee) {
-      const ctc =
-        currentEmployee.totalCompensation ||
-        currentEmployee.total_compensation ||
-        currentEmployee.annualCtc ||
-        currentEmployee.annual_ctc;
-      if (ctc && Number(ctc) > 0) {
-        setAnnualGross(Number(ctc));
-      }
       if (currentEmployee.taxRegime || currentEmployee.tax_regime) {
         const r = currentEmployee.taxRegime || currentEmployee.tax_regime;
         setActiveRegime(r === 'old' || r === 'Old Regime' ? 'Old Regime' : 'New Regime');
@@ -223,7 +239,11 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     if (!isOpen) return;
     const timer = setTimeout(() => {
       simulateTax({
+        ctcAnnual: annualGross,
+        ctc: annualGross,
         annualGrossSalary: annualGross,
+        annualGross: annualGross,
+        totalCompensation: annualGross,
         regime: regimeParam,
         financialYear,
         section80c: deduction80C,
@@ -253,38 +273,80 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     simulateTax,
   ]);
 
-  // Extract display metrics (prioritizing backend when available)
-  const totalGrossIncome =
-    activeBackendData?.taxCalculation?.totalGrossIncome ?? clientTaxResult.totalCumulativeGross;
-  const netTaxableIncome =
-    activeBackendData?.taxCalculation?.netTaxableIncome ?? clientTaxResult.netTaxableIncome;
-  const totalAnnualTax =
-    activeBackendData?.taxCalculation?.totalAnnualTax ?? clientTaxResult.totalAnnualTax;
-  const projectedPeriodicTds =
-    activeBackendData?.taxCalculation?.projectedPeriodicTds ?? clientTaxResult.projectedMonthlyTds;
-  const standardDeduction =
-    activeBackendData?.taxCalculation?.exemptionsAndDeductions?.standardDeduction ??
-    clientTaxResult.standardDeduction;
-  const totalExemptions =
-    activeBackendData?.taxCalculation?.exemptionsAndDeductions?.totalDeductions ??
-    clientTaxResult.totalExemptionsAndDeductions;
+  // Verify if active backend projection actually corresponds to the current annualGross (CTC)
+  const isBackendMatching = useMemo(() => {
+    if (!activeBackendData) return false;
+    const backendCtc =
+      activeBackendData?.annualCompensation?.ctcAnnual ??
+      activeBackendData?.annualCompensation?.grossSalaryAnnual ??
+      activeBackendData?.taxCalculation?.totalGrossIncome;
+    if (backendCtc === undefined || backendCtc === null) return false;
+    return Math.abs(Number(backendCtc) - Number(annualGross)) < 1;
+  }, [activeBackendData, annualGross]);
+
+  // Extract display metrics (prioritizing backend when available and matching, else instant local calculation)
+  const totalGrossIncome = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.totalGrossIncome ?? clientTaxResult.totalCumulativeGross)
+    : clientTaxResult.totalCumulativeGross;
+
+  const netTaxableIncome = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.netTaxableIncome ?? clientTaxResult.netTaxableIncome)
+    : clientTaxResult.netTaxableIncome;
+
+  const totalAnnualTax = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.totalAnnualTax ?? clientTaxResult.totalAnnualTax)
+    : clientTaxResult.totalAnnualTax;
+
+  const projectedPeriodicTds = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.projectedPeriodicTds ?? clientTaxResult.projectedMonthlyTds)
+    : clientTaxResult.projectedMonthlyTds;
+
+  const standardDeduction = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.exemptionsAndDeductions?.standardDeduction ?? clientTaxResult.standardDeduction)
+    : clientTaxResult.standardDeduction;
+
+  const totalExemptions = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.exemptionsAndDeductions?.totalDeductions ?? clientTaxResult.totalExemptionsAndDeductions)
+    : clientTaxResult.totalExemptionsAndDeductions;
+
+  const grossTaxBeforeRebate = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.grossTaxBeforeRebate ?? clientTaxResult.baseTaxBeforeRebate)
+    : clientTaxResult.baseTaxBeforeRebate;
+
+  const section87aRebate = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.section87aRebate ?? clientTaxResult.rebate87A)
+    : clientTaxResult.rebate87A;
+
+  const cessAmount = isBackendMatching
+    ? (activeBackendData?.taxCalculation?.cessAmount ?? clientTaxResult.healthAndEducationCess)
+    : clientTaxResult.healthAndEducationCess;
+
+  const employerPfDeduction = isBackendMatching
+    ? (activeBackendData?.annualCompensation?.employerContributions?.employerPf?.annual ?? clientTaxResult.employerPfDeduction)
+    : clientTaxResult.employerPfDeduction;
+
+  const employerNpsDeduction = isBackendMatching
+    ? (activeBackendData?.annualCompensation?.employerContributions?.employerNps?.annual ?? clientTaxResult.employerNpsDeduction)
+    : clientTaxResult.employerNpsDeduction;
 
   // Expected monthly pay card
-  const expectedMonthlyPay = activeBackendData?.expectedMonthlyPay ?? {
-    grossPay: Math.round(annualGross / 12),
-    deductions: {
-      employeePf: Math.round((annualGross * 0.4 * 0.12) / 12),
-      professionalTax: 200,
-      incomeTaxTds: projectedPeriodicTds,
-      totalDeductions: Math.round((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds),
-    },
-    netTakeHomePay: Math.round(
-      annualGross / 12 - ((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds)
-    ),
-  };
+  const expectedMonthlyPay = (isBackendMatching && activeBackendData?.expectedMonthlyPay)
+    ? activeBackendData.expectedMonthlyPay
+    : {
+        grossPay: Math.round(annualGross / 12),
+        deductions: {
+          employeePf: Math.round((annualGross * 0.4 * 0.12) / 12),
+          professionalTax: 200,
+          incomeTaxTds: projectedPeriodicTds,
+          totalDeductions: Math.round((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds),
+        },
+        netTakeHomePay: Math.round(
+          annualGross / 12 - ((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds)
+        ),
+      };
 
   // Regime comparison
-  const comparison = activeBackendData?.regimeComparison
+  const comparison = (isBackendMatching && activeBackendData?.regimeComparison)
     ? {
         recommendedRegime:
           activeBackendData.regimeComparison.recommendedRegime === 'old'
@@ -297,7 +359,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
 
   // Monthly Schedule (12 months from backend or client generator)
   const monthlyScheduleRows = useMemo(() => {
-    if (activeBackendData?.monthlySchedule && activeBackendData.monthlySchedule.length > 0) {
+    if (isBackendMatching && activeBackendData?.monthlySchedule && activeBackendData.monthlySchedule.length > 0) {
       return activeBackendData.monthlySchedule.map((row) => ({
         monthName: row.monthName,
         year: row.year,
@@ -316,7 +378,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     }
 
     return generateMonthlyProjectionSchedule(annualGross, totalAnnualTax, isMidYearJoiner ? 7 : 1);
-  }, [activeBackendData, annualGross, totalAnnualTax, isMidYearJoiner]);
+  }, [isBackendMatching, activeBackendData, annualGross, totalAnnualTax, isMidYearJoiner]);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -649,7 +711,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                    {(activeBackendData?.taxCalculation?.slabs || clientTaxResult.slabs).map(
+                    {((isBackendMatching && activeBackendData?.taxCalculation?.slabs) || clientTaxResult.slabs).map(
                       (slab: any, i: number) => {
                         const slabLabel = slab.slab || slab.slabLabel;
                         const rateText =
@@ -680,25 +742,16 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                         Gross Tax before Rebate:
                       </td>
                       <td className="py-2 text-right font-mono">
-                        ₹
-                        {Number(
-                          activeBackendData?.taxCalculation?.grossTaxBeforeRebate ??
-                            clientTaxResult.baseTaxBeforeRebate
-                        ).toLocaleString('en-IN')}
+                        ₹{Number(grossTaxBeforeRebate).toLocaleString('en-IN')}
                       </td>
                     </tr>
-                    {(activeBackendData?.taxCalculation?.section87aRebate ??
-                      clientTaxResult.rebate87A) > 0 && (
+                    {section87aRebate > 0 && (
                       <tr className="text-emerald-600">
                         <td colSpan={3} className="py-1">
                           Less: Rebate u/s 87A:
                         </td>
                         <td className="py-1 text-right font-mono">
-                          - ₹
-                          {Number(
-                            activeBackendData?.taxCalculation?.section87aRebate ??
-                              clientTaxResult.rebate87A
-                          ).toLocaleString('en-IN')}
+                          - ₹{Number(section87aRebate).toLocaleString('en-IN')}
                         </td>
                       </tr>
                     )}
@@ -707,11 +760,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                         Add: Health & Education Cess (4%):
                       </td>
                       <td className="py-1 text-right font-mono">
-                        + ₹
-                        {Number(
-                          activeBackendData?.taxCalculation?.cessAmount ??
-                            clientTaxResult.healthAndEducationCess
-                        ).toLocaleString('en-IN')}
+                        + ₹{Number(cessAmount).toLocaleString('en-IN')}
                       </td>
                     </tr>
                     <tr className="border-t border-slate-200 text-sm font-black">
@@ -761,22 +810,14 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                   <div className="flex justify-between items-center py-1 border-b border-slate-100">
                     <span className="text-slate-600">Employer PF Contribution (Exempt)</span>
                     <span className="font-mono font-bold text-slate-900">
-                      ₹
-                      {Number(
-                        activeBackendData?.annualCompensation?.employerContributions?.employerPf
-                          ?.annual ?? clientTaxResult.employerPfDeduction
-                      ).toLocaleString('en-IN')}
+                      ₹{Number(employerPfDeduction).toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-1 border-b border-slate-100">
                     <span className="text-slate-600">Section 80CCD(2) Employer NPS</span>
                     <span className="font-mono font-bold text-slate-900">
-                      ₹
-                      {Number(
-                        activeBackendData?.annualCompensation?.employerContributions?.employerNps
-                          ?.annual ?? clientTaxResult.employerNpsDeduction
-                      ).toLocaleString('en-IN')}
+                      ₹{Number(employerNpsDeduction).toLocaleString('en-IN')}
                     </span>
                   </div>
 
