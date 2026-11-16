@@ -377,10 +377,10 @@ export function InvoicesPage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
 
-  const [uploadInvoice, { isLoading: isUploadingPdf }] = useUploadInvoiceMutation();
+  const [, { isLoading: isUploadingPdf }] = useUploadInvoiceMutation();
   const [fulfillOrderAndDeductStock] = useFulfillOrderAndDeductStockMutation();
 
-  const { invoicePdfRef, pdfInvoice, generateInvoicePDF, downloadInvoicePDF } = useInvoicePdf();
+  const { invoicePdfRef, pdfInvoice, downloadInvoicePDF } = useInvoicePdf();
 
   // Persist invoices whenever updated
   useEffect(() => {
