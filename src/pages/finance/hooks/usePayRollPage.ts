@@ -40,6 +40,7 @@ export interface PayrollRecord {
 
 export interface SalarySlipFormData {
   employeeId: number | string;
+  userId?: number | string;
   employeeName: string;
   position?: string;
   monthYear: string;
@@ -188,11 +189,14 @@ export const usePayrollPage = () => {
         formData.bonusPay ??
         Number(safeEarnings.find((i) => i.name?.toLowerCase().includes('bonus'))?.amount || 0);
 
-      const parsedEmpId = Number(formData.employeeId) || 0;
+      const targetUserId =
+        Number(formData.userId) ||
+        (Number(formData.employeeId) > 0 ? Number(formData.employeeId) : 0);
+      const targetEmpCode = String(formData.employeeId || targetUserId || '').trim();
 
       const payload: CreateSalarySlipPayload = {
         // Target Employee & Creator
-        user_id: parsedEmpId,
+        user_id: targetUserId,
         created_by: null,
 
         // Pay Period & Schedule
@@ -208,7 +212,7 @@ export const usePayrollPage = () => {
         totalWorkingDays: Number(formData.paidDays || 0) + Number(formData.lopDays || 0) || 30,
 
         // Employee Profile Details
-        employee_code: String(parsedEmpId),
+        employee_code: targetEmpCode,
         designation: formData.position || 'Employee',
         bank_account_number: formData.accountNumber || null,
 

@@ -20,11 +20,7 @@ export const formatEmployeeCode = (employeeCode?: string | number | null): strin
   // 2. Remove internal hyphens, underscores, or spaces (e.g. 'EMP-1' -> 'EMP1', 'X-001' -> 'X001')
   cleaned = cleaned.replace(/[-_\s]+/g, '');
 
-  // 3. If purely numeric, prefix with 'EMP'
-  if (/^\d+$/.test(cleaned)) {
-    return `E${cleaned.padStart(3, '0')}`;
-  }
-
+  // Use employee code directly (preserve as uppercase e.g. 'X007', 'E007')
   return cleaned.toUpperCase();
 };
 
