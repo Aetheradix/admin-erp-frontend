@@ -78,24 +78,45 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
   // Parent lookup map
   const parentMap = useMemo(() => buildParentMap(flatUsers), [flatUsers]);
 
-  // Unified apex tree
+  // Unified apex tree with dedicated Unassigned Personnel cluster
   const unifiedRoot = useMemo<HierarchyNodeUser | null>(() => {
     if (!rootUsers || rootUsers.length === 0) return null;
     if (rootUsers.length === 1) return rootUsers[0];
 
-    // Find founder or first root as apex
-    const founder =
+    // Find the real founder/CEO/executive apex leader
+    const apexLeader =
       rootUsers.find(
         (u) =>
-          u.username.toLowerCase().includes('founder') ||
           u.designation?.toLowerCase().includes('founder') ||
-          u.designation?.toLowerCase().includes('ceo')
+          u.designation?.toLowerCase().includes('ceo') ||
+          u.designation?.toLowerCase().includes('director') ||
+          u.username?.toLowerCase().includes('pratyush') ||
+          (u.directReports && u.directReports.length > 0)
       ) || rootUsers[0];
 
-    const otherRoots = rootUsers.filter((u) => u.id !== founder.id);
+    const unassignedRoots = rootUsers.filter((u) => u.id !== apexLeader.id);
+
+    if (unassignedRoots.length === 0) {
+      return apexLeader;
+    }
+
+    // Best Practice: Cluster unassigned personnel into an explicit staging pool
+    const unassignedGroupNode: HierarchyNodeUser = {
+      id: -999,
+      username: 'Unassigned Personnel',
+      email: 'unassigned@organization.local',
+      role: 'Staff Pool',
+      department: 'Operations',
+      designation: `${unassignedRoots.length} awaiting manager`,
+      employee_code: 'POOL',
+      reporting_manager_id: apexLeader.id,
+      directReports: unassignedRoots,
+      subordinatesCount: unassignedRoots.length,
+    };
+
     return {
-      ...founder,
-      directReports: [...(founder.directReports || []), ...otherRoots],
+      ...apexLeader,
+      directReports: [...(apexLeader.directReports || []), unassignedGroupNode],
     };
   }, [rootUsers]);
 
@@ -384,7 +405,16 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
             .toUpperCase()
             .slice(0, 2);
 
-          const isRootNode = node.isRoot;
+          const isUnassignedPool = node.id === -999;
+
+          // Only mark as Founder/CEO based on designation (job title), not RBAC role
+          const isFounderOrCeoNode = Boolean(
+            !isUnassignedPool &&
+            !node.user.reporting_manager_id && (
+              node.user.designation?.toLowerCase().includes('founder') ||
+              node.user.designation?.toLowerCase().includes('ceo')
+            )
+          );
 
           return (
             <div
@@ -397,13 +427,25 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                onSelectUser(node.user);
+                if (isUnassignedPool) {
+                  onToggleNode(node.id);
+                } else {
+                  onSelectUser(node.user);
+                }
               }}
-              onContextMenu={(e) => handleNodeContextMenu(e, node)}
+              onContextMenu={(e) => {
+                if (!isUnassignedPool) {
+                  handleNodeContextMenu(e, node);
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.stopPropagation();
-                  onSelectUser(node.user);
+                  if (isUnassignedPool) {
+                    onToggleNode(node.id);
+                  } else {
+                    onSelectUser(node.user);
+                  }
                 }
               }}
               style={{
@@ -416,7 +458,9 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
                 ...(node.isDeptHead ? { borderLeftColor: node.departmentColor.text } : {}),
               }}
               className={`absolute top-0 left-0 pointer-events-auto rounded-[16px] cursor-pointer outline-none select-none flex items-center justify-between px-3.5 transition-all bg-white text-slate-900 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 ${
-                isRootNode
+                isUnassignedPool
+                  ? 'border-2 border-dashed border-amber-400 bg-amber-50/70 hover:bg-amber-100/80 shadow-xs'
+                  : isFounderOrCeoNode
                   ? 'border-2 border-amber-300 shadow-md hover:shadow-lg'
                   : ''
               } ${
@@ -436,7 +480,11 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
               {/* Left Side: Avatar + Name & Designation */}
               <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
                 {/* Circular Avatar */}
-                {node.user.image_url ? (
+                {isUnassignedPool ? (
+                  <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-300 flex items-center justify-center text-amber-700 shrink-0 shadow-xs">
+                    <UserCheck size={16} className="text-amber-600" />
+                  </div>
+                ) : node.user.image_url ? (
                   <img
                     src={node.user.image_url}
                     alt={node.user.username}
@@ -445,17 +493,17 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
                 ) : (
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      isRootNode
+                      isFounderOrCeoNode
                         ? 'bg-amber-500 text-white shadow-xs'
                         : 'text-white shadow-xs'
                     }`}
                     style={
-                      !isRootNode
+                      !isFounderOrCeoNode
                         ? { backgroundColor: node.departmentColor.text }
                         : {}
                     }
                   >
-                    {isRootNode ? <Crown size={15} className="text-white" /> : initials}
+                    {isFounderOrCeoNode ? <Crown size={15} className="text-white" /> : initials}
                   </div>
                 )}
 
@@ -464,7 +512,11 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
                   <Tooltip title={node.user.username} placement="topLeft">
                     <span
                       className={`block font-bold text-[13px] truncate leading-tight ${
-                        isRootNode ? 'text-slate-950 font-black' : 'text-slate-900'
+                        isUnassignedPool
+                          ? 'text-amber-950 font-bold'
+                          : isFounderOrCeoNode
+                          ? 'text-slate-950 font-black'
+                          : 'text-slate-900'
                       }`}
                     >
                       {node.user.username}
@@ -472,13 +524,23 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
                   </Tooltip>
 
                   <Tooltip
-                    title={`${node.user.designation || node.user.role}${
-                      node.user.department ? ` · in ${node.user.department}` : ''
-                    }`}
+                    title={
+                      isUnassignedPool
+                        ? `${node.user.directReports?.length || 0} employees awaiting manager assignment`
+                        : `${node.user.designation || node.user.role || 'Member'}${
+                            node.user.department ? ` · in ${node.user.department}` : ''
+                          }`
+                    }
                     placement="bottomLeft"
                   >
-                    <span className="block text-[11px] truncate leading-tight mt-0.5 text-slate-500 font-medium">
-                      {node.user.designation || (isRootNode ? 'Founder & CEO' : node.user.role)}
+                    <span
+                      className={`block text-[11px] truncate leading-tight mt-0.5 font-medium ${
+                        isUnassignedPool
+                          ? 'text-amber-700 font-semibold'
+                          : 'text-slate-500'
+                      }`}
+                    >
+                      {node.user.designation || node.user.role || (isFounderOrCeoNode ? 'Founder & CEO' : 'Member')}
                     </span>
                   </Tooltip>
                 </div>
@@ -488,7 +550,11 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
               {node.hasReports && (
                 <Tooltip
                   title={
-                    node.isExpanded
+                    isUnassignedPool
+                      ? node.isExpanded
+                        ? 'Click to collapse unassigned staff'
+                        : 'Click to expand unassigned staff'
+                      : node.isExpanded
                       ? `Click to collapse branch (${node.directReportsCount} reports)`
                       : `Click to expand branch (${node.directReportsCount} reports)`
                   }
@@ -500,7 +566,9 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
                       onToggleNode(node.id);
                     }}
                     className={`shrink-0 min-w-[26px] h-6 px-1.5 rounded-full flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
-                      isRootNode
+                      isUnassignedPool
+                        ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold'
+                        : isFounderOrCeoNode
                         ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200'
                         : node.isExpanded
                         ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
@@ -614,8 +682,8 @@ export const OrgCanvasMap: React.FC<OrgCanvasMapProps> = ({
             </button>
           )}
 
-          {/* Action 4: Remove (not for root) */}
-          {!contextMenu.node.isRoot && (
+          {/* Action 4: Remove (not for root or unassigned pool) */}
+          {!contextMenu.node.isRoot && contextMenu.node.id !== -999 && (
             <>
               <div className="my-1 border-t border-slate-100" />
               <button

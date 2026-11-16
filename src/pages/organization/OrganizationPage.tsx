@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Dialog } from '@/components/ui/composed/Dialog';
@@ -265,7 +266,25 @@ export function OrganizationPage() {
       })
     );
 
-  const [activeTab, setActiveTab] = useState('Overview');
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const initialTab =
+    urlTab === 'Organization Hierarchy' || urlTab === 'hierarchy' || urlTab === 'org'
+      ? 'Organization Hierarchy'
+      : urlTab === 'Offices & Branches' || urlTab === 'branches'
+        ? 'Offices & Branches'
+        : 'Overview';
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'Organization Hierarchy' || tabParam === 'hierarchy' || tabParam === 'org') {
+      setActiveTab('Organization Hierarchy');
+    } else if (tabParam === 'Offices & Branches' || tabParam === 'branches') {
+      setActiveTab('Offices & Branches');
+    }
+  }, [searchParams]);
   const [autoOpenHQ, setAutoOpenHQ] = useState(false);
   const [autoOpenCreate, setAutoOpenCreate] = useState(false);
   const { data: offices = [] } = useGetAllOfficesQuery();

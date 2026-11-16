@@ -12,6 +12,7 @@ import {
   FolderTree,
   Crown,
   Edit2,
+  UserCheck,
 } from 'lucide-react';
 import { Select, message, Table, Tree } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -114,6 +115,10 @@ export function OrganizationHierarchyView() {
     totalDepartments: 0,
     hierarchyDepth: 0,
   };
+
+  const unassignedCount = useMemo(() => {
+    return rootUsers.length > 1 ? rootUsers.length - 1 : 0;
+  }, [rootUsers]);
 
   // Dynamic department filters with headcount
   const departmentFilters = useMemo(() => {
@@ -246,40 +251,54 @@ export function OrganizationHierarchyView() {
   const unifiedTree = useMemo<HierarchyNodeUser[]>(() => {
     if (!rootUsers.length) return [];
 
-    const founder =
+    // Find the real founder/CEO/executive apex leader
+    const apexLeader =
       rootUsers.find(
         (u) =>
-          u.username.toLowerCase().includes('founder') ||
           u.designation?.toLowerCase().includes('founder') ||
           u.designation?.toLowerCase().includes('ceo') ||
-          u.username.toLowerCase().includes('pratyush')
+          u.designation?.toLowerCase().includes('director') ||
+          u.username?.toLowerCase().includes('pratyush') ||
+          (u.directReports && u.directReports.length > 0)
       ) ||
       flatUsers.find(
         (u) =>
-          u.username.toLowerCase().includes('founder') ||
-          u.designation?.toLowerCase().includes('founder') ||
-          u.designation?.toLowerCase().includes('ceo') ||
-          u.username.toLowerCase().includes('pratyush')
+          !u.reporting_manager_id && (
+            u.designation?.toLowerCase().includes('founder') ||
+            u.designation?.toLowerCase().includes('ceo') ||
+            u.designation?.toLowerCase().includes('director') ||
+            u.username?.toLowerCase().includes('pratyush') ||
+            (u.directReports && u.directReports.length > 0)
+          )
       ) ||
       rootUsers[0];
 
-    if (!founder) return rootUsers;
+    const unassignedRoots = rootUsers.filter((u) => u.id !== apexLeader.id);
 
-    const otherRoots = rootUsers.filter((u) => u.id !== founder.id);
-    const founderReports = [...(founder.directReports || [])];
-    otherRoots.forEach((other) => {
-      if (!founderReports.some((r) => r.id === other.id)) {
-        founderReports.push(other);
-      }
-    });
+    if (unassignedRoots.length === 0) {
+      return [apexLeader];
+    }
 
-    const apexFounderNode: HierarchyNodeUser = {
-      ...founder,
-      designation: founder.designation || 'Founder & CEO',
-      directReports: founderReports,
+    // Best Practice: Cluster unassigned personnel into an explicit staging pool
+    const unassignedGroupNode: HierarchyNodeUser = {
+      id: -999,
+      username: 'Unassigned Personnel',
+      email: 'unassigned@organization.local',
+      role: 'Staff Pool',
+      department: 'Operations',
+      designation: `${unassignedRoots.length} awaiting manager`,
+      employee_code: 'POOL',
+      reporting_manager_id: apexLeader.id,
+      directReports: unassignedRoots,
+      subordinatesCount: unassignedRoots.length,
     };
 
-    return [apexFounderNode];
+    const unifiedApexNode: HierarchyNodeUser = {
+      ...apexLeader,
+      directReports: [...(apexLeader.directReports || []), unassignedGroupNode],
+    };
+
+    return [unifiedApexNode];
   }, [rootUsers, flatUsers]);
 
   // Filter tree nodes if search query or department filter is active
@@ -317,11 +336,42 @@ export function OrganizationHierarchyView() {
   // Ant Design Tree Data Format (Directory Mode matching Screenshot)
   const antdTreeData = useMemo(() => {
     const mapNode = (node: HierarchyNodeUser): any => {
-      const isFounder =
-        node.username.toLowerCase().includes('founder') ||
-        node.designation?.toLowerCase().includes('founder') ||
-        node.designation?.toLowerCase().includes('ceo') ||
-        node.username.toLowerCase().includes('pratyush');
+      if (node.id === -999) {
+        return {
+          key: String(node.id),
+          title: (
+            <div className="inline-flex items-center justify-between gap-4 p-3 my-1 rounded-2xl bg-amber-50/70 border-2 border-dashed border-amber-300 hover:border-amber-400 transition-all w-full max-w-4xl shadow-xs">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 font-bold text-xs flex items-center justify-center shrink-0 text-amber-800">
+                  <UserCheck size={18} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-amber-950 text-xs">
+                      {node.username}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 border border-amber-300">
+                      {node.directReports?.length || 0} Staff
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-amber-700 font-semibold block mt-0.5">
+                    {node.designation}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ),
+          children: (node.directReports || []).map(mapNode),
+        };
+      }
+
+      // Only identify as Founder/CEO by designation (job title), not RBAC role
+      const isFounder = Boolean(
+        !node.reporting_manager_id && (
+          node.designation?.toLowerCase().includes('founder') ||
+          node.designation?.toLowerCase().includes('ceo')
+        )
+      );
       const hasReports = Boolean(node.directReports && node.directReports.length > 0);
       const deptColor = getDepartmentColor(node.department);
 
@@ -365,11 +415,11 @@ export function OrganizationHierarchyView() {
                   </span>
                   {isFounder ? (
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 inline-flex items-center gap-1">
-                      <Crown size={10} className="text-amber-600" /> Founder
+                      <Crown size={10} className="text-amber-600" /> {node.designation || 'Founder & CEO'}
                     </span>
                   ) : (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                      {node.role || 'Staff'}
+                      {node.role || node.designation || 'Staff'}
                     </span>
                   )}
                   {node.department && (
@@ -569,6 +619,11 @@ export function OrganizationHierarchyView() {
               {stats.totalEmployees || flatUsers.length} people ·{' '}
               {stats.totalDepartments || departmentFilters.length} teams ·{' '}
               {hiddenCount} hidden in collapsed branches
+              {unassignedCount > 0 && (
+                <span className="text-amber-700 font-bold ml-1.5 px-2 py-0.5 rounded-full bg-amber-100/70 border border-amber-200">
+                  {unassignedCount} awaiting manager
+                </span>
+              )}
             </p>
           </div>
 
@@ -721,7 +776,9 @@ export function OrganizationHierarchyView() {
               searchQuery={searchQuery}
               selectedDepartment={selectedDepartment}
               selectedUserId={selectedEmployee?.id ?? null}
-              onSelectUser={(u) => setSelectedEmployee(u)}
+              onSelectUser={(u) => {
+                if (u.id !== -999) setSelectedEmployee(u);
+              }}
               onAddDirectReport={(u) =>
                 setAddEmployeeModal({ open: true, preselectedManagerId: u.id })
               }

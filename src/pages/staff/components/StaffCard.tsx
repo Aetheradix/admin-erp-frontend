@@ -7,9 +7,10 @@ interface StaffCardProps {
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onPromote?: (id: string) => void;
+  onClick?: (member: StaffMember) => void;
 }
 
-export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProps) {
+export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: StaffCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active':
@@ -22,10 +23,16 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
   };
 
   return (
-    <div className="group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden">
+    <div
+      onClick={() => onClick?.(member)}
+      className={`group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden ${
+        onClick ? 'cursor-pointer hover:border-primary/40' : ''
+      }`}>
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       {(onEdit || onPromote || onDelete) && (
-        <div className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-6 top-6 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
           {onEdit && (
             <button
               onClick={() => onEdit?.(String(member.id))}
@@ -151,7 +158,9 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         </div>
 
         {/* Contact Quick Actions */}
-        <div className="grid grid-cols-2 gap-3 w-full pt-2">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="grid grid-cols-2 gap-3 w-full pt-2">
           <a
             href={`mailto:${member.email}`}
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"
@@ -171,6 +180,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote }: StaffCardProp
         {/* Public Schedule Link */}
         <Link
           to={`/calendar?user=${encodeURIComponent(member.username || member.name || '')}`}
+          onClick={(e) => e.stopPropagation()}
           className="flex items-center justify-center gap-2 h-10 w-full rounded-2xl bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 hover:border-primary/30 text-xs font-black uppercase tracking-wider transition-all"
           title={`View ${member.username || member.name}'s Schedule`}>
           <Calendar size={14} />

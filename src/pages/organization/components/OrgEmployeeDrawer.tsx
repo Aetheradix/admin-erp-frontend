@@ -57,11 +57,15 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
 
   if (!open || !user) return null;
 
-  const isRoot =
-    !user.reporting_manager_id ||
-    user.username.toLowerCase().includes('founder') ||
-    user.designation?.toLowerCase().includes('founder') ||
-    user.designation?.toLowerCase().includes('ceo');
+  // Only mark as Founder/CEO if their actual job DESIGNATION says so —
+  // NOT based on RBAC role (which can be "Founder" for permission purposes)
+  // AND they must have no reporting manager (true organizational head)
+  const isFounderOrCeo = Boolean(
+    !user.reporting_manager_id && (
+      user.designation?.toLowerCase().includes('founder') ||
+      user.designation?.toLowerCase().includes('ceo')
+    )
+  );
 
   const deptColor = getDepartmentColor(user.department);
 
@@ -137,10 +141,10 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold tracking-wide shadow-md text-white shrink-0"
                 style={{
-                  backgroundColor: isRoot ? '#f59e0b' : deptColor.text,
+                  backgroundColor: isFounderOrCeo ? '#f59e0b' : deptColor.text,
                 }}
               >
-                {isRoot ? <Crown size={26} className="text-white" /> : initials}
+                {isFounderOrCeo ? <Crown size={26} className="text-white" /> : initials}
               </div>
             )}
 
@@ -149,14 +153,26 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                 <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-tight truncate">
                   {user.username}
                 </h2>
-                {isRoot && (
+                {isFounderOrCeo ? (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
                     Founder & CEO
                   </span>
-                )}
+                ) : user.role ? (
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      user.role.toLowerCase().includes('admin')
+                        ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                        : user.role.toLowerCase().includes('manager')
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    {user.role}
+                  </span>
+                ) : null}
               </div>
               <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
-                {user.designation || (isRoot ? 'Founder & CEO' : user.role)}
+                {user.designation || user.role || 'Staff Member'}
               </p>
               {user.department && (
                 <span
@@ -267,10 +283,26 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                   className="text-slate-400 group-hover:text-[#e8583a] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
-            ) : (
+            ) : isFounderOrCeo ? (
               <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-xs flex items-center gap-2">
                 <Crown size={15} className="text-amber-600 shrink-0" />
-                <span className="font-semibold">Top of the organization</span>
+                <span className="font-semibold">Top of the organization (Leadership)</span>
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+                  <span className="font-medium text-slate-600">No reporting manager assigned</span>
+                </div>
+                {canManage && onChangeManager && (
+                  <button
+                    type="button"
+                    onClick={() => onChangeManager(user)}
+                    className="text-[11px] text-[#e8583a] hover:underline font-semibold cursor-pointer"
+                  >
+                    Assign Manager
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -379,7 +411,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
               <span>Add direct report</span>
             </button>
 
-            {canManage && onChangeManager && !isRoot && (
+            {canManage && onChangeManager && !isFounderOrCeo && (
               <Tooltip title="Edit / Change Manager">
                 <button
                   type="button"
@@ -406,7 +438,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
               </Tooltip>
             )}
 
-            {!isRoot && (
+            {!isFounderOrCeo && (
               <Tooltip title="Remove employee from organization">
                 <button
                   type="button"
