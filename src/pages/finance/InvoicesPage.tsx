@@ -707,10 +707,32 @@ export function InvoicesPage() {
             billToName: savedInvoice.client,
             amount: savedInvoice.amount,
             total: savedInvoice.amount,
+            subtotal: form.items.reduce((s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0), 0),
+            gst_rate: form.gstRate,
             status: savedInvoice.status,
             date: savedInvoice.date,
             invoice_date: savedInvoice.date,
             invoiceDate: savedInvoice.date,
+            due_date: form.dueDate,
+            dueDate: form.dueDate,
+            place_of_supply: form.placeOfSupply,
+            placeOfSupply: form.placeOfSupply,
+            company_name: form.companyName,
+            companyContact: form.companyContact,
+            companyAddress: form.companyAddress,
+            companyCity: form.companyCity,
+            companyState: form.companyState,
+            companyCountry: form.companyCountry,
+            companyPincode: form.companyPincode,
+            companyGSTIN: form.companyGSTIN,
+            bill_to_address: form.billToAddress,
+            bill_to_city: form.billToCity,
+            bill_to_state: form.billToState,
+            bill_to_country: form.billToCountry,
+            bill_to_pincode: form.billToPincode,
+            bill_to_gstin: form.billToGSTIN,
+            items: safeItems,
+            notes: form.notes,
             data: savedInvoice.data,
           }).unwrap();
         } catch (apiErr) {
@@ -725,7 +747,7 @@ export function InvoicesPage() {
         );
 
         message.success({
-          content: `Invoice ${savedInvoice.id} updated successfully!`,
+          content: `Invoice ${savedInvoice.id} updated in database successfully!`,
           key: actionKey,
         });
       } else {
@@ -743,10 +765,32 @@ export function InvoicesPage() {
             billToName: savedInvoice.client,
             amount: savedInvoice.amount,
             total: savedInvoice.amount,
+            subtotal: form.items.reduce((s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0), 0),
+            gst_rate: form.gstRate,
             status: savedInvoice.status,
             date: savedInvoice.date,
             invoice_date: savedInvoice.date,
             invoiceDate: savedInvoice.date,
+            due_date: form.dueDate,
+            dueDate: form.dueDate,
+            place_of_supply: form.placeOfSupply,
+            placeOfSupply: form.placeOfSupply,
+            company_name: form.companyName,
+            companyContact: form.companyContact,
+            companyAddress: form.companyAddress,
+            companyCity: form.companyCity,
+            companyState: form.companyState,
+            companyCountry: form.companyCountry,
+            companyPincode: form.companyPincode,
+            companyGSTIN: form.companyGSTIN,
+            bill_to_address: form.billToAddress,
+            bill_to_city: form.billToCity,
+            bill_to_state: form.billToState,
+            bill_to_country: form.billToCountry,
+            bill_to_pincode: form.billToPincode,
+            bill_to_gstin: form.billToGSTIN,
+            items: safeItems,
+            notes: form.notes,
             data: savedInvoice.data,
           }).unwrap();
         } catch (apiErr) {
@@ -786,29 +830,12 @@ export function InvoicesPage() {
         }
 
         message.success({
-          content: `Invoice ${savedInvoice.id} created successfully!`,
+          content: `Invoice ${savedInvoice.id} created in database successfully!`,
           key: actionKey,
         });
       }
 
-      // Generate & upload PDF in the background without blocking the UI
-      generateInvoicePDF(savedInvoice.data!)
-        .then((pdfBlob) => uploadInvoice({ file: pdfBlob }).unwrap())
-        .then((uploadRes) => {
-          if (uploadRes?.data?.invoiceUrl) {
-            setInvoices((prev) =>
-              prev.map((inv) =>
-                inv.id === savedInvoice.id
-                  ? { ...inv, data: { ...inv.data!, invoiceUrl: uploadRes.data.invoiceUrl } }
-                  : inv
-              )
-            );
-          }
-        })
-        .catch((uploadErr) => {
-          console.info('Background PDF generation note:', uploadErr);
-        });
-
+      await refetchBackendInvoices();
       refetchLogs();
 
       setEditingInvoice(null);
@@ -888,54 +915,42 @@ export function InvoicesPage() {
   const downloadInvoice = async (invoice: Invoice) => {
     try {
       message.loading({
-        content: 'Preparing invoice PDF...',
+        content: 'Fetching invoice from database and generating PDF...',
         key: 'invoice-download',
       });
 
-      const invoiceUrl = invoice.data?.invoiceUrl;
+      let invoiceToDownload = invoice;
+      const apiId = (invoice as any).backendId || invoice.id;
 
-      // 1. Try remote invoice URL if present, with safe fallback on CORS / network / 404 failure
-      if (invoiceUrl) {
-        try {
-          const response = await fetch(invoiceUrl);
-          if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const anchor = document.createElement('a');
-            anchor.href = url;
-            anchor.download = `${invoice.id}.pdf`;
-            document.body.appendChild(anchor);
-            anchor.click();
-            anchor.remove();
-            window.URL.revokeObjectURL(url);
-
-            recordAuditLog('DOWNLOAD_INVOICE', `Downloaded invoice PDF for ${invoice.id}`, {
-              invoiceId: invoice.id,
-              client: invoice.client,
-              amount: invoice.amount,
-            });
-            message.success({
-              content: 'Invoice downloaded successfully.',
-              key: 'invoice-download',
-            });
-            return;
+      // 1. Fetch latest invoice record from database
+      try {
+        const token = localStorage.getItem('token') || '';
+        const response = await fetch(`/api/finance/invoices/${apiId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (response.ok) {
+          const json = await response.json();
+          if (json?.data) {
+            invoiceToDownload = json.data;
           }
-        } catch (fetchErr) {
-          console.warn('Remote invoice fetch failed, falling back to local generation:', fetchErr);
         }
+      } catch (fetchErr) {
+        console.info('Using loaded invoice state for generation:', fetchErr);
       }
 
-      // 2. Client-side dynamic PDF generation (html2canvas with jsPDF vector fallback)
-      const formData = getInvoiceFormData(invoice);
-      await downloadInvoicePDF(formData, `${invoice.id}.pdf`);
+      // 2. Generate PDF directly from database values using high-fidelity vector / canvas generator
+      const formData = getInvoiceFormData(invoiceToDownload);
+      const downloadFileName = `${(invoiceToDownload as any).invoice_number || (invoiceToDownload as any).invoiceNumber || invoiceToDownload.id}.pdf`;
+      await downloadInvoicePDF(formData, downloadFileName);
 
-      recordAuditLog('DOWNLOAD_INVOICE', `Generated & downloaded invoice PDF for ${invoice.id}`, {
-        invoiceId: invoice.id,
-        client: invoice.client,
-        amount: invoice.amount,
+      recordAuditLog('DOWNLOAD_INVOICE', `Generated & downloaded invoice PDF for ${(invoiceToDownload as any).invoice_number || invoiceToDownload.id}`, {
+        invoiceId: invoiceToDownload.id,
+        client: invoiceToDownload.client,
+        amount: invoiceToDownload.amount,
       });
+
       message.success({
-        content: 'Invoice downloaded successfully.',
+        content: `Invoice ${(invoiceToDownload as any).invoice_number || invoiceToDownload.id} downloaded successfully.`,
         key: 'invoice-download',
       });
     } catch (error) {
