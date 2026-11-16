@@ -347,8 +347,9 @@ export const financeApiSlice = apiSlice.injectEndpoints({
           ? [
               ...result.map((item: any) => ({ type: 'SalarySlips' as const, id: item.id })),
               { type: 'SalarySlips', id: 'LIST' },
+              'SalarySlips',
             ]
-          : [{ type: 'SalarySlips', id: 'LIST' }],
+          : [{ type: 'SalarySlips', id: 'LIST' }, 'SalarySlips'],
     }),
 
     // Fetch single salary slip by slip ID
@@ -557,17 +558,21 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     // Tax Projection Sheets
     getTaxProjection: builder.query<
       TaxProjectionResponse,
-      { userId: string | number; financialYear?: string; regime?: string }
+      { userId: string | number; financialYear?: string; regime?: string; ctc?: number }
     >({
-      query: ({ userId, financialYear, regime }) => {
+      query: ({ userId, financialYear, regime, ctc }) => {
         const params = new URLSearchParams();
         if (financialYear) params.append('financialYear', financialYear);
         if (regime) params.append('regime', regime);
+        if (ctc) params.append('ctc', String(ctc));
         const q = params.toString();
         return `/finance/tax-projection/${userId}${q ? `?${q}` : ''}`;
       },
       transformResponse: (response: any) => response?.data ?? response,
-      providesTags: (_res, _err, { userId }) => [{ type: 'TaxProjection', id: userId }],
+      providesTags: (_res, _err, { userId }) => [
+        { type: 'TaxProjection', id: userId },
+        'TaxProjection',
+      ],
     }),
 
     getMyTaxProjection: builder.query<

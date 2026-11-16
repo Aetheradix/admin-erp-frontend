@@ -198,14 +198,14 @@ const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): Payro
 
   const statusOverrides = getPayrollStatusOverrides();
   const overrideStatus = statusOverrides[String(item.id)];
-  const rawStatus = (overrideStatus || item.payment_status || item.paymentStatus || '').toLowerCase();
-  // Salary slips default to 'pending' rather than 'paid'
+  const rawStatus = (item.payment_status || item.paymentStatus || overrideStatus || '').toLowerCase();
+  // Server payment_status takes precedence over localStorage overrides
   const effectiveStatus = isVoid
     ? 'void'
-    : overrideStatus
-      ? overrideStatus
-      : rawStatus === 'paid'
-        ? 'paid'
+    : rawStatus === 'paid'
+      ? 'paid'
+      : overrideStatus
+        ? overrideStatus
         : 'pending';
 
   const detectedCycle =
@@ -700,6 +700,11 @@ export default function PayrollPage() {
           }
           await updateSalarySlip({ id: targetId, ...data }).unwrap();
           message.success({ content: 'Salary slip updated successfully!', key });
+          await Promise.all([refetchSlips(), refetchLogs()]);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: targetId } }));
+            localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+          }
         } catch (apiErr: any) {
           console.error('Backend updateSalarySlip response:', apiErr);
           message.error({
@@ -741,6 +746,10 @@ export default function PayrollPage() {
         message.success({ content: 'Salary slip recorded successfully!', key });
       }
       await Promise.all([refetchSlips(), refetchLogs(), refetchAdjustments()]);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: {} }));
+        localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+      }
 
       setShowSalarySlipForm(false);
       setEditingRecord(null);
@@ -771,6 +780,11 @@ export default function PayrollPage() {
           message.loading({ content: 'Deleting salary slip...', key });
           await deleteSalarySlip(record.id).unwrap();
           message.success({ content: 'Salary slip deleted successfully!', key });
+          await Promise.all([refetchSlips(), refetchLogs()]);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id } }));
+            localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+          }
         } catch (error: any) {
           message.error({
             content: error?.data?.message || error?.message || 'Failed to delete salary slip.',
@@ -845,6 +859,14 @@ export default function PayrollPage() {
       setShowVoidModal(false);
       setVoidingRecord(null);
       await Promise.all([refetchSlips(), refetchLogs()]);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('payroll_data_updated', {
+            detail: { id: voidingRecord.id, status: 'void' },
+          })
+        );
+        localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+      }
     } catch (err: any) {
       message.error({
         content: err?.data?.message || 'Failed to mark salary slip as void.',
@@ -903,6 +925,11 @@ export default function PayrollPage() {
 
           message.success({ content: 'Salary slip reactivated successfully.', key });
           await Promise.all([refetchSlips(), refetchLogs()]);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: 'pending' } }));
+            window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id: record.id, status: 'pending' } }));
+            localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+          }
         } catch (err: any) {
           message.error({ content: err?.data?.message || 'Failed to reactivate salary slip.', key });
         }
@@ -958,10 +985,20 @@ export default function PayrollPage() {
 
       message.success({ content: `Salary slip marked as ${newStatus.toUpperCase()}!`, key });
       await Promise.all([refetchSlips(), refetchLogs()]);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: newStatus } }));
+        window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id: record.id, status: newStatus } }));
+        localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+      }
     } catch (err: any) {
       // Local state is preserved and refetched
       message.success({ content: `Salary slip marked as ${newStatus.toUpperCase()}.`, key });
       await Promise.all([refetchSlips(), refetchLogs()]);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: newStatus } }));
+        window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id: record.id, status: newStatus } }));
+        localStorage.setItem('aether_payroll_last_update', String(Date.now()));
+      }
     }
   };
 
@@ -1222,6 +1259,13 @@ export default function PayrollPage() {
                   setShowSlipModal(true);
                 }
                 if (key === 'taxProjection') {
+                  const ctcAnnual =
+                    Number(record.totalCompensation || 0) > 0
+                      ? Number(record.totalCompensation)
+                      : record.base
+                        ? Math.round(Number(record.base) * 2 * 12)
+                        : Number(record.total || 0) * 12;
+
                   setProjectionEmployee({
                     id: record.employeeId || record.userId,
                     userId: record.userId,
@@ -1230,8 +1274,8 @@ export default function PayrollPage() {
                     employeeId: record.employeeId,
                     department: record.department,
                     designation: record.position,
-                    totalCompensation: record.totalCompensation || record.total * 12,
-                    annualCtc: record.totalCompensation || record.total * 12,
+                    totalCompensation: ctcAnnual,
+                    annualCtc: ctcAnnual,
                     taxRegime: record.taxRegime || 'New Regime',
                   });
                   setShowTaxProjectionModal(true);

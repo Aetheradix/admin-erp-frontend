@@ -21,6 +21,8 @@ export interface TaxInputParams {
   employerPf?: number; // Employer PF contribution (annual)
   employerNps?: number; // Employer NPS Section 80CCD(2) contribution (annual)
   standardDeduction?: number; // Override if needed (Default: 75,000 for New, 50,000 for Old)
+  isCtc?: boolean;
+  grossSalaryAnnual?: number;
 
   // Old Regime Deductions
   deduction80C?: number; // Up to 1,50,000
@@ -320,16 +322,6 @@ export function calculateTaxForEmployee(params: TaxInputParams): TaxCalculationR
   const prevPt =
     isMidYearJoiner && previousEmployerYtd ? Number(previousEmployerYtd.ptDeducted || 0) : 0;
 
-  const totalCumulativeGross = annualGrossSalary + prevGross;
-
-  // Standard deduction
-  const standardDeduction =
-    params.standardDeduction !== undefined
-      ? params.standardDeduction
-      : regime === 'New Regime'
-        ? 75000
-        : 50000;
-
   // Employer PF contribution (tax exempt up to 12% of basic or 7.5L combined)
   const calculatedEmployerPf =
     params.employerPf !== undefined ? params.employerPf : Math.round(basicSalary * 0.12);
@@ -338,6 +330,27 @@ export function calculateTaxForEmployee(params: TaxInputParams): TaxCalculationR
   // Section 80CCD(2): Employer NPS contribution (tax exempt up to 10% or 14% of basic)
   const calculatedEmployerNps = params.employerNps !== undefined ? params.employerNps : 0;
   const employerNpsDeduction = Math.min(calculatedEmployerNps, Math.round(basicSalary * 0.14));
+
+  // Determine statutory gross salary: if annualGrossSalary includes employer contributions (CTC), isolate gross.
+  const isCtcInput =
+    params.isCtc ??
+    (annualGrossSalary > 0 &&
+      annualGrossSalary >= basicSalary * 2 &&
+      (params.grossSalaryAnnual === undefined || params.grossSalaryAnnual === null));
+
+  const currentGrossSalary = isCtcInput
+    ? Math.max(0, annualGrossSalary - employerPfDeduction - employerNpsDeduction)
+    : annualGrossSalary;
+
+  const totalCumulativeGross = currentGrossSalary + prevGross;
+
+  // Standard deduction
+  const standardDeduction =
+    params.standardDeduction !== undefined
+      ? params.standardDeduction
+      : regime === 'New Regime'
+        ? 75000
+        : 50000;
 
   // Professional Tax (allowed under Old Regime)
   const professionalTax =
@@ -357,16 +370,16 @@ export function calculateTaxForEmployee(params: TaxInputParams): TaxCalculationR
   const hraExemption = regime === 'Old Regime' ? Math.max(0, params.hraExemption || 0) : 0;
   const otherExemptions = regime === 'Old Regime' ? Math.max(0, params.otherExemptions || 0) : 0;
 
-  // Compute Total Deductions
+  // Compute Statutory Deductions from Gross Income
   const totalExemptionsAndDeductions =
-    standardDeduction +
-    employerPfDeduction +
-    employerNpsDeduction +
-    professionalTax +
-    deduction80C +
-    deduction80D +
-    hraExemption +
-    otherExemptions;
+    regime === 'New Regime'
+      ? standardDeduction
+      : standardDeduction +
+        professionalTax +
+        deduction80C +
+        deduction80D +
+        hraExemption +
+        otherExemptions;
 
   const netTaxableIncome = Math.max(0, totalCumulativeGross - totalExemptionsAndDeductions);
 
@@ -464,12 +477,11 @@ export function generateMonthlyProjectionSchedule(
   annualGross: number,
   annualTax: number,
   joiningMonth = 1, // 1 = April
-  basicPercent = 0.5,
+  basicPercent = 0.4,
   hraPercent = 0.2
 ): MonthlyPayScheduleRow[] {
   const activeMonths = 12 - (joiningMonth - 1);
-  const monthlyGross =
-    activeMonths > 0 ? Math.round(annualGross / activeMonths) : Math.round(annualGross / 12);
+  const monthlyGross = Math.round(annualGross / 12);
   const monthlyBasic = Math.round(monthlyGross * basicPercent);
   const monthlyHra = Math.round(monthlyGross * hraPercent);
   const monthlyOther = Math.max(0, monthlyGross - (monthlyBasic + monthlyHra));
