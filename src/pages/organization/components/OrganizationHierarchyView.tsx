@@ -1,25 +1,19 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  GitBranch,
-  Users,
   Building2,
-  Layers,
-  ChevronDown,
-  ChevronRight,
-  UserCheck,
-  Edit2,
-  RefreshCw,
   Search,
-  AlertCircle,
-  Shuffle,
-  ClipboardList,
-  FolderTree,
+  Plus,
+  Download,
   Maximize2,
   Minimize2,
+  RefreshCw,
+  Network,
+  GitBranch,
+  FolderTree,
   Crown,
+  Edit2,
 } from 'lucide-react';
-import { Select, Tag, message, Table, Tree } from 'antd';
+import { Select, message, Table, Tree } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Button } from '@/components/ui/primitives/Button';
@@ -38,6 +32,11 @@ import { OffboardRollupModal } from './OffboardRollupModal';
 import { MatrixManagerModal } from './MatrixManagerModal';
 import { HierarchyReorgStudio } from './HierarchyReorgStudio';
 import { HierarchyAuditTrailView } from './HierarchyAuditTrailView';
+import { OrgCanvasMap } from './OrgCanvasMap';
+import { OrgEmployeeDrawer } from './OrgEmployeeDrawer';
+import { OrgAddEmployeeModal } from './OrgAddEmployeeModal';
+import { OrgRemoveConfirmModal } from './OrgRemoveConfirmModal';
+import { getDepartmentColor } from '../utils/orgLayoutEngine';
 
 export function OrganizationHierarchyView() {
   const { data: hierarchyResponse, isLoading, refetch } = useGetOrganizationHierarchyQuery();
@@ -49,12 +48,26 @@ export function OrganizationHierarchyView() {
   const { can, isSuperadmin } = usePermission();
   const canManageHierarchy = isSuperadmin || can('organization:manage');
 
-  const [viewMode, setViewMode] = useState<'tree' | 'departments' | 'reorg' | 'audit'>('tree');
-  const [treeLayout, setTreeLayout] = useState<'chart' | 'directory'>('chart');
+  // View mode: 'map' (interactive horizontal map), 'list' (tree list directory), 'departments', 'reorg', 'audit'
+  const [viewMode, setViewMode] = useState<'map' | 'list' | 'departments' | 'reorg' | 'audit'>('map');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('ALL');
+  const [selectedEmployee, setSelectedEmployee] = useState<HierarchyNodeUser | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Record<number, boolean>>({});
+  const [hiddenCount, setHiddenCount] = useState<number>(0);
 
-  // ── Existing modals ──────────────────────────────────────────────────────────
+  // ── Modals: Add & Remove Employee ──────────────────────────────────────────
+  const [addEmployeeModal, setAddEmployeeModal] = useState<{
+    open: boolean;
+    preselectedManagerId: number | null;
+  }>({ open: false, preselectedManagerId: null });
+
+  const [removeEmployeeModal, setRemoveEmployeeModal] = useState<{
+    open: boolean;
+    user: HierarchyNodeUser | null;
+  }>({ open: false, user: null });
+
+  // ── Existing Enterprise Reorg Modals ────────────────────────────────────────
   const [editManagerModal, setEditManagerModal] = useState<{
     open: boolean;
     user: HierarchyNodeUser | null;
@@ -77,7 +90,6 @@ export function OrganizationHierarchyView() {
     parentDeptId: null,
   });
 
-  // ── New Reorg modals ─────────────────────────────────────────────────────────
   const [changeManagerModal, setChangeManagerModal] = useState<{
     open: boolean;
     user: HierarchyNodeUser | null;
@@ -86,7 +98,6 @@ export function OrganizationHierarchyView() {
   const [bulkHandoverModal, setBulkHandoverModal] = useState(false);
   const [replaceManagerModal, setReplaceManagerModal] = useState(false);
   const [offboardRollupModal, setOffboardRollupModal] = useState(false);
-
   const [matrixModal, setMatrixModal] = useState<{
     open: boolean;
     userId: number | null;
@@ -104,7 +115,20 @@ export function OrganizationHierarchyView() {
     hierarchyDepth: 0,
   };
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
+  // Dynamic department filters with headcount
+  const departmentFilters = useMemo(() => {
+    const counts: Record<string, number> = {};
+    flatUsers.forEach((u) => {
+      if (u.department) {
+        counts[u.department] = (counts[u.department] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [flatUsers]);
+
+  // Expand / Collapse Handlers
   const toggleNode = (id: number) => {
     setExpandedNodes((prev) => ({
       ...prev,
@@ -128,6 +152,28 @@ export function OrganizationHierarchyView() {
     setExpandedNodes(allCollapsed);
   };
 
+  // Export JSON handler
+  const handleExportJson = () => {
+    if (!hierarchyData) {
+      message.warning('No organization data available to export.');
+      return;
+    }
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(hierarchyData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute(
+      'download',
+      `organization-map-${new Date().toISOString().split('T')[0]}.json`
+    );
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    message.success('Organization data exported successfully as JSON.');
+  };
+
+  // Flow handlers
   const handleOpenEditManager = (user: HierarchyNodeUser) => {
     setEditManagerModal({
       open: true,
@@ -169,37 +215,57 @@ export function OrganizationHierarchyView() {
         headUserId: editDeptModal.selectedHeadId,
         parentDepartmentId: editDeptModal.parentDeptId,
       }).unwrap();
-      message.success(`Department updated: ${editDeptModal.department.department_name}`);
-      setEditDeptModal({ open: false, department: null, selectedHeadId: null, parentDeptId: null });
+      message.success(`Department ${editDeptModal.department.department_name} updated successfully.`);
+      setEditDeptModal({
+        open: false,
+        department: null,
+        selectedHeadId: null,
+        parentDeptId: null,
+      });
       refetch();
     } catch (err: any) {
-      message.error(err?.data?.message || 'Failed to update department.');
+      message.error(err?.data?.message || 'Failed to update department leadership.');
     }
   };
 
-  // Reorg Studio handlers
-  const handleOpenChangeManager = (user?: HierarchyNodeUser) =>
-    setChangeManagerModal({ open: true, user: user || null });
+  const handleOpenChangeManager = (user?: HierarchyNodeUser) => {
+    setChangeManagerModal({
+      open: true,
+      user: user || null,
+    });
+  };
 
-  const handleOpenMatrixModal = (user?: HierarchyNodeUser) =>
-    setMatrixModal({ open: true, userId: user?.id ?? null });
+  const handleOpenMatrixModal = (user?: HierarchyNodeUser) => {
+    setMatrixModal({
+      open: true,
+      userId: user?.id || null,
+    });
+  };
 
-  // ── Establish Founder as Apex Root of Organization ───────────────────────────
-  const unifiedTree = useMemo(() => {
+  // ── Establish Founder as Apex Root of Organization for Tree List ─────────────
+  const unifiedTree = useMemo<HierarchyNodeUser[]>(() => {
     if (!rootUsers.length) return [];
 
-    // Find Founder (Pratyush Shrivastava)
     const founder =
-      rootUsers.find((u) => u.username.toLowerCase().includes('pratyush')) ||
-      flatUsers.find((u) => u.username.toLowerCase().includes('pratyush')) ||
+      rootUsers.find(
+        (u) =>
+          u.username.toLowerCase().includes('founder') ||
+          u.designation?.toLowerCase().includes('founder') ||
+          u.designation?.toLowerCase().includes('ceo') ||
+          u.username.toLowerCase().includes('pratyush')
+      ) ||
+      flatUsers.find(
+        (u) =>
+          u.username.toLowerCase().includes('founder') ||
+          u.designation?.toLowerCase().includes('founder') ||
+          u.designation?.toLowerCase().includes('ceo') ||
+          u.username.toLowerCase().includes('pratyush')
+      ) ||
       rootUsers[0];
 
     if (!founder) return rootUsers;
 
-    // Gather other top nodes that don't have a designated manager (e.g. Sarah, Yonko)
     const otherRoots = rootUsers.filter((u) => u.id !== founder.id);
-
-    // Merge so that unassigned personnel report under the Founder
     const founderReports = [...(founder.directReports || [])];
     otherRoots.forEach((other) => {
       if (!founderReports.some((r) => r.id === other.id)) {
@@ -216,17 +282,21 @@ export function OrganizationHierarchyView() {
     return [apexFounderNode];
   }, [rootUsers, flatUsers]);
 
-  // Filter tree nodes if search query is active
-  const filteredTree = useMemo(() => {
-    if (!searchQuery.trim()) return unifiedTree;
-    const q = searchQuery.toLowerCase();
+  // Filter tree nodes if search query or department filter is active
+  const filteredTree = useMemo<HierarchyNodeUser[]>(() => {
+    if (!searchQuery.trim() && selectedDepartment === 'ALL') return unifiedTree;
+    const q = searchQuery.toLowerCase().trim();
 
     const filterNode = (node: HierarchyNodeUser): HierarchyNodeUser | null => {
-      const selfMatch =
-        node.username.toLowerCase().includes(q) ||
-        node.email.toLowerCase().includes(q) ||
-        (node.department && node.department.toLowerCase().includes(q)) ||
-        (node.role && node.role.toLowerCase().includes(q));
+      const nameMatch = !q || node.username.toLowerCase().includes(q);
+      const emailMatch = !q || (node.email && node.email.toLowerCase().includes(q));
+      const roleMatch = !q || (node.role && node.role.toLowerCase().includes(q));
+      const desigMatch = !q || (node.designation && node.designation.toLowerCase().includes(q));
+      const deptMatch =
+        selectedDepartment === 'ALL' ||
+        (node.department && node.department.toLowerCase() === selectedDepartment.toLowerCase());
+
+      const selfMatch = (nameMatch || emailMatch || roleMatch || desigMatch) && deptMatch;
 
       const matchedChildren = (node.directReports || [])
         .map(filterNode)
@@ -242,75 +312,100 @@ export function OrganizationHierarchyView() {
     };
 
     return unifiedTree.map(filterNode).filter(Boolean) as HierarchyNodeUser[];
-  }, [unifiedTree, searchQuery]);
+  }, [unifiedTree, searchQuery, selectedDepartment]);
 
-  // Ant Design Tree Data Format (Directory Mode)
+  // Ant Design Tree Data Format (Directory Mode matching Screenshot)
   const antdTreeData = useMemo(() => {
     const mapNode = (node: HierarchyNodeUser): any => {
       const isFounder =
-        node.username.toLowerCase().includes('pratyush') ||
-        node.designation?.toLowerCase().includes('founder');
+        node.username.toLowerCase().includes('founder') ||
+        node.designation?.toLowerCase().includes('founder') ||
+        node.designation?.toLowerCase().includes('ceo') ||
+        node.username.toLowerCase().includes('pratyush');
       const hasReports = Boolean(node.directReports && node.directReports.length > 0);
+      const deptColor = getDepartmentColor(node.department);
 
       return {
         key: String(node.id),
         title: (
-          <div className="inline-flex items-center justify-between gap-4 p-2.5 my-1 rounded-xl bg-card border border-border/60 hover:border-primary/40 hover:shadow-xs transition-all w-full max-w-2xl">
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-9 h-9 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${
-                  isFounder
-                    ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-xs'
-                    : 'bg-primary/10 text-primary border border-primary/20'
-                }`}>
-                {isFounder ? (
-                  <Crown size={15} className="text-white" />
-                ) : (
-                  node.username ? node.username.slice(0, 2).toUpperCase() : 'U'
-                )}
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-foreground text-xs">{node.username}</span>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedEmployee(node);
+            }}
+            className="inline-flex items-center justify-between gap-4 p-3 my-1 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all w-full max-w-4xl shadow-xs cursor-pointer group"
+          >
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {node.image_url ? (
+                <img
+                  src={node.image_url}
+                  alt={node.username}
+                  className="w-10 h-10 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
+                />
+              ) : (
+                <div
+                  className={`w-10 h-10 rounded-xl font-black text-xs flex items-center justify-center shrink-0 shadow-xs ${
+                    isFounder
+                      ? 'bg-amber-500 text-white shadow-amber-200'
+                      : 'text-white'
+                  }`}
+                  style={!isFounder ? { backgroundColor: deptColor.text } : {}}
+                >
                   {isFounder ? (
-                    <Tag color="gold" className="text-[10px] font-black m-0 px-2 py-0 border-amber-300 inline-flex items-center gap-1">
-                      <Crown size={10} className="text-amber-600" /> Founder
-                    </Tag>
+                    <Crown size={16} className="text-white" />
                   ) : (
-                    <Tag color="volcano" className="text-[10px] font-bold m-0 px-1.5 py-0">
+                    node.username ? node.username.slice(0, 2).toUpperCase() : 'U'
+                  )}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-slate-900 text-xs group-hover:text-primary transition-colors">
+                    {node.username}
+                  </span>
+                  {isFounder ? (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 inline-flex items-center gap-1">
+                      <Crown size={10} className="text-amber-600" /> Founder
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                       {node.role || 'Staff'}
-                    </Tag>
+                    </span>
                   )}
                   {node.department && (
-                    <span className="text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md bg-muted/50 border border-border/40">
+                    <span
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                      style={{
+                        backgroundColor: deptColor.bg,
+                        color: deptColor.text,
+                      }}
+                    >
                       {node.department}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-muted-foreground">
-                  <span className="text-[11px]">{node.email}</span>
+                <div className="flex items-center gap-2 mt-0.5 text-slate-500 text-[11px] truncate">
+                  <span className="truncate">{node.email}</span>
                   {node.designation && (
-                    <span className="text-[10px] text-muted-foreground/80">• {node.designation}</span>
+                    <span className="text-slate-400 shrink-0">• {node.designation}</span>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0" onClick={(e) => e.stopPropagation()}>
               {hasReports && (
-                <Tag color="blue" className="text-[10px] font-bold m-0 px-2 py-0.5 rounded-full border-0">
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80">
                   {node.directReports!.length} {node.directReports!.length === 1 ? 'Direct Report' : 'Direct Reports'}
-                </Tag>
+                </span>
               )}
               {canManageHierarchy && (
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenEditManager(node);
-                  }}
+                  onClick={() => handleOpenEditManager(node)}
                   title="Change Reporting Manager"
-                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 transition-colors">
+                  className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                >
                   <Edit2 size={12} />
                 </button>
               )}
@@ -324,7 +419,7 @@ export function OrganizationHierarchyView() {
     return filteredTree.map(mapNode);
   }, [filteredTree, canManageHierarchy]);
 
-  // Department Table Columns
+  // Department Table Columns (for Department Heads view)
   const deptColumns: ColumnsType<DepartmentHierarchyItem> = [
     {
       title: 'Department',
@@ -367,596 +462,298 @@ export function OrganizationHierarchyView() {
       ),
     },
     {
-      title: 'Team Strength',
-      dataIndex: 'member_count',
-      key: 'members',
-      render: (count: number) => (
-        <Tag color="blue" className="font-bold px-2 py-0.5 rounded-full">
-          {count} Members
-        </Tag>
+      title: 'Headcount',
+      key: 'count',
+      render: (_, r) => (
+        <span className="text-xs font-black px-2.5 py-1 rounded-full bg-surface-subtle text-foreground border border-border-subtle">
+          {r.member_count} {r.member_count === 1 ? 'member' : 'members'}
+        </span>
       ),
     },
     {
-      title: 'Action',
-      key: 'action',
+      title: 'Actions',
+      key: 'actions',
       render: (_, r) =>
-        canManageHierarchy && (
+        canManageHierarchy ? (
           <Button
             variant="outline"
             size="small"
             onClick={() => handleOpenEditDept(r)}
-            className="text-xs font-bold gap-1">
-            <Edit2 size={12} /> Configure
+            className="text-xs">
+            Configure Leadership
           </Button>
-        ),
+        ) : null,
     },
   ];
 
-  // Modern Hierarchy Pillar Colors
-  const DEPARTMENT_COLORS: Record<string, string> = {
-    technology: '#3B82F6',
-    engineering: '#3B82F6',
-    product: '#8B5CF6',
-    design: '#8B5CF6',
-    creative: '#8B5CF6',
-    research: '#06B6D4',
-    growth: '#10B981',
-    sales: '#10B981',
-    marketing: '#F59E0B',
-    finance: '#F59E0B',
-    operations: '#EC4899',
-    hr: '#EC4899',
-    people: '#EC4899',
-    management: '#6366F1',
-  };
+  return (
+    <div className="space-y-4">
+      {/* ── HEADER & WORKSPACE TOOLBAR (Matching Screenshot 1 & 2) ── */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Header Left: Title & Subtitle */}
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
+                Organization map
+              </h1>
 
-  const getDeptColor = (dept?: string, index: number = 0) => {
-    const fallbacks = ['#3B82F6', '#8B5CF6', '#10B981', '#EC4899', '#F59E0B', '#06B6D4', '#6366F1'];
-    if (!dept) return fallbacks[index % fallbacks.length];
-    const d = dept.toLowerCase();
-    for (const [k, v] of Object.entries(DEPARTMENT_COLORS)) {
-      if (d.includes(k)) return v;
-    }
-    return fallbacks[index % fallbacks.length];
-  };
-
-  // Modern Multi-Tier Organizational Chart Renderer (Matching Teams Page Aesthetics)
-  const renderModernOrgChart = (root: HierarchyNodeUser) => {
-    const isRootFounder =
-      root.username.toLowerCase().includes('pratyush') ||
-      root.designation?.toLowerCase().includes('founder') ||
-      root.role === 'SuperAdmin';
-    const isRootExpanded = expandedNodes[root.id] !== false;
-    const level2Pillars = root.directReports || [];
-
-    return (
-      <div key={root.id} className="flex flex-col items-center w-full py-2">
-        {/* Level 1: Apex CEO / Founder Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center relative z-20">
-          <div className="bg-card rounded-3xl border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all p-5 sm:p-6 flex items-center justify-between gap-6 min-w-[320px] max-w-md relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-primary to-orange-500" />
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl shadow-inner shrink-0 relative">
-                {root.username
-                  ? root.username
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .slice(0, 2)
-                      .toUpperCase()
-                  : 'PS'}
-                {isRootFounder && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
-                    <Crown size={11} className="text-white" />
-                  </div>
+              {/* View Switcher Pill */}
+              <div className="flex items-center p-0.5 bg-surface-subtle rounded-full border border-border-subtle text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('map')}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'map'
+                      ? 'bg-white text-primary font-bold shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <GitBranch size={12} />
+                  <span>Map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'list'
+                      ? 'bg-white text-primary font-bold shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <FolderTree size={12} />
+                  <span>Tree List</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('departments')}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    viewMode === 'departments'
+                      ? 'bg-white text-primary font-bold shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Teams
+                </button>
+                {canManageHierarchy && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('reorg')}
+                    className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                      viewMode === 'reorg'
+                        ? 'bg-white text-primary font-bold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Reorg Studio
+                  </button>
+                )}
+                {canManageHierarchy && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('audit')}
+                    className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                      viewMode === 'audit'
+                        ? 'bg-white text-primary font-bold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Audit
+                  </button>
                 )}
               </div>
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-black text-foreground truncate">{root.username}</h3>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                    <Crown size={11} className="text-amber-600" /> Founder
-                  </span>
-                </div>
-                <span className="text-xs font-bold text-primary truncate">
-                  {root.designation || (isRootFounder ? 'Founder & Chief Executive Officer' : root.role)}
-                </span>
-                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">
-                  {root.department ? `${root.department} • ` : ''}Executive Leadership
-                </span>
-              </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {level2Pillars.length > 0 && (
+            {/* Subtitle Stats Line */}
+            <p className="text-xs text-muted-foreground font-medium mt-1">
+              {stats.totalEmployees || flatUsers.length} people ·{' '}
+              {stats.totalDepartments || departmentFilters.length} teams ·{' '}
+              {hiddenCount} hidden in collapsed branches
+            </p>
+          </div>
+
+          {/* Header Right: Floating Pill Toolbar Matching Screenshot 1 & 2 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Search Pill */}
+            <div className="relative">
+              <Search
+                size={13}
+                className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              />
+              <input
+                type="text"
+                placeholder="Search name, role or team"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-56 text-xs pl-8 pr-7 py-1.5 rounded-full border border-border-subtle bg-surface-elevated text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs"
+              />
+              {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => toggleNode(root.id)}
-                  className="p-1.5 rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  title={isRootExpanded ? 'Collapse Organization' : 'Expand Organization'}>
-                  {isRootExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                >
+                  ✕
                 </button>
               )}
             </div>
-          </div>
 
-          {/* Trunk connector line descending from CEO */}
-          {level2Pillars.length > 0 && isRootExpanded && (
-            <div className="w-0.5 h-10 bg-primary/40 my-0.5" />
-          )}
-        </motion.div>
-
-        {/* Level 2: Department / Manager Pillars Grid */}
-        <AnimatePresence>
-          {level2Pillars.length > 0 && isRootExpanded && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="flex flex-col items-center w-full max-w-7xl">
-              {/* Horizontal connecting busbar across top of pillars */}
-              {level2Pillars.length > 1 && (
-                <div className="w-11/12 max-w-5xl h-0.5 bg-primary/30 mb-6 hidden md:block" />
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full">
-                {level2Pillars.map((pillar, pIdx) => {
-                  const pColor = getDeptColor(pillar.department, pIdx);
-                  const isPillarExpanded = expandedNodes[pillar.id] !== false;
-                  const pillarReports = pillar.directReports || [];
-
-                  return (
-                    <div key={pillar.id} className="flex flex-col items-center gap-4">
-                      {/* Pillar Lead Card */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: pIdx * 0.05 }}
-                        className="w-full bg-card rounded-2xl border border-border shadow-xs hover:shadow-md transition-all p-5 flex flex-col gap-3 relative overflow-hidden">
-                        <div
-                          className="absolute top-0 left-0 right-0 h-1.5"
-                          style={{ backgroundColor: pColor }}
-                        />
-                        <div className="flex items-center justify-between gap-2">
-                          <span
-                            className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md truncate max-w-[170px]"
-                            style={{ backgroundColor: `${pColor}18`, color: pColor }}>
-                            {pillar.department || 'GENERAL POD'}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            {canManageHierarchy && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenEditManager(pillar);
-                                }}
-                                title="Change Reporting Manager"
-                                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                                <Edit2 size={12} />
-                              </button>
-                            )}
-                            {pillarReports.length > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => toggleNode(pillar.id)}
-                                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                                title={isPillarExpanded ? 'Collapse Team' : 'Expand Team'}>
-                                {isPillarExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-xs shadow-xs shrink-0"
-                            style={{ backgroundColor: pColor }}>
-                            {pillar.username.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-black text-foreground truncate">
-                              {pillar.username}
-                            </span>
-                            <span className="text-xs text-muted-foreground font-medium truncate">
-                              {pillar.designation || pillar.role || 'Team Lead'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
-                          <span className="font-semibold truncate max-w-[130px]">{pillar.email}</span>
-                          <span className="font-bold text-foreground">
-                            {pillarReports.length} {pillarReports.length === 1 ? 'Member' : 'Members'}
-                          </span>
-                        </div>
-                      </motion.div>
-
-                      {/* Drop connector line down to team pods */}
-                      {pillarReports.length > 0 && isPillarExpanded && (
-                        <div className="w-0.5 h-6 bg-border -my-2" />
-                      )}
-
-                      {/* Level 3: Child Pods / Employees under this pillar */}
-                      <AnimatePresence>
-                        {pillarReports.length > 0 && isPillarExpanded && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="flex flex-col gap-2.5 w-full">
-                            {pillarReports.map((member) => (
-                              <div
-                                key={member.id}
-                                className="w-full p-3 rounded-xl bg-muted/20 hover:bg-muted/40 border border-border/60 hover:border-primary/40 transition-all flex items-center justify-between gap-3 shadow-2xs">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <div
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[10px] text-white shrink-0"
-                                    style={{ backgroundColor: pColor }}>
-                                    {member.username.slice(0, 2).toUpperCase()}
-                                  </div>
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="text-xs font-bold text-foreground truncate">
-                                      {member.username}
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground truncate">
-                                      {member.designation || member.role || 'Member'}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  {member.directReports && member.directReports.length > 0 && (
-                                    <Tag color="blue" className="text-[10px] font-bold m-0 px-1.5 py-0 rounded-md">
-                                      {member.directReports.length}
-                                    </Tag>
-                                  )}
-                                  {canManageHierarchy && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOpenEditManager(member)}
-                                      title="Change Reporting Manager"
-                                      className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                                      <Edit2 size={11} />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  };
-
-  // Visual Tree Node Renderer with Connected SVG/CSS Branch Lines
-  const renderVisualTreeNode = (
-    node: HierarchyNodeUser,
-    level: number = 0,
-    isFirst: boolean = false,
-    isLast: boolean = false,
-    isOnlyChild: boolean = false
-  ) => {
-    const isExpanded = expandedNodes[node.id] !== false; // Default expanded
-    const hasReports = Boolean(node.directReports && node.directReports.length > 0);
-    const isFounder =
-      level === 0 ||
-      node.username.toLowerCase().includes('pratyush') ||
-      node.designation?.toLowerCase().includes('founder');
-
-    return (
-      <div key={node.id} className="relative flex flex-col items-center">
-        {/* Inbound Branch Line from Parent (for all non-root nodes) */}
-        {level > 0 && (
-          <div className="relative w-full h-8 flex justify-center items-center">
-            {/* Horizontal connecting busbar spanning above sibling nodes */}
-            {!isOnlyChild && (
-              <div
-                className={`absolute top-0 h-[2px] bg-slate-300 dark:bg-slate-700 ${
-                  isFirst
-                    ? 'left-1/2 right-0'
-                    : isLast
-                    ? 'left-0 right-1/2'
-                    : 'left-0 right-0'
-                }`}
-              />
-            )}
-            {/* Vertical drop line down into the card */}
-            <div className="w-[2px] h-8 bg-slate-300 dark:bg-slate-700" />
-          </div>
-        )}
-
-        {/* Node Card */}
-        <div
-          className={`relative z-10 p-3.5 rounded-2xl bg-card border transition-all flex flex-col gap-2 ${
-            isFounder
-              ? 'w-72 border-amber-400 ring-2 ring-amber-400/25 shadow-md bg-gradient-to-b from-amber-500/5 via-card to-card'
-              : 'w-68 border-border/70 hover:border-primary/40 shadow-xs hover:shadow-md'
-          }`}>
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div
-                className={`w-10 h-10 rounded-xl font-black text-xs flex items-center justify-center shrink-0 shadow-xs relative ${
-                  isFounder
-                    ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white ring-2 ring-amber-400/40'
-                    : 'bg-gradient-to-tr from-primary to-primary-light text-white'
-                }`}>
-                {isFounder ? <Crown size={18} className="text-white drop-shadow-xs" /> : node.username.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-foreground text-xs block truncate" title={node.username}>
-                    {node.username}
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground block truncate" title={node.email}>
-                  {node.email}
-                </span>
-              </div>
-            </div>
-
-            {canManageHierarchy && !isFounder && (
-              <button
-                type="button"
-                onClick={() => handleOpenEditManager(node)}
-                title="Change Reporting Manager"
-                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0">
-                <Edit2 size={12} />
-              </button>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/40">
-            {isFounder ? (
-              <Tag color="gold" className="text-[10px] font-black m-0 px-2 py-0.5 border-amber-300 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 inline-flex items-center gap-1">
-                <Crown size={11} className="text-amber-600" />
-                <span>Founder & SuperAdmin</span>
-              </Tag>
-            ) : (
-              <Tag color="volcano" className="text-[10px] font-bold m-0 px-1.5 py-0">
-                {node.role || 'Staff'}
-              </Tag>
-            )}
-            {node.department && (
-              <span className="text-[10px] text-foreground font-bold px-2 py-0.5 rounded-md border border-border/80 truncate max-w-[140px]">
-                {node.department}
-              </span>
-            )}
-          </div>
-
-          {/* Subordinates Toggle Bar */}
-          {hasReports && (
+            {/* Expand all */}
             <button
               type="button"
-              onClick={() => toggleNode(node.id)}
-              className="mt-0.5 w-full py-1 px-2 rounded-lg bg-surface-subtle hover:bg-muted/80 text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center justify-between transition-colors">
-              <span className="flex items-center gap-1 text-primary">
-                <Users size={11} /> {node.directReports!.length} Direct {node.directReports!.length === 1 ? 'Report' : 'Reports'}
-              </span>
-              {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+              onClick={handleExpandAll}
+              className="h-8 px-3 rounded-full bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Maximize2 size={12} className="text-muted-foreground" />
+              <span>Expand all</span>
             </button>
-          )}
+
+            {/* Collapse all */}
+            <button
+              type="button"
+              onClick={handleCollapseAll}
+              className="h-8 px-3 rounded-full bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Minimize2 size={12} className="text-muted-foreground" />
+              <span>Collapse all</span>
+            </button>
+
+            {/* Export */}
+            <button
+              type="button"
+              onClick={handleExportJson}
+              className="h-8 px-3 rounded-full bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Download size={12} className="text-muted-foreground" />
+              <span>Export</span>
+            </button>
+
+            {/* Add employee (Primary Button) */}
+            {canManageHierarchy && (
+              <button
+                type="button"
+                onClick={() =>
+                  setAddEmployeeModal({
+                    open: true,
+                    preselectedManagerId: selectedEmployee?.id ?? null,
+                  })
+                }
+                className="h-8 px-4 rounded-full bg-primary hover:bg-primary-hover text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              >
+                <Plus size={14} />
+                <span>Add employee</span>
+              </button>
+            )}
+
+            {/* Refresh */}
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="w-8 h-8 rounded-full bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+              title="Refresh tree data"
+            >
+              <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
 
-        {/* Outbound Branch Line to Children */}
-        {hasReports && isExpanded && (
-          <div className="flex flex-col items-center w-full">
-            {/* Vertical stem descending from this card */}
-            <div className="w-[2px] h-8 bg-slate-300 dark:bg-slate-700" />
+        {/* Row of Department Filter Chips with Color Dots */}
+        {(viewMode === 'map' || viewMode === 'list') && departmentFilters.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap pt-1">
+            <button
+              type="button"
+              onClick={() => setSelectedDepartment('ALL')}
+              className={`h-7 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                selectedDepartment === 'ALL'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                  : 'bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <span>All Teams ({flatUsers.length})</span>
+            </button>
 
-            {/* Children row */}
-            <div className="flex items-start justify-center">
-              {node.directReports!.map((child, idx) => (
-                <div key={child.id} className="px-3 flex flex-col items-center">
-                  {renderVisualTreeNode(
-                    child,
-                    level + 1,
-                    idx === 0,
-                    idx === node.directReports!.length - 1,
-                    node.directReports!.length === 1
-                  )}
-                </div>
-              ))}
-            </div>
+            {departmentFilters.map((dept) => {
+              const color = getDepartmentColor(dept.name);
+              const isActive = selectedDepartment.toLowerCase() === dept.name.toLowerCase();
+              return (
+                <button
+                  key={dept.name}
+                  type="button"
+                  onClick={() => setSelectedDepartment(isActive ? 'ALL' : dept.name)}
+                  className={`h-7 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                      : 'bg-surface-elevated hover:bg-surface-subtle border border-border-subtle text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: color.dot }}
+                  />
+                  <span>{dept.name}</span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
-    );
-  };
 
-  return (
-    <div className="space-y-6">
-      {/* KPI Overview Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Total Workforce
-            </p>
-            <h3 className="text-2xl font-black text-foreground mt-1">{stats.totalEmployees}</h3>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Users className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Active Managers
-            </p>
-            <h3 className="text-2xl font-black text-foreground mt-1">{stats.totalManagers}</h3>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-            <UserCheck className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Departments
-            </p>
-            <h3 className="text-2xl font-black text-foreground mt-1">{stats.totalDepartments}</h3>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-            <Building2 className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Hierarchy Depth
-            </p>
-            <h3 className="text-2xl font-black text-foreground mt-1">Level {stats.hierarchyDepth}</h3>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600">
-            <Layers className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Control Toolbar */}
-      <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setViewMode('tree')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-              viewMode === 'tree'
-                ? 'bg-primary text-white shadow-xs'
-                : 'bg-muted/40 text-muted-foreground hover:text-foreground'
-            }`}>
-            <GitBranch size={14} /> Organization Tree
-          </button>
-          <button
-            onClick={() => setViewMode('departments')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-              viewMode === 'departments'
-                ? 'bg-primary text-white shadow-xs'
-                : 'bg-muted/40 text-muted-foreground hover:text-foreground'
-            }`}>
-            <Building2 size={14} /> Department Heads
-          </button>
-          {canManageHierarchy && (
-            <button
-              onClick={() => setViewMode('reorg')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-                viewMode === 'reorg'
-                  ? 'bg-primary text-white shadow-xs'
-                  : 'bg-muted/40 text-muted-foreground hover:text-foreground'
-              }`}>
-              <Shuffle size={14} /> Reorg Studio
-            </button>
-          )}
-          {canManageHierarchy && (
-            <button
-              onClick={() => setViewMode('audit')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-                viewMode === 'audit'
-                  ? 'bg-primary text-white shadow-xs'
-                  : 'bg-muted/40 text-muted-foreground hover:text-foreground'
-              }`}>
-              <ClipboardList size={14} /> Audit Trail
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
-          {viewMode === 'tree' && (
-            <>
-              {/* Layout Switcher: Chart vs Directory Tree */}
-              <div className="flex items-center bg-muted/40 p-1 rounded-xl border border-border/40">
-                <button
-                  type="button"
-                  onClick={() => setTreeLayout('chart')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all ${
-                    treeLayout === 'chart'
-                      ? 'bg-card text-primary shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}>
-                  <GitBranch size={12} /> Chart
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTreeLayout('directory')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all ${
-                    treeLayout === 'directory'
-                      ? 'bg-card text-primary shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}>
-                  <FolderTree size={12} /> Tree List
-                </button>
-              </div>
-
-              {/* Expand / Collapse All */}
-              {treeLayout === 'chart' && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    onClick={handleExpandAll}
-                    className="text-[11px] font-semibold h-7 px-2"
-                    title="Expand All Nodes">
-                    <Maximize2 size={11} className="mr-1" /> Expand
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    onClick={handleCollapseAll}
-                    className="text-[11px] font-semibold h-7 px-2"
-                    title="Collapse All Nodes">
-                    <Minimize2 size={11} className="mr-1" /> Collapse
-                  </Button>
-                </div>
-              )}
-
-              {/* Search */}
-              <div className="relative flex-1 md:w-48">
-                <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search staff..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-xs pl-8 pr-3 py-1.5 rounded-xl border border-border/60 bg-muted/20 focus:outline-none focus:border-primary"
-                />
-              </div>
-            </>
-          )}
-
-          <Button variant="outline" size="small" onClick={() => refetch()} className="gap-1.5 text-xs h-8">
-            <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} /> Refresh
-          </Button>
-        </div>
-      </div>
-
-      {/* VIEW 1: INTERACTIVE HIERARCHY TREE */}
-      {viewMode === 'tree' && (
-        <div className="p-8 rounded-2xl bg-card border border-border/60 shadow-sm overflow-x-auto min-h-[450px]">
+      {/* ── MAIN CONTENT AREA ── */}
+      {viewMode === 'map' && (
+        <div className="w-full h-[calc(100vh-210px)] min-h-[640px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative bg-[#faf9f8]">
           {isLoading ? (
-            <div className="flex items-center justify-center h-64 text-xs text-muted-foreground font-semibold">
-              Loading organization hierarchy...
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-500">
+              <RefreshCw size={24} className="animate-spin text-[#e8583a]" />
+              <span className="text-xs font-bold">Loading interactive organizational map...</span>
+            </div>
+          ) : rootUsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-2">
+              <Network className="w-10 h-10 text-slate-400 opacity-50 mb-1" />
+              <p className="text-sm font-bold text-slate-800">No personnel records found</p>
+              <p className="text-xs text-slate-500 font-medium max-w-sm">
+                No active employee hierarchy records were returned from the system.
+              </p>
+            </div>
+          ) : (
+            <OrgCanvasMap
+              rootUsers={rootUsers}
+              flatUsers={flatUsers}
+              searchQuery={searchQuery}
+              selectedDepartment={selectedDepartment}
+              selectedUserId={selectedEmployee?.id ?? null}
+              onSelectUser={(u) => setSelectedEmployee(u)}
+              onAddDirectReport={(u) =>
+                setAddEmployeeModal({ open: true, preselectedManagerId: u.id })
+              }
+              onRemoveUser={(u) => setRemoveEmployeeModal({ open: true, user: u })}
+              expandedNodes={expandedNodes}
+              onToggleNode={toggleNode}
+              onExpandAll={handleExpandAll}
+              onCollapseAll={handleCollapseAll}
+              onHiddenCountChange={setHiddenCount}
+            />
+          )}
+        </div>
+      )}
+
+      {/* VIEW: TREE LIST (Directory View matching user screenshot) */}
+      {viewMode === 'list' && (
+        <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-6 min-h-[640px] overflow-x-auto">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-3 text-slate-500">
+              <RefreshCw size={24} className="animate-spin text-[#e8583a]" />
+              <span className="text-xs font-bold">Loading organization tree list...</span>
             </div>
           ) : filteredTree.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <AlertCircle className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm font-bold text-foreground">No personnel records found</p>
-              <p className="text-xs text-muted-foreground">Adjust search filter or assign managers.</p>
+            <div className="flex flex-col items-center justify-center h-64 text-center p-8 gap-2">
+              <Network className="w-10 h-10 text-slate-400 opacity-50 mb-1" />
+              <p className="text-sm font-bold text-slate-800">No personnel records found</p>
+              <p className="text-xs text-slate-500 font-medium max-w-sm">
+                No active employee records match your search query or department filter.
+              </p>
             </div>
-          ) : treeLayout === 'directory' ? (
-            <div className="p-6 bg-muted/10 rounded-2xl border border-border/40 min-h-[450px]">
+          ) : (
+            <div className="py-2">
               <Tree
                 showLine={{ showLeafIcon: false }}
                 defaultExpandAll
@@ -965,17 +762,13 @@ export function OrganizationHierarchyView() {
                 className="bg-transparent"
               />
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center w-full py-4 overflow-x-auto">
-              {filteredTree.map((root) => renderModernOrgChart(root))}
-            </div>
           )}
         </div>
       )}
 
-      {/* VIEW 2: DEPARTMENT HEADS TABLE */}
+      {/* VIEW: DEPARTMENT HEADS TABLE */}
       {viewMode === 'departments' && (
-        <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
+        <div className="rounded-2xl bg-surface-elevated border border-border-subtle shadow-soft overflow-hidden p-3">
           <Table
             scroll={{ x: 'max-content' }}
             columns={deptColumns}
@@ -983,11 +776,12 @@ export function OrganizationHierarchyView() {
             rowKey="id"
             loading={isLoading}
             pagination={false}
+            className="premium-table"
           />
         </div>
       )}
 
-      {/* VIEW 3: REORG STUDIO */}
+      {/* VIEW: REORG STUDIO */}
       {viewMode === 'reorg' && (
         <HierarchyReorgStudio
           onOpenFlowA={handleOpenChangeManager}
@@ -999,12 +793,71 @@ export function OrganizationHierarchyView() {
         />
       )}
 
-      {/* VIEW 4: AUDIT TRAIL */}
+      {/* VIEW: AUDIT TRAIL */}
       {viewMode === 'audit' && (
         <HierarchyAuditTrailView flatUsers={flatUsers} />
       )}
 
-      {/* MODAL: ASSIGN / CHANGE REPORTING MANAGER (tree node quick-edit) */}
+      {/* ── CONTEXTUAL EMPLOYEE PROFILE DRAWER ── */}
+      <OrgEmployeeDrawer
+        user={selectedEmployee}
+        open={Boolean(selectedEmployee)}
+        onClose={() => setSelectedEmployee(null)}
+        flatUsers={flatUsers}
+        onSelectUser={(u) => setSelectedEmployee(u)}
+        onAddDirectReport={(u) =>
+          setAddEmployeeModal({ open: true, preselectedManagerId: u.id })
+        }
+        onRemoveUser={(u) => setRemoveEmployeeModal({ open: true, user: u })}
+        onChangeManager={(u) => {
+          setSelectedEmployee(null);
+          handleOpenEditManager(u);
+        }}
+        onMatrixManager={(u) => {
+          setSelectedEmployee(null);
+          handleOpenMatrixModal(u);
+        }}
+        canManage={canManageHierarchy}
+      />
+
+      {/* ── ADD EMPLOYEE MODAL ── */}
+      <OrgAddEmployeeModal
+        open={addEmployeeModal.open}
+        onClose={() => setAddEmployeeModal({ open: false, preselectedManagerId: null })}
+        preselectedManagerId={addEmployeeModal.preselectedManagerId}
+        flatUsers={flatUsers}
+        departments={departments}
+        onSuccess={async (newId) => {
+          const res = await refetch();
+          const updatedFlat = res.data?.data?.flatUsers || [];
+          if (newId) {
+            const found = updatedFlat.find((u) => u.id === newId);
+            if (found) {
+              if (found.reporting_manager_id) {
+                setExpandedNodes((prev) => ({
+                  ...prev,
+                  [found.reporting_manager_id!]: true,
+                }));
+              }
+              setSelectedEmployee(found);
+            }
+          }
+        }}
+      />
+
+      {/* ── REMOVE EMPLOYEE CONFIRM MODAL ── */}
+      <OrgRemoveConfirmModal
+        open={removeEmployeeModal.open}
+        onClose={() => setRemoveEmployeeModal({ open: false, user: null })}
+        user={removeEmployeeModal.user}
+        flatUsers={flatUsers}
+        onSuccess={() => {
+          setSelectedEmployee(null);
+          refetch();
+        }}
+      />
+
+      {/* ── MODAL: ASSIGN / CHANGE REPORTING MANAGER ── */}
       <Dialog
         visible={editManagerModal.open}
         onHide={() => setEditManagerModal({ open: false, user: null, selectedManagerId: null })}
@@ -1046,7 +899,7 @@ export function OrganizationHierarchyView() {
                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
                 options={flatUsers
-                  .filter((u) => u.id !== editManagerModal.user?.id) // Cannot report to self
+                  .filter((u) => u.id !== editManagerModal.user?.id)
                   .map((u) => ({
                     value: u.id,
                     label: `${u.username} (${u.email}) -- ${u.role}`,
@@ -1077,7 +930,7 @@ export function OrganizationHierarchyView() {
         )}
       </Dialog>
 
-      {/* MODAL: ASSIGN DEPARTMENT HEAD */}
+      {/* ── MODAL: ASSIGN DEPARTMENT HEAD ── */}
       <Dialog
         visible={editDeptModal.open}
         onHide={() =>
@@ -1171,9 +1024,7 @@ export function OrganizationHierarchyView() {
         )}
       </Dialog>
 
-      {/* ── REORG MODALS ──────────────────────────────────────────────────────── */}
-
-      {/* Change Manager */}
+      {/* ── ENTERPRISE REORG MODALS ── */}
       <ChangeManagerModal
         open={changeManagerModal.open}
         onClose={() => setChangeManagerModal({ open: false, user: null })}
@@ -1182,7 +1033,6 @@ export function OrganizationHierarchyView() {
         onSuccess={refetch}
       />
 
-      {/* Bulk Handover */}
       <BulkHandoverModal
         open={bulkHandoverModal}
         onClose={() => setBulkHandoverModal(false)}
@@ -1190,7 +1040,6 @@ export function OrganizationHierarchyView() {
         onSuccess={refetch}
       />
 
-      {/* Replace Manager */}
       <ReplaceManagerModal
         open={replaceManagerModal}
         onClose={() => setReplaceManagerModal(false)}
@@ -1198,7 +1047,6 @@ export function OrganizationHierarchyView() {
         onSuccess={refetch}
       />
 
-      {/* Offboard Rollup */}
       <OffboardRollupModal
         open={offboardRollupModal}
         onClose={() => setOffboardRollupModal(false)}
@@ -1206,7 +1054,6 @@ export function OrganizationHierarchyView() {
         onSuccess={refetch}
       />
 
-      {/* Matrix Manager */}
       <MatrixManagerModal
         open={matrixModal.open}
         onClose={() => setMatrixModal({ open: false, userId: null })}
