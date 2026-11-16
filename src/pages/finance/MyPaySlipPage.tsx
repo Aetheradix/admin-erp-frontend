@@ -21,7 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useGetAllSalarySlipsQuery } from '@/store/api/financeApiSlice';
+import { useGetSalarySlipsByEmployeeIdQuery, useGetAllSalarySlipsQuery } from '@/store/api/financeApiSlice';
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
@@ -295,21 +295,44 @@ const MyPaySlipPage = () => {
 
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
-  // Shared single source of truth query - automatically updates when PayrollPage creates/edits/deletes/status-updates slips!
+  // 1. Primary dedicated query: fetch salary slips specifically for this employee
   const {
-    data: allSlipsData,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetAllSalarySlipsQuery(undefined, {
+    data: empSlipsData,
+    isLoading: isEmpLoading,
+    isError: isEmpError,
+    refetch: refetchEmpSlips,
+  } = useGetSalarySlipsByEmployeeIdQuery(userId!, {
+    skip: !userId,
     refetchOnMountOrArgChange: true,
   });
+
+  // 2. Query all slips only if user has elevated access and employee query returned empty
+  const isElevated =
+    user?.role === 'SuperAdmin' ||
+    user?.role === 'Admin' ||
+    user?.role === 'FinanceAdmin' ||
+    user?.role === 'HrAdmin';
+
+  const shouldFetchAll = Boolean(isElevated && !isEmpLoading && (!empSlipsData || !empSlipsData?.length));
+
+  const {
+    data: allSlipsData,
+    isLoading: isAllLoading,
+    refetch: refetchAllSlips,
+  } = useGetAllSalarySlipsQuery(undefined, {
+    skip: !shouldFetchAll,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const isLoading = (!user && !userId) || isEmpLoading || (shouldFetchAll && isAllLoading);
+  const isError = isEmpError && (!shouldFetchAll || !allSlipsData);
 
   // Synchronize payment status overrides instantly across tabs and page events
   useEffect(() => {
     const handleStatusSync = () => {
       setStatusVersion((prev) => prev + 1);
-      refetch();
+      refetchEmpSlips();
+      if (shouldFetchAll) refetchAllSlips();
     };
     window.addEventListener('payroll_status_updated', handleStatusSync);
     window.addEventListener('payroll_data_updated', handleStatusSync);
@@ -319,7 +342,7 @@ const MyPaySlipPage = () => {
       window.removeEventListener('payroll_data_updated', handleStatusSync);
       window.removeEventListener('storage', handleStatusSync);
     };
-  }, [refetch]);
+  }, [refetchEmpSlips, refetchAllSlips, shouldFetchAll]);
 
   // Handles PDF generation identically to the main Payroll page using html2canvas
   const handleDownload = async (record: PayrollRecord) => {
@@ -390,7 +413,24 @@ const MyPaySlipPage = () => {
   };
 
   const userPayslips: ParsedSalarySlip[] = useMemo(() => {
-    const rawList: Record<string, unknown>[] = allSlipsData?.data
+    // If user is not authenticated or not loaded yet, return empty list (NEVER return all records)
+    if (!user) return [];
+
+    const currentUserId = user.id;
+    const currentEmpCode = user.employee_code || user.employeeCode || user.employee_id;
+    const currentUsername = user.username;
+    const currentEmail = user.email;
+
+    // Prefer dedicated employee slips; fallback to all slips if needed
+    const rawEmpList: Record<string, unknown>[] = empSlipsData?.data
+      ? Array.isArray(empSlipsData.data)
+        ? empSlipsData.data
+        : [empSlipsData.data]
+      : Array.isArray(empSlipsData)
+        ? empSlipsData
+        : [];
+
+    const rawAllList: Record<string, unknown>[] = allSlipsData?.data
       ? Array.isArray(allSlipsData.data)
         ? allSlipsData.data
         : [allSlipsData.data]
@@ -398,22 +438,18 @@ const MyPaySlipPage = () => {
         ? allSlipsData
         : [];
 
-    if (!Array.isArray(rawList)) return [];
+    const rawList = rawEmpList.length > 0 ? rawEmpList : rawAllList;
+    if (!Array.isArray(rawList) || rawList.length === 0) return [];
 
+    // Strictly filter to ensure ONLY the current employee's slips are included
     const userRecords = rawList.filter((item) => {
-      if (!user) return true;
       const itemUserId = findDeepValue(item, ['user_id', 'userId']);
       const itemEmpCode = findDeepValue(item, ['employee_code', 'employeeCode', 'employee_id', 'employeeId']);
       const itemUsername = findDeepValue(item, ['username', 'employeeName', 'employee_name']);
       const itemEmail = findDeepValue(item, ['user_email', 'email', 'userEmail']);
 
-      const currentUserId = user.id;
-      const currentEmpCode = user.employee_code || user.employeeCode || user.employee_id;
-      const currentUsername = user.username;
-      const currentEmail = user.email;
-
       // 1. Direct match by User ID
-      if (itemUserId && currentUserId && String(itemUserId) === String(currentUserId)) {
+      if (itemUserId && currentUserId && Number(itemUserId) === Number(currentUserId)) {
         return true;
       }
       // 2. Direct match by Employee Code (e.g. E001)
@@ -424,7 +460,7 @@ const MyPaySlipPage = () => {
       ) {
         return true;
       }
-      // 3. Employee code equals current user id or vice versa
+      // 3. User ID equals Employee Code or vice versa
       if (
         itemEmpCode &&
         currentUserId &&
@@ -448,10 +484,16 @@ const MyPaySlipPage = () => {
       ) {
         return true;
       }
-      // 6. If the payload is already scoped to this user (e.g. from server-side scoping)
-      if (!itemUserId && !itemEmpCode) {
+
+      // If data was directly returned from the employee endpoint `/finance/salary-slips/employee/:userId`
+      if (rawEmpList.length > 0 && rawEmpList.includes(item)) {
+        // Exclude if item explicitly specifies a different user_id
+        if (itemUserId && currentUserId && Number(itemUserId) !== Number(currentUserId)) {
+          return false;
+        }
         return true;
       }
+
       return false;
     });
 
@@ -492,7 +534,7 @@ const MyPaySlipPage = () => {
     });
 
     return parsed;
-  }, [allSlipsData, user, statusVersion]);
+  }, [empSlipsData, allSlipsData, user, statusVersion]);
 
   // Auto-sync selectedSlip if open in view modal
   useEffect(() => {
@@ -540,7 +582,8 @@ const MyPaySlipPage = () => {
   }, [userPayslips, search]);
 
   const handleRefetch = () => {
-    refetch();
+    refetchEmpSlips();
+    if (shouldFetchAll) refetchAllSlips();
   };
 
   if (isLoading) {

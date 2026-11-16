@@ -220,35 +220,52 @@ export interface PayrollAdjustmentPayload {
 // Helper to normalize and map flat DB records into structured template data
 const mapSalarySlipResponse = (payload: any) => {
   const normalize = (slip: any, index?: number) => {
-    if (!slip) return slip;
+    if (!slip || typeof slip !== 'object') return slip;
     return {
       ...slip,
-      employeeName: slip.username || slip.employeeName,
+      userId: slip.user_id || slip.userId,
+      user_id: slip.user_id || slip.userId,
+      employeeCode: slip.employee_code || slip.employeeCode || slip.employee_id || slip.employeeId,
+      employee_code: slip.employee_code || slip.employeeCode || slip.employee_id || slip.employeeId,
+      employeeName: slip.username || slip.employeeName || slip.employee_name || slip.name,
       paySlipNo:
         extractSlipNumber(slip, index) ||
         slip.payslipNo ||
+        slip.paySlipNo ||
         slip.pay_slip_no ||
         slip.slipNo ||
         slip.slip_no,
-      earnings: [
-        { name: 'Basic Salary', amount: Number(slip.basic_salary || 0) },
-        { name: 'House Rent Allowance (HRA)', amount: Number(slip.house_rent_allowance || 0) },
-        { name: 'Special Allowance', amount: Number(slip.special_allowance || 0) },
-        { name: 'Conveyance Allowance', amount: Number(slip.conveyance_allowance || 0) },
-        { name: 'Bonus', amount: Number(slip.bonus || 0) },
-        { name: 'Other Earnings', amount: Number(slip.other_earnings || 0) },
-      ],
-      deductions: [
-        { name: 'Provident Fund (PF)', amount: Number(slip.provident_fund || 0) },
-        { name: 'Professional Tax', amount: Number(slip.professional_tax || 0) },
-        { name: 'Income Tax (TDS)', amount: Number(slip.income_tax_tds || 0) },
-        { name: 'Other Deductions', amount: Number(slip.other_deductions || 0) },
-      ],
+      earnings:
+        Array.isArray(slip.earnings) && slip.earnings.length > 0
+          ? slip.earnings
+          : [
+              { name: 'Basic Salary', amount: Number(slip.basic_salary || 0) },
+              { name: 'House Rent Allowance (HRA)', amount: Number(slip.house_rent_allowance || 0) },
+              { name: 'Special Allowance', amount: Number(slip.special_allowance || 0) },
+              { name: 'Conveyance Allowance', amount: Number(slip.conveyance_allowance || 0) },
+              { name: 'Bonus', amount: Number(slip.bonus || 0) },
+              { name: 'Other Earnings', amount: Number(slip.other_earnings || 0) },
+            ],
+      deductions:
+        Array.isArray(slip.deductions) && slip.deductions.length > 0
+          ? slip.deductions
+          : [
+              { name: 'Provident Fund (PF)', amount: Number(slip.provident_fund || 0) },
+              { name: 'Professional Tax', amount: Number(slip.professional_tax || 0) },
+              { name: 'Income Tax (TDS)', amount: Number(slip.income_tax_tds || 0) },
+              { name: 'Other Deductions', amount: Number(slip.other_deductions || 0) },
+            ],
     };
   };
 
   if (Array.isArray(payload)) {
     return payload.map((item, idx) => normalize(item, idx + 1));
+  }
+  if (payload && Array.isArray(payload.data)) {
+    return {
+      ...payload,
+      data: payload.data.map((item: any, idx: number) => normalize(item, idx + 1)),
+    };
   }
   return normalize(payload);
 };

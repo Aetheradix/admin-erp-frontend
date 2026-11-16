@@ -427,6 +427,19 @@ export default function PayrollPage() {
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const handleSync = () => {
+      refetchSlips();
+      refetchLogs();
+    };
+    window.addEventListener('payroll_data_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('payroll_data_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, [refetchSlips, refetchLogs]);
+
+  useEffect(() => {
     if (rawData) {
       const itemsList = Array.isArray(rawData?.data)
         ? rawData.data

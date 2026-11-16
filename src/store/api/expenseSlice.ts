@@ -62,7 +62,7 @@ export const expenseSlice = apiSlice.injectEndpoints({
       FormData
     >({
       query: (formData) => ({
-        url: '/finance', // Updated from /expenses
+        url: '/finance/create', // Updated from /expenses
         method: 'POST',
         body: formData,
       }),
