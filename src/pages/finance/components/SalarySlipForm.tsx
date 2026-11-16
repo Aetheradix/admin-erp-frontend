@@ -1089,9 +1089,11 @@ const SalarySlipForm = ({
       formData.payCycle === 'Bi-Weekly' ? 26 :
       formData.payCycle === 'Semi-Monthly' ? 24 : 12;
     const annualBasic =
-      Number(formData.baseSalary) > 0
-        ? Number(formData.baseSalary) * mult
-        : Math.round(estimatedAnnualGross * 0.5);
+      Number(formData.totalCompensation) > 0
+        ? Math.round(Number(formData.totalCompensation) * 0.4)
+        : Number(formData.baseSalary) > 0
+          ? Number(formData.baseSalary) * mult
+          : Math.round(estimatedAnnualGross * 0.4);
 
     return calculateTaxForEmployee({
       annualGrossSalary: estimatedAnnualGross,
@@ -1103,7 +1105,28 @@ const SalarySlipForm = ({
       previousEmployerYtd:
         selectedEmployeeObj?.previousEmployerYtd || selectedEmployeeObj?.previous_employer_ytd,
     });
-  }, [estimatedAnnualGross, formData.taxRegime, formData.baseSalary, formData.payCycle, selectedEmployeeObj]);
+  }, [estimatedAnnualGross, formData.totalCompensation, formData.taxRegime, formData.baseSalary, formData.payCycle, selectedEmployeeObj]);
+
+  // Auto-sync TDS amount in deductions when liveTaxResult updates if TDS deduction is enabled
+  useEffect(() => {
+    if (deductIncomeTax && liveTaxResult) {
+      const newTds = Math.round(Number(liveTaxResult.projectedMonthlyTds || 0));
+      setFormData((prev) => {
+        const updated = [...prev.deductions];
+        const idx = updated.findIndex((d) => isIncomeTaxTdsName(d.name));
+        if (idx !== -1) {
+          if (updated[idx].amount !== newTds) {
+            updated[idx] = { ...updated[idx], amount: newTds };
+            return { ...prev, deductions: updated };
+          }
+        } else if (newTds > 0) {
+          updated.push({ name: 'Income Tax (TDS)', amount: newTds });
+          return { ...prev, deductions: updated };
+        }
+        return prev;
+      });
+    }
+  }, [liveTaxResult, deductIncomeTax]);
 
   const handleToggleDeductIncomeTax = (checked: boolean) => {
     setDeductIncomeTax(checked);

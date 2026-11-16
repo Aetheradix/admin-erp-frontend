@@ -113,6 +113,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
 
   // Form State
   const [annualGross, setAnnualGross] = useState<number>(annualGrossFromEmp);
+  const [hasUserEditedCtc, setHasUserEditedCtc] = useState<boolean>(false);
   const [activeRegime, setActiveRegime] = useState<TaxRegime>(
     (currentEmployee?.taxRegime || currentEmployee?.tax_regime || 'New Regime') as TaxRegime
   );
@@ -132,10 +133,15 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
 
   // Sync annualGross whenever current employee / initialEmployee ctc changes
   useEffect(() => {
-    if (annualGrossFromEmp && annualGrossFromEmp > 0) {
+    if (annualGrossFromEmp && annualGrossFromEmp > 0 && !hasUserEditedCtc) {
       setAnnualGross(annualGrossFromEmp);
     }
-  }, [annualGrossFromEmp]);
+  }, [annualGrossFromEmp, hasUserEditedCtc]);
+
+  // Reset user-edited flag if selected employee changes
+  useEffect(() => {
+    setHasUserEditedCtc(false);
+  }, [selectedUserId]);
 
   // Sync other parameters when currentEmployee changes
   useEffect(() => {
@@ -172,14 +178,31 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     { skip: !isOpen || !isSelfService }
   );
 
+  // When backend data arrives with employee's actual stored compensation, sync annualGross if user hasn't typed an override
+  useEffect(() => {
+    const backendCtc =
+      adminProjectionData?.annualCompensation?.ctcAnnual ??
+      myProjectionData?.annualCompensation?.ctcAnnual;
+    if (backendCtc && Number(backendCtc) > 0 && !hasUserEditedCtc) {
+      setAnnualGross(Number(backendCtc));
+    }
+  }, [adminProjectionData, myProjectionData, hasUserEditedCtc]);
+
   const [simulateTax, { data: simulatedData }] = useSimulateTaxProjectionMutation();
 
   // Active projection payload from API
   const activeBackendData: TaxProjectionResponse | undefined = useMemo(() => {
-    if (simulatedData) return simulatedData;
+    if (simulatedData) {
+      const simCtc =
+        simulatedData.annualCompensation?.ctcAnnual ??
+        (simulatedData as any).taxCalculation?.ctcAnnual;
+      if (simCtc && Math.abs(Number(simCtc) - Number(annualGross)) < 1) {
+        return simulatedData;
+      }
+    }
     if (isSelfService) return myProjectionData;
     return adminProjectionData;
-  }, [simulatedData, isSelfService, myProjectionData, adminProjectionData]);
+  }, [simulatedData, isSelfService, myProjectionData, adminProjectionData, annualGross]);
 
   // Fallback / Instant local calculations
   const taxParams = useMemo(() => {
@@ -278,6 +301,7 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     if (!activeBackendData) return false;
     const backendCtc =
       activeBackendData?.annualCompensation?.ctcAnnual ??
+      (activeBackendData as any)?.taxCalculation?.ctcAnnual ??
       activeBackendData?.annualCompensation?.grossSalaryAnnual ??
       activeBackendData?.taxCalculation?.totalGrossIncome;
     if (backendCtc === undefined || backendCtc === null) return false;
@@ -511,7 +535,10 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                 <input
                   type="number"
                   value={annualGross}
-                  onChange={(e) => setAnnualGross(Number(e.target.value || 0))}
+                  onChange={(e) => {
+                    setHasUserEditedCtc(true);
+                    setAnnualGross(Number(e.target.value || 0));
+                  }}
                   className="w-full rounded-xl border border-slate-300 bg-white pl-7 pr-3 py-2 text-xs font-bold font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
