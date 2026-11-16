@@ -5,10 +5,10 @@ export interface CurrencyOption {
 }
 
 export const WORLD_CURRENCIES: CurrencyOption[] = [
+  { code: 'INR', symbol: '₹', name: 'INR (₹) - Indian Rupee' },
   { code: 'USD', symbol: '$', name: 'USD ($) - US Dollar' },
   { code: 'EUR', symbol: '€', name: 'EUR (€) - Euro' },
   { code: 'GBP', symbol: '£', name: 'GBP (£) - British Pound' },
-  { code: 'INR', symbol: '₹', name: 'INR (₹) - Indian Rupee' },
   { code: 'AED', symbol: 'AED', name: 'AED - UAE Dirham' },
   { code: 'SAR', symbol: 'SAR', name: 'SAR - Saudi Riyal' },
   { code: 'CAD', symbol: 'CA$', name: 'CAD (CA$) - Canadian Dollar' },
@@ -42,7 +42,7 @@ export const WORLD_CURRENCIES: CurrencyOption[] = [
 ];
 
 export const getCurrencySymbol = (code?: string | null): string => {
-  if (!code) return '$';
+  if (!code) return '₹';
   const found = WORLD_CURRENCIES.find((c) => c.code.toUpperCase() === code.toUpperCase());
   return found?.symbol || code;
 };
@@ -52,6 +52,7 @@ export const formatPriceWithCurrency = (
   currency?: string | null
 ): string => {
   const num = typeof amount === 'number' ? amount : parseFloat(String(amount || 0)) || 0;
-  const sym = getCurrencySymbol(currency);
-  return `${sym}${num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  const sym = getCurrencySymbol(currency || 'INR');
+  const locale = (!currency || currency.toUpperCase() === 'INR') ? 'en-IN' : undefined;
+  return `${sym}${num.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 };

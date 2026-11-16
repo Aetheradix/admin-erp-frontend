@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'antd';
-import { AlertTriangle, User, Calendar, Ban, DollarSign } from 'lucide-react';
+import { AlertTriangle, User, Calendar, Ban, IndianRupee } from 'lucide-react';
 import type { PayrollRecord } from '../PayrollPage';
 
 interface VoidPayrollModalProps {
@@ -100,7 +100,7 @@ export const VoidPayrollModal: React.FC<VoidPayrollModalProps> = ({
               <span>Period: <strong>{record.monthYear}</strong></span>
             </div>
             <div className="flex items-center gap-2 text-slate-600">
-              <DollarSign size={14} className="text-slate-400" />
+              <IndianRupee size={14} className="text-slate-400" />
               <span>Net Pay: <strong className="text-slate-900">₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
             </div>
           </div>

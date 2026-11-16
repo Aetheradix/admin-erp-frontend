@@ -83,7 +83,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
     location: '',
     purchase_date: new Date().toISOString().slice(0, 10),
     purchase_cost: 0,
-    currency: 'USD',
+    currency: 'INR',
     condition_status: 'Good',
     image_url: '',
     status: 'Available',
@@ -97,7 +97,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
     if (initialData) {
       setFormData({
         ...initialData,
-        currency: initialData.currency || 'USD',
+        currency: initialData.currency || 'INR',
         is_bookable: Boolean(initialData.is_bookable),
       });
       setPreviewUrl(initialData.image_url || '');
@@ -114,7 +114,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
         location: 'HQ - 3rd Floor',
         purchase_date: new Date().toISOString().slice(0, 10),
         purchase_cost: 0,
-        currency: 'USD',
+        currency: 'INR',
         condition_status: 'Good',
         image_url: '',
         status: 'Available',
@@ -195,7 +195,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
 
     await onSubmit({
       ...formData,
-      currency: formData.currency || 'USD',
+      currency: formData.currency || 'INR',
       purchase_cost: parseFloat(String(formData.purchase_cost || 0)) || 0,
       quantity: parseInt(String(formData.quantity || 1), 10) || 1,
       is_bookable: Boolean(formData.is_bookable),
@@ -427,7 +427,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                     <Select
                       id="inv-currency"
                       options={CURRENCY_SELECT_OPTIONS}
-                      value={formData.currency || 'USD'}
+                      value={formData.currency || 'INR'}
                       onChange={(e) => setFormData({ ...formData, currency: e.value as string })}
                       className="h-11 rounded-xl"
                       placeholder="Currency"
@@ -435,7 +435,7 @@ export const InventoryFormModal: React.FC<InventoryFormModalProps> = ({
                   </div>
                   <div className="relative flex-1">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted font-bold text-xs pointer-events-none select-none">
-                      {getCurrencySymbol(formData.currency || 'USD')}
+                      {getCurrencySymbol(formData.currency || 'INR')}
                     </span>
                     <Input
                       id="inv-pcost"

@@ -139,7 +139,7 @@ export const CareerForm = ({ initialData, onSubmit, onCancel }: CareerFormProps)
               <Input
                 value={formData.salary}
                 onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                placeholder="e.g. $120k - $150k"
+                placeholder="e.g. ₹12L - ₹15L"
               />
             </FormField>
           </div>

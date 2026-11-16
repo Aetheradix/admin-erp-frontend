@@ -359,7 +359,11 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         const mapped = mapSalarySlipResponse(payload);
         return Array.isArray(mapped) ? mapped : [mapped];
       },
-      providesTags: (_result, _error, id) => [{ type: 'SalarySlips', id }],
+      providesTags: (_result, _error, id) => [
+        { type: 'SalarySlips', id },
+        { type: 'SalarySlips', id: 'LIST' },
+        'SalarySlips',
+      ],
     }),
 
     // Fetch salary slips by employee ID
@@ -371,6 +375,8 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       },
       providesTags: (_result, _error, employeeId) => [
         { type: 'SalarySlips', id: `EMP-${employeeId}` },
+        { type: 'SalarySlips', id: 'LIST' },
+        'SalarySlips',
       ],
     }),
 
@@ -388,7 +394,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         };
       },
       // 💡 Automatically invalidates both SalarySlips and ActivityLogs so both tables update!
-      invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }, 'ActivityLogs'],
+      invalidatesTags: [{ type: 'SalarySlips', id: 'LIST' }, 'SalarySlips', 'ActivityLogs'],
     }),
 
     // Salary Slip Audit Logs (Activity Logs)
@@ -499,6 +505,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'SalarySlips', id },
         { type: 'SalarySlips', id: 'LIST' },
+        'SalarySlips',
         'ActivityLogs',
       ],
     }),
@@ -511,6 +518,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: 'SalarySlips', id },
         { type: 'SalarySlips', id: 'LIST' },
+        'SalarySlips',
         'ActivityLogs',
       ],
     }),

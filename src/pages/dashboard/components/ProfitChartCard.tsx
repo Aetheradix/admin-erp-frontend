@@ -139,14 +139,14 @@ export default function ProfitChartCard() {
             <span className="text-[9px] font-black text-muted uppercase tracking-widest mb-0.5">
               Projected
             </span>
-            <span className="text-sm font-black text-foreground">$1.2M</span>
+            <span className="text-sm font-black text-foreground">₹1.2M</span>
           </div>
           <div className="w-px h-8 bg-border-subtle" />
           <div className="flex flex-col">
             <span className="text-[9px] font-black text-muted uppercase tracking-widest mb-0.5">
               Realized
             </span>
-            <span className="text-sm font-black text-foreground">$842k</span>
+            <span className="text-sm font-black text-foreground">₹842k</span>
           </div>
         </div>
         <div className="h-2 w-24 bg-surface-subtle rounded-full overflow-hidden">

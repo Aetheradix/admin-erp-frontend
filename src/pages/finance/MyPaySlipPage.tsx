@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   FileText,
   Eye,
@@ -21,7 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useGetSalarySlipByIdQuery, useGetAllSalarySlipsQuery } from '@/store/api/financeApiSlice';
+import { useGetAllSalarySlipsQuery } from '@/store/api/financeApiSlice';
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
@@ -269,13 +269,16 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
         findDeepValue(item, ['payment_status', 'paymentStatus']) === 'void' ||
         String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID');
       if (isVoid) return 'void';
+      const raw = String(findDeepValue(item, ['payment_status', 'paymentStatus']) || '').toLowerCase();
+      if (raw === 'paid' || raw === 'pending') {
+        return raw;
+      }
       const overrides = getPayrollStatusOverrides();
       const itemId = findDeepValue(item, ['id', 'salary_slip_id', 'salarySlipId']);
       if (itemId && overrides[String(itemId)]) {
         return overrides[String(itemId)];
       }
-      const raw = String(findDeepValue(item, ['payment_status', 'paymentStatus']) || '').toLowerCase();
-      return raw === 'paid' && itemId && overrides[String(itemId)] === 'paid' ? 'paid' : 'pending';
+      return 'pending';
     })(),
   };
 };
@@ -284,6 +287,7 @@ const MyPaySlipPage = () => {
   const [search, setSearch] = useState('');
   const [selectedSlip, setSelectedSlip] = useState<PayrollRecord | null>(null);
   const [showTaxProjection, setShowTaxProjection] = useState(false);
+  const [statusVersion, setStatusVersion] = useState(0);
 
   // Extract user details directly from useAuth hook
   const { user } = useAuth();
@@ -291,28 +295,31 @@ const MyPaySlipPage = () => {
 
   const hiddenPdfRef = useRef<HTMLDivElement>(null);
 
-  const {
-    data: empSlipsData,
-    isLoading: isEmpSlipsLoading,
-    isError: isEmpError,
-    refetch: refetchEmpSlips,
-  } = useGetSalarySlipByIdQuery(userId!, {
-    skip: !userId,
-  });
-
-  const shouldFetchAll = Boolean(!isEmpSlipsLoading && (isEmpError || !empSlipsData?.data?.length));
-
+  // Shared single source of truth query - automatically updates when PayrollPage creates/edits/deletes/status-updates slips!
   const {
     data: allSlipsData,
-    isLoading: isAllSlipsLoading,
-    isError: isAllError,
-    refetch: refetchAllSlips,
+    isLoading,
+    isError,
+    refetch,
   } = useGetAllSalarySlipsQuery(undefined, {
-    skip: !shouldFetchAll,
+    refetchOnMountOrArgChange: true,
   });
 
-  const isLoading = isEmpSlipsLoading || (shouldFetchAll && isAllSlipsLoading);
-  const isError = isEmpError && isAllError;
+  // Synchronize payment status overrides instantly across tabs and page events
+  useEffect(() => {
+    const handleStatusSync = () => {
+      setStatusVersion((prev) => prev + 1);
+      refetch();
+    };
+    window.addEventListener('payroll_status_updated', handleStatusSync);
+    window.addEventListener('payroll_data_updated', handleStatusSync);
+    window.addEventListener('storage', handleStatusSync);
+    return () => {
+      window.removeEventListener('payroll_status_updated', handleStatusSync);
+      window.removeEventListener('payroll_data_updated', handleStatusSync);
+      window.removeEventListener('storage', handleStatusSync);
+    };
+  }, [refetch]);
 
   // Handles PDF generation identically to the main Payroll page using html2canvas
   const handleDownload = async (record: PayrollRecord) => {
@@ -383,30 +390,72 @@ const MyPaySlipPage = () => {
   };
 
   const userPayslips: ParsedSalarySlip[] = useMemo(() => {
-    const rawResponse = empSlipsData ?? allSlipsData;
-    const rawList: Record<string, unknown>[] = rawResponse?.data
-      ? Array.isArray(rawResponse.data)
-        ? rawResponse.data
-        : [rawResponse.data]
-      : Array.isArray(rawResponse)
-        ? rawResponse
+    const rawList: Record<string, unknown>[] = allSlipsData?.data
+      ? Array.isArray(allSlipsData.data)
+        ? allSlipsData.data
+        : [allSlipsData.data]
+      : Array.isArray(allSlipsData)
+        ? allSlipsData
         : [];
 
     if (!Array.isArray(rawList)) return [];
 
     const userRecords = rawList.filter((item) => {
-      if (!userId) return true;
-      const empId = findDeepValue(item, [
-        'user_id',
-        'userId',
-        'employee_id',
-        'employeeId',
-        'employee_code',
-      ]);
-      return !empId || String(empId) === String(userId);
+      if (!user) return true;
+      const itemUserId = findDeepValue(item, ['user_id', 'userId']);
+      const itemEmpCode = findDeepValue(item, ['employee_code', 'employeeCode', 'employee_id', 'employeeId']);
+      const itemUsername = findDeepValue(item, ['username', 'employeeName', 'employee_name']);
+      const itemEmail = findDeepValue(item, ['user_email', 'email', 'userEmail']);
+
+      const currentUserId = user.id;
+      const currentEmpCode = user.employee_code || user.employeeCode || user.employee_id;
+      const currentUsername = user.username;
+      const currentEmail = user.email;
+
+      // 1. Direct match by User ID
+      if (itemUserId && currentUserId && String(itemUserId) === String(currentUserId)) {
+        return true;
+      }
+      // 2. Direct match by Employee Code (e.g. E001)
+      if (
+        itemEmpCode &&
+        currentEmpCode &&
+        String(itemEmpCode).trim().toLowerCase() === String(currentEmpCode).trim().toLowerCase()
+      ) {
+        return true;
+      }
+      // 3. Employee code equals current user id or vice versa
+      if (
+        itemEmpCode &&
+        currentUserId &&
+        String(itemEmpCode).trim().toLowerCase() === String(currentUserId).trim().toLowerCase()
+      ) {
+        return true;
+      }
+      // 4. Match by Email
+      if (
+        itemEmail &&
+        currentEmail &&
+        String(itemEmail).trim().toLowerCase() === String(currentEmail).trim().toLowerCase()
+      ) {
+        return true;
+      }
+      // 5. Match by username
+      if (
+        itemUsername &&
+        currentUsername &&
+        String(itemUsername).trim().toLowerCase() === String(currentUsername).trim().toLowerCase()
+      ) {
+        return true;
+      }
+      // 6. If the payload is already scoped to this user (e.g. from server-side scoping)
+      if (!itemUserId && !itemEmpCode) {
+        return true;
+      }
+      return false;
     });
 
-    return userRecords.map((item): ParsedSalarySlip => {
+    const parsed = userRecords.map((item): ParsedSalarySlip => {
       const formatted = formatApiRecord(item);
 
       return {
@@ -434,7 +483,26 @@ const MyPaySlipPage = () => {
         paymentStatus: formatted.paymentStatus,
       };
     });
-  }, [empSlipsData, allSlipsData, userId]);
+
+    // Sort slips: newest first
+    parsed.sort((a, b) => {
+      const aMonthYear = a.monthYear || '';
+      const bMonthYear = b.monthYear || '';
+      return String(bMonthYear).localeCompare(String(aMonthYear)) || Number(b.id || 0) - Number(a.id || 0);
+    });
+
+    return parsed;
+  }, [allSlipsData, user, statusVersion]);
+
+  // Auto-sync selectedSlip if open in view modal
+  useEffect(() => {
+    if (selectedSlip && userPayslips.length > 0) {
+      const updated = userPayslips.find((p) => p.id === selectedSlip.id);
+      if (updated && updated.rawRecord) {
+        setSelectedSlip(updated.rawRecord);
+      }
+    }
+  }, [userPayslips]);
 
   const currentUsername = user?.username || 'User';
 
@@ -472,8 +540,7 @@ const MyPaySlipPage = () => {
   }, [userPayslips, search]);
 
   const handleRefetch = () => {
-    refetchEmpSlips();
-    if (shouldFetchAll) refetchAllSlips();
+    refetch();
   };
 
   if (isLoading) {

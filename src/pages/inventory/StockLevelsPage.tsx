@@ -8,7 +8,7 @@ import {
   Package,
   Clock,
   ArrowRight,
-  DollarSign,
+  IndianRupee,
   AlertTriangle,
   CheckCircle2,
 } from 'lucide-react';
@@ -63,14 +63,14 @@ export const StockLevelsPage: React.FC = () => {
               Total Capital Valuation
             </span>
             <span className="text-3xl font-black text-foreground">
-              $${Number(stats?.totalValuation || 0).toLocaleString()}
+              ₹{Number(stats?.totalValuation || 0).toLocaleString('en-IN')}
             </span>
             <span className="text-xs font-bold text-muted block mt-1">
               Across {stats?.totalItems || 0} registered assets
             </span>
           </div>
           <div className="w-14 h-14 rounded-3xl bg-indigo-500/20 text-indigo-600 flex items-center justify-center">
-            <DollarSign size={28} />
+            <IndianRupee size={28} />
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import arxLogoFromAssets from '@/assets/ARX_Logo_White_v9SVG.svg';
 
 export interface InvoiceItem {
   description: string;
@@ -147,7 +148,7 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
                 padding: '0 8px',
                 display: 'inline-block',
               }}>
-              ARX
+              {arxLogoFromAssets}
             </div>
 
             <h2

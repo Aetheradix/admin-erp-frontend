@@ -5,7 +5,7 @@ import {
   Download,
   TrendingUp,
   TrendingDown,
-  DollarSign,
+  IndianRupee,
   RefreshCw,
   ChevronDown,
   ChevronUp,
@@ -681,7 +681,7 @@ export default function AuditBookPage() {
           value={fmt(Math.abs(netProfitLoss))}
           sub={`${grossMargin}% margin`}
           trend={netProfitLoss >= 0 ? 'up' : 'down'}
-          icon={<DollarSign size={18} />}
+          icon={<IndianRupee size={18} />}
           color={netProfitLoss >= 0 ? '#6366f1' : '#f87171'}
         />
         <KPICard
