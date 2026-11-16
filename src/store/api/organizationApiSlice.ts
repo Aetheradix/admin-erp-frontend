@@ -1,5 +1,33 @@
 import { apiSlice } from './apiSlice';
 
+export interface CompanyProfileData {
+  id: number;
+  name: string;
+  tagline: string;
+  industry: string;
+  description: string;
+  website: string;
+  email: string;
+  phone_country_code: string;
+  phone_number: string;
+  phone: string;
+  address: string;
+  hq_office_id?: number | null;
+  founded: string;
+  mission: string;
+  vision: string;
+  values: string[];
+  logo_url?: string | null;
+  hq_office?: {
+    id: number;
+    name: string;
+    address: string;
+    latitude: string | number;
+    longitude: string | number;
+    radius: number;
+  } | null;
+}
+
 export interface HierarchyNodeUser {
   id: number;
   username: string;
@@ -287,6 +315,24 @@ export const organizationApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['OrganizationHierarchy', 'Departments', 'RoleAuditLogs'],
     }),
+
+    // Company Profile & Governance
+    getCompanyProfile: builder.query<{ success: boolean; data: CompanyProfileData }, void>({
+      query: () => '/organization/profile',
+      providesTags: ['OrganizationProfile', 'Offices'],
+    }),
+
+    updateCompanyProfile: builder.mutation<
+      { success: boolean; message: string; data: CompanyProfileData },
+      Partial<CompanyProfileData>
+    >({
+      query: (body) => ({
+        url: '/organization/profile',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['OrganizationProfile', 'Offices', 'Attendance'],
+    }),
   }),
 });
 
@@ -302,4 +348,6 @@ export const {
   useGetHierarchyAuditTrailQuery,
   useRebuildClosureTableMutation,
   useUpdateDepartmentHierarchyMutation,
+  useGetCompanyProfileQuery,
+  useUpdateCompanyProfileMutation,
 } = organizationApiSlice;

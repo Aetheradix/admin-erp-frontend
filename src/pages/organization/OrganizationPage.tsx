@@ -26,16 +26,23 @@ import {
   Layers,
   ArrowRight,
   ExternalLink,
+  Plus,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Table, message, Tag } from 'antd';
+import { Table, message, Tag, Select as AntSelect, Input as AntInput, Divider, Skeleton } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { BranchesPage } from './BranchesPage';
 import { OrganizationHierarchyView } from './components/OrganizationHierarchyView';
 import { useUploadImageMutation } from '@/store/api/uploadSlice';
 import { useGetAllOfficesQuery } from '@/store/api/attendanceSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
-import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
+import {
+  useGetOrganizationHierarchyQuery,
+  useGetCompanyProfileQuery,
+  useUpdateCompanyProfileMutation,
+} from '@/store/api/organizationApiSlice';
+import { InternationalPhoneInput } from './components/InternationalPhoneInput';
+import { parsePhoneNumber, validatePhoneNumber } from './utils/countryCodes';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermission } from '@/hooks/usePermission';
 
@@ -63,28 +70,42 @@ export interface PolicyItem {
   docUrl?: string;
 }
 
-const initialCompanyInfo = {
-  name: 'Aetheradix Technologies',
-  tagline: 'Intelligent Enterprise Automation & Cloud Ecosystems',
-  industry: 'Enterprise Software & Cloud AI',
-  founded: '2019',
-  website: 'https://aetheradix.com',
-  email: 'contact@aetheradix.com',
-  phone: '+1 (555) 234-5678',
+export interface CompanyInfoState {
+  name: string;
+  tagline: string;
+  industry: string;
+  founded: string;
+  website: string;
+  email: string;
+  phone_country_code: string;
+  phone_number: string;
+  phone: string;
+  employees: number;
+  address: string;
+  hq_office_id: number | null;
+  description: string;
+  mission: string;
+  vision: string;
+  values: string[];
+}
+
+const emptyCompanyInfo: CompanyInfoState = {
+  name: '',
+  tagline: '',
+  industry: '',
+  founded: '',
+  website: '',
+  email: '',
+  phone_country_code: '+91',
+  phone_number: '',
+  phone: '',
   employees: 0,
-  address: '42 Innovation Drive, Tech City, CA 94043',
-  description:
-    'Aetheradix Technologies provides next-generation enterprise resource planning and intelligent automation solutions. We empower modern teams with streamlined project execution, high-velocity financial workflows, and end-to-end operational visibility.',
-  mission:
-    'To accelerate business performance globally through intelligent, modular, and human-centric enterprise operating systems.',
-  vision:
-    'To become the global benchmark for frictionless enterprise governance, supply chain velocity, and collaborative intelligence.',
-  values: [
-    'Radical Innovation',
-    'Extreme Transparency',
-    'Operational Excellence',
-    'Customer First',
-  ],
+  address: '',
+  hq_office_id: null,
+  description: '',
+  mission: '',
+  vision: '',
+  values: [],
 };
 
 const initialDocuments: CompanyDocument[] = [
@@ -246,6 +267,7 @@ export function OrganizationPage() {
 
   const [activeTab, setActiveTab] = useState('Overview');
   const [autoOpenHQ, setAutoOpenHQ] = useState(false);
+  const [autoOpenCreate, setAutoOpenCreate] = useState(false);
   const { data: offices = [] } = useGetAllOfficesQuery();
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsersQuery();
   const { data: hierarchyData } = useGetOrganizationHierarchyQuery();
@@ -261,7 +283,44 @@ export function OrganizationPage() {
     return offices.find((o) => o.is_hq || o.isHq) || offices[0];
   }, [offices]);
 
-  const [companyInfo, setCompanyInfo] = useState(initialCompanyInfo);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfoState>(emptyCompanyInfo);
+  const [phoneError, setPhoneError] = useState('');
+
+  // Database integration: Fetch & Update Company Profile
+  const { data: profileResponse, isLoading: isLoadingProfile } = useGetCompanyProfileQuery();
+  const [updateCompanyProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateCompanyProfileMutation();
+
+  // Sync state from Database
+  useEffect(() => {
+    if (profileResponse?.data) {
+      const db = profileResponse.data;
+      const parsedPhone = parsePhoneNumber(
+        db.phone || '',
+        db.phone_country_code || '',
+        db.phone_number || ''
+      );
+      setCompanyInfo({
+        name: db.name || '',
+        tagline: db.tagline || '',
+        industry: db.industry || '',
+        founded: db.founded || '',
+        website: db.website || '',
+        email: db.email || '',
+        phone_country_code: parsedPhone.countryCode || db.phone_country_code || '+91',
+        phone_number: parsedPhone.phoneNumber || db.phone_number || '',
+        phone: db.phone || `${parsedPhone.countryCode} ${parsedPhone.phoneNumber}`.trim(),
+        employees: totalEmployeesCount,
+        address: db.address || hqOffice?.address || '',
+        hq_office_id: db.hq_office_id ?? hqOffice?.id ?? null,
+        description: db.description || '',
+        mission: db.mission || '',
+        vision: db.vision || '',
+        values: Array.isArray(db.values) ? db.values : [],
+      });
+    }
+  }, [profileResponse?.data, totalEmployeesCount, hqOffice]);
+
   const [documents, setDocuments] = useState<CompanyDocument[]>(() => {
     try {
       const saved = localStorage.getItem('erp_compliance_documents');
@@ -288,7 +347,41 @@ export function OrganizationPage() {
 
   // Modals
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
-  const [editForm, setEditForm] = useState(companyInfo);
+  const [editForm, setEditForm] = useState<CompanyInfoState>(emptyCompanyInfo);
+
+  const handleOpenEditModal = () => {
+    const db = profileResponse?.data;
+    const currentAddress =
+      db?.address || hqOffice?.address || companyInfo.address || '';
+    const parsedPhone = parsePhoneNumber(
+      companyInfo.phone,
+      companyInfo.phone_country_code,
+      companyInfo.phone_number
+    );
+    const currentHqOfficeId =
+      db?.hq_office_id ?? hqOffice?.id ?? companyInfo.hq_office_id ?? null;
+
+    setEditForm({
+      name: companyInfo.name,
+      tagline: companyInfo.tagline,
+      industry: companyInfo.industry,
+      founded: companyInfo.founded,
+      website: companyInfo.website,
+      email: companyInfo.email,
+      phone_country_code: parsedPhone.countryCode || companyInfo.phone_country_code || '+91',
+      phone_number: parsedPhone.phoneNumber || companyInfo.phone_number || '',
+      phone: companyInfo.phone,
+      employees: totalEmployeesCount,
+      address: currentAddress,
+      hq_office_id: currentHqOfficeId,
+      description: companyInfo.description,
+      mission: companyInfo.mission,
+      vision: companyInfo.vision,
+      values: companyInfo.values,
+    });
+    setPhoneError('');
+    setShowEditProfileModal(true);
+  };
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadDocForm, setUploadDocForm] = useState({
@@ -310,11 +403,61 @@ export function OrganizationPage() {
     'Offices & Branches',
   ];
 
-  // Handle Edit Profile Save
-  const handleSaveProfile = () => {
-    setCompanyInfo(editForm);
-    setShowEditProfileModal(false);
-    message.success('Company profile updated successfully!');
+  // Handle Edit Profile Save directly to Database
+  const handleSaveProfile = async () => {
+    if (!editForm.name.trim()) {
+      message.error('Please enter the company legal name.');
+      return;
+    }
+
+    // International Phone validation
+    const phoneVal = validatePhoneNumber(
+      editForm.phone_country_code || '+1',
+      editForm.phone_number || ''
+    );
+    if (!phoneVal.valid && editForm.phone_number.trim()) {
+      setPhoneError(phoneVal.message || 'Invalid phone number');
+      message.error(phoneVal.message || 'Please check the phone number format');
+      return;
+    }
+
+    const compositePhone = `${editForm.phone_country_code || '+1'} ${editForm.phone_number.trim()}`.trim();
+
+    try {
+      await updateCompanyProfile({
+        name: editForm.name.trim(),
+        tagline: editForm.tagline.trim(),
+        industry: editForm.industry.trim(),
+        description: editForm.description.trim(),
+        website: editForm.website.trim(),
+        email: editForm.email.trim(),
+        phone_country_code: editForm.phone_country_code || '+91',
+        phone_number: editForm.phone_number.trim(),
+        phone: compositePhone,
+        address: editForm.address.trim(),
+        hq_office_id: editForm.hq_office_id || undefined,
+        founded: editForm.founded ? editForm.founded.trim() : '',
+        mission: editForm.mission ? editForm.mission.trim() : '',
+        vision: editForm.vision ? editForm.vision.trim() : '',
+        values: editForm.values,
+      }).unwrap();
+
+      setCompanyInfo((prev) => ({
+        ...prev,
+        ...editForm,
+        phone: compositePhone,
+      }));
+      setShowEditProfileModal(false);
+      setPhoneError('');
+      message.success('Company profile & Global HQ address successfully saved to database!');
+    } catch (err: any) {
+      console.error('Failed to update company profile:', err);
+      message.error(
+        err?.data?.message ||
+          err?.message ||
+          'Failed to save company information to database'
+      );
+    }
   };
 
   // Handle File Upload Submit
@@ -512,10 +655,7 @@ export function OrganizationPage() {
           canManageOrg
             ? {
               label: 'Edit Profile',
-              onClick: () => {
-                setEditForm(companyInfo);
-                setShowEditProfileModal(true);
-              },
+              onClick: handleOpenEditModal,
               icon: 'pi pi-pencil',
             }
             : undefined
@@ -531,48 +671,57 @@ export function OrganizationPage() {
       {activeTab === 'Overview' && (
         <div className="flex flex-col gap-8">
           {/* Company Hero Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-10 flex flex-col lg:flex-row items-start gap-10">
-            <div className="w-28 h-28 rounded-3xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
-              <Building2 size={48} className="text-primary" />
+          {isLoadingProfile ? (
+            <div className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-10">
+              <Skeleton active avatar={{ size: 80, shape: 'square' }} paragraph={{ rows: 3 }} />
             </div>
-            <div className="flex flex-col gap-4 flex-1">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-3xl font-black text-foreground tracking-tight">
-                    {companyInfo.name}
-                  </h2>
-                  <p className="text-sm font-semibold text-primary mt-0.5">{companyInfo.tagline}</p>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-[32px] border border-border-subtle shadow-soft p-10 flex flex-col lg:flex-row items-start gap-10">
+              <div className="w-28 h-28 rounded-3xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
+                <Building2 size={48} className="text-primary" />
+              </div>
+              <div className="flex flex-col gap-4 flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-3xl font-black text-foreground tracking-tight">
+                      {companyInfo.name || 'Company Legal Name'}
+                    </h2>
+                    {companyInfo.tagline && (
+                      <p className="text-sm font-semibold text-primary mt-0.5">{companyInfo.tagline}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    label="Update Details"
+                    icon="pi pi-pencil"
+                    onClick={handleOpenEditModal}
+                    className="rounded-md! shrink-0!"
+                  />
                 </div>
-                <Button
-                  variant="outline"
-                  label="Update Details"
-                  icon="pi pi-pencil"
-                  onClick={() => {
-                    setEditForm(companyInfo);
-                    setShowEditProfileModal(true);
-                  }}
-                  className="rounded-md! shrink-0!"
-                />
-              </div>
 
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl">
-                {companyInfo.description}
-              </p>
+                {companyInfo.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl">
+                    {companyInfo.description}
+                  </p>
+                )}
 
-              <div className="flex flex-wrap gap-2 pt-2">
-                {companyInfo.values.map((v) => (
-                  <span
-                    key={v}
-                    className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider border border-primary/10">
-                    {v}
-                  </span>
-                ))}
+                {companyInfo.values && companyInfo.values.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {companyInfo.values.map((v) => (
+                      <span
+                        key={v}
+                        className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider border border-primary/10">
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* Key Metric Highlights */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -635,7 +784,7 @@ export function OrganizationPage() {
                   </span>
                 </span>
                 <span className="text-sm font-bold text-foreground line-clamp-2">
-                  {hqOffice?.address || hqOffice?.name || companyInfo.address}
+                  {companyInfo.address || hqOffice?.address || 'No headquarters address specified'}
                 </span>
                 {hqOffice && (
                   <span className="text-[11px] font-mono font-semibold text-muted mt-0.5">
@@ -646,15 +795,15 @@ export function OrganizationPage() {
             </motion.div>
 
             {[
-              { icon: Calendar, label: 'Established', value: companyInfo.founded },
+              { icon: Calendar, label: 'Established', value: companyInfo.founded || 'Not specified' },
               {
                 icon: Users,
                 label: 'Headcount',
                 value: isLoadingUsers && totalEmployeesCount === 0 ? 'Loading...' : `${totalEmployeesCount} Employees`,
               },
-              { icon: Globe, label: 'Official Portal', value: companyInfo.website, isLink: true },
-              { icon: Mail, label: 'Corporate Email', value: companyInfo.email },
-              { icon: Phone, label: 'Direct Line', value: companyInfo.phone },
+              { icon: Globe, label: 'Official Portal', value: companyInfo.website || 'Not specified', isLink: Boolean(companyInfo.website) },
+              { icon: Mail, label: 'Corporate Email', value: companyInfo.email || 'Not specified' },
+              { icon: Phone, label: 'Direct Line', value: companyInfo.phone || 'Not specified' },
             ].map((item, i) => (
               <motion.div
                 key={item.label}
@@ -707,7 +856,9 @@ export function OrganizationPage() {
                 <Sparkles size={24} />
               </div>
               <h3 className="text-2xl font-black text-foreground">Our Purpose & Mission</h3>
-              <p className="text-sm text-foreground/80 leading-relaxed">{companyInfo.mission}</p>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {companyInfo.mission || 'No mission statement defined yet. Use Edit Profile to configure.'}
+              </p>
             </motion.div>
 
             <motion.div
@@ -718,7 +869,9 @@ export function OrganizationPage() {
                 <Layers size={24} />
               </div>
               <h3 className="text-2xl font-black text-foreground">Long-Term Vision</h3>
-              <p className="text-sm text-foreground/80 leading-relaxed">{companyInfo.vision}</p>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {companyInfo.vision || 'No vision statement defined yet. Use Edit Profile to configure.'}
+              </p>
             </motion.div>
           </div>
 
@@ -892,7 +1045,11 @@ export function OrganizationPage() {
       {activeTab === 'Offices & Branches' && (
         <BranchesPage
           autoOpenHQ={autoOpenHQ}
-          onClearAutoOpen={() => setAutoOpenHQ(false)}
+          autoOpenCreate={autoOpenCreate}
+          onClearAutoOpen={() => {
+            setAutoOpenHQ(false);
+            setAutoOpenCreate(false);
+          }}
         />
       )}
 
@@ -902,7 +1059,7 @@ export function OrganizationPage() {
         onHide={() => setShowEditProfileModal(false)}
         header="Edit Company Information"
         modal
-        className="w-full max-w-2xl mx-4"
+        className="w-full max-w-4xl mx-4"
         contentClassName="p-8"
         headerClassName="px-8 pt-8 pb-4 text-xl font-black tracking-tight border-none"
         pt={{
@@ -945,11 +1102,12 @@ export function OrganizationPage() {
             <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
               Company Overview & Description
             </label>
-            <textarea
+            <AntInput.TextArea
               rows={3}
               value={editForm.description}
               onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-              className="w-full p-3 rounded-lg bg-surface-subtle border border-border-subtle text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              placeholder="Enter comprehensive company description..."
+              className="w-full !rounded-md !bg-white !text-foreground !text-sm !font-medium !border-border-subtle hover:!border-primary/50 focus:!border-primary !shadow-xs resize-none"
             />
           </div>
 
@@ -976,20 +1134,127 @@ export function OrganizationPage() {
               <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
                 Phone Number
               </label>
-              <Input
-                value={editForm.phone}
-                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              <InternationalPhoneInput
+                countryCode={editForm.phone_country_code || '+1'}
+                phoneNumber={editForm.phone_number || ''}
+                error={phoneError}
+                onChange={(code, num) => {
+                  setEditForm({
+                    ...editForm,
+                    phone_country_code: code,
+                    phone_number: num,
+                    phone: `${code} ${num}`.trim(),
+                  });
+                  if (phoneError) setPhoneError('');
+                }}
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
-              Global Headquarters Address
-            </label>
-            <Input
-              value={editForm.address}
-              onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
+                Global Headquarters Address
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditProfileModal(false);
+                  setActiveTab('Offices & Branches');
+                  setAutoOpenCreate(true);
+                }}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer"
+              >
+                <Plus size={12} />
+                Add New Location
+              </button>
+            </div>
+
+            <AntSelect
+              value={editForm.hq_office_id || undefined}
+              placeholder="Select headquarters location..."
+              size="large"
+              showSearch
+              optionFilterProp="label"
+              className="w-full text-sm [&_.ant-select-selector]:!min-h-[46px] [&_.ant-select-selector]:!py-1 [&_.ant-select-selector]:!rounded-md [&_.ant-select-selector]:!border-border-subtle [&_.ant-select-selector]:!bg-white [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-muted/60"
+              onChange={(val) => {
+                const selectedId = Number(val);
+                const selectedOffice = offices.find((o) => o.id === selectedId);
+                setEditForm({
+                  ...editForm,
+                  hq_office_id: selectedId || null,
+                  address: selectedOffice?.address || editForm.address,
+                });
+              }}
+              options={offices.map((o) => ({
+                value: o.id,
+                label: `${o.name} — ${o.address || 'No address'}`,
+                name: o.name,
+                address: o.address,
+                isHq: Boolean(o.is_hq || o.isHq),
+              }))}
+              optionRender={(option) => {
+                const data = option.data as { name: string; address?: string; isHq?: boolean };
+                return (
+                  <div className="flex items-start gap-2.5 py-1">
+                    <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                      <MapPin size={13} />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground text-xs">{data.name}</span>
+                        {data.isHq && (
+                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-bold">
+                            Current HQ
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-muted truncate max-w-[500px]">
+                        {data.address || 'No address specified'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+              notFoundContent={
+                <div className="py-4 px-3 text-center">
+                  <div className="text-xs text-muted mb-2 font-medium">No office locations added yet</div>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setShowEditProfileModal(false);
+                      setActiveTab('Offices & Branches');
+                      setAutoOpenCreate(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                  >
+                    <Plus size={13} />
+                    Add New Location
+                  </button>
+                </div>
+              }
+              dropdownRender={(menu) => (
+                <div>
+                  {menu}
+                  <Divider style={{ margin: '4px 0' }} />
+                  <div
+                    className="px-3 py-2 flex items-center justify-between hover:bg-primary/5 cursor-pointer rounded-b transition-colors"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setShowEditProfileModal(false);
+                      setActiveTab('Offices & Branches');
+                      setAutoOpenCreate(true);
+                    }}
+                  >
+                    <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                      <Plus size={14} />
+                      Add New Location
+                    </span>
+                    <span className="text-[10px] text-muted font-medium">Go to Offices & Branches</span>
+                  </div>
+                </div>
+              )}
             />
           </div>
 
@@ -1001,7 +1266,8 @@ export function OrganizationPage() {
               className="rounded-md!"
             />
             <Button
-              label="Save Changes"
+              label={isUpdatingProfile ? 'Saving...' : 'Save Changes'}
+              disabled={isUpdatingProfile}
               onClick={handleSaveProfile}
               icon="pi pi-check"
               className="rounded-md! px-8!"
