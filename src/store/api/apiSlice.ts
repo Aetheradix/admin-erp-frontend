@@ -96,6 +96,7 @@ export const apiSlice = createApi({
     'Dashboard',
     'DayApprovals',
     'OrganizationHierarchy',
+    'OrganizationProfile',
     'Departments',
     'LeaveApproverConfig',
     'Offices',

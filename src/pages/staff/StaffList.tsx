@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { StaffCard } from './components/StaffCard';
@@ -9,8 +10,11 @@ import { useStaff } from './hooks/useStaff';
 import { Sparkles } from 'lucide-react';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { useAuth } from '@/hooks/useAuth';
+import { EmployeeModelViewModal } from '@/pages/organization/components/EmployeeModelViewModal';
+import type { StaffMember } from '@/types/models';
 
 export function StaffList() {
+  const [selectedEmployeeForModel, setSelectedEmployeeForModel] = useState<StaffMember | null>(null);
   const {
     handleSubmit,
     onAddMember,
@@ -96,6 +100,7 @@ export function StaffList() {
               onEdit={isAdmin ? handleEdit : undefined}
               onDelete={isAdmin ? handleDelete : undefined}
               onPromote={isAdmin ? handlePromote : undefined}
+              onClick={(m) => setSelectedEmployeeForModel(m)}
             />
           ))}
 
@@ -104,6 +109,13 @@ export function StaffList() {
       </div>
 
       <StaffStatsSection />
+
+      {/* Employee Organizational Model View Modal */}
+      <EmployeeModelViewModal
+        isOpen={!!selectedEmployeeForModel}
+        onClose={() => setSelectedEmployeeForModel(null)}
+        employee={selectedEmployeeForModel}
+      />
 
       <Dialog
         visible={showForm}

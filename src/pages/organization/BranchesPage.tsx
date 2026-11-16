@@ -40,6 +40,7 @@ import { getUltraAccuratePosition } from '@/utils/highAccuracyGeolocation';
 
 export interface BranchesPageProps {
   autoOpenHQ?: boolean;
+  autoOpenCreate?: boolean;
   onClearAutoOpen?: () => void;
 }
 
@@ -66,7 +67,7 @@ const emptyForm: OfficeFormData = {
   is_hq: false,
 };
 
-export function BranchesPage({ autoOpenHQ, onClearAutoOpen }: BranchesPageProps = {}) {
+export function BranchesPage({ autoOpenHQ, autoOpenCreate, onClearAutoOpen }: BranchesPageProps = {}) {
   const { isSuperadmin: isAuthSuper, roles } = useAuth();
   const { can, isSuperadmin: isPermSuper } = usePermission();
   const canManage =
@@ -105,9 +106,12 @@ export function BranchesPage({ autoOpenHQ, onClearAutoOpen }: BranchesPageProps 
   const [updateOffice, { isLoading: isUpdating }] = useUpdateOfficeMutation();
   const [deleteOffice, { isLoading: isDeleting }] = useDeleteOfficeMutation();
 
-  // Handle auto-open Global HQ modal if redirected from Company Profile
+  // Handle auto-open Global HQ modal or Create modal if redirected from Company Profile
   useEffect(() => {
-    if (autoOpenHQ && !isLoadingOffices) {
+    if (autoOpenCreate && !isLoadingOffices) {
+      handleOpenCreate();
+      onClearAutoOpen?.();
+    } else if (autoOpenHQ && !isLoadingOffices) {
       const hq = offices.find((o) => o.is_hq || o.isHq) || offices[0];
       if (hq) {
         handleOpenEdit(hq);
@@ -118,7 +122,7 @@ export function BranchesPage({ autoOpenHQ, onClearAutoOpen }: BranchesPageProps 
       }
       onClearAutoOpen?.();
     }
-  }, [autoOpenHQ, isLoadingOffices, offices]);
+  }, [autoOpenHQ, autoOpenCreate, isLoadingOffices, offices]);
 
   // Debounced search for place autocomplete
   useEffect(() => {

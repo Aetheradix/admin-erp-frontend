@@ -19,6 +19,7 @@ import type { ProfileUserData } from '../hooks/useProfile';
 import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
 import { useGetLeaveApproverForUserQuery } from '@/store/api/leaveSlice';
 import { useGetPermissionsQuery } from '@/store/api/roleApiSlice';
+import { EmployeeModelViewModal } from '@/pages/organization/components/EmployeeModelViewModal';
 
 interface OrganizationTabProps {
   user: ProfileUserData;
@@ -68,6 +69,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [reportsExpanded, setReportsExpanded] = useState(true);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [selectedEmployeeForModel, setSelectedEmployeeForModel] = useState<any | null>(null);
 
   // RTK Query: fetch organizational hierarchy & leave approver
   const { data: hierarchyData } = useGetOrganizationHierarchyQuery();
@@ -210,7 +212,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <Tooltip title="Click to view manager's profile" placement="top">
+              <Tooltip title="Click to view organizational model" placement="top">
                 <motion.div
                   className={`w-full bg-white p-4 rounded-2xl border shadow-xs flex items-center justify-between cursor-pointer select-none transition-all duration-200 ${
                     hoveredId === 'manager'
@@ -221,9 +223,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
                   onHoverEnd={() => setHoveredId(null)}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
-                    const mgr = reportingManager as any;
-                    const id = mgr?.id || mgr?.userId;
-                    if (id) window.location.href = `/profile?userId=${id}`;
+                    if (reportingManager) setSelectedEmployeeForModel(reportingManager);
                   }}
                 >
                   <div className="flex items-center gap-3">
@@ -275,29 +275,37 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <div className="w-full bg-gradient-to-r from-primary-soft/40 to-white p-5 rounded-2xl border-2 border-primary shadow-soft flex items-center justify-between relative overflow-hidden">
-              {/* Glow ring effect */}
-              <div className="absolute inset-0 rounded-2xl ring-2 ring-primary/10 animate-pulse pointer-events-none" />
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl border-2 border-primary shadow-md overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
-                  {user.image ? (
-                    <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{user.name.slice(0, 2).toUpperCase()}</span>
-                  )}
+            <Tooltip title="Click to view your organizational model" placement="top">
+              <div
+                onClick={() => setSelectedEmployeeForModel(currentHierarchyUser || user)}
+                className="w-full bg-gradient-to-r from-primary-soft/40 to-white p-5 rounded-2xl border-2 border-primary shadow-soft flex items-center justify-between relative overflow-hidden cursor-pointer hover:shadow-md transition-all"
+              >
+                {/* Glow ring effect */}
+                <div className="absolute inset-0 rounded-2xl ring-2 ring-primary/10 animate-pulse pointer-events-none" />
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl border-2 border-primary shadow-md overflow-hidden bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
+                    {user.image ? (
+                      <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{user.name.slice(0, 2).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-foreground">{user.name}</span>
+                    <span className="text-xs font-bold text-primary">{user.designation}</span>
+                    <span className="text-[10px] font-semibold text-muted-foreground">
+                      {user.department} • Code: {user.employeeCode || user.employeeId}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-black text-foreground">{user.name}</span>
-                  <span className="text-xs font-bold text-primary">{user.designation}</span>
-                  <span className="text-[10px] font-semibold text-muted-foreground">
-                    {user.department} • Code: {user.employeeCode || user.employeeId}
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 rounded-full bg-primary text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+                    YOU
                   </span>
+                  <ArrowUpRight size={14} className="text-primary" />
                 </div>
               </div>
-              <span className="px-3 py-1.5 rounded-full bg-primary text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
-                YOU
-              </span>
-            </div>
+            </Tooltip>
           </motion.div>
 
           {/* ── DIRECT REPORTS ───────────────────────────── */}
@@ -338,7 +346,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.07 }}
                       >
-                        <Tooltip title={`View ${member.username || member.name}'s profile`} placement="top">
+                        <Tooltip title={`View ${member.username || member.name}'s organizational model`} placement="top">
                           <motion.div
                             className={`bg-white p-3 rounded-xl border flex items-center gap-3 shadow-2xs cursor-pointer select-none transition-all duration-150 ${
                               hoveredId === `report-${member.id}`
@@ -349,7 +357,7 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
                             onHoverEnd={() => setHoveredId(null)}
                             whileTap={{ scale: 0.97 }}
                             onClick={() => {
-                              if (member.id) window.location.href = `/profile?userId=${member.id}`;
+                              if (member) setSelectedEmployeeForModel(member);
                             }}
                           >
                             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0 border border-primary/15">
@@ -424,6 +432,13 @@ export const OrganizationTab = ({ user }: OrganizationTabProps) => {
           </div>
         </div>
       </Dialog>
+
+      {/* Employee Organizational Model View Modal */}
+      <EmployeeModelViewModal
+        isOpen={!!selectedEmployeeForModel}
+        onClose={() => setSelectedEmployeeForModel(null)}
+        employee={selectedEmployeeForModel}
+      />
     </div>
   );
 };

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { ShieldCheck, CreditCard, CheckCircle2 } from 'lucide-react';
 import type { ProfileUserData } from '../hooks/useProfile';
 import type { ProfileCompletionData } from '@/services/employeeProfileService';
+import { EmployeeModelViewModal } from '@/pages/organization/components/EmployeeModelViewModal';
 
 interface OverviewTabProps {
   user: ProfileUserData;
@@ -8,6 +10,7 @@ interface OverviewTabProps {
 }
 
 export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
+  const [showManagerModal, setShowManagerModal] = useState(false);
   const hasBank = Boolean(empProfile?.bank?.bankName);
   const hasIdentity = Boolean(
     empProfile?.identity?.panNumber || empProfile?.identity?.aadhaarNumber
@@ -63,7 +66,10 @@ export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
             Manager & Team
           </h4>
           {user.manager ? (
-            <div className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-border-subtle shadow-2xs">
+            <div
+              onClick={() => setShowManagerModal(true)}
+              className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-border-subtle hover:border-primary/40 shadow-2xs cursor-pointer transition-all"
+              title="Click to view manager's organizational model">
               {user.manager.image ? (
                 <img
                   src={user.manager.image}
@@ -123,6 +129,13 @@ export const OverviewTab = ({ user, empProfile }: OverviewTabProps) => {
           </div>
         </div>
       </div>
+
+      {/* Employee Organizational Model View Modal */}
+      <EmployeeModelViewModal
+        isOpen={showManagerModal}
+        onClose={() => setShowManagerModal(false)}
+        employee={user.manager}
+      />
     </div>
   );
 };
