@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   FileText,
   Building2,
@@ -11,8 +11,18 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  Phone,
+  Search,
+  CheckCircle2,
+  UserPlus,
 } from 'lucide-react';
+import { message } from 'antd';
 import { Input } from '@/components/ui/composed/Input';
+import {
+  useGetVendorsQuery,
+  useCreateVendorMutation,
+  type Vendor,
+} from '@/store/api/financeApiSlice';
 import type { InvoiceForm, InvoiceItem } from '../types/invoice.types';
 
 interface InvoiceFormModalProps {
@@ -67,6 +77,138 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   const [showIssuerDetails, setShowIssuerDetails] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Vendor autofill & creation states
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSavingVendor, setIsSavingVendor] = useState(false);
+  const [showExtraVendorDetails, setShowExtraVendorDetails] = useState(false);
+  const [newVendorCategory, setNewVendorCategory] = useState('Others');
+  const [newVendorType, setNewVendorType] = useState('Company');
+  const [newVendorEmail, setNewVendorEmail] = useState('');
+  const [matchedVendor, setMatchedVendor] = useState<Vendor | null>(null);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // RTK Query hooks for vendors
+  const { data: vendorsList = [], refetch: refetchVendors } = useGetVendorsQuery();
+  const [createVendorApi] = useCreateVendorMutation();
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredVendors = useMemo(() => {
+    if (!form.billToName || !form.billToName.trim()) return vendorsList;
+    const term = form.billToName.toLowerCase().trim();
+    return vendorsList.filter((v: Vendor) => {
+      const name = (v.vendor_name || v.name || '').toLowerCase();
+      const phone = (v.vendor_phoneNo || v.vendor_phone_no || v.phone || '').toLowerCase();
+      const gstin = (v.vendor_gstin || v.gstin || '').toLowerCase();
+      return name.includes(term) || phone.includes(term) || gstin.includes(term);
+    });
+  }, [vendorsList, form.billToName]);
+
+  const exactVendorMatch = useMemo(() => {
+    if (!form.billToName || !form.billToName.trim()) return null;
+    const term = form.billToName.toLowerCase().trim();
+    return vendorsList.find(
+      (v: Vendor) => (v.vendor_name || v.name || '').toLowerCase().trim() === term
+    );
+  }, [vendorsList, form.billToName]);
+
+  const handleSelectVendor = (vendor: Vendor) => {
+    updateField('billToName', vendor.vendor_name || vendor.name || '');
+    updateField(
+      'billToPhone',
+      vendor.vendor_phoneNo || vendor.vendor_phone_no || vendor.phone || ''
+    );
+    if (vendor.vendor_address || vendor.address) {
+      updateField('billToAddress', vendor.vendor_address || vendor.address || '');
+    }
+    if (vendor.vendor_city || vendor.city) {
+      updateField('billToCity', vendor.vendor_city || vendor.city || '');
+    }
+    if (vendor.vendor_state || vendor.state) {
+      updateField('billToState', vendor.vendor_state || vendor.state || '');
+    }
+    if (vendor.vendor_pincode || vendor.pincode) {
+      updateField('billToPincode', vendor.vendor_pincode || vendor.pincode || '');
+    }
+    if (vendor.vendor_gstin || vendor.gstin) {
+      updateField('billToGSTIN', vendor.vendor_gstin || vendor.gstin || '');
+    }
+    setMatchedVendor(vendor);
+    setIsDropdownOpen(false);
+    setShowExtraVendorDetails(false);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.billToName;
+      delete copy.billToPhone;
+      return copy;
+    });
+    message.success({
+      content: `Autofilled details from database for "${vendor.vendor_name || vendor.name}"`,
+      key: 'vendor-autofill',
+    });
+  };
+
+  const handleCreateNewVendor = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    const vendorName = (form.billToName || '').trim();
+    const vendorPhone = (form.billToPhone || '').trim();
+
+    if (!vendorName) {
+      setErrors((prev) => ({ ...prev, billToName: 'Vendor name is required.' }));
+      message.error('Please enter a vendor name to save.');
+      return;
+    }
+
+    if (!vendorPhone) {
+      setErrors((prev) => ({ ...prev, billToPhone: 'Vendor phone number is required.' }));
+      message.error('Please enter a phone number for the vendor before saving.');
+      return;
+    }
+
+    try {
+      setIsSavingVendor(true);
+      const res = await createVendorApi({
+        vendor_name: vendorName,
+        vendor_phoneNo: vendorPhone,
+        vendor_address: form.billToAddress || null,
+        vendor_city: form.billToCity || null,
+        vendor_state: form.billToState || null,
+        vendor_pincode: form.billToPincode || null,
+        vendor_gstin: form.billToGSTIN || null,
+        vendor_email: newVendorEmail.trim() || null,
+        vendor_category: newVendorCategory || 'Others',
+        vendor_type: newVendorType || 'Company',
+      }).unwrap();
+
+      const createdVendor = res?.data || res;
+      setMatchedVendor(createdVendor);
+      setIsDropdownOpen(false);
+      setShowExtraVendorDetails(false);
+      await refetchVendors();
+      message.success({
+        content: `New vendor "${vendorName}" created and saved to database successfully!`,
+        key: 'vendor-create-success',
+      });
+    } catch (err: any) {
+      message.error({
+        content: err?.data?.message || err?.message || 'Failed to create vendor in database.',
+        key: 'vendor-create-error',
+      });
+    } finally {
+      setIsSavingVendor(false);
+    }
+  };
+
   if (!visible) return null;
 
   const safeItems = Array.isArray(form?.items) ? form.items : [];
@@ -87,7 +229,10 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
       newErrors.invoiceNumber = 'Invoice number is required.';
     }
     if (!form.billToName?.trim()) {
-      newErrors.billToName = 'Customer or company name is required.';
+      newErrors.billToName = 'Vendor or customer name is required.';
+    }
+    if (!form.billToPhone?.trim()) {
+      newErrors.billToPhone = 'Vendor phone number is required.';
     }
 
     if (safeItems.length === 0) {
@@ -112,6 +257,9 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   const handleClose = () => {
     if (isSubmitting) return;
     setErrors({});
+    setIsDropdownOpen(false);
+    setShowExtraVendorDetails(false);
+    setMatchedVendor(null);
     onHide();
     setForm(emptyForm);
   };
@@ -253,28 +401,143 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
             </div>
           </section>
 
-          {/* Section 2: Bill To (Customer Details) */}
+          {/* Section 2: Bill To (Vendor / Customer Details) */}
           <section className="space-y-4">
             <SectionTitle
               icon={<User size={18} />}
-              title="Customer Details (Bill To)"
-              description="Recipient company or client receiving the invoice."
+              title="Vendor / Customer Details (Bill To)"
+              description="Recipient company or vendor receiving the invoice."
+              rightElement={
+                exactVendorMatch || matchedVendor ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 size={14} className="text-emerald-600" />
+                    Database Vendor Linked
+                  </span>
+                ) : form.billToName?.trim() ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowExtraVendorDetails((prev) => !prev)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition">
+                    <UserPlus size={13} />
+                    New Vendor
+                  </button>
+                ) : null
+              }
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
+              {/* Vendor Search & Name input with floating autocomplete */}
+              <div ref={dropdownRef} className="relative md:col-span-2">
                 <Input
-                  label="Customer / Company Name"
+                  label="Vendor / Customer Name"
                   value={form.billToName}
-                  onChange={(e) => updateField('billToName', e.target.value)}
+                  onChange={(e) => {
+                    updateField('billToName', e.target.value);
+                    setIsDropdownOpen(true);
+                    setMatchedVendor(null);
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
                   error={errors.billToName}
                   required
-                  placeholder="e.g. Acme Corporation Pvt Ltd"
+                  placeholder="e.g. Acme Corporation Pvt Ltd (type to search database)"
+                />
+
+                {/* Floating Autocomplete / Search Suggestions */}
+                {isDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 z-[100] max-h-72 overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 p-2 space-y-1">
+                    {filteredVendors.length > 0 ? (
+                      <>
+                        <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                          <span className="flex items-center gap-1.5">
+                            <Search size={12} /> Database Vendors ({filteredVendors.length})
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-normal">Click to autofill</span>
+                        </div>
+                        {filteredVendors.map((v: Vendor) => (
+                          <button
+                            key={v.vendor_id || v.id}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handleSelectVendor(v)}
+                            className="w-full text-left px-3.5 py-2.5 rounded-xl hover:bg-gray-50 flex items-start justify-between gap-3 transition group">
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900 group-hover:text-black flex items-center gap-2">
+                                <span>{v.vendor_name || v.name}</span>
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200">
+                                  {v.vendor_type || 'Company'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500 flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
+                                {(v.vendor_phoneNo || v.vendor_phone_no || v.phone) && (
+                                  <span className="flex items-center gap-1 text-gray-700">
+                                    <Phone size={11} className="text-gray-400" />
+                                    {v.vendor_phoneNo || v.vendor_phone_no || v.phone}
+                                  </span>
+                                )}
+                                {(v.vendor_city || v.city) && (
+                                  <span>📍 {v.vendor_city || v.city}</span>
+                                )}
+                                {(v.vendor_gstin || v.gstin) && (
+                                  <span className="font-mono text-[11px]">
+                                    GST: {v.vendor_gstin || v.gstin}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
+                              Autofill ↵
+                            </span>
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="px-4 py-3 text-xs text-gray-500 text-center">
+                        No registered vendor matching &quot;{form.billToName}&quot;
+                      </div>
+                    )}
+
+                    {/* Option to create new vendor directly */}
+                    {!exactVendorMatch && form.billToName?.trim() && (
+                      <div className="pt-1 mt-1 border-t border-gray-100">
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            setShowExtraVendorDetails(true);
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100/80 text-blue-900 flex items-center justify-between transition font-medium text-xs">
+                          <span className="flex items-center gap-2">
+                            <UserPlus size={15} className="text-blue-600 shrink-0" />
+                            <span>
+                              Create new vendor <strong>&quot;{form.billToName}&quot;</strong> in database
+                            </span>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white font-bold text-[10px] shrink-0">
+                            + Add New
+                          </span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Vendor Phone Number */}
+              <div>
+                <Input
+                  label="Vendor Phone Number"
+                  value={form.billToPhone || ''}
+                  onChange={(e) => updateField('billToPhone', e.target.value)}
+                  error={errors.billToPhone}
+                  required
+                  placeholder="e.g. +91 98765 43210"
                 />
               </div>
 
+              {/* Client / Vendor GSTIN */}
               <Input
-                label="Client GSTIN (Optional)"
+                label="Vendor / Client GSTIN (Optional)"
                 value={form.billToGSTIN}
                 onChange={(e) => updateField('billToGSTIN', e.target.value.toUpperCase())}
                 placeholder="e.g. 23AAAAA0000A1Z5"
@@ -316,6 +579,93 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
                 onChange={(e) => updateField('billToCountry', e.target.value)}
                 placeholder="India"
               />
+
+              {/* Inline Option to Save Vendor to Database */}
+              {form.billToName?.trim() && !exactVendorMatch && (
+                <div className="col-span-full bg-gradient-to-r from-blue-50/90 to-indigo-50/70 border border-blue-200/80 rounded-2xl p-4 space-y-3 animate-in fade-in duration-150">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <UserPlus size={18} />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-gray-900">
+                          Save &quot;{form.billToName}&quot; to Vendor Database?
+                        </h3>
+                        <p className="text-[11px] text-gray-600">
+                          Store this vendor in the database so their phone number, GSTIN, and address autofill automatically next time.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowExtraVendorDetails((prev) => !prev)}
+                        className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-white hover:bg-blue-100 border border-blue-200 rounded-xl transition">
+                        {showExtraVendorDetails ? 'Fewer Fields' : 'More Fields'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCreateNewVendor}
+                        disabled={isSavingVendor}
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-sm disabled:opacity-50">
+                        {isSavingVendor ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Plus size={14} />
+                        )}
+                        Save Vendor to Database
+                      </button>
+                    </div>
+                  </div>
+
+                  {showExtraVendorDetails && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-blue-200/60">
+                      <div>
+                        <label className="block text-[11px] font-medium text-gray-700 mb-1">
+                          Vendor Email (Optional)
+                        </label>
+                        <input
+                          type="email"
+                          value={newVendorEmail}
+                          onChange={(e) => setNewVendorEmail(e.target.value)}
+                          placeholder="contact@vendor.com"
+                          className="w-full text-xs rounded-xl border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-medium text-gray-700 mb-1">
+                          Vendor Category
+                        </label>
+                        <select
+                          value={newVendorCategory}
+                          onChange={(e) => setNewVendorCategory(e.target.value)}
+                          className="w-full text-xs rounded-xl border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <option value="Stationary">Stationary</option>
+                          <option value="Electrical">Electrical</option>
+                          <option value="Electronics">Electronics</option>
+                          <option value="Foods&Beverages">Foods & Beverages</option>
+                          <option value="Networking">Networking</option>
+                          <option value="Others">Others / General</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-medium text-gray-700 mb-1">
+                          Vendor Type
+                        </label>
+                        <select
+                          value={newVendorType}
+                          onChange={(e) => setNewVendorType(e.target.value)}
+                          className="w-full text-xs rounded-xl border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <option value="Company">Company</option>
+                          <option value="Contract">Contract</option>
+                          <option value="Freelance">Freelance</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </section>
 
