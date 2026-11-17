@@ -28,6 +28,7 @@ import {
   useDeleteSalarySlipMutation,
   useUpdateSalarySlipMutation,
   useGetSalarySlipAuditLogsQuery,
+  useClearMonthAuditLogsMutation,
   useCreatePayrollAdjustmentMutation,
   useGetPayrollAdjustmentsQuery,
 } from '@/store/api/financeApiSlice';
@@ -235,15 +236,15 @@ const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): Payro
   ).trim();
   const rawAccount = String(
     item.bank_account_number ||
-      item.bankAccountNumber ||
-      item.account_number ||
-      item.accountNumber ||
-      ''
+    item.bankAccountNumber ||
+    item.account_number ||
+    item.accountNumber ||
+    ''
   ).trim();
   const fullAddress = String(
     item.company_address ||
-      item.companyAddress ||
-      'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
+    item.companyAddress ||
+    'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
   );
 
   const rawId = item.id || item.salary_slip_id || item.slip_id;
@@ -348,6 +349,7 @@ export default function PayrollPage() {
   const [createSalarySlip, { isLoading: isCreating }] = useCreateSalarySlipMutation();
   const [updateSalarySlip, { isLoading: isUpdating }] = useUpdateSalarySlipMutation();
   const [deleteSalarySlip, { isLoading: isDeleting }] = useDeleteSalarySlipMutation();
+  const [clearMonthAuditLogsApi, { isLoading: isClearingMonth }] = useClearMonthAuditLogsMutation();
   const [createAdjustment, { isLoading: isCreatingAdjustment }] =
     useCreatePayrollAdjustmentMutation();
   const { refetch: refetchAdjustments } = useGetPayrollAdjustmentsQuery(undefined, {
@@ -369,6 +371,11 @@ export default function PayrollPage() {
   const [showSlipModal, setShowSlipModal] = useState(false);
   const [showTaxProjectionModal, setShowTaxProjectionModal] = useState(false);
   const [projectionEmployee, setProjectionEmployee] = useState<any | null>(null);
+
+  // Clear Month State (1-Month Safe Purge)
+  const [showClearMonthModal, setShowClearMonthModal] = useState(false);
+  const [selectedClearMonth, setSelectedClearMonth] = useState(() => new Date().getMonth() + 1);
+  const [selectedClearYear, setSelectedClearYear] = useState(() => new Date().getFullYear());
 
   // Void Modal State
   const [voidingRecord, setVoidingRecord] = useState<PayrollRecord | null>(null);
@@ -1150,11 +1157,10 @@ export default function PayrollPage() {
             <button
               type="button"
               title="Click to toggle status (Pending / Paid)"
-              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition hover:brightness-95 cursor-pointer shadow-2xs ${
-                isPaid
+              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition hover:brightness-95 cursor-pointer shadow-2xs ${isPaid
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   : 'bg-amber-50 text-amber-700 border border-amber-200'
-              }`}>
+                }`}>
               {isPaid ? (
                 <>
                   <CheckCircle2 size={11} className="text-emerald-600" /> Paid
@@ -1189,9 +1195,8 @@ export default function PayrollPage() {
         return (
           <div className="flex flex-col">
             <span
-              className={`text-sm font-black ${
-                isVoid ? 'text-slate-400 line-through' : 'text-slate-900'
-              }`}>
+              className={`text-sm font-black ${isVoid ? 'text-slate-400 line-through' : 'text-slate-900'
+                }`}>
               ₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
             {isVoid && (
@@ -1252,31 +1257,31 @@ export default function PayrollPage() {
                 { type: 'divider' },
                 ...(isVoid
                   ? [
-                      {
-                        key: 'unvoid',
-                        label: 'Reactivate (Unmark Void)',
+                    {
+                      key: 'unvoid',
+                      label: 'Reactivate (Unmark Void)',
+                      icon: <CheckCircle2 size={15} className="text-emerald-600" />,
+                    },
+                  ]
+                  : [
+                    (record.paymentStatus || '').toLowerCase() === 'paid'
+                      ? {
+                        key: 'markPending',
+                        label: 'Mark as Pending',
+                        icon: <Clock size={15} className="text-amber-600" />,
+                      }
+                      : {
+                        key: 'markPaid',
+                        label: 'Mark as Paid',
                         icon: <CheckCircle2 size={15} className="text-emerald-600" />,
                       },
-                    ]
-                  : [
-                      (record.paymentStatus || '').toLowerCase() === 'paid'
-                        ? {
-                            key: 'markPending',
-                            label: 'Mark as Pending',
-                            icon: <Clock size={15} className="text-amber-600" />,
-                          }
-                        : {
-                            key: 'markPaid',
-                            label: 'Mark as Paid',
-                            icon: <CheckCircle2 size={15} className="text-emerald-600" />,
-                          },
-                      {
-                        key: 'void',
-                        label: 'Mark as Void',
-                        icon: <Ban size={15} className="text-rose-600" />,
-                        danger: true,
-                      },
-                    ]),
+                    {
+                      key: 'void',
+                      label: 'Mark as Void',
+                      icon: <Ban size={15} className="text-rose-600" />,
+                      danger: true,
+                    },
+                  ]),
                 {
                   key: 'delete',
                   label: 'Delete Salary Slip',
@@ -1382,13 +1387,12 @@ export default function PayrollPage() {
 
         return (
           <span
-            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-              isVoid
+            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isVoid
                 ? 'bg-rose-100 text-rose-700 border border-rose-200'
                 : isCreate
                   ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                   : 'bg-slate-100 text-slate-700'
-            }`}>
+              }`}>
             {actionType}
           </span>
         );
@@ -1520,7 +1524,7 @@ export default function PayrollPage() {
         />
       </motion.div>
 
-      {/* 💡 Audit Logs Table at the Bottom (3-Month Retention Window & Excel/CSV Downloads) */}
+      {/* 💡 Audit Logs Table at the Bottom (3-Month Retention Window, Rolling 1-Month Cleanup) */}
       <div className="flex flex-col gap-3 mt-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
           <div>
@@ -1531,7 +1535,7 @@ export default function PayrollPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              <Clock size={12} /> Stored for 3 Months Only (Since {retentionCutoffLabel})
+              <Clock size={12} /> Stored for 3 Months (Since {retentionCutoffLabel})
             </span>
             <button
               type="button"
@@ -1546,6 +1550,14 @@ export default function PayrollPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95">
               <Download size={14} className="text-indigo-600" />
               <span>Download CSV</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowClearMonthModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
+              title="Clear 1 month of audit logs at a time so the other 2 months remain in the system">
+              <Trash2 size={14} className="text-rose-600" />
+              <span>Clear Month</span>
             </button>
           </div>
         </div>
@@ -1646,6 +1658,81 @@ export default function PayrollPage() {
           onConfirm={handleConfirmVoid}
         />
       )}
+
+      {/* Clear 1 Month Audit Logs Confirmation Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-rose-600 font-bold">
+            <Trash2 size={18} />
+            <span>Clear 1 Month of Payroll Audit Logs</span>
+          </div>
+        }
+        open={showClearMonthModal}
+        onCancel={() => setShowClearMonthModal(false)}
+        onOk={async () => {
+          try {
+            await clearMonthAuditLogsApi({
+              month: selectedClearMonth,
+              year: selectedClearYear,
+              filterType: 'payroll',
+            }).unwrap();
+
+            setLocalPayrollLogs((prev) =>
+              prev.filter((log) => {
+                const d = new Date(log.createdAt || log.created_at);
+                if (isNaN(d.getTime())) return true;
+                return !(d.getMonth() + 1 === selectedClearMonth && d.getFullYear() === selectedClearYear);
+              })
+            );
+            refetchLogs();
+            message.success(
+              `Cleared payroll audit logs for ${new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}.`
+            );
+            setShowClearMonthModal(false);
+          } catch (err: any) {
+            message.error(err?.data?.message || err?.message || 'Failed to clear month audit logs');
+          }
+        }}
+        okText="Clear Month"
+        okButtonProps={{ danger: true, loading: isClearingMonth }}
+        cancelButtonProps={{ disabled: isClearingMonth }}>
+        <div className="flex flex-col gap-3 py-2 text-sm text-slate-600">
+          <p>
+            Select the specific <strong>1 month</strong> of payroll audit logs you wish to permanently clear.
+            All other months remain untouched, ensuring you never lose all 3 months of logs and keeping the other 2 months safely in the system.
+          </p>
+          <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Month</label>
+              <select
+                value={selectedClearMonth}
+                onChange={(e) => setSelectedClearMonth(Number(e.target.value))}
+                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                {[
+                  'January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'
+                ].map((m, idx) => (
+                  <option key={idx + 1} value={idx + 1}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Year</label>
+              <select
+                value={selectedClearYear}
+                onChange={(e) => setSelectedClearYear(Number(e.target.value))}
+                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                {[2024, 2025, 2026, 2027].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+            ⚠️ <strong>Safety note:</strong> This action permanently purges only logs matching <strong>{new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</strong>. Logs outside this month will NOT be affected.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }
