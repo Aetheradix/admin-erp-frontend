@@ -1,4 +1,5 @@
 import React from 'react';
+import { Tooltip } from 'antd';
 import type { HierarchyNodeUser } from '@/store/api/organizationApiSlice';
 import { getDepartmentColor } from '@/pages/organization/utils/orgLayoutEngine';
 
@@ -48,10 +49,9 @@ export const EmployeeAvatar: React.FC<EmployeeAvatarProps> = React.memo(({
         </div>
       )}
       {presence && (
-        <span
-          className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#107c41] border-2 border-white shadow-xs"
-          title="Available / Active"
-        />
+        <Tooltip title="Available / Active">
+          <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#107c41] border-2 border-white shadow-xs cursor-default" />
+        </Tooltip>
       )}
     </div>
   );

@@ -17,6 +17,7 @@ interface DetailPanelProps {
   directReports: HierarchyNodeUser[];
   peers: HierarchyNodeUser[];
   skills: string[];
+  dbUserStatus?: string;
   onSetCentral: () => void;
   onClosePanel: () => void;
   onScheduleClick: () => void;
@@ -34,6 +35,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = React.memo(({
   directReports,
   peers,
   skills,
+  dbUserStatus,
   onSetCentral,
   onClosePanel,
   onScheduleClick,
@@ -43,10 +45,14 @@ export const DetailPanel: React.FC<DetailPanelProps> = React.memo(({
   const [activeTab, setActiveTab] = useState<DetailTab>('contact');
 
   return (
-    <div className="w-full lg:w-[70%] lg:min-w-[320px] h-full bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto animate-in slide-in-from-right duration-200 z-30 shadow-xl">
+    <div className="w-full sm:w-[520px] lg:w-auto lg:flex-1 min-w-0 h-full bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto animate-in slide-in-from-right duration-200 absolute inset-y-0 right-0 z-30 shadow-2xl lg:static lg:shadow-none">
       <DetailHeader
         inspectedNode={inspectedNode}
         isCentral={isCentral}
+        manager={manager}
+        directReportsCount={directReports.length}
+        resolvedOffice={resolvedOffice}
+        dbUserStatus={dbUserStatus}
         onSetCentral={onSetCentral}
         onClosePanel={onClosePanel}
         onScheduleClick={onScheduleClick}
@@ -76,7 +82,11 @@ export const DetailPanel: React.FC<DetailPanelProps> = React.memo(({
             resolvedOffice={resolvedOffice}
             joinDateInfo={joinDateInfo}
             copiedEmail={copiedEmail}
+            manager={manager}
+            directReports={directReports}
+            skills={skills}
             onCopyEmail={onCopyEmail}
+            onInspectUser={onInspectUser}
           />
         )}
 

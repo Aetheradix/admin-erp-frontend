@@ -50,7 +50,7 @@ export const TreeCanvas: React.FC<TreeCanvasProps> = React.memo(({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       className={`relative h-full overflow-hidden select-none bg-[#f8f9fa] cursor-grab active:cursor-grabbing transition-all duration-300 ${
-        showDetailPanel ? 'w-full lg:w-[30%] shrink-0' : 'flex-1 w-full'
+        showDetailPanel ? 'w-full lg:w-[42%] xl:w-[40%] shrink-0' : 'flex-1 w-full'
       }`}
       style={{ touchAction: 'none' }}
     >
