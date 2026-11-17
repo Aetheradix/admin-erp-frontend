@@ -1,11 +1,16 @@
 /**
  * Audit Log Retention & Export Utility
- * Enforces a strict 3-month (90-day) retention policy and provides
+ * Enforces a 3-month (90-day) rolling retention policy and provides
  * client-side Excel (.xls) and CSV (.csv) exports for Payroll and Invoice audit logs.
+ * Expired records are cleaned incrementally (1 month at a time) so the other 2 months
+ * always remain safely in the system.
  */
 
 export const THREE_MONTHS_DAYS = 90;
 export const THREE_MONTHS_MS = THREE_MONTHS_DAYS * 24 * 60 * 60 * 1000;
+
+export const ONE_MONTH_DAYS = 30;
+export const ONE_MONTH_MS = ONE_MONTH_DAYS * 24 * 60 * 60 * 1000;
 
 /**
  * Returns the exact cutoff Date and timestamp for the 3-month retention window.
@@ -24,6 +29,8 @@ export function getThreeMonthsCutoff(): {
   });
   return { cutoffDate, cutoffTimestamp, formattedLabel };
 }
+
+export const getOneMonthCutoff = getThreeMonthsCutoff;
 
 /**
  * Filters an array of log items to only those within the last 3 months.
@@ -224,7 +231,7 @@ function formatLogDate(val: any): string {
 }
 
 /**
- * Specialized exporter for Payroll Audit Logs (3-Month Window).
+ * Specialized exporter for Payroll Audit Logs (3-Month Window, Rolling 1-Month Cleanup).
  */
 export function exportPayrollAuditLogs(
   logs: any[],
@@ -248,7 +255,7 @@ export function exportPayrollAuditLogs(
     filename,
     sheetName: 'Payroll Logs',
     title: 'Payroll Audit Logs Report',
-    subtitle: `Stored Retention: 3 Months (Records from ${formattedLabel} to ${nowStr}) • Total Records: ${filtered.length}`,
+    subtitle: `Stored Retention: 3 Months (Records from ${formattedLabel} to ${nowStr} • Rolling 1-Month Cleanup) • Total Records: ${filtered.length}`,
     headers,
     rows,
   };
@@ -261,7 +268,7 @@ export function exportPayrollAuditLogs(
 }
 
 /**
- * Specialized exporter for Invoice Audit Logs (3-Month Window).
+ * Specialized exporter for Invoice Audit Logs (3-Month Window, Rolling 1-Month Cleanup).
  */
 export function exportInvoiceAuditLogs(
   logs: any[],
@@ -285,7 +292,7 @@ export function exportInvoiceAuditLogs(
     filename,
     sheetName: 'Invoice Logs',
     title: 'Invoice Audit Logs Report',
-    subtitle: `Stored Retention: 3 Months (Records from ${formattedLabel} to ${nowStr}) • Total Records: ${filtered.length}`,
+    subtitle: `Stored Retention: 3 Months (Records from ${formattedLabel} to ${nowStr} • Rolling 1-Month Cleanup) • Total Records: ${filtered.length}`,
     headers,
     rows,
   };

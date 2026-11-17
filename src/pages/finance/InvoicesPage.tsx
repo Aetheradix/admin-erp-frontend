@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { motion } from 'framer-motion';
 import { Table, Modal, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Download, Plus, Filter, Edit3, FileSpreadsheet, Clock } from 'lucide-react';
+import { Download, Plus, Filter, Edit3, FileSpreadsheet, Clock, Trash2 } from 'lucide-react';
 import {
   exportInvoiceAuditLogs,
   filterLogsByRetention,
@@ -19,6 +19,7 @@ import {
   useUpdateInvoiceMutation,
   useGetInvoiceAuditLogsQuery,
   useCreateInvoiceAuditLogMutation,
+  useClearMonthAuditLogsMutation,
   useDeleteInvoiceMutation,
 } from '@/store/api/financeApiSlice';
 import { recordAuditLog as recordSystemAuditLog } from '@/services/auditService';
@@ -93,51 +94,51 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
   // Resolve invoiceNumber
   const invoiceNumber = String(
     parsedData.invoiceNumber ||
-      parsedData.invoice_number ||
-      raw.invoice_number ||
-      raw.invoiceNumber ||
-      inv.id ||
-      ''
+    parsedData.invoice_number ||
+    raw.invoice_number ||
+    raw.invoiceNumber ||
+    inv.id ||
+    ''
   ).trim();
 
   // Resolve billToName
   const billToName = String(
     parsedData.billToName ||
-      parsedData.bill_to_name ||
-      parsedData.client ||
-      inv.client ||
-      raw.bill_to_name ||
-      raw.billToName ||
-      ''
+    parsedData.bill_to_name ||
+    parsedData.client ||
+    inv.client ||
+    raw.bill_to_name ||
+    raw.billToName ||
+    ''
   ).trim();
 
   // Resolve billToPhone
   const billToPhone = String(
     parsedData.billToPhone ||
-      parsedData.bill_to_phone ||
-      raw.bill_to_phone ||
-      raw.billToPhone ||
-      raw.vendor_phone ||
-      raw.vendorPhone ||
-      raw.phone ||
-      ''
+    parsedData.bill_to_phone ||
+    raw.bill_to_phone ||
+    raw.billToPhone ||
+    raw.vendor_phone ||
+    raw.vendorPhone ||
+    raw.phone ||
+    ''
   ).trim();
 
   // Resolve dates
   const invoiceDate = String(
     parsedData.invoiceDate ||
-      parsedData.invoice_date ||
-      parsedData.date ||
-      inv.date ||
-      raw.invoice_date ||
-      raw.date ||
-      new Date().toISOString().slice(0, 10)
+    parsedData.invoice_date ||
+    parsedData.date ||
+    inv.date ||
+    raw.invoice_date ||
+    raw.date ||
+    new Date().toISOString().slice(0, 10)
   );
 
   const dueDate = String(
     parsedData.dueDate ||
-      parsedData.due_date ||
-      invoiceDate
+    parsedData.due_date ||
+    invoiceDate
   );
 
   // Resolve Tax Rate and amounts
@@ -278,6 +279,11 @@ export function InvoicesPage() {
   const [updateInvoiceApi] = useUpdateInvoiceMutation();
   const [deleteInvoiceApi] = useDeleteInvoiceMutation();
   const [createInvoiceAuditLogApi] = useCreateInvoiceAuditLogMutation();
+  const [clearMonthAuditLogsApi, { isLoading: isClearingMonth }] = useClearMonthAuditLogsMutation();
+
+  const [showClearMonthModal, setShowClearMonthModal] = useState(false);
+  const [selectedClearMonth, setSelectedClearMonth] = useState(() => new Date().getMonth() + 1);
+  const [selectedClearYear, setSelectedClearYear] = useState(() => new Date().getFullYear());
 
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
     try {
@@ -333,9 +339,9 @@ export function InvoicesPage() {
           'Paid' | 'Pending' | 'Overdue';
         const date = String(
           item.date ||
-            item.invoice_date ||
-            item.invoiceDate ||
-            new Date().toISOString().slice(0, 10)
+          item.invoice_date ||
+          item.invoiceDate ||
+          new Date().toISOString().slice(0, 10)
         );
 
         const partialInv: Invoice = {
@@ -405,7 +411,7 @@ export function InvoicesPage() {
     }
   }, [invoices]);
 
-  // Persist audit logs whenever updated (strictly enforcing 3-month retention)
+  // Persist audit logs whenever updated (enforcing 3-month rolling retention)
   useEffect(() => {
     try {
       localStorage.setItem(INVOICE_LOGS_KEY, JSON.stringify(filterLogsByRetention(localAuditLogs)));
@@ -414,7 +420,7 @@ export function InvoicesPage() {
     }
   }, [localAuditLogs]);
 
-  // Combined Audit Logs (local invoice events + backend invoice audit logs, strictly 3 months)
+  // Combined Audit Logs (local invoice events + backend invoice audit logs, 3-month rolling retention)
   const combinedAuditLogs = useMemo(() => {
     const rawBackendLogs = Array.isArray(backendInvoiceAuditLogsData?.data)
       ? backendInvoiceAuditLogsData.data
@@ -534,9 +540,9 @@ export function InvoicesPage() {
       items: prev.items.map((item, i) =>
         i === index
           ? {
-              ...item,
-              [field]: value,
-            }
+            ...item,
+            [field]: value,
+          }
           : item
       ),
     }));
@@ -693,7 +699,7 @@ export function InvoicesPage() {
         setInvoices((prev) =>
           prev.map((inv) =>
             inv.id.toLowerCase().trim() === editingInvoice.id.toLowerCase().trim() ||
-            ((inv as any).backendId && (inv as any).backendId === (editingInvoice as any).backendId)
+              ((inv as any).backendId && (inv as any).backendId === (editingInvoice as any).backendId)
               ? savedInvoice
               : inv
           )
@@ -1094,7 +1100,7 @@ export function InvoicesPage() {
         />
       </motion.div>
 
-      {/* 💡 Dedicated Invoice Audit Logs Table (3-Month Retention & Excel/CSV Downloads) */}
+      {/* 💡 Dedicated Invoice Audit Logs Table (3-Month Retention, Rolling 1-Month Cleanup) */}
       <div className="flex flex-col gap-3 mt-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
           <div>
@@ -1105,7 +1111,7 @@ export function InvoicesPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              <Clock size={12} /> Stored for 3 Months Only (Since {retentionCutoffLabel})
+              <Clock size={12} /> Stored for 3 Months (Since {retentionCutoffLabel})
             </span>
             <button
               type="button"
@@ -1120,6 +1126,14 @@ export function InvoicesPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95">
               <Download size={14} className="text-indigo-600" />
               <span>Download CSV</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowClearMonthModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
+              title="Clear 1 month of audit logs at a time so the other 2 months remain in the system">
+              <Trash2 size={14} className="text-rose-600" />
+              <span>Clear Month</span>
             </button>
           </div>
         </div>
@@ -1172,13 +1186,12 @@ export function InvoicesPage() {
               </span>
               <span className="text-sm font-bold text-slate-800">{viewingInvoice?.client}</span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  viewingInvoice?.status === 'Paid'
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${viewingInvoice?.status === 'Paid'
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                     : viewingInvoice?.status === 'Overdue'
                       ? 'bg-rose-100 text-rose-800 border border-rose-200'
                       : 'bg-amber-100 text-amber-800 border border-amber-200'
-                }`}>
+                  }`}>
                 {viewingInvoice?.status}
               </span>
             </div>
@@ -1212,6 +1225,81 @@ export function InvoicesPage() {
               <InvoiceTemplate invoice={getInvoiceFormData(viewingInvoice)} />
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Clear 1 Month Audit Logs Confirmation Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-rose-600 font-bold">
+            <Trash2 size={18} />
+            <span>Clear 1 Month of Invoice Audit Logs</span>
+          </div>
+        }
+        open={showClearMonthModal}
+        onCancel={() => setShowClearMonthModal(false)}
+        onOk={async () => {
+          try {
+            await clearMonthAuditLogsApi({
+              month: selectedClearMonth,
+              year: selectedClearYear,
+              filterType: 'invoice',
+            }).unwrap();
+
+            setLocalAuditLogs((prev) =>
+              prev.filter((log) => {
+                const d = new Date(log.createdAt);
+                if (isNaN(d.getTime())) return true;
+                return !(d.getMonth() + 1 === selectedClearMonth && d.getFullYear() === selectedClearYear);
+              })
+            );
+            refetchLogs();
+            message.success(
+              `Cleared invoice audit logs for ${new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}.`
+            );
+            setShowClearMonthModal(false);
+          } catch (err: any) {
+            message.error(err?.data?.message || err?.message || 'Failed to clear month audit logs');
+          }
+        }}
+        okText="Clear Month"
+        okButtonProps={{ danger: true, loading: isClearingMonth }}
+        cancelButtonProps={{ disabled: isClearingMonth }}>
+        <div className="flex flex-col gap-3 py-2 text-sm text-slate-600">
+          <p>
+            Select the specific <strong>1 month</strong> of invoice audit logs you wish to permanently clear.
+            All other months remain untouched, ensuring you never lose all 3 months of logs and keeping the other 2 months safely in the system.
+          </p>
+          <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Month</label>
+              <select
+                value={selectedClearMonth}
+                onChange={(e) => setSelectedClearMonth(Number(e.target.value))}
+                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                {[
+                  'January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'
+                ].map((m, idx) => (
+                  <option key={idx + 1} value={idx + 1}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Year</label>
+              <select
+                value={selectedClearYear}
+                onChange={(e) => setSelectedClearYear(Number(e.target.value))}
+                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                {[2024, 2025, 2026, 2027].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+            ⚠️ <strong>Safety note:</strong> This action permanently purges only logs matching <strong>{new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</strong>. Logs outside this month will NOT be affected.
+          </p>
         </div>
       </Modal>
 

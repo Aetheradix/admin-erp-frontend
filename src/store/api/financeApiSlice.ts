@@ -503,6 +503,39 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['InvoiceAuditLogs'],
     }),
 
+    clearMonthAuditLogs: builder.mutation<
+      any,
+      {
+        month: number;
+        year: number;
+        filterType?: 'payroll' | 'invoice' | 'salary_slip' | 'all';
+      }
+    >({
+      query: (data) => ({
+        url: '/finance/audit-logs/clear-month',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: data,
+      }),
+      invalidatesTags: ['ActivityLogs', 'InvoiceAuditLogs'],
+    }),
+
+    pruneAuditLogs: builder.mutation<
+      any,
+      {
+        days?: number;
+        filterType?: 'payroll' | 'invoice' | 'salary_slip' | 'all';
+      } | void
+    >({
+      query: (data) => ({
+        url: '/finance/audit-logs/prune',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: data || {},
+      }),
+      invalidatesTags: ['ActivityLogs', 'InvoiceAuditLogs'],
+    }),
+
     // Generic Audit Logs query (supports ?type=invoice or ?type=salary_slip)
     getAuditLogs: builder.query<any, string | void>({
       query: (type) => `/finance/audit-logs${type ? `?type=${encodeURIComponent(type)}` : ''}`,
@@ -762,6 +795,8 @@ export const {
   useGetInvoiceAuditLogsQuery,
   useLazyGetInvoiceAuditLogsQuery,
   useCreateInvoiceAuditLogMutation,
+  useClearMonthAuditLogsMutation,
+  usePruneAuditLogsMutation,
 
   // Invoice CRUD Hooks
   useGetInvoicesQuery,

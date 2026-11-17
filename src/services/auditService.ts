@@ -399,7 +399,7 @@ export function getAuditLogs(): AuditLogEntry[] {
     const raw = localStorage.getItem(AUDIT_LOGS_STORAGE_KEY);
     if (!raw) return [];
     const list: AuditLogEntry[] = JSON.parse(raw);
-    // Enforce 3-month (90 days) retention policy: prune logs older than 3 months
+    // Enforce 3-month (90 days) rolling retention policy: prune logs older than 3 months
     const retainedList = filterLogsByRetention(list);
     if (retainedList.length !== list.length) {
       localStorage.setItem(AUDIT_LOGS_STORAGE_KEY, JSON.stringify(retainedList));
@@ -412,7 +412,7 @@ export function getAuditLogs(): AuditLogEntry[] {
 
 /**
  * Record a new audit log entry
- * Dual-write: localStorage (instant local sync with 3-month retention) + backend MySQL (persistent)
+ * Dual-write: localStorage (instant local sync with 3-month rolling retention) + backend MySQL (persistent)
  */
 export function recordAuditLog(entry: {
   action: string;
