@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ui/composed/ConfirmDialog';
 import { Toast } from '@/components/ui/composed/Toast';
-import { CursorGlow } from '@/components/ui/composed/CursorGlow';
 import { useAppSelector } from '@/store/hooks';
 import { selectAccentColor, selectDarkMode, selectDensity } from '@/store/slices/settingsSlice';
 
@@ -154,7 +153,6 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell flex h-screen w-full bg-background text-foreground overflow-hidden selection:bg-primary selection:text-background relative font-body">
-      <CursorGlow />
       <ConfirmDialog />
       <Toast />
       <GeminiAiDrawer visible={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
