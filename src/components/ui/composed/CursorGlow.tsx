@@ -1,11 +1,18 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
 import { useAppSelector } from '@/store/hooks';
 import { selectAccentColor, selectDarkMode } from '@/store/slices/settingsSlice';
 
 export function CursorGlow() {
+  const location = useLocation();
   const accentColor = useAppSelector(selectAccentColor);
   const darkMode = useAppSelector(selectDarkMode);
+
+  // Restrict Cursor Glow strictly to Dashboard and Login / Auth pages
+  const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
+  const isLogin = location.pathname === '/login' || location.pathname.startsWith('/auth');
+  const isEnabled = isDashboard || isLogin;
 
   const mouseX = useMotionValue(-500);
   const mouseY = useMotionValue(-500);
@@ -16,6 +23,8 @@ export function CursorGlow() {
   const smoothY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
+    if (!isEnabled) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
@@ -23,7 +32,11 @@ export function CursorGlow() {
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+  }, [isEnabled, mouseX, mouseY]);
+
+  if (!isEnabled) {
+    return null;
+  }
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden select-none">

@@ -25,9 +25,8 @@ export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: Staf
   return (
     <div
       onClick={() => onClick?.(member)}
-      className={`group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden ${
-        onClick ? 'cursor-pointer hover:border-primary/40' : ''
-      }`}>
+      className={`group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden ${onClick ? 'cursor-pointer hover:border-primary/40' : ''
+        }`}>
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       {(onEdit || onPromote || onDelete) && (
         <div
@@ -128,9 +127,24 @@ export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: Staf
             </>
           )}
         </div>
-
+        <div className="flex flex-wrap justify-center gap-1.5 mt-1">
+          {member.roles && member.roles.length > 0 ? (
+            member.roles.map((role) => (
+              <span
+                key={role.id}
+                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+              >
+                {role.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              {member.role || 'Employee'}
+            </span>
+          )}
+        </div>
         {/* Tax Regime & Mid-Year Badge */}
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
             {member.taxRegime || member.tax_regime || 'New Regime'}
           </span>
@@ -139,7 +153,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: Staf
               Mid-Year Joiner
             </span>
           )}
-        </div>
+        </div> */}
 
         {/* Skills Tags */}
         <div className="flex flex-wrap justify-center gap-2">
