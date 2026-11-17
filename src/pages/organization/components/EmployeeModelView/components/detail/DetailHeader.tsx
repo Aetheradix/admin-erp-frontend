@@ -1,11 +1,10 @@
-import React from 'react';
-import { Tooltip } from 'antd';
-import { X, Sparkles, Check, Building2, Users, Crown } from 'lucide-react';
 import type { HierarchyNodeUser } from '@/store/api/organizationApiSlice';
+import { Tooltip } from 'antd';
+import { Building2, Crown, Users, X } from 'lucide-react';
+import React from 'react';
 import type { ResolvedOffice } from '../../types';
 import { EmployeeAvatar } from '../nodes/EmployeeAvatar';
 import { QuickActionsBar } from './QuickActionsBar';
-import { getDepartmentColor } from '@/pages/organization/utils/orgLayoutEngine';
 
 interface DetailHeaderProps {
   inspectedNode: HierarchyNodeUser;
@@ -20,10 +19,10 @@ interface DetailHeaderProps {
 }
 
 export const DetailHeader: React.FC<DetailHeaderProps> = React.memo(({
-  inspectedNode, isCentral, manager, directReportsCount, resolvedOffice,
-  dbUserStatus = 'Active', onSetCentral, onClosePanel, onScheduleClick,
+  inspectedNode, manager, directReportsCount, resolvedOffice,
+  dbUserStatus = 'Active', onClosePanel, onScheduleClick,
 }) => {
-  const deptColor = getDepartmentColor(inspectedNode.department);
+  // const deptColor = getDepartmentColor(inspectedNode.department);
   const managerName = manager ? manager.username : 'Board of Directors';
   const officeName = resolvedOffice?.name || 'SFA Technologies HQ';
 

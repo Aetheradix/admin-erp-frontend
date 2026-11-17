@@ -1,14 +1,12 @@
-import React from 'react';
-import { Tooltip } from 'antd';
-import { Mail, Phone, Building2, Calendar, MapPin, Copy, Check, Clock } from 'lucide-react';
 import type { HierarchyNodeUser } from '@/store/api/organizationApiSlice';
-import type { ResolvedOffice, JoinDateInfo } from '../../types';
+import { Tooltip } from 'antd';
+import { Building2, Calendar, Check, Clock, Copy, Mail, MapPin, Phone } from 'lucide-react';
+import React from 'react';
 import { FALLBACKS } from '../../constants';
+import type { JoinDateInfo, ResolvedOffice } from '../../types';
 import { InfoRow } from './InfoRow';
-import { WorkScheduleCard } from './WorkScheduleCard';
-import { ProjectsCard } from './ProjectsCard';
 import { TeamSummaryCard } from './TeamSummaryCard';
-import { SkillsSummaryCard } from './SkillsSummaryCard';
+import { WorkScheduleCard } from './WorkScheduleCard';
 
 interface ContactTabProps {
   user: HierarchyNodeUser;
@@ -23,7 +21,7 @@ interface ContactTabProps {
 }
 
 export const ContactTab: React.FC<ContactTabProps> = React.memo(({
-  user, resolvedOffice, joinDateInfo, copiedEmail, manager, directReports, skills,
+  user, resolvedOffice, joinDateInfo, copiedEmail, manager, directReports,
   onCopyEmail, onInspectUser,
 }) => (
   <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-in fade-in duration-150">
