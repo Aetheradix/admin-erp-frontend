@@ -111,6 +111,18 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
       ''
   ).trim();
 
+  // Resolve billToPhone
+  const billToPhone = String(
+    parsedData.billToPhone ||
+      parsedData.bill_to_phone ||
+      raw.bill_to_phone ||
+      raw.billToPhone ||
+      raw.vendor_phone ||
+      raw.vendorPhone ||
+      raw.phone ||
+      ''
+  ).trim();
+
   // Resolve dates
   const invoiceDate = String(
     parsedData.invoiceDate ||
@@ -183,6 +195,7 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
     companyGSTIN: String(parsedData.companyGSTIN || parsedData.company_gstin || '23ABDCA8625L1ZJ'),
 
     billToName,
+    billToPhone,
     billToAddress: String(parsedData.billToAddress || parsedData.bill_to_address || 'Corporate Office, Sector A'),
     billToCity: String(parsedData.billToCity || parsedData.bill_to_city || 'Bhopal'),
     billToState: String(parsedData.billToState || parsedData.bill_to_state || 'Madhya Pradesh'),
@@ -220,6 +233,7 @@ const createEmptyForm = (existingInvoices: Invoice[]): InvoiceForm => {
     companyGSTIN: '23ABDCA8625L1ZJ',
 
     billToName: '',
+    billToPhone: '',
     billToAddress: '',
     billToCity: '',
     billToState: '',
@@ -705,6 +719,8 @@ export function InvoicesPage() {
             client: savedInvoice.client,
             bill_to_name: savedInvoice.client,
             billToName: savedInvoice.client,
+            bill_to_phone: form.billToPhone,
+            billToPhone: form.billToPhone,
             amount: savedInvoice.amount,
             total: savedInvoice.amount,
             subtotal: form.items.reduce((s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0), 0),
@@ -763,6 +779,8 @@ export function InvoicesPage() {
             client: savedInvoice.client,
             bill_to_name: savedInvoice.client,
             billToName: savedInvoice.client,
+            bill_to_phone: form.billToPhone,
+            billToPhone: form.billToPhone,
             amount: savedInvoice.amount,
             total: savedInvoice.amount,
             subtotal: form.items.reduce((s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0), 0),

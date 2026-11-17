@@ -24,6 +24,7 @@ export interface InvoiceForm {
   companyGSTIN: string;
 
   billToName: string;
+  billToPhone?: string;
   billToAddress: string;
   billToCity: string;
   billToState: string;
@@ -265,6 +266,12 @@ const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ invo
           </h3>
 
           {invoice.billToName && <p style={{ margin: 0 }}>{invoice.billToName}</p>}
+
+          {invoice.billToPhone && (
+            <p style={{ margin: 0, fontSize: '16px', color: '#374151' }}>
+              Phone: {invoice.billToPhone}
+            </p>
+          )}
 
           {invoice.billToAddress && <p style={{ margin: 0 }}>{invoice.billToAddress}</p>}
 

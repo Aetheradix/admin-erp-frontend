@@ -21,6 +21,7 @@ export interface InvoiceForm {
   companyGSTIN: string;
 
   billToName: string;
+  billToPhone?: string;
   billToAddress: string;
   billToCity: string;
   billToState: string;

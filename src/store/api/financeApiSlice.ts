@@ -95,6 +95,49 @@ export interface CreateSalarySlipPayload {
   signatoryRole?: string | null;
 }
 
+export interface Vendor {
+  vendor_id?: number;
+  id?: number;
+  vendor_name: string;
+  name?: string;
+  vendor_phoneNo?: string | null;
+  vendor_phone_no?: string | null;
+  phone?: string | null;
+  vendor_email?: string | null;
+  email?: string | null;
+  vendor_address?: string | null;
+  address?: string | null;
+  vendor_city?: string | null;
+  city?: string | null;
+  vendor_state?: string | null;
+  state?: string | null;
+  vendor_pincode?: string | null;
+  pincode?: string | null;
+  vendor_gstin?: string | null;
+  gstin?: string | null;
+  vendor_category?: string;
+  category?: string;
+  vendor_type?: string;
+  type?: string;
+  vendor_description?: string | null;
+  description?: string | null;
+  created_at?: string;
+}
+
+export interface CreateVendorPayload {
+  vendor_name: string;
+  vendor_phoneNo?: string | null;
+  vendor_email?: string | null;
+  vendor_address?: string | null;
+  vendor_city?: string | null;
+  vendor_state?: string | null;
+  vendor_pincode?: string | null;
+  vendor_gstin?: string | null;
+  vendor_category?: string;
+  vendor_type?: string;
+  vendor_description?: string | null;
+}
+
 export interface EmployeeCompensationPayload {
   userId: number;
   ctcAnnual: number;
@@ -511,6 +554,28 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Invoices', 'InvoiceAuditLogs'],
     }),
 
+    // Vendors Endpoints
+    getVendors: builder.query<Vendor[], string | void>({
+      query: (search) => ({
+        url: '/vendors/vendor-list',
+        params: search ? { search } : undefined,
+      }),
+      transformResponse: (response: any) => {
+        const data = response?.data ?? response ?? [];
+        return Array.isArray(data) ? data : [];
+      },
+      providesTags: ['Vendors'],
+    }),
+
+    createVendor: builder.mutation<any, CreateVendorPayload>({
+      query: (body) => ({
+        url: '/vendors/create/vendor-info',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Vendors'],
+    }),
+
     updateSalarySlip: builder.mutation<any, { id: string | number; [key: string]: any }>({
       query: ({ id, ...payload }) => {
         const formattedPayload = {
@@ -705,6 +770,11 @@ export const {
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useDeleteInvoiceMutation,
+
+  // Vendor Hooks
+  useGetVendorsQuery,
+  useLazyGetVendorsQuery,
+  useCreateVendorMutation,
 
   // Employee Compensation Hooks
   useGetEmployeeCompensationQuery,
