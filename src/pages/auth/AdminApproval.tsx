@@ -89,7 +89,7 @@ const AdminApproval = () => {
 
         {status === 'success' && (
           <div className="space-y-8">
-            <div className="w-20 h-20 bg-emerald-500/10 rounded-[32px] flex items-center justify-center text-emerald-500 mx-auto">
+            <div className="w-20 h-20 bg-emerald-500/10 rounded-4xl flex items-center justify-center text-emerald-500 mx-auto">
               <i className="pi pi-shield text-4xl" />
             </div>
             <div className="space-y-4">
@@ -111,7 +111,7 @@ const AdminApproval = () => {
 
         {status === 'error' && (
           <div className="space-y-8">
-            <div className="w-20 h-20 bg-rose-500/10 rounded-[32px] flex items-center justify-center text-rose-500 mx-auto">
+            <div className="w-20 h-20 bg-rose-500/10 rounded-4xl flex items-center justify-center text-rose-500 mx-auto">
               <i className="pi pi-times-circle text-4xl" />
             </div>
             <div className="space-y-4">

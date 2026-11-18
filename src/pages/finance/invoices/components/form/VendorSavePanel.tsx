@@ -29,7 +29,7 @@ export function VendorSavePanel({
   onVendorTypeChange,
 }: VendorSavePanelProps) {
   return (
-    <div className="col-span-full bg-gradient-to-r from-blue-50/90 to-indigo-50/70 border border-blue-200/80 rounded-2xl p-4 space-y-3 animate-in fade-in duration-150">
+    <div className="col-span-full bg-linear-to-r from-blue-50/90 to-indigo-50/70 border border-blue-200/80 rounded-2xl p-4 space-y-3 animate-in fade-in duration-150">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">

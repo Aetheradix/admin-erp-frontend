@@ -2,7 +2,7 @@ import { Modal } from 'antd';
 import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
-interface DialogProps {
+export interface DialogProps {
   visible: boolean;
   onHide: () => void;
   header?: ReactNode;

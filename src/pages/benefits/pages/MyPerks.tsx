@@ -84,7 +84,7 @@ export default function MyPerks(): React.JSX.Element {
   if (userPerksLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
-        <div className="flex min-h-[400px] items-center justify-center">
+        <div className="flex min-h-100 items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
 
@@ -98,7 +98,7 @@ export default function MyPerks(): React.JSX.Element {
   if (userPerksError) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
-        <div className="flex min-h-[400px] items-center justify-center">
+        <div className="flex min-h-100 items-center justify-center">
           <div className="max-w-md rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-xl">
               ⚠️
@@ -145,7 +145,7 @@ export default function MyPerks(): React.JSX.Element {
       </div>
 
       {/* Banner */}
-      <div className="mb-7 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+      <div className="mb-7 overflow-hidden rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-blue-100">Your Employee Benefits</p>

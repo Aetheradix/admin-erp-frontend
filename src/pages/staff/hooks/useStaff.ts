@@ -1,191 +1,25 @@
 import { useState } from 'react';
-import { showToast } from '@/components/ui/composed/Toast.utils';
-import { showConfirm } from '@/components/ui/composed/ConfirmDialog.utils';
-import {
-  useGetUsersQuery,
-  useCreateStaffMutation,
-  useUpdateStaffMutation,
-  useDeleteUserMutation,
-} from '@/store/api/userSlice';
-import { usePromoteToAdminMutation } from '@/store/api/authApiSlice';
-import { useSaveEmployeeCompensationMutation } from '@/store/api/financeApiSlice';
+import { useGetUsersQuery } from '@/store/api/userSlice';
 import { useStaffFilters } from './useStaffFilters';
+import { useStaffMutations } from './useStaffMutations';
+import { toStaffFormMember } from '../utils/staffPayload';
 import type { StaffMember } from '@/types/models';
 
 export const useStaff = () => {
   const { data: staff = [], isLoading, isError } = useGetUsersQuery();
-  const [createStaff] = useCreateStaffMutation();
-  const [updateStaff] = useUpdateStaffMutation();
-  const [deleteStaff] = useDeleteUserMutation();
-  const [promoteToAdmin] = usePromoteToAdminMutation();
-  const [saveEmployeeCompensation] = useSaveEmployeeCompensationMutation();
-
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
-
   const { searchQuery, setSearchQuery, activeDepartment, setActiveDepartment } = useStaffFilters();
-
-  const handlePromote = async (id: string) => {
-    showConfirm({
-      message: 'Are you sure you want to promote this member to Administrator?',
-      header: 'Confirm Promotion',
-      accept: async () => {
-        try {
-          await promoteToAdmin(id).unwrap();
-          showToast({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Member promoted to administrator successfully!',
-            life: 3000,
-          });
-        } catch (err: unknown) {
-          const apiError = err as { data?: { message?: string } };
-          showToast({
-            severity: 'error',
-            summary: 'Error',
-            detail: apiError.data?.message || 'Failed to promote member.',
-            life: 3000,
-          });
-        }
-      },
-    });
-  };
+  const { handlePromote, handleDelete, handleSubmit } = useStaffMutations(
+    editingMember,
+    () => setShowForm(false)
+  );
 
   const handleEdit = (id: string) => {
     const member = staff.find((m) => String(m.id) === String(id));
     if (member) {
-      setEditingMember({
-        ...member,
-        name: member.username || member.name,
-        role: member.designation || member.role,
-        phone: member.contact_no || member.phone,
-        image: member.image_url || member.image,
-        joinDate: member.join_date || member.joinDate,
-        totalCompensation:
-          member.totalCompensation ||
-          member.total_compensation ||
-          member.annualCtc ||
-          member.annual_ctc ||
-          '',
-        taxRegime: member.taxRegime || member.tax_regime || 'New Regime',
-        isMidYearJoiner: Boolean(member.isMidYearJoiner ?? member.is_mid_year_joiner),
-        previousEmployerYtd: member.previousEmployerYtd ||
-          member.previous_employer_ytd || {
-            grossPay: 0,
-            tdsDeducted: 0,
-            pfDeducted: 0,
-            ptDeducted: 0,
-          },
-        panNumber: member.panNumber || member.pan_number || '',
-      });
+      setEditingMember(toStaffFormMember(member));
       setShowForm(true);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    showConfirm({
-      message: 'Are you sure you want to remove this staff member?',
-      header: 'Confirm Deletion',
-      accept: async () => {
-        try {
-          await deleteStaff(id).unwrap();
-          showToast({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Staff member removed successfully.',
-            life: 3000,
-          });
-        } catch (err) {
-          console.error('Failed to remove member', err);
-          showToast({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to remove member.',
-            life: 3000,
-          });
-        }
-      },
-    });
-  };
-
-  const handleSubmit = async (
-    data: Partial<StaffMember> & { name?: string; role?: string; phone?: string; image?: string }
-  ) => {
-    try {
-      const payload: Record<string, any> = {
-        username: data.name,
-        email: data.email,
-        role: data.role || data.designation,
-        department: data.department,
-        contact_number: data.phone || data.contact_no,
-        status: data.status,
-        join_date: data.joinDate,
-        skills: data.skills,
-        image_url: data.image || data.image_url,
-        total_compensation: data.totalCompensation || data.total_compensation,
-        annual_ctc: data.totalCompensation || data.total_compensation,
-        tax_regime: data.taxRegime || 'New Regime',
-        is_mid_year_joiner: Boolean(data.isMidYearJoiner),
-        previous_employer_ytd: data.previousEmployerYtd,
-        pan_number: data.panNumber || data.pan_number,
-      };
-
-      let savedUserId = editingMember?.id;
-      if (editingMember) {
-        await updateStaff({ id: editingMember.id, ...payload }).unwrap();
-        showToast({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Staff member updated successfully.',
-          life: 3000,
-        });
-      } else {
-        const createRes: any = await createStaff(payload).unwrap();
-        savedUserId = createRes?.id || createRes?.data?.id || createRes?.user?.id;
-        showToast({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Staff member added successfully.',
-          life: 3000,
-        });
-      }
-
-      // Also sync dedicated Employee Compensation endpoint if compensation entered
-      if (savedUserId && data.totalCompensation) {
-        try {
-          await saveEmployeeCompensation({
-            userId: Number(savedUserId),
-            ctcAnnual: Number(data.totalCompensation),
-            taxRegime: String(data.taxRegime || '')
-              .toLowerCase()
-              .includes('old')
-              ? 'old'
-              : 'new',
-            payFrequency: (data.payFrequency || 'monthly').toLowerCase(),
-            effectiveDate:
-              data.effectiveDate || data.joinDate || new Date().toISOString().split('T')[0],
-            isMidYearJoiner: Boolean(data.isMidYearJoiner),
-            previousEmployerGross: Number(data.previousEmployerYtd?.grossPay || 0),
-            previousEmployerTds: Number(data.previousEmployerYtd?.tdsDeducted || 0),
-            previousEmployerPf: Number(data.previousEmployerYtd?.pfDeducted || 0),
-            previousEmployerStandardDeduction: Number(
-              data.previousEmployerStandardDeduction ||
-                data.previousEmployerYtd?.standardDeduction ||
-                0
-            ),
-            section80c: Number(data.section80c || 0),
-            section80d: Number(data.section80d || 0),
-            hraExemption: Number(data.hraExemption || 0),
-          }).unwrap();
-        } catch (compErr) {
-          console.warn('Could not sync to dedicated compensation endpoint:', compErr);
-        }
-      }
-
-      setShowForm(false);
-    } catch (err: unknown) {
-      console.error('Operation failed', err);
-      showToast({ severity: 'error', summary: 'Error', detail: 'Operation failed.', life: 3000 });
     }
   };
 

@@ -40,7 +40,7 @@ export function VendorSearchField({
       />
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-[100] max-h-72 overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 p-2 space-y-1">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-100 max-h-72 overflow-y-auto bg-white rounded-2xl shadow-2xl border border-gray-200 p-2 space-y-1">
           {vendors.length > 0 ? (
             <>
               <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">

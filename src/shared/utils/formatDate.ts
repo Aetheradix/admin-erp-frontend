@@ -1,4 +1,9 @@
-import { DATE_LOCALE, MONTH_NAMES, MONTH_NAMES_UPPER } from '../constants/dateFormats';
+import {
+  DATE_FORMAT_OPTIONS,
+  DATE_LOCALE,
+  MONTH_NAMES,
+  MONTH_NAMES_UPPER,
+} from '../constants/dateFormats';
 import { FALLBACK } from '../constants/fallbacks';
 
 export type DateInput = string | number | Date | null | undefined;
@@ -55,6 +60,25 @@ export const formatDateLong = (input: DateInput, fallback?: string): string =>
 
 export const formatDateCompact = (input: DateInput, fallback?: string): string =>
   formatDate(input, { month: 'short', day: '2-digit', fallback });
+
+export type DateFormatPreset = 'short' | 'long' | 'compact' | 'iso' | 'dayMonth';
+
+export function formatDatePreset(
+  input: DateInput,
+  preset: DateFormatPreset = 'short',
+  fallback?: string
+): string {
+  if (preset === 'iso') {
+    const date = parseDate(input);
+    return date ? toDateInputValue(date) : fallback ?? FALLBACK.EMPTY;
+  }
+
+  if (preset === 'dayMonth') {
+    return formatDate(input, { month: 'short', day: 'numeric', fallback });
+  }
+
+  return formatDate(input, { ...DATE_FORMAT_OPTIONS[preset], fallback });
+}
 
 export interface FormatTimeOptions {
   hour12?: boolean;
