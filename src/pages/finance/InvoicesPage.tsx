@@ -463,7 +463,7 @@ export function InvoicesPage() {
     }
   }, [localAuditLogs]);
 
-  // Combined Audit Logs (local invoice events + backend invoice audit logs, 3-month rolling retention)
+  // Combined Audit Logs (backend invoice audit logs with intelligent deduplication and 3-month rolling retention)
   const combinedAuditLogs = useMemo(() => {
     const rawBackendLogs = Array.isArray(backendInvoiceAuditLogsData?.data)
       ? backendInvoiceAuditLogsData.data
@@ -498,11 +498,33 @@ export function InvoicesPage() {
         createdAt: String(item.created_at || item.createdAt || new Date().toISOString()),
       }));
 
-    // Deduplicate by ID
-    const existingIds = new Set(localAuditLogs.map((l) => l.id));
-    const uniqueBackend = formattedBackendLogs.filter((l) => !existingIds.has(l.id));
+    // Generate unique signature to prevent duplicate entries for the same invoice event within 2 minutes
+    const getLogSignature = (l: { action: string; description: string; createdAt: string }) => {
+      const act = String(l.action || '').toUpperCase();
+      const invMatch = l.description.match(/(INV[-0-9A-Z]+|#\d+)/i);
+      const invRef = invMatch ? invMatch[1].toUpperCase() : l.description.slice(0, 25);
+      const timeWindow = Math.floor(new Date(l.createdAt).getTime() / 120000);
+      return `${act}::${invRef}::${timeWindow}`;
+    };
 
-    const merged = [...localAuditLogs, ...uniqueBackend];
+    const seenSignatures = new Set<string>();
+    const deduplicatedBackend: InvoiceAuditLog[] = [];
+
+    for (const bLog of formattedBackendLogs) {
+      const sig = getLogSignature(bLog);
+      if (!seenSignatures.has(sig)) {
+        seenSignatures.add(sig);
+        deduplicatedBackend.push(bLog);
+      }
+    }
+
+    // Only include local logs (e.g. offline actions or DOWNLOAD_INVOICE) that aren't already in backend logs
+    const localOnly = localAuditLogs.filter((lLog) => {
+      const sig = getLogSignature(lLog);
+      return !seenSignatures.has(sig);
+    });
+
+    const merged = [...deduplicatedBackend, ...localOnly];
     // Sort descending by date
     merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -513,30 +535,9 @@ export function InvoicesPage() {
   const recordAuditLog = (
     action: string,
     description: string,
-    extra?: { invoiceId?: string; client?: string; amount?: number }
+    extra?: { invoiceId?: string; client?: string; amount?: number; skipBackendApi?: boolean }
   ) => {
-    const newLog: InvoiceAuditLog = {
-      id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      action,
-      description,
-      username: currentUserName,
-      createdAt: new Date().toISOString(),
-    };
-    setLocalAuditLogs((prev) => filterLogsByRetention([newLog, ...prev]));
-
-    // Send to dedicated backend invoice audit logs endpoint via mutation
-    createInvoiceAuditLogApi({
-      action,
-      description,
-      invoiceId: extra?.invoiceId,
-      client: extra?.client,
-      amount: extra?.amount,
-      username: currentUserName,
-    }).catch(() => {
-      // Backend best-effort
-    });
-
-    // Also record in centralized system audit logs with 'invoice' category
+    // Record in centralized system audit logs with 'invoice' category
     recordSystemAuditLog({
       action,
       category: 'invoice',
@@ -546,6 +547,29 @@ export function InvoicesPage() {
       status: 'Success',
       details: description,
     });
+
+    // If this action was NOT already persisted by backend CRUD mutation, send to audit logs endpoint
+    if (!extra?.skipBackendApi) {
+      createInvoiceAuditLogApi({
+        action,
+        description,
+        invoiceId: extra?.invoiceId,
+        client: extra?.client,
+        amount: extra?.amount,
+        username: currentUserName,
+      }).catch(() => {
+        // Backend best-effort
+      });
+
+      const newLog: InvoiceAuditLog = {
+        id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        action,
+        description,
+        username: currentUserName,
+        createdAt: new Date().toISOString(),
+      };
+      setLocalAuditLogs((prev) => filterLogsByRetention([newLog, ...prev]));
+    }
   };
 
   // Filtered invoices by search text & status
@@ -670,7 +694,7 @@ export function InvoicesPage() {
     recordAuditLog(
       'STATUS_UPDATE',
       `Updated status of invoice ${invoice.id} from ${prevStatus} to ${newStatus} for ${invoice.client}`,
-      { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount }
+      { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount, skipBackendApi: true }
     );
 
     refetchLogs();
@@ -821,7 +845,7 @@ export function InvoicesPage() {
         recordAuditLog(
           'UPDATE_INVOICE',
           `Updated invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
-          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount }
+          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount, skipBackendApi: true }
         );
 
         message.success({
@@ -881,7 +905,7 @@ export function InvoicesPage() {
         recordAuditLog(
           'CREATE_INVOICE',
           `Created invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
-          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount }
+          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount, skipBackendApi: true }
         );
 
         // 4. Deduct inventory items referenced in this invoice if applicable
@@ -982,7 +1006,7 @@ export function InvoicesPage() {
         recordAuditLog(
           'DELETE_INVOICE',
           `Deleted invoice ${invoice.id} for ${invoice.client} (₹${Number(invoice.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
-          { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount }
+          { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount, skipBackendApi: true }
         );
 
         refetchLogs();
