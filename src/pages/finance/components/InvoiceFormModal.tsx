@@ -15,12 +15,14 @@ import {
   Search,
   CheckCircle2,
   UserPlus,
+  RefreshCw,
 } from 'lucide-react';
 import { message } from 'antd';
 import { Input } from '@/components/ui/composed/Input';
 import {
   useGetVendorsQuery,
   useCreateVendorMutation,
+  useLazyGetNextInvoiceNumberQuery,
   type Vendor,
 } from '@/store/api/financeApiSlice';
 import type { InvoiceForm, InvoiceItem } from '../types/invoice.types';
@@ -91,6 +93,33 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   // RTK Query hooks for vendors
   const { data: vendorsList = [], refetch: refetchVendors } = useGetVendorsQuery();
   const [createVendorApi] = useCreateVendorMutation();
+  const [fetchNextInvoiceNumber, { isFetching: isFetchingNumber }] =
+    useLazyGetNextInvoiceNumberQuery();
+
+  const syncInvoiceNumberFromDB = async (targetDate?: string) => {
+    if (isEditing) return;
+    const dateToQuery = targetDate || form.invoiceDate || new Date().toISOString().slice(0, 10);
+    try {
+      const res = await fetchNextInvoiceNumber({ date: dateToQuery }).unwrap();
+      if (res && res.nextInvoiceNumber) {
+        updateField('invoiceNumber', res.nextInvoiceNumber);
+      }
+    } catch (_) {
+      const d = new Date(dateToQuery);
+      const yy = String(d.getFullYear()).slice(-2);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      updateField('invoiceNumber', `INV${yy}${mm}-001`);
+    }
+  };
+
+  // Auto-sync next invoice number from DB when modal opens for creation
+  useEffect(() => {
+    if (visible && !isEditing) {
+      if (!form.invoiceNumber || /^INV-\d{4}/i.test(form.invoiceNumber)) {
+        syncInvoiceNumberFromDB(form.invoiceDate);
+      }
+    }
+  }, [visible, isEditing]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -331,27 +360,47 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Invoice Number <span className="text-red-500">*</span>
+                  </label>
+                  {!isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => syncInvoiceNumberFromDB()}
+                      disabled={isFetchingNumber}
+                      title="Fetch next unique invoice number from database"
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 transition disabled:opacity-50">
+                      <RefreshCw size={11} className={isFetchingNumber ? 'animate-spin' : ''} />
+                      {isFetchingNumber ? 'Syncing...' : 'Sync with DB'}
+                    </button>
+                  )}
+                </div>
                 <Input
-                  label="Invoice Number"
                   value={form.invoiceNumber}
                   onChange={(e) => updateField('invoiceNumber', e.target.value)}
                   error={errors.invoiceNumber}
-                  required
                   disabled={isEditing}
-                  placeholder="e.g. INV-2026-005"
+                  placeholder="e.g. INV2610-004"
                 />
-                {isEditing && (
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    Invoice ID is locked during editing
-                  </p>
-                )}
+                <p className="text-[10px] text-gray-500 mt-1">
+                  {isEditing
+                    ? 'Invoice ID is locked during editing'
+                    : 'Format: INV<YY><MM>-<unique_number> (e.g. INV2610-004)'}
+                </p>
               </div>
 
               <Input
                 label="Invoice Date"
                 type="date"
                 value={form.invoiceDate}
-                onChange={(e) => updateField('invoiceDate', e.target.value)}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  updateField('invoiceDate', newDate);
+                  if (!isEditing && newDate) {
+                    syncInvoiceNumberFromDB(newDate);
+                  }
+                }}
                 required
               />
 

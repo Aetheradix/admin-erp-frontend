@@ -21,6 +21,7 @@ import {
   useCreateInvoiceAuditLogMutation,
   useClearMonthAuditLogsMutation,
   useDeleteInvoiceMutation,
+  useLazyGetNextInvoiceNumberQuery,
 } from '@/store/api/financeApiSlice';
 import { recordAuditLog as recordSystemAuditLog } from '@/services/auditService';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,26 +50,67 @@ const initialAuditLogs: InvoiceAuditLog[] = [];
 
 /**
  * Intelligent invoice number generator:
- * Scans all existing invoices, parses the current year and highest sequential suffix,
- * and increments by 1 with 3-digit zero-padding (e.g. INV-2026-005).
+ * Generates invoice numbers in format: INV<YY><MM>-<unique_number>
+ * e.g., INV2610-004 (26 = 2026, 10 = October, 004 = unique invoice number in database)
  */
-export function generateNextInvoiceNumber(existingInvoices: Invoice[]): string {
-  const currentYear = new Date().getFullYear();
+export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targetDate?: string): string {
+  let dateObj = new Date();
+  if (targetDate) {
+    const parsed = new Date(targetDate);
+    if (!isNaN(parsed.getTime())) {
+      dateObj = parsed;
+    }
+  }
+
+  const currentYear = dateObj.getFullYear();
+  const currentMonth = dateObj.getMonth() + 1;
+  const yy = String(currentYear).slice(-2);
+  const mm = String(currentMonth).padStart(2, '0');
+  const prefix = `INV${yy}${mm}-`;
+
+  const usedSequences = new Set<number>();
+  const exactRegex = new RegExp(`^INV${yy}${mm}-(\\d+)`, 'i');
+
   let maxSeq = 0;
 
   existingInvoices.forEach((inv) => {
-    const id = inv.id || '';
-    const match = id.match(/(\d+)$/);
-    if (match) {
+    const id = String(
+      inv.id ||
+      (inv as any).invoice_number ||
+      (inv as any).invoiceNumber ||
+      ''
+    ).trim();
+
+    const match = id.match(exactRegex);
+    if (match && match[1]) {
       const num = parseInt(match[1], 10);
-      if (!isNaN(num) && num > maxSeq) {
-        maxSeq = num;
+      if (!isNaN(num) && num > 0) {
+        usedSequences.add(num);
+        if (num > maxSeq) maxSeq = num;
+      }
+    } else {
+      // In case invoice from the same month had another format with a numeric suffix
+      const invDate = (inv as any).date || (inv as any).invoice_date || (inv as any).invoiceDate;
+      const endMatch = id.match(/-(\d+)$/);
+      if (invDate && endMatch && endMatch[1]) {
+        const d = new Date(invDate);
+        if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() + 1 === currentMonth) {
+          const num = parseInt(endMatch[1], 10);
+          if (!isNaN(num) && num > 0) {
+            usedSequences.add(num);
+            if (num > maxSeq) maxSeq = num;
+          }
+        }
       }
     }
   });
 
-  const nextSeq = Math.max(maxSeq + 1, 1);
-  return `INV-${currentYear}-${String(nextSeq).padStart(3, '0')}`;
+  let nextSeq = maxSeq + 1;
+  while (usedSequences.has(nextSeq)) {
+    nextSeq++;
+  }
+
+  return `${prefix}${String(nextSeq).padStart(3, '0')}`;
 }
 
 /**
@@ -210,10 +252,10 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
   };
 };
 
-const createEmptyForm = (existingInvoices: Invoice[]): InvoiceForm => {
-  const nextNum = generateNextInvoiceNumber(existingInvoices);
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+const createEmptyForm = (existingInvoices: Invoice[], defaultDate?: string): InvoiceForm => {
+  const today = defaultDate ? new Date(defaultDate) : new Date();
+  const todayStr = isNaN(today.getTime()) ? new Date().toISOString().slice(0, 10) : today.toISOString().slice(0, 10);
+  const nextNum = generateNextInvoiceNumber(existingInvoices, todayStr);
   const due = new Date(today);
   due.setDate(due.getDate() + 15);
   const dueStr = due.toISOString().slice(0, 10);
@@ -280,6 +322,7 @@ export function InvoicesPage() {
   const [deleteInvoiceApi] = useDeleteInvoiceMutation();
   const [createInvoiceAuditLogApi] = useCreateInvoiceAuditLogMutation();
   const [clearMonthAuditLogsApi, { isLoading: isClearingMonth }] = useClearMonthAuditLogsMutation();
+  const [triggerGetNextInvoiceNumber] = useLazyGetNextInvoiceNumberQuery();
 
   const [showClearMonthModal, setShowClearMonthModal] = useState(false);
   const [selectedClearMonth, setSelectedClearMonth] = useState(() => new Date().getMonth() + 1);
@@ -569,10 +612,23 @@ export function InvoicesPage() {
     }));
   };
 
-  const handleCreateNew = () => {
+  const handleCreateNew = async () => {
     setEditingInvoice(null);
-    setForm(createEmptyForm(invoices));
+    const initialForm = createEmptyForm(invoices);
+    setForm(initialForm);
     setShowForm(true);
+
+    try {
+      const res = await triggerGetNextInvoiceNumber({ date: initialForm.invoiceDate }).unwrap();
+      if (res && res.nextInvoiceNumber) {
+        setForm((prev) => ({
+          ...prev,
+          invoiceNumber: res.nextInvoiceNumber,
+        }));
+      }
+    } catch (_) {
+      // Fallback already prefilled by generateNextInvoiceNumber
+    }
   };
 
   const handleEditInvoice = (invoice: Invoice) => {

@@ -44,7 +44,7 @@ interface InvoiceFormModalProps {
 }
 
 const initialForm: InvoiceFormData = {
-  invoiceNumber: 'INV-2604A011',
+  invoiceNumber: 'INV2610-004',
 
   invoiceDate: '2026-04-07',
   dueDate: '2026-04-15',
@@ -323,7 +323,7 @@ export default function InvoiceFormModal({ open, onClose, onSubmit }: InvoiceFor
                   value={form.invoiceNumber}
                   onChange={(e) => updateField('invoiceNumber', e.target.value)}
                   onBlur={() => markBlur('invoiceNumber')}
-                  placeholder="INV-2604A011"
+                  placeholder="INV2610-004"
                   error={errors.invoiceNumber}
                   required
                 />
