@@ -284,7 +284,7 @@ export const HierarchyAuditTrailView: React.FC<HierarchyAuditTrailViewProps> = (
               className="w-full text-xs"
               value={dateRange}
               onChange={(dates) => {
-                setDateRange(dates as any);
+                setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null] | null);
                 setPage(1);
               }}
               format="YYYY-MM-DD"

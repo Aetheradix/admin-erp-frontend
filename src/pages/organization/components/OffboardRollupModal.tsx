@@ -1,12 +1,19 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Select, Input, DatePicker, Alert, Button, Badge } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { UserMinus } from 'lucide-react';
 import {
   useOffboardRollupMutation,
   type HierarchyNodeUser,
 } from '@/store/api/organizationApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
+
+interface OffboardFormValues {
+  terminatingUserId: number;
+  reason: string;
+  effectiveDate: Dayjs | null;
+}
 
 interface OffboardRollupModalProps {
   open: boolean;
@@ -44,7 +51,7 @@ export const OffboardRollupModal: React.FC<OffboardRollupModalProps> = ({
     }
   }, [open, preselectedUserId, form]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: OffboardFormValues) => {
     try {
       const effectiveDateStr = values.effectiveDate
         ? dayjs(values.effectiveDate).format('YYYY-MM-DD')
@@ -63,11 +70,11 @@ export const OffboardRollupModal: React.FC<OffboardRollupModalProps> = ({
       });
       onClose();
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         severity: 'error',
         summary: 'Rollup Failed',
-        detail: err?.data?.message || 'Could not complete offboard rollup',
+        detail: getApiErrorMessage(err, 'Could not complete offboard rollup'),
       });
     }
   };

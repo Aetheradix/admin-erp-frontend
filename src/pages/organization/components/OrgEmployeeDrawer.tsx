@@ -93,11 +93,17 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
     .slice(0, 2) || 'U';
 
   const employeeId = user.employee_code || `EMP-${String(user.id).padStart(4, '0')}`;
+  const profileFields = user as HierarchyNodeUser & {
+    join_date?: string;
+    joinDate?: string;
+    created_at?: string;
+    createdAt?: string;
+  };
   const joinDate =
-    (user as any).join_date ||
-    (user as any).joinDate ||
-    (user as any).created_at?.split('T')[0] ||
-    (user as any).createdAt?.split('T')[0] ||
+    profileFields.join_date ||
+    profileFields.joinDate ||
+    profileFields.created_at?.split('T')[0] ||
+    profileFields.createdAt?.split('T')[0] ||
     'Active Member';
 
   const copyEmail = () => {

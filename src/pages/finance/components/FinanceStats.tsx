@@ -1,54 +1,52 @@
 import { History, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { StatCard } from '@/shared/components/StatCard';
+import { formatCurrency } from '@/shared/utils/formatCurrency';
+import type { FinanceStats as FinanceStatsModel } from '../reimbursements/types';
 
-export function FinanceStats() {
-  const stats = [
+const CURRENCY_OPTIONS = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+
+interface FinanceStatsProps {
+  stats: FinanceStatsModel;
+}
+
+export function FinanceStats({ stats }: FinanceStatsProps) {
+  const items = [
     {
       label: 'Total Pending',
-      value: '₹52.99',
+      value: formatCurrency(stats.pendingAmount, CURRENCY_OPTIONS),
       icon: Clock,
-      color: 'text-warning',
-      bg: 'bg-warning/10',
+      tone: 'warning' as const,
     },
     {
       label: 'Total Approved',
-      value: '₹250.00',
+      value: formatCurrency(stats.approvedAmount, CURRENCY_OPTIONS),
       icon: CheckCircle2,
-      color: 'text-success',
-      bg: 'bg-success/10',
+      tone: 'success' as const,
     },
     {
       label: 'Paid Reimbursements',
-      value: '₹1,240.50',
+      value: formatCurrency(stats.paidAmount, CURRENCY_OPTIONS),
       icon: History,
-      color: 'text-primary',
-      bg: 'bg-primary/10',
+      tone: 'primary' as const,
     },
     {
       label: 'Rejected Requests',
-      value: '₹75.20',
+      value: formatCurrency(stats.rejectedAmount, CURRENCY_OPTIONS),
       icon: XCircle,
-      color: 'text-error',
-      bg: 'bg-error/10',
+      tone: 'error' as const,
     },
   ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="bg-white p-6 rounded-[32px] border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex flex-col gap-4 group">
-          <div
-            className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
-            <stat.icon size={24} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-black text-foreground">{stat.value}</span>
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">
-              {stat.label}
-            </span>
-          </div>
-        </div>
+      {items.map((item) => (
+        <StatCard
+          key={item.label}
+          label={item.label}
+          value={item.value}
+          icon={item.icon}
+          tone={item.tone}
+        />
       ))}
     </div>
   );

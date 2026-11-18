@@ -4,6 +4,7 @@ import { AlertTriangle, UserMinus, ShieldAlert } from 'lucide-react';
 import { useOffboardRollupMutation } from '@/store/api/organizationApiSlice';
 import { useDeleteUserMutation } from '@/store/api/userSlice';
 import type { HierarchyNodeUser } from '@/store/api/organizationApiSlice';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
 
 interface OrgRemoveConfirmModalProps {
   open: boolean;
@@ -45,9 +46,9 @@ export const OrgRemoveConfirmModal: React.FC<OrgRemoveConfirmModalProps> = ({
       message.success(`Employee ${user.username} has been successfully removed.`);
       onClose();
       onSuccess();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to remove employee:', err);
-      message.error(err?.data?.message || err?.message || 'Failed to remove employee.');
+      message.error(getApiErrorMessage(err, 'Failed to remove employee.'));
     }
   };
 

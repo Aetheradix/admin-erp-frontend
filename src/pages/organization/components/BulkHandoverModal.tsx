@@ -1,12 +1,20 @@
 import React, { useEffect, useMemo } from 'react';
 import { Modal, Form, Select, Input, DatePicker, Alert, Button, Badge } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { Users } from 'lucide-react';
 import {
   useBulkHandoverMutation,
   type HierarchyNodeUser,
 } from '@/store/api/organizationApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
+
+interface BulkHandoverFormValues {
+  fromManagerId: number;
+  toManagerId: number;
+  reason: string;
+  effectiveDate: Dayjs | null;
+}
 
 interface BulkHandoverModalProps {
   open: boolean;
@@ -52,7 +60,7 @@ export const BulkHandoverModal: React.FC<BulkHandoverModalProps> = ({
     }
   }, [open, preselectedManagerId, form]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: BulkHandoverFormValues) => {
     try {
       const effectiveDateStr = values.effectiveDate
         ? dayjs(values.effectiveDate).format('YYYY-MM-DD')
@@ -72,11 +80,11 @@ export const BulkHandoverModal: React.FC<BulkHandoverModalProps> = ({
       });
       onClose();
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         severity: 'error',
         summary: 'Handover Failed',
-        detail: err?.data?.message || 'Could not complete team handover',
+        detail: getApiErrorMessage(err, 'Could not complete team handover'),
       });
     }
   };

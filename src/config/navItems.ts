@@ -143,7 +143,6 @@
 // ];
 
 import {
-  BarChart3,
   Building2,
   CalendarCheck,
   CalendarDays,
@@ -467,26 +466,26 @@ export const navItems: NavItem[] = [
   // ─────────────────────────────────────────────
   // SYSTEM
   // ─────────────────────────────────────────────
-  {
-    label: 'Analytics',
-    path: '/analytics',
-    icon: BarChart3,
-    category: 'SYSTEM',
-    description: 'Business insights',
-    roles: ['SuperAdmin', 'Admin'],
-    children: [
-      {
-        label: 'Overview',
-        path: '/analytics',
-        roles: ['SuperAdmin', 'Admin'],
-      },
-      {
-        label: 'Reports',
-        path: '/analytics/reports',
-        roles: ['SuperAdmin'],
-      },
-    ],
-  },
+  // {
+  //   label: 'Analytics',
+  //   path: '/analytics',
+  //   icon: BarChart3,
+  //   category: 'SYSTEM',
+  //   description: 'Business insights',
+  //   roles: ['SuperAdmin', 'Admin'],
+  //   children: [
+  //     {
+  //       label: 'Overview',
+  //       path: '/analytics',
+  //       roles: ['SuperAdmin', 'Admin'],
+  //     },
+  //     {
+  //       label: 'Reports',
+  //       path: '/analytics/reports',
+  //       roles: ['SuperAdmin'],
+  //     },
+  //   ],
+  // },
   {
     label: 'Settings',
     path: '/settings',

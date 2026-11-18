@@ -5,8 +5,19 @@ import { usePermission } from '@/hooks/usePermission';
 import { isSuperAdmin, getUserRoles } from '@/utils/pagePermissions';
 import { usePendingUsers } from '../settings/hooks/usePendingUsers';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
+import type { AuditLog } from '@/store/api/authApiSlice';
 import type { User } from '@/types/auth';
 import type { UserRole } from '@/config/navItems';
+
+// Backend may return snake_case fields alongside the typed AuditLog shape.
+type AuditLogWithRawFields = AuditLog & {
+  target_user_name?: string;
+  target_user_email?: string;
+  assigned_role?: string;
+  action_by_name?: string;
+  action_by_email?: string;
+  created_at?: string;
+};
 
 function ApprovalPage() {
   const { user: currentAuthUser } = useAuth();
@@ -277,23 +288,20 @@ function ApprovalPage() {
                 </tr>
               ) : (
                 logs.map((log) => {
+                  const rawLog = log as AuditLogWithRawFields;
                   const targetName =
                     log.targetUser?.name ||
-                    (log as any).target_user_name ||
+                    rawLog.target_user_name ||
                     log.targetUser?.email ||
-                    (log as any).target_user_email ||
+                    rawLog.target_user_email ||
                     'N/A';
-                  const targetEmail = log.targetUser?.email || (log as any).target_user_email || '';
-                  const role = log.assignedRole || (log as any).assigned_role || '—';
-                  const actionRaw = (
-                    log.action ||
-                    (log as any).action ||
-                    'INVITATION_SENT'
-                  ).toUpperCase();
-                  const actorName = log.actionBy?.name || (log as any).action_by_name || 'System';
-                  const actorEmail = log.actionBy?.email || (log as any).action_by_email || '';
+                  const targetEmail = log.targetUser?.email || rawLog.target_user_email || '';
+                  const role = log.assignedRole || rawLog.assigned_role || '—';
+                  const actionRaw = (log.action || 'INVITATION_SENT').toUpperCase();
+                  const actorName = log.actionBy?.name || rawLog.action_by_name || 'System';
+                  const actorEmail = log.actionBy?.email || rawLog.action_by_email || '';
 
-                  const rawDate = log.timestamp || (log as any).created_at;
+                  const rawDate = log.timestamp || rawLog.created_at;
                   let formattedDate = '—';
                   if (rawDate) {
                     const parsed = new Date(rawDate);

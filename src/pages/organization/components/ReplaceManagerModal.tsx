@@ -1,12 +1,20 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Select, Input, DatePicker, Alert, Button } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { GitCommit } from 'lucide-react';
 import {
   useReplaceManagerMutation,
   type HierarchyNodeUser,
 } from '@/store/api/organizationApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
+
+interface ReplaceManagerFormValues {
+  currentManagerId: number;
+  newManagerId: number;
+  reason: string;
+  effectiveDate: Dayjs | null;
+}
 
 interface ReplaceManagerModalProps {
   open: boolean;
@@ -43,7 +51,7 @@ export const ReplaceManagerModal: React.FC<ReplaceManagerModalProps> = ({
     }
   }, [open, preselectedManagerId, form]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: ReplaceManagerFormValues) => {
     try {
       const effectiveDateStr = values.effectiveDate
         ? dayjs(values.effectiveDate).format('YYYY-MM-DD')
@@ -63,11 +71,11 @@ export const ReplaceManagerModal: React.FC<ReplaceManagerModalProps> = ({
       });
       onClose();
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         severity: 'error',
         summary: 'Replacement Failed',
-        detail: err?.data?.message || 'Could not replace manager',
+        detail: getApiErrorMessage(err, 'Could not replace manager'),
       });
     }
   };

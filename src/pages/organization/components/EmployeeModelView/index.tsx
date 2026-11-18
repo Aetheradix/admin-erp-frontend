@@ -37,17 +37,18 @@ export const EmployeeModelViewModal: React.FC<EmployeeModelViewModalProps> = ({
   const relations = useOrgRelations({ focusedNode, flatUsers, flatUsersById, childrenByManagerId, resolveUser });
   const layout = useOrgLayout({ focusedNode, ...relations }, expandedSubTrees);
   const panZoom = usePanZoom({ containerRef, bounds: layout.bounds, centralPos: layout.centralPos, isOpen });
+  const { handleFit } = panZoom;
   const profile = useInspectedProfile({
     inspectedNode, dbUsers, offices, companyProfile, flatUsersById, childrenByManagerId, resolveUser,
   });
 
   useEffect(() => {
     if (isOpen && focusedNode && containerRef.current) {
-      const observer = new ResizeObserver(() => panZoom.handleFit());
+      const observer = new ResizeObserver(() => handleFit());
       observer.observe(containerRef.current);
       return () => observer.disconnect();
     }
-  }, [isOpen, focusedNode, panZoom.handleFit]);
+  }, [isOpen, focusedNode, handleFit]);
 
   if (!isOpen) return null;
 

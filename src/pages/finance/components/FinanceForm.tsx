@@ -7,21 +7,13 @@ import { Textarea } from '@/components/ui/primitives/Textarea';
 import { Calendar } from '@/components/ui/primitives/Calendar';
 import { useState } from 'react';
 import { FileText, CheckCircle2 } from 'lucide-react';
-import type { Reimbursement } from '../hooks/mockFinance';
+import type { Reimbursement } from '../reimbursements/types';
+import { REIMBURSEMENT_FORM_CATEGORIES } from '../reimbursements/constants';
 
 interface FinanceFormProps {
   onSubmit: (data: Partial<Reimbursement>) => void;
   onCancel: () => void;
 }
-
-const CATEGORIES = [
-  { label: 'Travel', value: 'Travel' },
-  { label: 'Equipment', value: 'Equipment' },
-  { label: 'Software', value: 'Software' },
-  { label: 'Meals', value: 'Meals' },
-  { label: 'Medical', value: 'Medical' },
-  { label: 'Office Supplies', value: 'Office Supplies' },
-];
 
 export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
   const [formData, setFormData] = useState<Partial<Reimbursement>>({
@@ -33,12 +25,13 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
     receiptUrl: '',
   });
 
+  const updateField = <K extends keyof Reimbursement>(key: K, value: Reimbursement[K]) => {
+    setFormData((current) => ({ ...current, [key]: value }));
+  };
+
   const handleApply = () => {
     if (!formData.item || !formData.amount) return;
-    onSubmit({
-      ...formData,
-      status: 'Pending',
-    });
+    onSubmit({ ...formData, status: 'Pending' });
   };
 
   return (
@@ -49,7 +42,7 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
             <Input
               id="finance-item"
               value={formData.item}
-              onChange={(e) => setFormData({ ...formData, item: e.target.value })}
+              onChange={(e) => updateField('item', e.target.value)}
               placeholder="e.g. Ergonomic Keyboard"
             />
           </FormField>
@@ -57,9 +50,9 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
           <FormField label="Category" required id="finance-category">
             <Select
               id="finance-category"
-              options={CATEGORIES}
+              options={[...REIMBURSEMENT_FORM_CATEGORIES]}
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.value })}
+              onChange={(e) => updateField('category', e.value)}
               placeholder="Select category"
             />
           </FormField>
@@ -68,7 +61,7 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
             <Textarea
               id="finance-description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => updateField('description', e.target.value)}
               placeholder="Briefly explain the intent of this acquisition..."
               rows={4}
             />
@@ -81,7 +74,7 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
               id="finance-amount"
               type="number"
               value={formData.amount?.toString() || ''}
-              onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
+              onChange={(e) => updateField('amount', parseFloat(e.target.value))}
               placeholder="0.00"
             />
           </FormField>
@@ -90,9 +83,7 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
             <Calendar
               id="finance-date"
               value={formData.date ? new Date(formData.date) : null}
-              onChange={(e) =>
-                setFormData({ ...formData, date: e.value?.toISOString().split('T')[0] || '' })
-              }
+              onChange={(e) => updateField('date', e.value?.toISOString().split('T')[0] || '')}
               placeholder="Select date"
               dateFormat="yy-mm-dd"
             />
@@ -120,7 +111,7 @@ export const FinanceForm = ({ onSubmit, onCancel }: FinanceFormProps) => {
               mode="basic"
               auto
               className="absolute inset-0 opacity-0 cursor-pointer"
-              onUpload={(e) => setFormData({ ...formData, receiptUrl: e.base64 })}
+              onUpload={(e) => updateField('receiptUrl', e.base64)}
             />
           </div>
         </div>
