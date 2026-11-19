@@ -110,8 +110,8 @@ export const saveStoredPagePermissions = (permissions: Record<string, string[]>)
       }
     }
 
-    // Sync to dev server endpoint so Incognito and other browsers get the permissions
-    if (typeof fetch !== 'undefined') {
+    // Sync to dev server endpoint so Incognito and other browsers get the permissions (dev mode only)
+    if (typeof fetch !== 'undefined' && import.meta.env.DEV) {
       fetch('/__erp_permissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ export const saveStoredPagePermissions = (permissions: Record<string, string[]>)
  * Fetch permissions from the server endpoint (allows Incognito to receive permissions from Normal window)
  */
 export const syncRemotePermissions = async () => {
-  if (typeof fetch === 'undefined') return;
+  if (typeof fetch === 'undefined' || !import.meta.env.DEV) return;
   try {
     const res = await fetch('/__erp_permissions');
     if (res.ok) {
@@ -148,8 +148,8 @@ export const syncRemotePermissions = async () => {
   }
 };
 
-// Auto-sync permissions on startup and when user switches between windows/tabs (e.g. Incognito to Normal)
-if (typeof window !== 'undefined') {
+// Auto-sync permissions on startup and when user switches between windows/tabs (e.g. Incognito to Normal in dev)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   syncRemotePermissions();
   window.addEventListener('focus', () => {
     syncRemotePermissions();

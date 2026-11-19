@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
 import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
@@ -202,11 +202,34 @@ export function TasksPage() {
   const [activeTab, setActiveTab] = useState('All');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
-  const [users, setUsers] = useState<{ label: string; value: number }[]>([]);
-  const [projects, setProjects] = useState<{ label: string; value: number }[]>([]);
   const TABS = ['All', 'To Do', 'In Progress', 'Done'];
   const { data: usersData = [] } = useGetUsersQuery();
   const { data: projectsData = [] } = useGetProjectsQuery();
+
+  const users = useMemo(() => {
+    if (!usersData?.length) return [];
+    return usersData.map((u: any) => {
+      const id = Number(u.id ?? u.user_id ?? 0);
+      const name = u.name || u.username || u.user_name || u.email || `User #${id}`;
+      return {
+        label: name,
+        value: id,
+      };
+    });
+  }, [usersData]);
+
+  const projects = useMemo(() => {
+    if (!projectsData?.length) return [];
+    return projectsData.map((p: any) => {
+      const id = Number(p.id ?? p.project_id ?? 0);
+      const name = p.name || p.title || p.project_name || `Project #${id}`;
+      return {
+        label: name,
+        value: id,
+      };
+    });
+  }, [projectsData]);
+
   const [viewMode, setViewMode] = useState<'kanban' | 'grid'>('kanban');
   const filtered = activeTab === 'All' ? tasks : tasks.filter((t) => t.status === activeTab);
 
@@ -220,34 +243,6 @@ export function TasksPage() {
 
   const isJiraConnected = localStorage.getItem('jira_connection_active') === 'true';
   const jiraConfigStr = localStorage.getItem('jira_integration_config');
-
-  useEffect(() => {
-    if (usersData?.length) {
-      setUsers(
-        usersData.map((u: any) => {
-          const id = Number(u.id ?? u.user_id ?? 0);
-          const name = u.name || u.username || u.user_name || u.email || `User #${id}`;
-          return {
-            label: name,
-            value: id,
-          };
-        })
-      );
-    }
-
-    if (projectsData?.length) {
-      setProjects(
-        projectsData.map((p: any) => {
-          const id = Number(p.id ?? p.project_id ?? 0);
-          const name = p.name || p.title || p.project_name || `Project #${id}`;
-          return {
-            label: name,
-            value: id,
-          };
-        })
-      );
-    }
-  }, [usersData, projectsData]);
 
   const counts = {
     'To Do': tasks.filter((t) => t.status === 'To Do').length,
