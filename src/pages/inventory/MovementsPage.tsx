@@ -29,6 +29,7 @@ export const MovementsPage: React.FC = () => {
   const actionFilterOptions = [
     { label: 'All Actions', value: '' },
     { label: 'Created / Registered', value: 'CREATED' },
+    { label: 'Invoice Stock Deduction', value: 'INVOICE_SALE' },
     { label: 'Staff Assignment', value: 'ASSIGNED' },
     { label: 'Returned to Stock', value: 'UNASSIGNED' },
     { label: 'Bookable Toggle Changed', value: 'TOGGLE_BOOKABLE' },
@@ -110,6 +111,7 @@ export const MovementsPage: React.FC = () => {
             filteredAudits.map((log) => {
               const actionColors: Record<string, string> = {
                 CREATED: 'bg-emerald-50 text-emerald-700  ',
+                INVOICE_SALE: 'bg-indigo-50 text-indigo-700  ',
                 ASSIGNED: 'bg-purple-50 text-purple-700  ',
                 UNASSIGNED: 'bg-blue-50 text-blue-700  ',
                 TOGGLE_BOOKABLE: 'bg-amber-50 text-amber-700  ',

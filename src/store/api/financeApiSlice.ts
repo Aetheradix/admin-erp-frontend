@@ -39,6 +39,22 @@ export interface GetNextPayslipNumberParams {
   employeeCode?: string;
 }
 
+export interface NextInvoiceNumberResponse {
+  nextInvoiceNumber: string;
+  sequence: number;
+  year: number;
+  month: number;
+  yy: string;
+  mm: string;
+  prefix: string;
+}
+
+export interface GetNextInvoiceNumberParams {
+  date?: string;
+  year?: number | string;
+  month?: number | string;
+}
+
 export interface CreateSalarySlipPayload {
   // Target Employee (Recipient receiving slip)
   user_id: number;
@@ -555,6 +571,21 @@ export const financeApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Invoices'],
     }),
 
+    // Auto-fetch next invoice number from database
+    getNextInvoiceNumber: builder.query<
+      NextInvoiceNumberResponse,
+      GetNextInvoiceNumberParams | void
+    >({
+      query: (params) => ({
+        url: '/finance/invoices/next-number',
+        params: params || {},
+      }),
+      transformResponse: (response: any) => {
+        return response?.data ?? response;
+      },
+      providesTags: ['Invoices'],
+    }),
+
     getInvoiceDetails: builder.query<any, string | number>({
       query: (id) => `/finance/invoices/${id}`,
       transformResponse: (response: any) => response?.data ?? response,
@@ -801,6 +832,8 @@ export const {
   // Invoice CRUD Hooks
   useGetInvoicesQuery,
   useLazyGetInvoicesQuery,
+  useGetNextInvoiceNumberQuery,
+  useLazyGetNextInvoiceNumberQuery,
   useGetInvoiceDetailsQuery,
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
