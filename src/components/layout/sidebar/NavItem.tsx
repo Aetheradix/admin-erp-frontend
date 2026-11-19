@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Eye } from 'lucide-react';
@@ -49,6 +49,7 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
   const navigate = useNavigate();
   const hasChildren = item.children && item.children.length > 0;
   const [isHovered, setIsHovered] = useState(false);
+  const [, startTransition] = useTransition();
   const superAdmin = isSuperAdmin(user);
   const showEye = superAdmin && isOpen;
 
@@ -94,9 +95,9 @@ export function NavItem({ item, isOpen, onOpenAccessControl }: NavItemProps) {
     setExpanded(true);
 
     if (firstChild) {
-      navigate(firstChild.path);
+      startTransition(() => navigate(firstChild.path));
     } else {
-      navigate(item.path);
+      startTransition(() => navigate(item.path));
     }
   };
 
