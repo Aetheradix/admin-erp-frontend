@@ -141,7 +141,7 @@ export const StockLevelsPage: React.FC = () => {
                   <div className="flex items-center justify-between text-xs font-bold text-muted">
                     <span>Capital Invested</span>
                     <span className="text-foreground">
-                      $${Number(cat.value || 0).toLocaleString()}
+                      ₹{Number(cat.value || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>

@@ -2,6 +2,9 @@ export interface InvoiceItem {
   description: string;
   quantity: number;
   rate: number;
+  inventory_item_id?: number;
+  asset_id?: string;
+  available_stock?: number;
 }
 
 export interface InvoiceForm {

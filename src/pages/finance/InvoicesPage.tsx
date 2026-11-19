@@ -208,6 +208,9 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
       description: String(item.description || item.name || 'Software Engineering & Enterprise Services'),
       quantity: Math.max(1, Number(item.quantity || item.qty || 1)),
       rate: Number(item.rate ?? item.price ?? item.amount ?? 0),
+      inventory_item_id: item.inventory_item_id ? Number(item.inventory_item_id) : undefined,
+      asset_id: item.asset_id ? String(item.asset_id) : undefined,
+      available_stock: item.available_stock !== undefined ? Number(item.available_stock) : undefined,
     }));
   } else {
     finalItems = [
@@ -601,17 +604,23 @@ export function InvoicesPage() {
     }));
   };
 
-  const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
+  const updateItem = (
+    index: number,
+    fieldOrUpdates: keyof InvoiceItem | Partial<InvoiceItem>,
+    value?: string | number | undefined
+  ) => {
     setForm((prev) => ({
       ...prev,
-      items: prev.items.map((item, i) =>
-        i === index
-          ? {
-            ...item,
-            [field]: value,
-          }
-          : item
-      ),
+      items: prev.items.map((item, i) => {
+        if (i !== index) return item;
+        if (typeof fieldOrUpdates === 'object') {
+          return { ...item, ...fieldOrUpdates };
+        }
+        return {
+          ...item,
+          [fieldOrUpdates]: value,
+        };
+      }),
     }));
   };
 
@@ -740,6 +749,30 @@ export function InvoicesPage() {
       });
 
       const safeItems = Array.isArray(form.items) ? form.items : [];
+
+      // Pre-validation: Verify stock availability for linked inventory items when creating invoice
+      if (!editingInvoice) {
+        for (const item of safeItems) {
+          if (
+            (item.inventory_item_id || item.asset_id) &&
+            item.available_stock !== undefined &&
+            item.available_stock !== null
+          ) {
+            const requestedQty = Number(item.quantity || 1);
+            const availableQty = Number(item.available_stock);
+            if (requestedQty > availableQty) {
+              message.error({
+                content: `Insufficient stock for "${item.description}"! Available: ${availableQty}, Requested: ${requestedQty}. Invoice cannot be created.`,
+                key: actionKey,
+                duration: 6,
+              });
+              setIsSaving(false);
+              return;
+            }
+          }
+        }
+      }
+
       const subTotal = safeItems.reduce(
         (sum, item) => sum + Number(item.quantity || 0) * Number(item.rate || 0),
         0
@@ -761,6 +794,9 @@ export function InvoicesPage() {
             description: item.description,
             quantity: Number(item.quantity || 1),
             rate: Number(item.rate || 0),
+            inventory_item_id: item.inventory_item_id,
+            asset_id: item.asset_id,
+            available_stock: item.available_stock,
           })),
           invoiceUrl: editingInvoice?.data?.invoiceUrl,
         },
@@ -911,9 +947,14 @@ export function InvoicesPage() {
         // 4. Deduct inventory items referenced in this invoice if applicable
         try {
           const itemsToDeduct = safeItems
-            .filter((item) => item.description?.trim() && Number(item.quantity) > 0)
+            .filter(
+              (item) =>
+                (item.inventory_item_id || item.asset_id) &&
+                Number(item.quantity) > 0
+            )
             .map((item) => ({
-              asset_id: item.description.trim(),
+              id: item.inventory_item_id,
+              asset_id: item.asset_id,
               quantity: Number(item.quantity),
             }));
 
@@ -929,8 +970,15 @@ export function InvoicesPage() {
               );
             }
           }
-        } catch (deductErr) {
+        } catch (deductErr: any) {
           console.info('Inventory deduction note:', deductErr);
+          const deductMsg = deductErr?.data?.message || deductErr?.message;
+          if (deductMsg) {
+            message.warning({
+              content: `Invoice saved, but inventory notice: ${deductMsg}`,
+              key: 'inventory-deduct-notice',
+            });
+          }
         }
 
         message.success({

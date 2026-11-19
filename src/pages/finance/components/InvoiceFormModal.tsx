@@ -8,6 +8,7 @@ import {
   Trash2,
   X,
   AlertCircle,
+  AlertTriangle,
   Loader2,
   ChevronDown,
   ChevronUp,
@@ -16,6 +17,7 @@ import {
   CheckCircle2,
   UserPlus,
   RefreshCw,
+  Package,
 } from 'lucide-react';
 import { message } from 'antd';
 import { Input } from '@/components/ui/composed/Input';
@@ -25,6 +27,7 @@ import {
   useLazyGetNextInvoiceNumberQuery,
   type Vendor,
 } from '@/store/api/financeApiSlice';
+import { useGetInventoryItemsQuery } from '@/store/api/inventorySlice';
 import type { InvoiceForm, InvoiceItem } from '../types/invoice.types';
 
 interface InvoiceFormModalProps {
@@ -32,12 +35,16 @@ interface InvoiceFormModalProps {
   onHide: () => void;
   form: InvoiceForm;
   updateField: <K extends keyof InvoiceForm>(field: K, value: InvoiceForm[K]) => void;
-  updateItem: (index: number, field: keyof InvoiceItem, value: string | number) => void;
+  updateItem: (
+    index: number,
+    fieldOrUpdates: keyof InvoiceItem | Partial<InvoiceItem>,
+    value?: string | number | undefined
+  ) => void;
   addItem: () => void;
   removeItem: (index: number) => void;
   onSubmit: () => Promise<void> | void;
   emptyForm: InvoiceForm;
-  setForm: (form: InvoiceForm) => void;
+  setForm: React.Dispatch<React.SetStateAction<InvoiceForm>>;
   isSubmitting?: boolean;
   isEditing?: boolean;
 }
@@ -95,6 +102,33 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   const [createVendorApi] = useCreateVendorMutation();
   const [fetchNextInvoiceNumber, { isFetching: isFetchingNumber }] =
     useLazyGetNextInvoiceNumberQuery();
+
+  // RTK Query hook for inventory stock items
+  const { data: inventoryData } = useGetInventoryItemsQuery({ limit: 100 });
+  const inventoryItems = inventoryData?.items || [];
+
+  const addInventoryItem = () => {
+    const firstAvailable =
+      inventoryItems.find((it) => Number(it.quantity) > 0) || inventoryItems[0];
+    if (firstAvailable) {
+      setForm((prev: InvoiceForm) => ({
+        ...prev,
+        items: [
+          ...prev.items,
+          {
+            description: firstAvailable.name,
+            quantity: 1,
+            rate: Number(firstAvailable.purchase_cost) || 0,
+            inventory_item_id: firstAvailable.id,
+            asset_id: firstAvailable.asset_id,
+            available_stock: Number(firstAvailable.quantity),
+          },
+        ],
+      }));
+    } else {
+      addItem();
+    }
+  };
 
   const syncInvoiceNumberFromDB = async (targetDate?: string) => {
     if (isEditing) return;
@@ -250,6 +284,18 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   const gstAmount = (subTotal * Number(form?.gstRate || 0)) / 100;
   const total = subTotal + gstAmount;
 
+  // Real-time stock sufficiency validation
+  const hasStockError = useMemo(() => {
+    if (isEditing) return false;
+    return safeItems.some(
+      (item) =>
+        (item.inventory_item_id || item.asset_id) &&
+        item.available_stock !== undefined &&
+        item.available_stock !== null &&
+        Number(item.quantity || 0) > Number(item.available_stock)
+    );
+  }, [safeItems, isEditing]);
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
@@ -273,6 +319,27 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
       if (hasInvalidItem) {
         newErrors.items =
           'Please ensure all items have a description and quantity greater than zero.';
+      } else if (!isEditing) {
+        // Enforce inventory stock check
+        for (const item of safeItems) {
+          if (
+            (item.inventory_item_id || item.asset_id) &&
+            item.available_stock !== undefined &&
+            item.available_stock !== null
+          ) {
+            const requestedQty = Number(item.quantity || 0);
+            const stockQty = Number(item.available_stock);
+            if (requestedQty > stockQty) {
+              newErrors.items = `Insufficient stock for "${item.description}". Only ${stockQty} available in inventory, but ${requestedQty} requested. Please adjust quantity before creating invoice.`;
+              message.error({
+                content: `Insufficient stock for "${item.description}". Only ${stockQty} available in inventory (requested: ${requestedQty})!`,
+                key: 'stock-error',
+                duration: 5,
+              });
+              break;
+            }
+          }
+        }
       }
     }
 
@@ -809,76 +876,183 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
             {errors.items && <p className="text-xs text-red-500 font-medium">{errors.items}</p>}
 
             <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+              <div className="flex flex-wrap items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
                 <span className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
                   <IndianRupee size={16} className="text-emerald-600" /> Billed Items
                 </span>
-                <button
-                  type="button"
-                  onClick={addItem}
-                  className="text-xs text-black font-semibold flex items-center gap-1 hover:underline cursor-pointer">
-                  <Plus size={14} /> Add Line Item
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={addInventoryItem}
+                    className="text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer transition">
+                    <Package size={14} /> Add from Inventory
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addItem}
+                    className="text-xs text-gray-800 bg-white border border-gray-300 hover:bg-gray-100 font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition">
+                    <Plus size={14} /> Add Custom Item
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-3">
                 {safeItems.map((item, idx) => {
                   const lineTotal = Number(item.quantity || 0) * Number(item.rate || 0);
+                  const isLinkedToInventory = Boolean(item.inventory_item_id || item.asset_id);
+                  const isInsufficient =
+                    isLinkedToInventory &&
+                    item.available_stock !== undefined &&
+                    Number(item.quantity || 0) > Number(item.available_stock);
 
                   return (
                     <div
                       key={idx}
-                      className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center bg-white p-2.5 rounded-xl border border-gray-200">
-                      <input
-                        type="text"
-                        placeholder="Item Description / Professional Service"
-                        value={item.description}
-                        onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:border-black outline-none bg-white font-medium"
-                      />
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-gray-500 font-medium sm:hidden">
-                            Qty:
+                      className={`flex flex-col gap-2.5 bg-white p-3 rounded-2xl border transition ${
+                        isInsufficient
+                          ? 'border-red-300 bg-red-50/20 shadow-xs'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                      {/* Inventory Item Selector Ribbon */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-gray-100 text-xs">
+                        <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+                          <span className="text-[11px] font-semibold text-gray-500 flex items-center gap-1 shrink-0">
+                            <Package size={13} className="text-indigo-600" /> Source:
                           </span>
-                          <input
-                            type="number"
-                            min="1"
-                            placeholder="Qty"
-                            value={item.quantity || ''}
-                            onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                            className="w-20 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-center font-mono focus:border-black outline-none bg-white"
-                          />
+                          <select
+                            value={item.inventory_item_id || ''}
+                            onChange={(e) => {
+                              const selectedId = Number(e.target.value);
+                              if (!selectedId) {
+                                updateItem(idx, {
+                                  inventory_item_id: undefined,
+                                  asset_id: undefined,
+                                  available_stock: undefined,
+                                });
+                                return;
+                              }
+                              const inv = inventoryItems.find((it) => it.id === selectedId);
+                              if (inv) {
+                                updateItem(idx, {
+                                  description: inv.name,
+                                  rate: Number(inv.purchase_cost) || 0,
+                                  inventory_item_id: inv.id,
+                                  asset_id: inv.asset_id,
+                                  available_stock: Number(inv.quantity),
+                                  quantity:
+                                    item.quantity && Number(item.quantity) > 0
+                                      ? Number(item.quantity)
+                                      : 1,
+                                });
+                              }
+                            }}
+                            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-gray-800 font-medium focus:border-black outline-none cursor-pointer flex-1 max-w-md">
+                            <option value="">Custom Deliverable / Service (No Inventory Link)</option>
+                            {inventoryItems.map((inv) => (
+                              <option key={inv.id} value={inv.id}>
+                                {inv.name} ({inv.asset_id}) — Stock: {inv.quantity} — ₹{Number(inv.purchase_cost || 0).toLocaleString('en-IN')}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-gray-500 font-medium sm:hidden">
-                            Rate:
-                          </span>
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="Rate (₹)"
-                            value={item.rate || ''}
-                            onChange={(e) => updateItem(idx, 'rate', Number(e.target.value))}
-                            className="w-28 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-right font-mono focus:border-black outline-none bg-white"
-                          />
-                        </div>
-
-                        <div className="w-28 text-right font-mono font-bold text-xs text-gray-900 px-2 shrink-0">
-                          ₹{lineTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </div>
-
-                        {safeItems.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeItem(idx)}
-                            className="text-gray-400 hover:text-red-500 transition p-1.5 cursor-pointer">
-                            <Trash2 size={16} />
-                          </button>
+                        {/* Live Stock Badge */}
+                        {isLinkedToInventory && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            {isInsufficient ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-100/90 border border-red-300 px-2.5 py-0.5 rounded-full animate-pulse">
+                                <AlertCircle size={12} className="text-red-600" /> Insufficient Stock! Only {item.available_stock} available
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded-full">
+                                <CheckCircle2 size={12} className="text-emerald-600" /> In Stock ({item.available_stock} available)
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateItem(idx, {
+                                  inventory_item_id: undefined,
+                                  asset_id: undefined,
+                                  available_stock: undefined,
+                                })
+                              }
+                              className="text-[11px] text-gray-400 hover:text-gray-700 underline cursor-pointer">
+                              Unlink
+                            </button>
+                          </div>
                         )}
                       </div>
+
+                      {/* Line Item Inputs */}
+                      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                        <input
+                          type="text"
+                          placeholder="Item Description / Deliverable / Service"
+                          value={item.description}
+                          onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:border-black outline-none bg-white font-medium"
+                        />
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[11px] text-gray-500 font-medium sm:hidden">
+                              Qty:
+                            </span>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                min="1"
+                                placeholder="Qty"
+                                value={item.quantity || ''}
+                                onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
+                                className={`w-20 border rounded-lg px-2.5 py-2 text-xs text-center font-mono outline-none ${
+                                  isInsufficient
+                                    ? 'border-red-500 bg-red-50 text-red-900 font-bold ring-2 ring-red-200'
+                                    : 'border-gray-200 focus:border-black bg-white'
+                                }`}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <span className="text-[11px] text-gray-500 font-medium sm:hidden">
+                              Rate:
+                            </span>
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Rate (₹)"
+                              value={item.rate || ''}
+                              onChange={(e) => updateItem(idx, 'rate', Number(e.target.value))}
+                              className="w-28 border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-right font-mono focus:border-black outline-none bg-white"
+                            />
+                          </div>
+
+                          <div className="w-28 text-right font-mono font-bold text-xs text-gray-900 px-2 shrink-0">
+                            ₹{lineTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </div>
+
+                          {safeItems.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeItem(idx)}
+                              className="text-gray-400 hover:text-red-500 transition p-1.5 cursor-pointer">
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Stock Warning Notice if Insufficient */}
+                      {isInsufficient && (
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">
+                          <AlertTriangle size={14} className="shrink-0 text-red-600" />
+                          <span>
+                            Inventory stock is insufficient! Available in stock: <strong>{item.available_stock}</strong> unit(s), but <strong>{item.quantity}</strong> requested. Reduce quantity to create invoice.
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -963,17 +1137,23 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
           </button>
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || hasStockError}
             onClick={handleFormSubmit}
-            className="px-6 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50 shadow-xs cursor-pointer">
+            className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-xs cursor-pointer ${
+              hasStockError
+                ? 'bg-red-600 text-white hover:bg-red-700 cursor-not-allowed opacity-90'
+                : 'bg-black text-white hover:bg-gray-800 disabled:opacity-50'
+            }`}>
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-            {isSubmitting
-              ? isEditing
-                ? 'Updating Invoice...'
-                : 'Creating Invoice...'
-              : isEditing
-                ? 'Update Invoice'
-                : 'Create Invoice'}
+            {hasStockError
+              ? 'Insufficient Stock (Cannot Create)'
+              : isSubmitting
+                ? isEditing
+                  ? 'Updating Invoice...'
+                  : 'Creating Invoice...'
+                : isEditing
+                  ? 'Update Invoice'
+                  : 'Create Invoice'}
           </button>
         </div>
       </div>
