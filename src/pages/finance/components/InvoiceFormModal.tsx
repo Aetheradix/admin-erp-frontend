@@ -272,8 +272,6 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
     }
   };
 
-  if (!visible) return null;
-
   const safeItems = Array.isArray(form?.items) ? form.items : [];
 
   const subTotal = safeItems.reduce(
@@ -285,16 +283,15 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   const total = subTotal + gstAmount;
 
   // Real-time stock sufficiency validation
-  const hasStockError = useMemo(() => {
-    if (isEditing) return false;
-    return safeItems.some(
+  const hasStockError =
+    !isEditing &&
+    safeItems.some(
       (item) =>
         (item.inventory_item_id || item.asset_id) &&
         item.available_stock !== undefined &&
         item.available_stock !== null &&
         Number(item.quantity || 0) > Number(item.available_stock)
     );
-  }, [safeItems, isEditing]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -359,6 +356,8 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
     onHide();
     setForm(emptyForm);
   };
+
+  if (!visible) return null;
 
   return (
     <div
