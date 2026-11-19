@@ -1,7 +1,8 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { StatCard, type StatTone } from './StatCard';
+import { StatCard, type StatTone, type StatTrend } from './StatCard';
 
 const TONE_COLOR: Record<StatTone, string> = {
   primary: 'text-primary',
@@ -19,6 +20,9 @@ export interface StatCardItem {
   colorClassName?: string;
   className?: string;
   onClick?: () => void;
+  subtext?: ReactNode;
+  badge?: ReactNode;
+  trend?: StatTrend;
 }
 
 export interface StatCardGridProps {
@@ -41,6 +45,9 @@ export function StatCardGrid({ items, variant = 'inline', className }: StatCardG
             icon={item.icon}
             tone={item.tone}
             className={item.className}
+            subtext={item.subtext}
+            badge={item.badge}
+            trend={item.trend}
           />
         ) : (
           <InlineStatCard key={item.label} item={item} />
@@ -84,6 +91,20 @@ function InlineStatCard({ item }: { item: StatCardItem }) {
       <div className="flex flex-col">
         <span className="text-2xl font-black text-foreground">{item.value}</span>
         <span className="text-xs font-bold text-muted uppercase tracking-wider">{item.label}</span>
+        {item.subtext && (
+          <span className="text-[11px] text-muted font-medium mt-1">{item.subtext}</span>
+        )}
+        {item.trend && (
+          <span
+            className={cn(
+              'flex items-center gap-1 text-[11px] font-bold mt-1',
+              item.trend.direction === 'up' ? 'text-success' : 'text-error'
+            )}>
+            {item.trend.direction === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {item.trend.label}
+          </span>
+        )}
+        {item.badge}
       </div>
     </div>
   );

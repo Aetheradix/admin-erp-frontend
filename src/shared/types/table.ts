@@ -20,3 +20,17 @@ export interface TableQueryState {
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
 }
+
+export interface ColumnConfig<T extends object> {
+  key: string;
+  title: ReactNode;
+  dataIndex?: Extract<keyof T, string>;
+  render?: (row: T, index: number) => ReactNode;
+  width?: number | string;
+  align?: 'left' | 'center' | 'right';
+  sorter?: boolean | ((a: T, b: T) => number);
+  className?: string;
+  hidden?: boolean;
+}
+
+export type ActionConfig<T extends object> = RowAction<T>;
