@@ -7,21 +7,24 @@ import { FinanceStats } from './components/FinanceStats';
 import { ReimbursementCard } from './components/ReimbursementCard';
 import { FinanceForm } from './components/FinanceForm';
 import { useFinancePage } from './hooks/useFinancePage';
+import {
+  REIMBURSEMENT_CATEGORIES,
+  REIMBURSEMENT_STATUSES,
+} from './reimbursements/constants';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { Receipt } from 'lucide-react';
 
 export function FinancePage() {
   const {
     filteredRequests,
+    stats,
     isLoading,
     showForm,
     setShowForm,
     activeCategory,
     setActiveCategory,
-    CATEGORIES,
     activeStatus,
     setActiveStatus,
-    STATUSES,
     handleRequestSubmit,
     handleApprove,
     handleReject,
@@ -49,13 +52,13 @@ export function FinancePage() {
         }}
       />
 
-      <FinanceStats />
+      <FinanceStats stats={stats} />
 
       <div className="flex flex-col gap-8">
         <ExplorerBar
           title="Expense Explorer"
           countLabel={`Filtering ${filteredRequests.length} active requests`}
-          tabs={CATEGORIES}
+          tabs={REIMBURSEMENT_CATEGORIES}
           activeTab={activeCategory}
           onTabChange={setActiveCategory}
         />
@@ -63,7 +66,7 @@ export function FinancePage() {
         <ExplorerBar
           title="Request Status"
           countLabel={`${filteredRequests.length} requests`}
-          tabs={STATUSES}
+          tabs={REIMBURSEMENT_STATUSES}
           activeTab={activeStatus}
           onTabChange={setActiveStatus}
         />

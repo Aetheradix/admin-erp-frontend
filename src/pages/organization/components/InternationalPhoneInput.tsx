@@ -45,20 +45,24 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
 
   // Focus search input when dropdown opens
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 50);
-    } else {
-      setSearch('');
-    }
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
   }, [isOpen]);
+
+  const closeDropdown = () => {
+    setIsOpen(false);
+    setSearch('');
+  };
 
   // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        setSearch('');
       }
     };
     if (isOpen) {
@@ -71,8 +75,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
 
   const handleSelectCountry = (country: CountryCodeItem) => {
     onChange(country.dialCode, phoneNumber);
-    setIsOpen(false);
-    setSearch('');
+    closeDropdown();
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +97,13 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
         <button
           type="button"
           disabled={disabled}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            if (isOpen) {
+              closeDropdown();
+            } else {
+              setIsOpen(true);
+            }
+          }}
           className="h-full px-2.5 flex items-center gap-1.5 bg-slate-50/70 hover:bg-slate-100 text-slate-800 transition-colors border-r border-border-subtle shrink-0 cursor-pointer select-none rounded-l-md outline-none"
           title={`Selected: ${currentCountry.name} (${currentCountry.dialCode})`}
         >

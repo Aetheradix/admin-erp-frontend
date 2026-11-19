@@ -8,8 +8,10 @@ import type { Node } from './hooks/mockStats';
 import { useGetProjectsQuery, useGetProjectStatsQuery } from '@/store/api/projectApiSlice';
 import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
-import { PieChart, TrendingUp, Layers, Archive as ArchiveIcon, Sparkles } from 'lucide-react';
+import { Archive as ArchiveIcon, Sparkles } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives/Tabs';
+import { StatsSummaryCards } from './components/StatsSummaryCards';
+import { ARCHIVED_STATUS, COMPLETED_STATUS, STATS_TABS } from './constants';
 
 export function StatsPage() {
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
@@ -17,13 +19,13 @@ export function StatsPage() {
   const { data: hierarchyData, isLoading: hierarchyLoading } = useGetOrganizationHierarchyQuery();
 
   const [activeTab, setActiveTab] = useState('Hierarchy');
-  const TABS = ['Hierarchy', 'Ongoing Projects', 'Archive'];
 
-  const ongoingProjects = projects.filter((p: any) => p.status !== 'Archived');
-  const archivedProjects = projects.filter((p: any) => p.status === 'Archived');
+  const ongoingProjects = projects.filter((p) => p.status !== ARCHIVED_STATUS);
+  const archivedProjects = projects.filter((p) => p.status === ARCHIVED_STATUS);
 
+  const flatUsers = hierarchyData?.data?.flatUsers;
   const hierarchyNodes: Node[] = useMemo(() => {
-    const flat = hierarchyData?.data?.flatUsers || [];
+    const flat = flatUsers || [];
     return flat.map((u) => ({
       id: String(u.id),
       name: u.username || u.email,
@@ -33,13 +35,13 @@ export function StatsPage() {
         u.image_url ||
         `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.username || u.email)}`,
     }));
-  }, [hierarchyData]);
+  }, [flatUsers]);
 
-  const completionRate = useMemo(() => {
-    if (projects.length === 0) return '0%';
-    const completed = projects.filter((p: any) => p.status === 'Completed').length;
-    return `${Math.round((completed / projects.length) * 100)}%`;
-  }, [projects]);
+  const completedProjects = projects.filter((p) => p.status === COMPLETED_STATUS).length;
+  const completionRate =
+    projects.length === 0
+      ? '0%'
+      : `${Math.round((completedProjects / projects.length) * 100)}%`;
 
   if (projectsLoading || statsLoading || hierarchyLoading) {
     return (
@@ -58,47 +60,16 @@ export function StatsPage() {
       />
 
       {/* High Level Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          {
-            label: 'Active Projects',
-            value: statsData?.projects?.active ?? ongoingProjects.length,
-            icon: Layers,
-            color: 'text-primary',
-          },
-          {
-            label: 'Total Employees',
-            value:
-              statsData?.employees?.total ??
-              hierarchyData?.data?.stats?.totalEmployees ??
-              hierarchyNodes.length,
-            icon: PieChart,
-            color: 'text-info',
-          },
-          { label: 'Completion Rate', value: completionRate, icon: TrendingUp, color: 'text-success' },
-          {
-            label: 'Historical Data',
-            value: archivedProjects.length,
-            icon: ArchiveIcon,
-            color: 'text-warning',
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white p-6 rounded-2xl border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group">
-            <div
-              className={`w-14 h-14 rounded-lg bg-surface-subtle flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
-              <stat.icon size={28} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-foreground">{stat.value}</span>
-              <span className="text-xs font-bold text-muted uppercase tracking-wider">
-                {stat.label}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <StatsSummaryCards
+        activeProjects={statsData?.projects?.active ?? ongoingProjects.length}
+        totalEmployees={
+          statsData?.employees?.total ??
+          hierarchyData?.data?.stats?.totalEmployees ??
+          hierarchyNodes.length
+        }
+        completionRate={completionRate}
+        historicalCount={archivedProjects.length}
+      />
 
       {/* Navigation Tabs */}
       <div className="flex flex-col gap-8">
@@ -111,7 +82,7 @@ export function StatsPage() {
               Strategy Portal
             </span>
           </div>
-          <Tabs items={TABS} activeItem={activeTab} onItemChange={setActiveTab} />
+          <Tabs items={STATS_TABS} activeItem={activeTab} onItemChange={setActiveTab} />
         </div>
 
         {/* Tab Content */}

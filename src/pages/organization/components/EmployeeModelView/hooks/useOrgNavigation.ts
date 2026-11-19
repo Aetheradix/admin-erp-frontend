@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { HierarchyNodeUser } from '@/store/api/organizationApiSlice';
 import type { EmployeeInput } from '../types';
 
@@ -21,7 +21,13 @@ export const useOrgNavigation = ({
   const [showDetail, setShowDetail] = useState(true);
   const [expandedSubTrees, setExpandedSubTrees] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
+  const [syncedSession, setSyncedSession] = useState<{
+    isOpen: boolean;
+    employee: EmployeeInput | null | undefined;
+  }>({ isOpen: false, employee: null });
+
+  if (syncedSession.isOpen !== isOpen || syncedSession.employee !== employee) {
+    setSyncedSession({ isOpen, employee });
     if (isOpen && employee) {
       const u = resolveUser(employee);
       if (u) {
@@ -31,7 +37,7 @@ export const useOrgNavigation = ({
       setNavHistory([]);
       setExpandedSubTrees({});
     }
-  }, [isOpen, employee, resolveUser]);
+  }
 
   const focusedNode = useMemo(
     () =>

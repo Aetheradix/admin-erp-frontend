@@ -883,7 +883,7 @@ export default function OnboardingPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted font-semibold">Address</span>
-                <span className="font-medium text-foreground text-right truncate max-w-[200px]">
+                <span className="font-medium text-foreground text-right truncate max-w-50">
                   {streetAddress}, {city}, {country}
                 </span>
               </div>

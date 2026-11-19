@@ -338,7 +338,7 @@ export function TeamsPage() {
     },
   ];
 
-  const TeamFormFields = () => (
+  const renderTeamFormFields = () => (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
         <label className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
@@ -668,7 +668,7 @@ export function TeamsPage() {
         }}
       >
         <div className="flex flex-col gap-5">
-          <TeamFormFields />
+          {renderTeamFormFields()}
           <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
             <Button
               variant="ghost"
@@ -702,7 +702,7 @@ export function TeamsPage() {
         }}
       >
         <div className="flex flex-col gap-5">
-          <TeamFormFields />
+          {renderTeamFormFields()}
           <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
             <Button
               variant="ghost"

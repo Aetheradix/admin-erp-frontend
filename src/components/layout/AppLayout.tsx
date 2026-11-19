@@ -286,7 +286,10 @@ export default function AppLayout() {
           )}
 
         <main className="app-main flex-1 min-w-0 overflow-y-auto p-3 sm:p-6 lg:p-10 bg-background custom-scrollbar">
-          <div className="app-page-content min-w-0 max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div
+            key={location.key}
+            className="app-page-content min-w-0 max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200"
+          >
             <PageAccessGuard>
               <Outlet />
             </PageAccessGuard>

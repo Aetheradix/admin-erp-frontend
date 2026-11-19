@@ -166,7 +166,7 @@ const LoginPage = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-14 !rounded-2xl pr-12"
+                className="h-14 rounded-2xl! pr-12"
               />
               <button
                 type="button"

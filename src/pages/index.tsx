@@ -1,7 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useGetMyPermissionsQuery } from '@/store/api/permissionSlice';
 import { extractUserRoles, isUserSuperadmin } from '@/utils/rbac';
 
 const BlogsModule = lazy(() => import('@/pages/blogs'));
@@ -45,7 +44,6 @@ const ContentLoadingFallback = () => (
 
 const AppFeature = () => {
   const { user } = useAuth();
-  const { isLoading } = useGetMyPermissionsQuery(undefined, { skip: !user });
 
   // Memoize permissions check to prevent blocking synchronous JSON.parse on every navigation
   const allowedMap = useMemo(() => {
@@ -139,8 +137,6 @@ const AppFeature = () => {
 
     return map;
   }, [user]);
-
-  if (isLoading) return <ContentLoadingFallback />;
 
   return (
     <Suspense fallback={<ContentLoadingFallback />}>

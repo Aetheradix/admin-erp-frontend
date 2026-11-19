@@ -6,14 +6,15 @@ export function useOrgLayout(
   relations: OrgRelationsInput,
   expandedSubTrees: Record<number, boolean>
 ): LayoutResult {
-  return useMemo(() => {
-    return computeLayout(relations, expandedSubTrees);
-  }, [
-    relations.focusedNode,
-    relations.reportingManager,
-    relations.grandManager,
-    relations.directReports,
-    relations.subUnderReportsMap,
-    expandedSubTrees,
-  ]);
+  const { focusedNode, reportingManager, grandManager, directReports, subUnderReportsMap } =
+    relations;
+
+  return useMemo(
+    () =>
+      computeLayout(
+        { focusedNode, reportingManager, grandManager, directReports, subUnderReportsMap },
+        expandedSubTrees
+      ),
+    [focusedNode, reportingManager, grandManager, directReports, subUnderReportsMap, expandedSubTrees]
+  );
 }

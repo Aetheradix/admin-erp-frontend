@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
 import {
   UserPlus,
@@ -13,11 +13,13 @@ import {
   Hash,
   Image,
 } from 'lucide-react';
+import type { StaffMember } from '@/types/models';
 import { useCreateStaffMutation } from '@/store/api/userSlice';
 import type {
   HierarchyNodeUser,
   DepartmentHierarchyItem,
 } from '@/store/api/organizationApiSlice';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
 
 interface OrgAddEmployeeModalProps {
   open: boolean;
@@ -36,19 +38,47 @@ export const OrgAddEmployeeModal: React.FC<OrgAddEmployeeModalProps> = ({
   departments,
   onSuccess,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <AddEmployeeForm
+      preselectedManagerId={preselectedManagerId}
+      flatUsers={flatUsers}
+      departments={departments}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    />
+  );
+};
+
+interface AddEmployeeFormProps {
+  preselectedManagerId?: number | null;
+  flatUsers: HierarchyNodeUser[];
+  departments: DepartmentHierarchyItem[];
+  onClose: () => void;
+  onSuccess: (newUserId?: number) => void;
+}
+
+const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
+  preselectedManagerId,
+  flatUsers,
+  departments,
+  onClose,
+  onSuccess,
+}) => {
   const [createStaff, { isLoading }] = useCreateStaffMutation();
 
-  const [fullName, setFullName] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [team, setTeam] = useState<string>('');
-  const [reportingManagerId, setReportingManagerId] = useState<number | null>(null);
-  const [email, setEmail] = useState('');
-  const [employeeId, setEmployeeId] = useState('');
-  const [joiningDate, setJoiningDate] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
-
-  // Available teams from departments list or flatUsers
-  const availableTeams = React.useMemo(() => {
+  const availableTeams = useMemo(() => {
     const set = new Set<string>();
     departments.forEach((d) => {
       if (d.department_name) set.add(d.department_name);
@@ -69,30 +99,25 @@ export const OrgAddEmployeeModal: React.FC<OrgAddEmployeeModalProps> = ({
     return Array.from(set);
   }, [departments, flatUsers]);
 
-  useEffect(() => {
-    if (open) {
-      setFullName('');
-      setJobTitle('');
-      setEmail('');
-      setPhotoUrl('');
-      setEmployeeId(`EMP-${Math.floor(1000 + Math.random() * 9000)}`);
-      setJoiningDate(new Date().toISOString().split('T')[0]);
+  const initialManagerId = preselectedManagerId || flatUsers[0]?.id || null;
+  const initialTeam = preselectedManagerId
+    ? flatUsers.find((u) => u.id === preselectedManagerId)?.department ||
+      availableTeams[0] ||
+      'Engineering'
+    : flatUsers[0]?.department || availableTeams[0] || 'Executive';
 
-      if (preselectedManagerId) {
-        setReportingManagerId(preselectedManagerId);
-        const mgr = flatUsers.find((u) => u.id === preselectedManagerId);
-        if (mgr?.department) {
-          setTeam(mgr.department);
-        } else {
-          setTeam(availableTeams[0] || 'Engineering');
-        }
-      } else {
-        const rootUser = flatUsers[0];
-        setReportingManagerId(rootUser?.id ?? null);
-        setTeam(rootUser?.department || availableTeams[0] || 'Executive');
-      }
-    }
-  }, [open, preselectedManagerId, flatUsers, availableTeams]);
+  const [fullName, setFullName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [team, setTeam] = useState<string>(initialTeam);
+  const [reportingManagerId, setReportingManagerId] = useState<number | null>(initialManagerId);
+  const [email, setEmail] = useState('');
+  const [employeeId, setEmployeeId] = useState(
+    () => `EMP-${Math.floor(1000 + Math.random() * 9000)}`
+  );
+  const [joiningDate, setJoiningDate] = useState(
+    () => new Date().toISOString().split('T')[0]
+  );
+  const [photoUrl, setPhotoUrl] = useState('');
 
   // Auto-suggest email based on name if user hasn't typed one
   const handleNameChange = (nameVal: string) => {
@@ -104,18 +129,6 @@ export const OrgAddEmployeeModal: React.FC<OrgAddEmployeeModalProps> = ({
       setEmail('');
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
-
-  if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,20 +164,22 @@ export const OrgAddEmployeeModal: React.FC<OrgAddEmployeeModalProps> = ({
         join_date: joiningDate || undefined,
         image_url: photoUrl.trim() || undefined,
         status: 'Active',
-      } as any).unwrap();
+      }).unwrap();
 
       message.success(`${cleanName} successfully added to the organization!`);
       onClose();
 
-      const newId =
-        (res as any)?.id ||
-        (res as any)?.data?.id ||
-        (res as any)?.user?.id;
+      const response = res as StaffMember & {
+        data?: { id?: number | string };
+        user?: { id?: number | string };
+      };
+      const rawId = response?.id ?? response.data?.id ?? response.user?.id;
+      const newId = rawId != null ? Number(rawId) : undefined;
 
-      onSuccess(newId);
-    } catch (err: any) {
+      onSuccess(newId != null && !Number.isNaN(newId) ? newId : undefined);
+    } catch (err) {
       console.error('Failed to create employee:', err);
-      message.error(err?.data?.message || err?.message || 'Failed to add employee');
+      message.error(getApiErrorMessage(err, 'Failed to add employee'));
     }
   };
 

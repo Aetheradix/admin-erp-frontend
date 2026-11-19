@@ -1,12 +1,20 @@
 import React, { useEffect, useMemo } from 'react';
 import { Modal, Form, Select, Input, DatePicker, Alert, Button } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { UserCheck, AlertTriangle } from 'lucide-react';
 import {
   useUpdateReportingManagerMutation,
   type HierarchyNodeUser,
 } from '@/store/api/organizationApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
+
+interface ChangeManagerFormValues {
+  userId: number;
+  reportingManagerId?: number | null;
+  reason: string;
+  effectiveDate: Dayjs | null;
+}
 
 interface ChangeManagerModalProps {
   open: boolean;
@@ -61,7 +69,7 @@ export const ChangeManagerModal: React.FC<ChangeManagerModalProps> = ({
     }
   }, [open, selectedUser, form]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: ChangeManagerFormValues) => {
     try {
       const effectiveDateStr = values.effectiveDate
         ? dayjs(values.effectiveDate).format('YYYY-MM-DD')
@@ -81,11 +89,11 @@ export const ChangeManagerModal: React.FC<ChangeManagerModalProps> = ({
       });
       onClose();
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         severity: 'error',
         summary: 'Update Failed',
-        detail: err?.data?.message || 'Could not update manager line',
+        detail: getApiErrorMessage(err, 'Could not update manager line'),
       });
     }
   };
