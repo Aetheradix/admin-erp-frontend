@@ -9,7 +9,7 @@ export function ProjectRow({ project }: { project: Project }) {
   const navigate = useNavigate();
 
   return (
-    <WorkDeliveryRow onClick={() => navigate('/tasks')} group>
+    <WorkDeliveryRow onClick={() => navigate(`/projects/${project.id}`)} group>
       <div className="flex items-center gap-2.5 min-w-0">
         <span
           style={{ backgroundColor: project.color || '#E8583A' }}

@@ -24,6 +24,8 @@ const OrganizationModule = lazy(() => import('@/pages/organization'));
 const TeamsModule = lazy(() => import('@/pages/teams'));
 const UsersModule = lazy(() => import('@/pages/users'));
 const TasksModule = lazy(() => import('@/pages/tasks'));
+const ProjectsModule = lazy(() => import('@/pages/projects'));
+const DepartmentsModule = lazy(() => import('@/pages/departments'));
 const InventoryModule = lazy(() => import('@/pages/inventory'));
 const ResourceBookingModule = lazy(() => import('@/pages/resourcebooking'));
 const Forbidden403Page = lazy(() => import('@/pages/error/Forbidden403Page'));
@@ -147,6 +149,8 @@ const AppFeature = () => {
         <Route path="/teams/*" element={<TeamsModule />} />
         <Route path="/users/*" element={<UsersModule />} />
         <Route path="/tasks/*" element={<TasksModule />} />
+        <Route path="/projects/*" element={<ProjectsModule />} />
+        <Route path="/departments/*" element={<DepartmentsModule />} />
         <Route
           path="/inventory/*"
           element={

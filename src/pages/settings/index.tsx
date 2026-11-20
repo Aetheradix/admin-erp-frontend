@@ -3,6 +3,7 @@ import { SettingsPage } from './SettingsPage';
 import { RolesPage } from './RolesPage';
 import { IntegrationsPage } from './IntegrationsPage';
 import { AuditLogPage } from './AuditLogPage';
+import AssignmentPermissionsPage from './AssignmentPermissionsPage';
 import { RoutePermissionGuard } from '@/components/auth/RoutePermissionGuard';
 
 const SettingsModule = () => {
@@ -17,6 +18,7 @@ const SettingsModule = () => {
           </RoutePermissionGuard>
         }
       />
+      <Route path="/assignment-permissions" element={<AssignmentPermissionsPage />} />
       <Route path="/integrations" element={<IntegrationsPage />} />
       <Route path="/audit-log" element={<AuditLogPage />} />
     </Routes>

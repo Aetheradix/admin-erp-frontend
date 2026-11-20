@@ -2,7 +2,6 @@ import {
   Building2,
   CalendarCheck,
   CalendarDays,
-  CheckSquare,
   Clock,
   CreditCard,
   Gift,
@@ -12,6 +11,7 @@ import {
   Share2,
   UserCheck,
   FileText,
+  FolderKanban,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -101,6 +101,11 @@ export const navItems: NavItem[] = [
         path: '/staff',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
+      {
+        label: 'Dept. Dashboards',
+        path: '/departments',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
     ],
   },
   {
@@ -144,13 +149,33 @@ export const navItems: NavItem[] = [
     ],
   },
   {
-    label: 'Tasks',
-    path: '/tasks',
-    icon: CheckSquare,
+    label: 'Projects',
+    path: '/projects',
+    icon: FolderKanban,
     category: 'MANAGEMENT',
-    description: 'Task management',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+    description: 'Projects, Gantt Timelines & Sprints',
+    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+    children: [
+      {
+        label: 'Projects & Pipelines',
+        path: '/projects',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+      {
+        label: 'Monitoring & My Work',
+        path: '/projects/monitoring',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+    ],
   },
+  // {
+  //   label: 'Tasks',
+  //   path: '/tasks',
+  //   icon: CheckSquare,
+  //   category: 'MANAGEMENT',
+  //   description: 'Task management',
+  //   roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'Employee'],
+  // },
   // {
   //   label: 'Channels',
   //   path: '/channels',
@@ -359,6 +384,11 @@ export const navItems: NavItem[] = [
         label: 'Roles & Permissions',
         path: '/settings/roles',
         roles: ['SuperAdmin'],
+      },
+      {
+        label: 'Assignment Rules',
+        path: '/settings/assignment-permissions',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
       {
         label: 'Integrations',

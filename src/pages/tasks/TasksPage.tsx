@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock, FolderKanban } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
@@ -198,6 +199,7 @@ const emptyForm = {
 };
 
 export function TasksPage() {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTab, setActiveTab] = useState('All');
   const [showForm, setShowForm] = useState(false);
@@ -361,6 +363,15 @@ export function TasksPage() {
         title="Tasks"
         description="Manage and track tasks across all projects."
         breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'Tasks' }]}
+        actions={
+          <button
+            type="button"
+            onClick={() => navigate('/projects')}
+            className="px-3.5 py-2 rounded-xl bg-surface-subtle hover:bg-surface-elevated border border-border-subtle text-foreground font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-xs">
+            <FolderKanban size={14} className="text-primary" />
+            <span>Projects & Timelines</span>
+          </button>
+        }
         primaryAction={{ label: 'New Task', onClick: () => setShowForm(true), icon: 'pi pi-plus' }}
       />
 

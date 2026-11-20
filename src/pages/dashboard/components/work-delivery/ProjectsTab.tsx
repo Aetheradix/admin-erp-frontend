@@ -47,10 +47,10 @@ export function ProjectsTab({ projects, searchQuery, onSearchChange }: ProjectsT
           action={
             <button
               type="button"
-              onClick={() => navigate('/tasks')}
+              onClick={() => navigate('/projects')}
               className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-hover transition-colors shadow-xs cursor-pointer">
               <Plus size={12} />
-              <span>Manage Workspaces</span>
+              <span>New Project</span>
             </button>
           }
         />
