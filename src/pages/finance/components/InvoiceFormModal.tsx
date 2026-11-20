@@ -136,7 +136,15 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
         try {
             const res = await fetchNextInvoiceNumber({ date: dateToQuery }).unwrap();
             if (res && res.nextInvoiceNumber) {
-                updateField('invoiceNumber', res.nextInvoiceNumber);
+                // Ensure strictly 3 to 4 digits suffix
+                const rawNum = String(res.nextInvoiceNumber).trim();
+                const cleanNum = rawNum.replace(/^(INV\d{4}-)(\d+)$/i, (_, pfx, digits) => {
+                    const parsed = parseInt(digits, 10);
+                    const clamped = isNaN(parsed) || parsed <= 0 ? 1 : ((parsed - 1) % 9999) + 1;
+                    const padded = clamped <= 999 ? String(clamped).padStart(3, '0') : String(clamped);
+                    return `${pfx}${padded}`;
+                });
+                updateField('invoiceNumber', cleanNum);
             }
         } catch (_) {
             const d = new Date(dateToQuery);
@@ -149,7 +157,13 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
     // Auto-sync next invoice number from DB when modal opens for creation
     useEffect(() => {
         if (visible && !isEditing) {
-            if (!form.invoiceNumber || /^INV-\d{4}/i.test(form.invoiceNumber)) {
+            // Re-sync if empty, legacy pattern, or long suffix (>4 digits)
+            if (
+                !form.invoiceNumber ||
+                /^INV-\d{4}/i.test(form.invoiceNumber) ||
+                /-\d{5,}$/.test(form.invoiceNumber) ||
+                form.invoiceNumber.length > 15
+            ) {
                 syncInvoiceNumberFromDB(form.invoiceDate);
             }
         }

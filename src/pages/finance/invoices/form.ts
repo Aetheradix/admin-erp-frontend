@@ -32,20 +32,52 @@ const todayIso = (): string => new Date().toISOString().slice(0, 10);
  * Scans all existing invoices, parses the current year and highest sequential suffix,
  * and increments by 1 with 3-digit zero-padding (e.g. INV-2026-005).
  */
-export function generateNextInvoiceNumber(existingInvoices: Invoice[]): string {
-  const currentYear = new Date().getFullYear();
+export function generateNextInvoiceNumber(existingInvoices: Invoice[], targetDate?: string): string {
+  let dateObj = new Date();
+  if (targetDate) {
+    const parsed = new Date(targetDate);
+    if (!isNaN(parsed.getTime())) {
+      dateObj = parsed;
+    }
+  }
+
+  const currentYear = dateObj.getFullYear();
+  const currentMonth = dateObj.getMonth() + 1;
+  const yy = String(currentYear).slice(-2);
+  const mm = String(currentMonth).padStart(2, '0');
+  const prefix = `INV${yy}${mm}-`;
+
+  const usedSequences = new Set<number>();
+  const exactRegex = new RegExp(`^INV${yy}${mm}-(\\d{1,4})$`, 'i');
+
   let maxSeq = 0;
 
   existingInvoices.forEach((inv) => {
-    const match = (inv.id || '').match(/(\d+)$/);
-    if (match) {
+    const match = (inv.id || '').match(exactRegex) || (inv.id || '').match(/-(\d{1,4})$/);
+    if (match && match[1]) {
       const num = parseInt(match[1], 10);
-      if (!isNaN(num) && num > maxSeq) maxSeq = num;
+      if (!isNaN(num) && num > 0 && num <= 9999) {
+        usedSequences.add(num);
+        if (num > maxSeq) maxSeq = num;
+      }
     }
   });
 
-  const nextSeq = Math.max(maxSeq + 1, 1);
-  return `INV-${currentYear}-${String(nextSeq).padStart(3, '0')}`;
+  let nextSeq = maxSeq + 1;
+  while (usedSequences.has(nextSeq) && nextSeq <= 9999) {
+    nextSeq++;
+  }
+
+  if (nextSeq > 9999) {
+    nextSeq = 1;
+    while (usedSequences.has(nextSeq) && nextSeq <= 9999) {
+      nextSeq++;
+    }
+    if (nextSeq > 9999) nextSeq = 9999;
+  }
+
+  const seqStr = nextSeq <= 999 ? String(nextSeq).padStart(3, '0') : String(nextSeq);
+  return `${prefix}${seqStr}`;
 }
 
 export function createEmptyForm(existingInvoices: Invoice[]): InvoiceForm {

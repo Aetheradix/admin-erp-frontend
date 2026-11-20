@@ -51,7 +51,8 @@ const initialAuditLogs: InvoiceAuditLog[] = [];
 /**
  * Intelligent invoice number generator:
  * Generates invoice numbers in format: INV<YY><MM>-<unique_number>
- * e.g., INV2610-004 (26 = 2026, 10 = October, 004 = unique invoice number in database)
+ * e.g., INV2610-004 (26 = 2026, 10 = October, 004 = 3 to 4 digit unique number)
+ * Strictly limits the unique suffix to 3 to 4 digits (001 - 9999), never allowing long timestamps.
  */
 export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targetDate?: string): string {
   let dateObj = new Date();
@@ -69,7 +70,8 @@ export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targ
   const prefix = `INV${yy}${mm}-`;
 
   const usedSequences = new Set<number>();
-  const exactRegex = new RegExp(`^INV${yy}${mm}-(\\d+)`, 'i');
+  // Match prefix followed by 1 to 4 digits ONLY (strictly ignores timestamps / numbers > 4 digits)
+  const exactRegex = new RegExp(`^INV${yy}${mm}-(\\d{1,4})$`, 'i');
 
   let maxSeq = 0;
 
@@ -84,19 +86,19 @@ export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targ
     const match = id.match(exactRegex);
     if (match && match[1]) {
       const num = parseInt(match[1], 10);
-      if (!isNaN(num) && num > 0) {
+      if (!isNaN(num) && num > 0 && num <= 9999) {
         usedSequences.add(num);
         if (num > maxSeq) maxSeq = num;
       }
     } else {
-      // In case invoice from the same month had another format with a numeric suffix
+      // In case invoice from the same month had another format with a 1-4 digit numeric suffix
       const invDate = (inv as any).date || (inv as any).invoice_date || (inv as any).invoiceDate;
-      const endMatch = id.match(/-(\d+)$/);
+      const endMatch = id.match(/-(\d{1,4})$/);
       if (invDate && endMatch && endMatch[1]) {
         const d = new Date(invDate);
         if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() + 1 === currentMonth) {
           const num = parseInt(endMatch[1], 10);
-          if (!isNaN(num) && num > 0) {
+          if (!isNaN(num) && num > 0 && num <= 9999) {
             usedSequences.add(num);
             if (num > maxSeq) maxSeq = num;
           }
@@ -106,11 +108,55 @@ export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targ
   });
 
   let nextSeq = maxSeq + 1;
-  while (usedSequences.has(nextSeq)) {
+  while (usedSequences.has(nextSeq) && nextSeq <= 9999) {
     nextSeq++;
   }
 
-  return `${prefix}${String(nextSeq).padStart(3, '0')}`;
+  if (nextSeq > 9999) {
+    nextSeq = 1;
+    while (usedSequences.has(nextSeq) && nextSeq <= 9999) {
+      nextSeq++;
+    }
+    if (nextSeq > 9999) nextSeq = 9999;
+  }
+
+  // Format as 3 to 4 digits only (001 - 9999)
+  const seqStr = nextSeq <= 999 ? String(nextSeq).padStart(3, '0') : String(nextSeq);
+  return `${prefix}${seqStr}`;
+}
+
+/**
+ * Ensures any invoice number string strictly adheres to INV<YY><MM>-<3-to-4 digits>
+ */
+export function sanitizeInvoiceNumber(raw: string, fallbackDate?: string): string {
+  const trimmed = String(raw || '').trim();
+  const d = fallbackDate ? new Date(fallbackDate) : new Date();
+  const yy = String(isNaN(d.getTime()) ? new Date().getFullYear() : d.getFullYear()).slice(-2);
+  const mm = String(isNaN(d.getTime()) ? new Date().getMonth() + 1 : d.getMonth() + 1).padStart(2, '0');
+  const standardPrefix = `INV${yy}${mm}-`;
+
+  if (!trimmed) {
+    return `${standardPrefix}001`;
+  }
+
+  // If already in INV<YY><MM>-<3-to-4 digits> format
+  const exactMatch = trimmed.match(/^(INV\d{4}-)(\d{1,4})$/i);
+  if (exactMatch) {
+    const num = parseInt(exactMatch[2], 10);
+    const padded = num <= 999 ? String(num).padStart(3, '0') : String(num);
+    return `${exactMatch[1].toUpperCase()}${padded}`;
+  }
+
+  // If matches INV<YY><MM>- with longer suffix (e.g. 5+ digits or timestamp), clamp to 3-4 digits
+  const longMatch = trimmed.match(/^(INV\d{4}-)(\d+)$/i);
+  if (longMatch) {
+    const parsed = parseInt(longMatch[2], 10);
+    const clamped = isNaN(parsed) || parsed <= 0 ? 1 : ((parsed - 1) % 9999) + 1;
+    const padded = clamped <= 999 ? String(clamped).padStart(3, '0') : String(clamped);
+    return `${longMatch[1].toUpperCase()}${padded}`;
+  }
+
+  return trimmed;
 }
 
 /**
@@ -656,7 +702,7 @@ export function InvoicesPage() {
       if (res && res.nextInvoiceNumber) {
         setForm((prev) => ({
           ...prev,
-          invoiceNumber: res.nextInvoiceNumber,
+          invoiceNumber: sanitizeInvoiceNumber(res.nextInvoiceNumber, initialForm.invoiceDate),
         }));
       }
     } catch (_) {
