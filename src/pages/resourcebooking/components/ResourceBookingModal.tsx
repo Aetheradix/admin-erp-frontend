@@ -29,6 +29,7 @@ const ResourceBookingModal = ({
   const [startDatetime, setStartDatetime] = useState('');
   const [endDatetime, setEndDatetime] = useState('');
   const [purpose, setPurpose] = useState('');
+  const [notes, setNotes] = useState('');
 
   /*
    * Reset form whenever modal opens.
@@ -41,6 +42,7 @@ const ResourceBookingModal = ({
     setStartDatetime('');
     setEndDatetime('');
     setPurpose('');
+    setNotes('');
   }, [open, resource]);
 
   /*
@@ -133,6 +135,7 @@ const ResourceBookingModal = ({
       start_datetime: startDatetime,
       end_datetime: endDatetime,
       purpose: purpose.trim(),
+      notes: notes.trim() || undefined,
     };
 
     /*
@@ -297,6 +300,23 @@ const ResourceBookingModal = ({
               onChange={(e) => setPurpose(e.target.value)}
               disabled={isSubmitting}
               placeholder="Why do you need this resource?"
+              className="w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            />
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <label htmlFor="notes" className="text-sm font-medium">
+              Notes (Optional)
+            </label>
+
+            <textarea
+              id="notes"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Additional instructions or notes..."
               className="w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
           </div>
