@@ -68,7 +68,15 @@ export const TaskDrawer: React.FC<TaskDrawerProps> = ({
       projectService.saveTask({ id: task.id, status: newStatus });
       // Sync to backend
       const backendStatus =
-        newStatus === 'Done' ? 'Completed' : newStatus === 'In Progress' ? 'On-Going' : 'Pending';
+        newStatus === 'Done' || newStatus === 'Completed'
+          ? 'Completed'
+          : newStatus === 'In Review' || newStatus === 'QA'
+          ? 'In Review'
+          : newStatus === 'Blocked'
+          ? 'Blocked'
+          : newStatus === 'In Progress'
+          ? 'In Progress'
+          : 'Pending';
       await updateTaskMutation({ id: task.id, data: { task_status: backendStatus } }).unwrap();
     } catch {
       // offline fallback
@@ -186,6 +194,7 @@ export const TaskDrawer: React.FC<TaskDrawerProps> = ({
                 { value: 'To Do', label: 'To Do' },
                 { value: 'In Progress', label: 'In Progress' },
                 { value: 'In Review', label: 'In Review' },
+                { value: 'Blocked', label: 'Blocked' },
                 { value: 'Done', label: 'Done' },
               ]}
             />

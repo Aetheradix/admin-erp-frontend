@@ -12,7 +12,11 @@ const STATUS_CONFIG: Record<string, { color: string; label: string; bg?: string 
   planning:    { color: 'gold',      label: 'Planning' },
   active:      { color: 'success',   label: 'Active' },
   on_hold:     { color: 'warning',   label: 'On Hold' },
-  completed:   { color: 'processing',label: 'Completed' },
+  'on hold':   { color: 'warning',   label: 'On Hold' },
+  completed:   { color: 'success',   label: 'Completed' },
+  at_risk:     { color: 'warning',   label: 'At Risk' },
+  overdue:     { color: 'error',     label: 'Overdue' },
+  cancelled:   { color: 'default',   label: 'Cancelled' },
   archived:    { color: 'default',   label: 'Archived' },
 
   // Task statuses

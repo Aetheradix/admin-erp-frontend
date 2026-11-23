@@ -42,13 +42,17 @@ export function ListTab({
   const statuses: TaskStatus[] = projectService.getTaskStatuses(project.id);
 
   const handleStatusChange = async (task: ProjectTask, newStatus: string) => {
-    if (!projectService.canTransition(task.status, newStatus)) {
-      message.warning(`Transition from "${task.status}" to "${newStatus}" is blocked by workflow rules.`);
-      return;
-    }
     try {
       const backendStatus =
-        newStatus === 'Done' ? 'Completed' : newStatus === 'In Progress' ? 'On-Going' : 'Pending';
+        newStatus === 'Done' || newStatus === 'Completed'
+          ? 'Completed'
+          : newStatus === 'In Review' || newStatus === 'QA'
+          ? 'In Review'
+          : newStatus === 'Blocked'
+          ? 'Blocked'
+          : newStatus === 'In Progress'
+          ? 'In Progress'
+          : 'Pending';
       await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
     } catch {
       // offline fallback

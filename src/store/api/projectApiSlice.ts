@@ -56,9 +56,11 @@ export interface BackendProject {
   created_by?: number;
   created_by_name?: string;
   created_at?: string;
+  updated_at?: string;
   member_count?: number;
   task_count?: number;
   completed_task_count?: number;
+  progress?: number;
 }
 
 export interface BackendTask {

@@ -286,12 +286,12 @@ const SEED_SPRINTS: Sprint[] = [
 ];
 
 const SEED_TASK_STATUSES: TaskStatus[] = [
-  { id: 1, name: 'To Do', slug: 'to_do', category: 'initial', color: '#64748b', sortOrder: 1, isDefault: true, isActive: true, allowedTransitionIds: [2, 5, 6] },
-  { id: 2, name: 'In Progress', slug: 'in_progress', category: 'active', color: '#3b82f6', sortOrder: 2, isDefault: false, isActive: true, allowedTransitionIds: [1, 3, 5, 6] },
-  { id: 3, name: 'In Review', slug: 'in_review', category: 'active', color: '#8b5cf6', sortOrder: 3, isDefault: false, isActive: true, requiresApproval: true, allowedTransitionIds: [2, 4, 6] },
-  { id: 4, name: 'Done', slug: 'done', category: 'completed', color: '#10b981', sortOrder: 4, isDefault: false, isActive: true, allowedTransitionIds: [2] },
-  { id: 5, name: 'Blocked', slug: 'blocked', category: 'active', color: '#f59e0b', sortOrder: 5, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 6] },
-  { id: 6, name: 'Cancelled', slug: 'cancelled', category: 'cancelled', color: '#ef4444', sortOrder: 6, isDefault: false, isActive: true, allowedTransitionIds: [1] },
+  { id: 1, name: 'To Do', slug: 'to_do', category: 'initial', color: '#64748b', sortOrder: 1, isDefault: true, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
+  { id: 2, name: 'In Progress', slug: 'in_progress', category: 'active', color: '#3b82f6', sortOrder: 2, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
+  { id: 3, name: 'In Review', slug: 'in_review', category: 'active', color: '#8b5cf6', sortOrder: 3, isDefault: false, isActive: true, requiresApproval: false, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
+  { id: 4, name: 'Done', slug: 'done', category: 'completed', color: '#10b981', sortOrder: 4, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
+  { id: 5, name: 'Blocked', slug: 'blocked', category: 'active', color: '#f59e0b', sortOrder: 5, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
+  { id: 6, name: 'Cancelled', slug: 'cancelled', category: 'cancelled', color: '#ef4444', sortOrder: 6, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
 ];
 
 const SEED_PHASES: ProjectPhase[] = [
@@ -810,14 +810,9 @@ class ProjectService {
     return all.filter((s) => s.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
-  public canTransition(fromStatusName: string, toStatusName: string): boolean {
-    if (fromStatusName === toStatusName) return true;
-    const all = this.getTaskStatuses();
-    const fromStatus = all.find((s) => s.name === fromStatusName);
-    const toStatus = all.find((s) => s.name === toStatusName);
-    if (!fromStatus || !toStatus) return true; // allow if custom/unmatched
-    if (!fromStatus.allowedTransitionIds || fromStatus.allowedTransitionIds.length === 0) return true;
-    return fromStatus.allowedTransitionIds.includes(toStatus.id);
+  public canTransition(_fromStatusName: string, _toStatusName: string): boolean {
+    // Allow flexible status transitions across all workflow columns
+    return true;
   }
 
   // ─── Dynamic Phases ───

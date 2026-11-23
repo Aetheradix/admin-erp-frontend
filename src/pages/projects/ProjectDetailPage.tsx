@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   FolderKanban, MessageSquare, Play, FileText, Clock,
@@ -62,9 +62,13 @@ function mapBackendTaskToProjectTask(bt: BackendTask, _projectKey: string = 'PRJ
   const raw = (bt.task_status || '').trim();
   if (raw === 'Completed' || raw === 'Done') mappedStatus = 'Done';
   else if (raw === 'On-Going' || raw === 'In Progress' || raw === 'In-Progress') mappedStatus = 'In Progress';
-  else if (raw === 'In Review' || raw === 'In-Review') mappedStatus = 'In Review';
+  else if (raw === 'In Review' || raw === 'In-Review' || raw === 'QA' || raw === 'In QA' || raw === 'Testing') mappedStatus = 'In Review';
   else if (raw === 'Blocked') mappedStatus = 'Blocked';
+  else if (raw === 'Cancelled') mappedStatus = 'Cancelled';
   else mappedStatus = 'To Do';
+
+  const assigneeId = bt.allocated_to || 1;
+  const assigneeName = bt.allocated_to_name || 'Unassigned';
 
   return {
     id: bt.task_id,
@@ -75,13 +79,17 @@ function mapBackendTaskToProjectTask(bt: BackendTask, _projectKey: string = 'PRJ
     type: (bt.task_type as ProjectTask['type']) || 'task',
     priority: (bt.priority as ProjectTask['priority']) || 'Medium',
     status: mappedStatus,
+    assigneeIds: [assigneeId],
+    assigneeNames: [assigneeName],
+    durationDays: bt.duration || 1,
+    estimatePoints: 1,
+    estimateMinutes: 60,
+    remainingMinutes: 60,
+    billable: true,
     startDate: bt.start_date ? String(bt.start_date).slice(0, 10) : '',
     dueDate: bt.due_date ? String(bt.due_date).slice(0, 10) : '',
-    durationDays: bt.duration || 1,
     assignedToId: bt.allocated_to,
-    assignedToName: bt.allocated_to_name || 'Unassigned',
-    assignedToImage: bt.allocated_to_image,
-    assigneeNames: bt.allocated_to_name ? [bt.allocated_to_name] : [],
+    assignedToName: assigneeName,
     assignedById: bt.allocated_by,
     assignedByName: bt.allocated_by_name,
     reportingManagerId: bt.reporting_manager_id,
@@ -90,8 +98,6 @@ function mapBackendTaskToProjectTask(bt: BackendTask, _projectKey: string = 'PRJ
     deptHeadName: bt.dept_head_name,
     departmentId: bt.department_id,
     departmentName: bt.department_name,
-    createdAt: bt.created_at || '',
-    updatedAt: bt.created_at || '',
   };
 }
 

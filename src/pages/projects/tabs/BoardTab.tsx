@@ -57,13 +57,17 @@ export function BoardTab({
   });
 
   const handleStatusChange = async (task: ProjectTask, newStatus: string) => {
-    if (!projectService.canTransition(task.status, newStatus)) {
-      message.warning(`Transition from "${task.status}" to "${newStatus}" is blocked by workflow rules.`);
-      return;
-    }
     try {
       const backendStatus =
-        newStatus === 'Done' ? 'Completed' : newStatus === 'In Progress' ? 'On-Going' : 'Pending';
+        newStatus === 'Done' || newStatus === 'Completed'
+          ? 'Completed'
+          : newStatus === 'In Review' || newStatus === 'QA'
+          ? 'In Review'
+          : newStatus === 'Blocked'
+          ? 'Blocked'
+          : newStatus === 'In Progress'
+          ? 'In Progress'
+          : 'Pending';
       await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
     } catch {
       // offline fallback
@@ -77,7 +81,15 @@ export function BoardTab({
     if (!quickTitle.trim()) return;
     try {
       const backendStatus =
-        statusName === 'Done' ? 'Completed' : statusName === 'In Progress' ? 'On-Going' : 'Pending';
+        statusName === 'Done' || statusName === 'Completed'
+          ? 'Completed'
+          : statusName === 'In Review' || statusName === 'QA'
+          ? 'In Review'
+          : statusName === 'Blocked'
+          ? 'Blocked'
+          : statusName === 'In Progress'
+          ? 'In Progress'
+          : 'Pending';
       await createTaskReal({
         task_title: quickTitle.trim(),
         task_description: quickTitle.trim(),
