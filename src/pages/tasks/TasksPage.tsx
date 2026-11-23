@@ -1,14 +1,23 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock, FolderKanban, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Button } from '@/components/ui/primitives/Button';
-import { useGetProjectsQuery } from '@/store/api/projectApiSlice';
+import {
+  useGetProjectsQuery,
+  useGetProjectTasksQuery,
+  useCreateTaskRealMutation,
+  useUpdateTaskRealMutation,
+  type BackendTask,
+} from '@/store/api/projectApiSlice';
 import { useGetUsersQuery } from '@/store/api/userSlice';
+import { useAuth } from '@/hooks/useAuth';
+import { SmartTaskCreateModal } from '@/pages/projects/modals/SmartTaskCreateModal';
 import TextArea from 'antd/es/input/TextArea';
 import { message } from 'antd';
 
@@ -198,13 +207,44 @@ const emptyForm = {
 };
 
 export function TasksPage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTab, setActiveTab] = useState('All');
   const [showForm, setShowForm] = useState(false);
+  const [showSmartModal, setShowSmartModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const TABS = ['All', 'To Do', 'In Progress', 'Done'];
   const { data: usersData = [] } = useGetUsersQuery();
   const { data: projectsData = [] } = useGetProjectsQuery();
+  const { data: realTasksData = [], refetch: refetchTasks } = useGetProjectTasksQuery();
+  const [createTaskMutation] = useCreateTaskRealMutation();
+  const [updateTaskMutation] = useUpdateTaskRealMutation();
+
+  useEffect(() => {
+    if (realTasksData && realTasksData.length > 0) {
+      const mapped = realTasksData.map((bt: BackendTask): Task => {
+        let mappedStatus: Task['status'] = 'Pending';
+        if (bt.task_status === 'Completed' || bt.task_status === 'Done') mappedStatus = 'Done';
+        else if (bt.task_status === 'In Progress' || bt.task_status === 'On-Going') mappedStatus = 'In Progress';
+        else mappedStatus = 'To Do';
+
+        return {
+          id: bt.task_id,
+          title: bt.task_title,
+          description: bt.task_description || '',
+          assignee: bt.allocated_by || 1,
+          priority: (bt.priority as Task['priority']) || 'Medium',
+          dueDate: bt.due_date ? String(bt.due_date).split('T')[0] : '',
+          status: mappedStatus,
+          project: bt.project_id || 1,
+          duration: bt.duration ? `${bt.duration} Days` : '3 Days',
+          assigneeTo: bt.allocated_to || null,
+        };
+      });
+      setTasks(mapped);
+    }
+  }, [realTasksData]);
 
   const users = useMemo(() => {
     if (!usersData?.length) return [];
@@ -233,8 +273,15 @@ export function TasksPage() {
   const [viewMode, setViewMode] = useState<'kanban' | 'grid'>('kanban');
   const filtered = activeTab === 'All' ? tasks : tasks.filter((t) => t.status === activeTab);
 
-  const handleUpdateStatus = (taskId: number, newStatus: Task['status']) => {
+  const handleUpdateStatus = async (taskId: number, newStatus: Task['status']) => {
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
+    try {
+      const backendStatus =
+        newStatus === 'Done' ? 'Completed' : newStatus === 'In Progress' ? 'On-Going' : 'Pending';
+      await updateTaskMutation({ id: taskId, data: { task_status: backendStatus } }).unwrap();
+    } catch {
+      // offline / local fallback
+    }
     message.success(`Task moved to "${newStatus}"`);
   };
 
@@ -321,6 +368,27 @@ export function TasksPage() {
       assigneeTo: form.assigneeTo,
     };
     setTasks([newTask, ...tasks]);
+
+    // Persist to backend database
+    try {
+      const backendStatus =
+        form.status === 'Done' ? 'Completed' : form.status === 'In Progress' ? 'On-Going' : 'Pending';
+      await createTaskMutation({
+        task_title: form.title,
+        task_description: finalDescription,
+        allocated_to: form.assigneeTo || form.assignee || undefined,
+        allocated_by: user?.id ? Number(user.id) : 1,
+        task_status: backendStatus,
+        priority: form.priority,
+        due_date: form.dueDate || undefined,
+        project_id: form.project || undefined,
+        duration: form.duration ? parseInt(form.duration) || 3 : 3,
+      }).unwrap();
+      refetchTasks();
+    } catch (err) {
+      console.warn('Real backend task save skipped/fallback:', err);
+    }
+
     setForm(emptyForm);
     setSyncToJira(false);
     setIsSyncing(false);
@@ -361,6 +429,24 @@ export function TasksPage() {
         title="Tasks"
         description="Manage and track tasks across all projects."
         breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'Tasks' }]}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowSmartModal(true)}
+              className="px-3.5 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-xs">
+              <Sparkles size={14} className="text-primary" />
+              <span>Smart Assign Task</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/projects')}
+              className="px-3.5 py-2 rounded-xl bg-surface-subtle hover:bg-surface-elevated border border-border-subtle text-foreground font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-xs">
+              <FolderKanban size={14} className="text-primary" />
+              <span>Projects & Timelines</span>
+            </button>
+          </div>
+        }
         primaryAction={{ label: 'New Task', onClick: () => setShowForm(true), icon: 'pi pi-plus' }}
       />
 
@@ -743,6 +829,19 @@ export function TasksPage() {
           </div>
         </div>
       </Dialog>
+
+      {/* Smart Department-Driven Task Assignment Modal */}
+      <SmartTaskCreateModal
+        visible={showSmartModal}
+        projectId={projects.length > 0 ? projects[0].value : 1}
+        projectKey="TASK"
+        onClose={() => setShowSmartModal(false)}
+        onSuccess={() => {
+          setShowSmartModal(false);
+          refetchTasks();
+          message.success('Smart task created and routed through department hierarchy!');
+        }}
+      />
     </div>
   );
 }
