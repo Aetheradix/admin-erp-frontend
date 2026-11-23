@@ -15,8 +15,9 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { projectService } from '@/services/projectService';
-import { TaskDetailModal } from '../modals/TaskDetailModal';
 import { SmartTaskCreateModal } from '../modals/SmartTaskCreateModal';
+import { TaskDrawer } from '@/components/projects/TaskDrawer';
+import { useUpdateTaskRealMutation } from '@/store/api/projectApiSlice';
 
 interface ListTabProps {
   project: Project;
@@ -36,13 +37,21 @@ export function ListTab({
   const [groupBy, setGroupBy] = useState<'phase' | 'milestone'>('phase');
   const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
   const [showSmartCreate, setShowSmartCreate] = useState(false);
+  const [updateTaskReal] = useUpdateTaskRealMutation();
 
   const statuses: TaskStatus[] = projectService.getTaskStatuses(project.id);
 
-  const handleStatusChange = (task: ProjectTask, newStatus: string) => {
+  const handleStatusChange = async (task: ProjectTask, newStatus: string) => {
     if (!projectService.canTransition(task.status, newStatus)) {
       message.warning(`Transition from "${task.status}" to "${newStatus}" is blocked by workflow rules.`);
       return;
+    }
+    try {
+      const backendStatus =
+        newStatus === 'Done' ? 'Completed' : newStatus === 'In Progress' ? 'On-Going' : 'Pending';
+      await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
+    } catch {
+      // offline fallback
     }
     projectService.saveTask({ id: task.id, status: newStatus });
     onTasksUpdated();
@@ -290,25 +299,21 @@ export function ListTab({
         );
       })}
 
-      {/* Task Detail Modal */}
-      {selectedTask && (
-        <TaskDetailModal
-          task={selectedTask}
-          project={project}
-          phases={phases}
-          milestones={milestones}
-          statuses={statuses}
-          isOpen={true}
-          onClose={() => setSelectedTask(null)}
-          onTaskUpdated={() => {
-            onTasksUpdated();
+      {/* Right-Side Task Detail Drawer */}
+      <TaskDrawer
+        task={selectedTask}
+        open={Boolean(selectedTask)}
+        onClose={() => setSelectedTask(null)}
+        onTaskUpdated={() => {
+          onTasksUpdated();
+          if (selectedTask) {
             const fresh = projectService
               .getProjectTasks(project.id)
               .find((t) => t.id === selectedTask.id);
             if (fresh) setSelectedTask(fresh);
-          }}
-        />
-      )}
+          }
+        }}
+      />
 
       {/* Smart Task Assignment Modal */}
       <SmartTaskCreateModal

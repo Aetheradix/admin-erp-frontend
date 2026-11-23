@@ -17,6 +17,7 @@ import { Card, Row, Col, Progress, Tag, Button, Space, Modal, Select, Input, mes
 import { departmentService } from '@/services/departmentService';
 import { projectService } from '@/services/projectService';
 import { useAuth } from '@/hooks/useAuth';
+import { useUpdateProjectManagerMutation, useTransferOwnershipMutation } from '@/store/api/projectApiSlice';
 
 interface OverviewTabProps {
   project: Project;
@@ -39,6 +40,10 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
   const [newPMId, setNewPMId] = useState<number | undefined>();
   const [updatingPM, setUpdatingPM] = useState(false);
 
+  // RTK Query mutations
+  const [updatePMMutation] = useUpdateProjectManagerMutation();
+  const [transferOwnershipMutation] = useTransferOwnershipMutation();
+
   const completedTasks = tasks.filter((t) => t.status === 'Done').length;
   const inProgressTasks = tasks.filter((t) => t.status === 'In Progress' || t.status === 'In Review').length;
   const progressPct = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
@@ -52,7 +57,7 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
 
   const eligibleEmployees = departmentService.getAllEmployees();
 
-  const handleUpdatePM = () => {
+  const handleUpdatePM = async () => {
     if (!newPMId) {
       message.error('Please select a project manager from the database list.');
       return;
@@ -62,19 +67,21 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
 
     setUpdatingPM(true);
     try {
-      projectService.updateProjectManager(project.id, targetEmp.userId, targetEmp.userName);
+      // Try real API
+      await updatePMMutation({ projectId: project.id, manager_id: targetEmp.userId }).unwrap();
       message.success(`Project Manager updated to ${targetEmp.userName} successfully!`);
-      setShowPMModal(false);
-      setNewPMId(undefined);
-      if (onProjectUpdated) onProjectUpdated();
     } catch {
-      message.error('Failed to update Project Manager.');
-    } finally {
-      setUpdatingPM(false);
+      // Fallback to localStorage service
+      projectService.updateProjectManager(project.id, targetEmp.userId, targetEmp.userName);
+      message.success(`Project Manager updated to ${targetEmp.userName} (locally).`);
     }
+    setShowPMModal(false);
+    setNewPMId(undefined);
+    if (onProjectUpdated) onProjectUpdated();
+    setUpdatingPM(false);
   };
 
-  const handleTransferOwnership = () => {
+  const handleTransferOwnership = async () => {
     if (!newOwnerId || !transferReason.trim()) {
       message.error('Please select a new owner and state the business reason.');
       return;
@@ -84,6 +91,13 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
 
     setTransferring(true);
     try {
+      await transferOwnershipMutation({
+        projectId: project.id,
+        new_owner_id: targetEmp.userId,
+        reason: transferReason.trim(),
+      }).unwrap();
+      message.success(`Project ownership transferred to ${targetEmp.userName}!`);
+    } catch {
       projectService.transferProjectOwnership(
         project.id,
         targetEmp.userId,
@@ -92,16 +106,13 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
         user?.username || 'Authenticated Admin',
         transferReason.trim()
       );
-      message.success(`Project ownership successfully transferred to ${targetEmp.userName}!`);
-      setShowTransferModal(false);
-      setTransferReason('');
-      setNewOwnerId(undefined);
-      if (onProjectUpdated) onProjectUpdated();
-    } catch {
-      message.error('Failed to transfer project ownership.');
-    } finally {
-      setTransferring(false);
+      message.success(`Ownership transferred to ${targetEmp.userName} (locally).`);
     }
+    setShowTransferModal(false);
+    setTransferReason('');
+    setNewOwnerId(undefined);
+    if (onProjectUpdated) onProjectUpdated();
+    setTransferring(false);
   };
 
   return (

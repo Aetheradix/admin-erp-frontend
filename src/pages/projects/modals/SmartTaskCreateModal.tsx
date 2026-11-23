@@ -29,6 +29,7 @@ import { departmentService } from '@/services/departmentService';
 import { projectService } from '@/services/projectService';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
+import { useCreateTaskRealMutation } from '@/store/api/projectApiSlice';
 import { EmployeeWorkloadCard } from '@/components/projects/EmployeeWorkloadCard';
 import type { Department, DepartmentMember } from '@/types/department';
 import type { ProjectPhase } from '@/types/phase';
@@ -54,6 +55,7 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { data: hierarchyData } = useGetOrganizationHierarchyQuery();
+  const [createTaskReal, { isLoading: isCreatingTask }] = useCreateTaskRealMutation();
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
 
@@ -113,14 +115,39 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
       const currentDept = departments.find((d) => d.id === selectedDeptId);
       const selPhase = phases.find((p) => p.id === values.phaseId);
 
+      const startDateStr = values.dateRange?.[0] ? dayjs(values.dateRange[0]).format('YYYY-MM-DD') : undefined;
+      const dueDateStr = values.dateRange?.[1] ? dayjs(values.dateRange[1]).format('YYYY-MM-DD') : undefined;
+
+      // 1. Create in real database backend
+      try {
+        await createTaskReal({
+          task_title: values.title,
+          task_description: values.description || values.title,
+          task_type: values.type || 'task',
+          priority: values.priority || 'Medium',
+          task_status: 'Pending',
+          start_date: startDateStr,
+          due_date: dueDateStr,
+          project_id: projectId,
+          allocated_to: selectedAssignee?.userId || (user?.id as number) || 1,
+          allocated_by: (user?.id as number) || 1,
+          department_id: selectedDeptId || selectedAssignee?.departmentId,
+          reporting_manager_id: selectedAssignee?.reportingManagerId,
+          dept_head_id: deptHead?.userId,
+        }).unwrap();
+      } catch (apiErr) {
+        console.warn('Backend task create notice (persisting locally):', apiErr);
+      }
+
+      // 2. Also keep localStorage copy in sync
       projectService.createTaskWithOwnership({
         projectId,
         title: values.title,
         description: values.description,
         type: values.type || 'task',
         priority: values.priority || 'Medium',
-        startDate: values.dateRange?.[0] ? dayjs(values.dateRange[0]).format('YYYY-MM-DD') : undefined,
-        dueDate: values.dateRange?.[1] ? dayjs(values.dateRange[1]).format('YYYY-MM-DD') : undefined,
+        startDate: startDateStr,
+        dueDate: dueDateStr,
         phaseId: values.phaseId,
         phaseName: selPhase?.name,
         // Ownership fields
@@ -215,7 +242,7 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
               </Button>
             )}
             {currentStep === 3 && (
-              <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleSubmit}>
+              <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleSubmit} loading={isCreatingTask}>
                 Save & Assign Task
               </Button>
             )}

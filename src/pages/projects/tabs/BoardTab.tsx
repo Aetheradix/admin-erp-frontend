@@ -16,8 +16,9 @@ import {
 } from 'antd';
 import { projectService } from '@/services/projectService';
 import { StatusSettingsModal } from '../modals/StatusSettingsModal';
-import { TaskDetailModal } from '../modals/TaskDetailModal';
 import { SmartTaskCreateModal } from '../modals/SmartTaskCreateModal';
+import { TaskDrawer } from '@/components/projects/TaskDrawer';
+import { useCreateTaskRealMutation, useUpdateTaskRealMutation } from '@/store/api/projectApiSlice';
 
 interface BoardTabProps {
   project: Project;
@@ -31,7 +32,7 @@ export function BoardTab({
   project,
   tasks,
   phases = [],
-  milestones = [],
+  milestones: _milestones = [],
   onTasksUpdated,
 }: BoardTabProps) {
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -39,6 +40,9 @@ export function BoardTab({
   const [showStatusSettings, setShowStatusSettings] = useState(false);
   const [showSmartCreate, setShowSmartCreate] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
+
+  const [createTaskReal] = useCreateTaskRealMutation();
+  const [updateTaskReal] = useUpdateTaskRealMutation();
 
   // Quick Add Task state
   const [showQuickAdd, setShowQuickAdd] = useState<string | null>(null);
@@ -52,18 +56,38 @@ export function BoardTab({
     return true;
   });
 
-  const handleStatusChange = (task: ProjectTask, newStatus: string) => {
+  const handleStatusChange = async (task: ProjectTask, newStatus: string) => {
     if (!projectService.canTransition(task.status, newStatus)) {
       message.warning(`Transition from "${task.status}" to "${newStatus}" is blocked by workflow rules.`);
       return;
+    }
+    try {
+      const backendStatus =
+        newStatus === 'Done' ? 'Completed' : newStatus === 'In Progress' ? 'On-Going' : 'Pending';
+      await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
+    } catch {
+      // offline fallback
     }
     projectService.saveTask({ id: task.id, status: newStatus });
     onTasksUpdated();
     message.success(`Task moved to ${newStatus}`);
   };
 
-  const handleQuickAdd = (statusName: string) => {
+  const handleQuickAdd = async (statusName: string) => {
     if (!quickTitle.trim()) return;
+    try {
+      const backendStatus =
+        statusName === 'Done' ? 'Completed' : statusName === 'In Progress' ? 'On-Going' : 'Pending';
+      await createTaskReal({
+        task_title: quickTitle.trim(),
+        task_description: quickTitle.trim(),
+        project_id: project.id,
+        task_status: backendStatus,
+        priority: 'Medium',
+      }).unwrap();
+    } catch {
+      // offline fallback
+    }
     projectService.saveTask({
       projectId: project.id,
       title: quickTitle.trim(),
@@ -307,25 +331,21 @@ export function BoardTab({
         onSuccess={onTasksUpdated}
       />
 
-      {/* Task Detail & Edit Modal */}
-      {selectedTask && (
-        <TaskDetailModal
-          task={selectedTask}
-          project={project}
-          phases={phases}
-          milestones={milestones}
-          statuses={statuses}
-          isOpen={true}
-          onClose={() => setSelectedTask(null)}
-          onTaskUpdated={() => {
-            onTasksUpdated();
+      {/* Right-Side Task Details Drawer */}
+      <TaskDrawer
+        task={selectedTask}
+        open={Boolean(selectedTask)}
+        onClose={() => setSelectedTask(null)}
+        onTaskUpdated={() => {
+          onTasksUpdated();
+          if (selectedTask) {
             const fresh = projectService
               .getProjectTasks(project.id)
               .find((t) => t.id === selectedTask.id);
             if (fresh) setSelectedTask(fresh);
-          }}
-        />
-      )}
+          }
+        }}
+      />
     </div>
   );
 }

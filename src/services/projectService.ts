@@ -618,6 +618,13 @@ class ProjectService {
     return updated;
   }
 
+  public deleteTask(taskId: number): boolean {
+    const all = this.getStorage<ProjectTask[]>(STORAGE_KEYS.TASKS, SEED_TASKS);
+    const filtered = all.filter((t) => t.id !== taskId);
+    this.setStorage(STORAGE_KEYS.TASKS, filtered);
+    return true;
+  }
+
   // ─── Dependencies ───
   public getDependencies(projectId: number): Dependency[] {
     this.initSeedData();
