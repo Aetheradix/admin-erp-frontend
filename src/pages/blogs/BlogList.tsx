@@ -144,15 +144,12 @@ function MagazineCard({ story, navigate, handleDelete }: MagazineCardProps) {
   );
 }
 
-const GLOBAL_FILTER_FIELDS = ['title', 'category', 'author.name', 'status'];
-
 export const BlogList = () => {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const {
     searchValue,
     activeCategory,
     statusFilter,
-    filters,
     handleSearchChange,
     handleCategoryChange,
     handleStatusChange,
@@ -369,8 +366,6 @@ export const BlogList = () => {
           <div className="p-2 md:p-4">
             <DataTable
               value={filteredBlogs}
-              filters={filters}
-              globalFilterFields={GLOBAL_FILTER_FIELDS}
               paginator
               rows={10}
               className="blog-datatable border-none"

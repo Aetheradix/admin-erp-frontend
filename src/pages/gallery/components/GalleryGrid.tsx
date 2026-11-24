@@ -4,6 +4,7 @@ import type { GalleryItem } from '../hooks/mockGallery';
 import { GalleryCard } from './GalleryCard';
 import { X, ChevronLeft, ChevronRight, Share2, Info, Download } from 'lucide-react';
 import { resolveImageUrl, downloadImageFile } from '@/utils/imageUrl';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 
 interface GalleryGridProps {
   items: GalleryItem[];
@@ -16,7 +17,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onView = (id: string) => {
-    const index = items.findIndex((item) => item.id === id);
+    const index = items.findIndex((item) => String(item.id) === String(id));
     setActiveIndex(index >= 0 ? index : 0);
     setIsOpen(true);
   };
@@ -41,6 +42,7 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
         footer={null}
         width="100vw"
         centered
+        destroyOnClose
         className="gallery-full-modal"
         classNames={{
           mask: 'backdrop-blur-3xl !bg-black/95',
@@ -82,7 +84,29 @@ export const GalleryGrid = ({ items, onEdit, onDelete }: GalleryGridProps) => {
                 aria-label="Download image">
                 <Download size={18} />
               </button>
-              <button className="w-12 h-12 rounded-2xl bg-white/5 text-white hover:bg-white/10 flex items-center justify-center border border-white/10 transition-all backdrop-blur-md">
+              <button
+                onClick={async () => {
+                  const curr = items[activeIndex];
+                  if (!curr) return;
+                  const url = resolveImageUrl(curr.image_url);
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title: curr.title, url });
+                    } catch {
+                      // user cancelled
+                    }
+                  } else if (navigator.clipboard) {
+                    await navigator.clipboard.writeText(url);
+                    showToast({
+                      severity: 'info',
+                      summary: 'Link Copied',
+                      detail: 'Asset URL copied to clipboard.',
+                    });
+                  }
+                }}
+                className="w-12 h-12 rounded-2xl bg-white/5 text-white hover:bg-white/10 flex items-center justify-center border border-white/10 transition-all backdrop-blur-md cursor-pointer"
+                title="Share Asset"
+                aria-label="Share Asset">
                 <Share2 size={18} />
               </button>
               <button

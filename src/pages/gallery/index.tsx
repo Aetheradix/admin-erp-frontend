@@ -1,11 +1,12 @@
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import {
   useUploadGalleryItemMutation,
+  useUpdateGalleryItemMutation,
   useDeleteGalleryItemMutation,
   useGetGalleryQuery,
 } from '@/store/api/gallerySlice';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { GalleryGrid } from './components/GalleryGrid';
 import type { GalleryItem } from '@/types/models';
 import { motion } from 'framer-motion';
@@ -18,12 +19,36 @@ import { GalleryForm } from './components/GalleryForm';
 import { Search, Image, Cloud, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/primitives/Input';
 
-const GalleryStats = ({ total }: { total: number }) => (
+const GalleryStats = ({ total, categoriesCount }: { total: number; categoriesCount: number }) => (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     {[
-      { label: 'Total Assets', value: total, icon: Image, color: 'primary' },
-      { label: 'Storage Used', value: '4.2 GB', icon: Cloud, color: 'info' },
-      { label: 'Processing', value: '0 Active', icon: Zap, color: 'success' },
+      {
+        label: 'Total Assets',
+        value: total,
+        icon: Image,
+        color: 'text-primary',
+        bg: 'bg-primary/10',
+        border: 'border-primary/20',
+        hoverBg: 'group-hover:bg-primary',
+      },
+      {
+        label: 'Active Categories',
+        value: categoriesCount,
+        icon: Cloud,
+        color: 'text-sky-500',
+        bg: 'bg-sky-500/10',
+        border: 'border-sky-500/20',
+        hoverBg: 'group-hover:bg-sky-500',
+      },
+      {
+        label: 'Repository Health',
+        value: 'Operational',
+        icon: Zap,
+        color: 'text-emerald-500',
+        bg: 'bg-emerald-500/10',
+        border: 'border-emerald-500/20',
+        hoverBg: 'group-hover:bg-emerald-500',
+      },
     ].map((stat, idx) => (
       <motion.div
         key={stat.label}
@@ -32,10 +57,10 @@ const GalleryStats = ({ total }: { total: number }) => (
         transition={{ duration: 0.5, delay: idx * 0.1 }}
         className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-6 border border-white shadow-soft flex items-center gap-6 group hover:shadow-lg transition-all">
         <div
-          className={`w-12 h-12 rounded-2xl bg-${stat.color}/10 flex items-center justify-center border border-${stat.color}/20 group-hover:bg-${stat.color} transition-colors duration-500`}>
+          className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center border ${stat.border} ${stat.hoverBg} transition-colors duration-500`}>
           <stat.icon
             size={20}
-            className={`text-${stat.color} group-hover:text-white transition-colors`}
+            className={`${stat.color} group-hover:text-white transition-colors`}
           />
         </div>
         <div>
@@ -52,6 +77,7 @@ const GalleryStats = ({ total }: { total: number }) => (
 const Gallery = () => {
   const { data: items = [], isLoading } = useGetGalleryQuery();
   const [uploadGalleryItem] = useUploadGalleryItemMutation();
+  const [updateGalleryItem] = useUpdateGalleryItemMutation();
   const [deleteGalleryItem] = useDeleteGalleryItemMutation();
 
   const [activeCategory, setActiveCategory] = useState('All');
@@ -59,7 +85,13 @@ const Gallery = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
 
-  const categories = ['All', 'Events', 'Workplace', 'Team', 'Product'];
+  const categories = useMemo(() => {
+    const defaults = ['All', 'Events', 'Workplace', 'Team', 'Product'];
+    const others = items
+      .map((i: GalleryItem) => i.category)
+      .filter((c): c is string => Boolean(c && !defaults.includes(c)));
+    return [...defaults, ...Array.from(new Set(others))];
+  }, [items]);
 
   const filteredItems = items.filter((item: GalleryItem) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -111,7 +143,13 @@ const Gallery = () => {
   const handleSubmit = async (data: Partial<GalleryItem>) => {
     try {
       if (editingItem) {
-        console.warn('Update gallery item not supported yet on backend');
+        await updateGalleryItem({ id: editingItem.id, ...data }).unwrap();
+        showToast({
+          severity: 'success',
+          summary: 'Updated',
+          detail: 'Asset updated successfully!',
+          life: 3000,
+        });
       } else {
         await uploadGalleryItem(data).unwrap();
         showToast({
@@ -122,13 +160,14 @@ const Gallery = () => {
         });
       }
       setShowForm(false);
+      setEditingItem(null);
     } catch (err: unknown) {
       const apiError = err as { data?: { message?: string } };
       console.error('Failed to save asset:', err);
       showToast({
         severity: 'error',
         summary: 'Error',
-        detail: apiError.data?.message || 'Failed to upload asset',
+        detail: apiError.data?.message || 'Failed to save asset',
         life: 3000,
       });
     }
@@ -141,6 +180,10 @@ const Gallery = () => {
       </div>
     );
   }
+
+  const uniqueCategoriesCount = new Set(
+    items.map((i) => i.category).filter(Boolean)
+  ).size;
 
   return (
     <div className="flex flex-col gap-8 pb-12">
@@ -156,7 +199,7 @@ const Gallery = () => {
         }}
       />
 
-      <GalleryStats total={items.length} />
+      <GalleryStats total={items.length} categoriesCount={uniqueCategoriesCount} />
 
       {/* Search & Filter Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/40 backdrop-blur-xl p-4 rounded-[40px] border border-white shadow-soft">
@@ -186,7 +229,10 @@ const Gallery = () => {
       {/* Upload/Edit Modal */}
       <Dialog
         visible={showForm}
-        onHide={() => setShowForm(false)}
+        onHide={() => {
+          setShowForm(false);
+          setEditingItem(null);
+        }}
         header={editingItem ? 'Refine Asset Data' : 'Initialize New Assets'}
         modal
         className="w-full max-w-4xl mx-4"
@@ -202,7 +248,10 @@ const Gallery = () => {
         <GalleryForm
           initialData={editingItem}
           onSubmit={handleSubmit}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingItem(null);
+          }}
         />
       </Dialog>
     </div>

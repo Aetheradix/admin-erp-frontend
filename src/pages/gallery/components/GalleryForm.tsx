@@ -6,6 +6,7 @@ import { Select } from '@/components/ui/primitives/Select';
 import { FormField } from '@/components/ui/composed/FormField';
 import { FileUpload } from '@/components/ui/composed/FileUpload';
 import { Button } from '@/components/ui/primitives/Button';
+import { showToast } from '@/components/ui/composed/Toast.utils';
 import type { GalleryItem } from '@/types/models';
 
 interface GalleryFormProps {
@@ -32,11 +33,42 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
 
   useEffect(() => {
     if (initialData) {
-      queueMicrotask(() => {
-        setFormData(initialData);
+      setFormData(initialData);
+      setPreviewUrl(initialData.image_url || '');
+    } else {
+      setFormData({
+        title: '',
+        category: 'Workplace',
+        image_url: '',
+        date: new Date().toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        }),
       });
+      setPreviewUrl('');
     }
   }, [initialData]);
+
+  const handleFormSubmit = () => {
+    if (!formData.title?.trim()) {
+      showToast({
+        severity: 'warn',
+        summary: 'Title Required',
+        detail: 'Please provide a title for the media asset.',
+      });
+      return;
+    }
+    if (!formData.image_url?.trim()) {
+      showToast({
+        severity: 'warn',
+        summary: 'Image Required',
+        detail: 'Please upload an image or provide an asset source URL.',
+      });
+      return;
+    }
+    onSubmit(formData);
+  };
 
   const categories = [
     { label: 'Events', value: 'Events' },
@@ -57,7 +89,7 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
             {previewUrl || formData.image_url ? (
               <>
                 <img
-                  src={resolveImageUrl(formData.image_url)}
+                  src={resolveImageUrl(previewUrl || formData.image_url)}
                   alt="Preview"
                   width={400}
                   height={400}
@@ -201,10 +233,15 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
         </Button>
         <Button
           variant="primary"
-          onClick={() => onSubmit(formData)}
+          onClick={handleFormSubmit}
+          disabled={isUploadingImage}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
           aria-label={initialData ? 'Update asset details' : 'Add asset to gallery collection'}>
-          {initialData ? 'Update Asset' : 'Add to Collection'}
+          {isUploadingImage
+            ? 'Uploading...'
+            : initialData
+              ? 'Update Asset'
+              : 'Add to Collection'}
         </Button>
       </div>
     </div>

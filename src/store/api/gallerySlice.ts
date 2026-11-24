@@ -22,6 +22,17 @@ export const gallerySlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Gallery'],
     }),
+    updateGalleryItem: builder.mutation<
+      GalleryItem,
+      Partial<GalleryItem> & { id: string | number }
+    >({
+      query: ({ id, ...item }) => ({
+        url: `/gallery/${id}`,
+        method: 'PUT',
+        body: item,
+      }),
+      invalidatesTags: ['Gallery'],
+    }),
     deleteGalleryItem: builder.mutation<{ success: boolean }, string | number>({
       query: (id) => ({
         url: `/gallery/${id}`,
@@ -32,5 +43,9 @@ export const gallerySlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useGetGalleryQuery, useUploadGalleryItemMutation, useDeleteGalleryItemMutation } =
-  gallerySlice;
+export const {
+  useGetGalleryQuery,
+  useUploadGalleryItemMutation,
+  useUpdateGalleryItemMutation,
+  useDeleteGalleryItemMutation,
+} = gallerySlice;

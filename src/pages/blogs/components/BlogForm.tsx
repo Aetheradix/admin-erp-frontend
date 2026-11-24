@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { resolveImageUrl, downloadImageFile } from '@/utils/imageUrl';
+import { useAuth } from '@/hooks/useAuth';
 import type { Blog } from '@/types/models';
 
 interface BlogFormProps {
@@ -49,6 +50,7 @@ const CATEGORIES = [
 
 export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage, { isLoading: isUploadingImage }] = useUploadImageMutation();
 
@@ -60,6 +62,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
     status: 'Draft',
     featuredImage: '',
     image_url: '',
+    author: user?.username || 'Editorial Staff',
     tags: ['Insights', 'Enterprise'],
     ...initialData,
   });
@@ -87,15 +90,20 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
           Array.isArray(initialData.tags) && initialData.tags.length > 0
             ? initialData.tags
             : ['Enterprise'],
-        author: initialData.author,
+        author: initialData.author || user?.username || 'Editorial Staff',
       });
       if (existingImg) {
         setImageUrlInput(existingImg);
         setImgError(false);
         setImgLoaded(false);
       }
+    } else if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        author: prev.author || user.username || 'Editorial Staff',
+      }));
     }
-  }, [initialData]);
+  }, [initialData, user]);
 
   const onValueChange = <K extends keyof Blog>(key: K, value: Blog[K]) => {
     setFormData((prev) => ({
@@ -232,8 +240,18 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
       });
       return;
     }
+    const rawContent = (formData.content || '').replace(/<[^>]*>/g, '').trim();
+    if (!rawContent && (!formData.content || formData.content === '<p><br></p>')) {
+      showToast({
+        severity: 'warn',
+        summary: 'Content Required',
+        detail: 'Please provide body content for your story.',
+      });
+      return;
+    }
     const payload: Partial<Blog> = {
       ...formData,
+      author: formData.author || user?.username || 'Editorial Staff',
       readTime: stats.readTime,
     };
     onSubmit(payload);
@@ -380,7 +398,7 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
               type="submit"
               className="w-full h-14 rounded-2xl! bg-primary hover:bg-primary-hover shadow-lg shadow-primary/25 font-black tracking-wider text-xs uppercase flex items-center justify-center gap-2.5 active:scale-98 transition-all text-white"
               loading={isLoading}
-              disabled={isLoading}>
+              disabled={isLoading || isUploadingImage}>
               <Save size={18} />
               {initialData ? 'Update & Sync Story' : 'Publish Narrative'}
             </Button>
@@ -521,14 +539,8 @@ export const BlogForm = ({ initialData, onSubmit, isLoading }: BlogFormProps) =>
                     alt="Story Cover"
                     onLoad={() => setImgLoaded(true)}
                     onError={() => {
-                      // Immediately mark error so broken icon is never shown
                       setImgError(true);
                       setImgLoaded(false);
-                      // Strip the bad URL from formData so it won't be submitted
-                      if (!previewUrl || currentCover === previewUrl) {
-                        setPreviewUrl('');
-                        setFormData((prev) => ({ ...prev, featuredImage: '', image_url: '' }));
-                      }
                     }}
                     className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
                       imgLoaded ? 'opacity-100' : 'opacity-0'
