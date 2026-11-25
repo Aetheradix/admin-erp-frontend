@@ -39,7 +39,9 @@ export function LeavesTab({ leaves }: { leaves: MyUpcomingLeaveItem[] }) {
                   <h4 className="text-xs font-bold text-foreground truncate">{leave.type}</h4>
                   <p className="text-[10px] text-muted truncate mt-0.5">
                     {leave.startDate}{' '}
-                    {leave.endDate && leave.endDate !== leave.startDate ? `to ${leave.endDate}` : ''}
+                    {leave.endDate && leave.endDate !== leave.startDate
+                      ? `to ${leave.endDate}`
+                      : ''}
                     {leave.reason ? ` · "${leave.reason}"` : ''}
                   </p>
                 </div>

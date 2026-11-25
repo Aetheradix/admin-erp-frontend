@@ -1,7 +1,4 @@
-export function createLookupMap<T, K>(
-  items: readonly T[],
-  getKey: (item: T) => K
-): Map<K, T> {
+export function createLookupMap<T, K>(items: readonly T[], getKey: (item: T) => K): Map<K, T> {
   const map = new Map<K, T>();
   for (const item of items) {
     map.set(getKey(item), item);
@@ -9,10 +6,7 @@ export function createLookupMap<T, K>(
   return map;
 }
 
-export function createGroupMap<T, K>(
-  items: readonly T[],
-  getKey: (item: T) => K
-): Map<K, T[]> {
+export function createGroupMap<T, K>(items: readonly T[], getKey: (item: T) => K): Map<K, T[]> {
   const map = new Map<K, T[]>();
   for (const item of items) {
     const key = getKey(item);

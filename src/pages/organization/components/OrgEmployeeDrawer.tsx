@@ -61,10 +61,9 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
   // NOT based on RBAC role (which can be "Founder" for permission purposes)
   // AND they must have no reporting manager (true organizational head)
   const isFounderOrCeo = Boolean(
-    !user.reporting_manager_id && (
-      user.designation?.toLowerCase().includes('founder') ||
-      user.designation?.toLowerCase().includes('ceo')
-    )
+    !user.reporting_manager_id &&
+    (user.designation?.toLowerCase().includes('founder') ||
+      user.designation?.toLowerCase().includes('ceo'))
   );
 
   const deptColor = getDepartmentColor(user.department);
@@ -84,13 +83,14 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
         .slice(0, 4)
     : [];
 
-  const initials = (user.username || 'User')
-    .split(' ')
-    .map((w) => w[0])
-    .filter(Boolean)
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'U';
+  const initials =
+    (user.username || 'User')
+      .split(' ')
+      .map((w) => w[0])
+      .filter(Boolean)
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'U';
 
   const employeeId = user.employee_code || `EMP-${String(user.id).padStart(4, '0')}`;
   const profileFields = user as HierarchyNodeUser & {
@@ -118,20 +118,17 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200"
-    >
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[560px] max-h-[90vh] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl text-slate-800 font-sans overflow-hidden animate-in zoom-in-95 duration-150"
-      >
+        className="w-full max-w-[560px] max-h-[90vh] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl text-slate-800 font-sans overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Header Banner */}
         <div className="p-6 pb-4 border-b border-slate-100 bg-[#faf9f8] relative">
           <button
             type="button"
             onClick={onClose}
             className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors text-sm font-bold cursor-pointer shadow-xs"
-            aria-label="Close modal"
-          >
+            aria-label="Close modal">
             <X size={16} />
           </button>
 
@@ -148,8 +145,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                 className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold tracking-wide shadow-md text-white shrink-0"
                 style={{
                   backgroundColor: isFounderOrCeo ? '#f59e0b' : deptColor.text,
-                }}
-              >
+                }}>
                 {isFounderOrCeo ? <Crown size={26} className="text-white" /> : initials}
               </div>
             )}
@@ -169,10 +165,9 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                       user.role.toLowerCase().includes('admin')
                         ? 'bg-purple-100 text-purple-800 border border-purple-200'
                         : user.role.toLowerCase().includes('manager')
-                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : 'bg-slate-100 text-slate-700 border border-slate-200'
-                    }`}
-                  >
+                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                          : 'bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}>
                     {user.role}
                   </span>
                 ) : null}
@@ -186,8 +181,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                   style={{
                     backgroundColor: deptColor.bg,
                     color: deptColor.text,
-                  }}
-                >
+                  }}>
                   {user.department}
                 </span>
               )}
@@ -221,9 +215,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                 <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
                   Joining Date
                 </span>
-                <span className="text-xs font-bold text-slate-800 truncate block">
-                  {joinDate}
-                </span>
+                <span className="text-xs font-bold text-slate-800 truncate block">{joinDate}</span>
               </div>
             </div>
           </div>
@@ -243,9 +235,12 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                   type="button"
                   onClick={copyEmail}
                   className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
-                  title="Copy email"
-                >
-                  {copiedEmail ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                  title="Copy email">
+                  {copiedEmail ? (
+                    <Check size={13} className="text-emerald-600" />
+                  ) : (
+                    <Copy size={13} />
+                  )}
                 </button>
               </div>
 
@@ -266,13 +261,11 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
             {manager ? (
               <div
                 onClick={() => onSelectUser(manager)}
-                className="p-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all cursor-pointer flex items-center justify-between group"
-              >
+                className="p-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all cursor-pointer flex items-center justify-between group">
                 <div className="flex items-center gap-3 min-w-0">
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-xs"
-                    style={{ backgroundColor: managerDeptColor.text }}
-                  >
+                    style={{ backgroundColor: managerDeptColor.text }}>
                     {manager.username ? manager.username.slice(0, 2).toUpperCase() : 'MG'}
                   </div>
                   <div className="min-w-0">
@@ -304,8 +297,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                   <button
                     type="button"
                     onClick={() => onChangeManager(user)}
-                    className="text-[11px] text-[#e8583a] hover:underline font-semibold cursor-pointer"
-                  >
+                    className="text-[11px] text-[#e8583a] hover:underline font-semibold cursor-pointer">
                     Assign Manager
                   </button>
                 )}
@@ -333,13 +325,11 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                     <div
                       key={report.id}
                       onClick={() => onSelectUser(report)}
-                      className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all cursor-pointer flex items-center justify-between group"
-                    >
+                      className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all cursor-pointer flex items-center justify-between group">
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-xs"
-                          style={{ backgroundColor: repColor.text }}
-                        >
+                          style={{ backgroundColor: repColor.text }}>
                           {report.username ? report.username.slice(0, 2).toUpperCase() : 'DR'}
                         </div>
                         <div className="min-w-0">
@@ -375,13 +365,11 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                     <div
                       key={peer.id}
                       onClick={() => onSelectUser(peer)}
-                      className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all cursor-pointer flex items-center justify-between group"
-                    >
+                      className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all cursor-pointer flex items-center justify-between group">
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-xs"
-                          style={{ backgroundColor: peerColor.text }}
-                        >
+                          style={{ backgroundColor: peerColor.text }}>
                           {peer.username ? peer.username.slice(0, 2).toUpperCase() : 'PE'}
                         </div>
                         <div className="min-w-0">
@@ -411,8 +399,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
             <button
               type="button"
               onClick={() => onAddDirectReport(user)}
-              className="h-9 px-4 rounded-xl bg-[#e8583a] hover:bg-[#d04a2e] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-            >
+              className="h-9 px-4 rounded-xl bg-[#e8583a] hover:bg-[#d04a2e] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs">
               <UserPlus size={14} />
               <span>Add direct report</span>
             </button>
@@ -422,8 +409,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                 <button
                   type="button"
                   onClick={() => onChangeManager(user)}
-                  className="h-9 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                >
+                  className="h-9 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs">
                   <Edit2 size={13} />
                   <span>Edit line</span>
                 </button>
@@ -437,8 +423,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                 <button
                   type="button"
                   onClick={() => onMatrixManager(user)}
-                  className="w-9 h-9 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer shadow-xs"
-                >
+                  className="w-9 h-9 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer shadow-xs">
                   <Layers size={14} />
                 </button>
               </Tooltip>
@@ -449,8 +434,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
                 <button
                   type="button"
                   onClick={() => onRemoveUser(user)}
-                  className="w-9 h-9 rounded-xl bg-white hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 flex items-center justify-center transition-colors cursor-pointer shadow-xs"
-                >
+                  className="w-9 h-9 rounded-xl bg-white hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 flex items-center justify-center transition-colors cursor-pointer shadow-xs">
                   <Trash2 size={14} />
                 </button>
               </Tooltip>
@@ -459,8 +443,7 @@ export const OrgEmployeeDrawer: React.FC<OrgEmployeeDrawerProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="h-9 px-3.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-            >
+              className="h-9 px-3.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
               Close
             </button>
           </div>

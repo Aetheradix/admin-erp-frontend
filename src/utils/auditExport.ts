@@ -129,7 +129,11 @@ export function exportToCsv({ filename, headers, rows }: ExportDataOptions): voi
   const dataRows = rows.map((row) => row.map(escapeCell).join(','));
   const csvContent = '\uFEFF' + [headerRow, ...dataRows].join('\r\n');
 
-  downloadFile(csvContent, filename.endsWith('.csv') ? filename : `${filename}.csv`, 'text/csv;charset=utf-8;');
+  downloadFile(
+    csvContent,
+    filename.endsWith('.csv') ? filename : `${filename}.csv`,
+    'text/csv;charset=utf-8;'
+  );
 }
 
 /**
@@ -233,10 +237,7 @@ function formatLogDate(val: any): string {
 /**
  * Specialized exporter for Payroll Audit Logs (3-Month Window, Rolling 1-Month Cleanup).
  */
-export function exportPayrollAuditLogs(
-  logs: any[],
-  format: 'excel' | 'csv' = 'excel'
-): void {
+export function exportPayrollAuditLogs(logs: any[], format: 'excel' | 'csv' = 'excel'): void {
   const filtered = filterLogsByRetention(logs);
   const nowStr = new Date().toISOString().split('T')[0];
   const filename = `Payroll_Audit_Logs_3Months_${nowStr}`;
@@ -270,10 +271,7 @@ export function exportPayrollAuditLogs(
 /**
  * Specialized exporter for Invoice Audit Logs (3-Month Window, Rolling 1-Month Cleanup).
  */
-export function exportInvoiceAuditLogs(
-  logs: any[],
-  format: 'excel' | 'csv' = 'excel'
-): void {
+export function exportInvoiceAuditLogs(logs: any[], format: 'excel' | 'csv' = 'excel'): void {
   const filtered = filterLogsByRetention(logs);
   const nowStr = new Date().toISOString().split('T')[0];
   const filename = `Invoice_Audit_Logs_3Months_${nowStr}`;

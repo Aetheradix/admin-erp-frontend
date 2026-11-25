@@ -7,8 +7,7 @@ export const INVOICE_STATUSES: InvoiceStatus[] = ['Paid', 'Pending', 'Overdue'];
 
 export const DEFAULT_PLACE_OF_SUPPLY = 'Madhya Pradesh';
 export const DEFAULT_GST_RATE = 18;
-export const DEFAULT_PAYMENT_TERMS =
-  'Thank you for your business. Payment is due within 15 days.';
+export const DEFAULT_PAYMENT_TERMS = 'Thank you for your business. Payment is due within 15 days.';
 export const DEFAULT_ITEM_DESCRIPTION = 'Software Engineering & Enterprise Services';
 
 export const DEFAULT_COMPANY_PROFILE: Pick<

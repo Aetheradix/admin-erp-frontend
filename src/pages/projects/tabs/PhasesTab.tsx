@@ -37,12 +37,7 @@ interface PhasesTabProps {
   onPhasesUpdated: () => void;
 }
 
-export function PhasesTab({
-  project,
-  phases,
-  tasks,
-  onPhasesUpdated,
-}: PhasesTabProps) {
+export function PhasesTab({ project, phases, tasks, onPhasesUpdated }: PhasesTabProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [editingPhase, setEditingPhase] = useState<ProjectPhase | null>(null);
@@ -135,7 +130,10 @@ export function PhasesTab({
     const [moved] = copy.splice(index, 1);
     copy.splice(targetIdx, 0, moved);
 
-    projectService.reorderPhases(project.id, copy.map((p) => p.id));
+    projectService.reorderPhases(
+      project.id,
+      copy.map((p) => p.id)
+    );
     onPhasesUpdated();
   };
 
@@ -188,7 +186,8 @@ export function PhasesTab({
             {phases.map((phase, idx) => {
               const phaseTasks = tasks.filter((t) => t.phaseId === phase.id);
               const doneTasks = phaseTasks.filter((t) => t.status === 'Done').length;
-              const pct = phaseTasks.length > 0 ? Math.round((doneTasks / phaseTasks.length) * 100) : 0;
+              const pct =
+                phaseTasks.length > 0 ? Math.round((doneTasks / phaseTasks.length) * 100) : 0;
 
               return (
                 <Col xs={24} sm={12} md={6} key={phase.id}>
@@ -209,11 +208,7 @@ export function PhasesTab({
                     <h4 className="text-xs font-bold text-foreground line-clamp-1 mb-2">
                       {phase.name}
                     </h4>
-                    <Progress
-                      percent={pct}
-                      size="small"
-                      strokeColor={phase.color || '#3b82f6'}
-                    />
+                    <Progress percent={pct} size="small" strokeColor={phase.color || '#3b82f6'} />
                     <div className="flex justify-between text-[11px] text-muted mt-1">
                       <span>
                         {doneTasks}/{phaseTasks.length} tasks
@@ -257,7 +252,9 @@ export function PhasesTab({
 
                   <div>
                     <Space size={8} wrap>
-                      <span className="text-xs font-mono font-bold text-primary">Stage {idx + 1}</span>
+                      <span className="text-xs font-mono font-bold text-primary">
+                        Stage {idx + 1}
+                      </span>
                       <h3 className="text-sm font-bold text-foreground">{phase.name}</h3>
                       {phase.isCompleted && (
                         <Tag color="green" className="text-[10px] font-bold uppercase m-0">

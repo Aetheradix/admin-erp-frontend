@@ -41,12 +41,7 @@ interface TaskDrawerProps {
   onTaskUpdated?: () => void;
 }
 
-export const TaskDrawer: React.FC<TaskDrawerProps> = ({
-  task,
-  open,
-  onClose,
-  onTaskUpdated,
-}) => {
+export const TaskDrawer: React.FC<TaskDrawerProps> = ({ task, open, onClose, onTaskUpdated }) => {
   const { user } = useAuth();
   const [updateTaskMutation] = useUpdateTaskRealMutation();
   const [reassignTaskMutation] = useReassignTaskMutation();
@@ -71,12 +66,12 @@ export const TaskDrawer: React.FC<TaskDrawerProps> = ({
         newStatus === 'Done' || newStatus === 'Completed'
           ? 'Completed'
           : newStatus === 'In Review' || newStatus === 'QA'
-          ? 'In Review'
-          : newStatus === 'Blocked'
-          ? 'Blocked'
-          : newStatus === 'In Progress'
-          ? 'In Progress'
-          : 'Pending';
+            ? 'In Review'
+            : newStatus === 'Blocked'
+              ? 'Blocked'
+              : newStatus === 'In Progress'
+                ? 'In Progress'
+                : 'Pending';
       await updateTaskMutation({ id: task.id, data: { task_status: backendStatus } }).unwrap();
     } catch {
       // offline fallback

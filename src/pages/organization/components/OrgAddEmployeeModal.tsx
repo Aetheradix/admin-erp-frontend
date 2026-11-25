@@ -15,10 +15,7 @@ import {
 } from 'lucide-react';
 import type { StaffMember } from '@/types/models';
 import { useCreateStaffMutation } from '@/store/api/userSlice';
-import type {
-  HierarchyNodeUser,
-  DepartmentHierarchyItem,
-} from '@/store/api/organizationApiSlice';
+import type { HierarchyNodeUser, DepartmentHierarchyItem } from '@/store/api/organizationApiSlice';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
 
 interface OrgAddEmployeeModalProps {
@@ -114,15 +111,16 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
   const [employeeId, setEmployeeId] = useState(
     () => `EMP-${Math.floor(1000 + Math.random() * 9000)}`
   );
-  const [joiningDate, setJoiningDate] = useState(
-    () => new Date().toISOString().split('T')[0]
-  );
+  const [joiningDate, setJoiningDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [photoUrl, setPhotoUrl] = useState('');
 
   // Auto-suggest email based on name if user hasn't typed one
   const handleNameChange = (nameVal: string) => {
     setFullName(nameVal);
-    const clean = nameVal.trim().toLowerCase().replace(/[^a-z0-9]/g, '.');
+    const clean = nameVal
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '.');
     if (clean) {
       setEmail(`${clean}@aetheradix.com`);
     } else {
@@ -148,8 +146,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
 
     const cleanName = fullName.trim();
     const finalEmail =
-      email.trim() ||
-      `${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@aetheradix.com`;
+      email.trim() || `${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@aetheradix.com`;
 
     try {
       const res = await createStaff({
@@ -186,12 +183,10 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200"
-    >
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[540px] rounded-2xl bg-white border border-slate-200 shadow-2xl p-7 text-slate-800 font-sans relative"
-      >
+        className="w-full max-w-[540px] rounded-2xl bg-white border border-slate-200 shadow-2xl p-7 text-slate-800 font-sans relative">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
           <div className="flex items-center gap-3">
@@ -199,9 +194,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
               <UserPlus size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">
-                Add New Employee
-              </h2>
+              <h2 className="text-base font-bold text-slate-900 leading-tight">Add New Employee</h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Add a member to the organization chart and reporting hierarchy
               </p>
@@ -211,8 +204,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
-          >
+            className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -223,7 +215,9 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
             <div>
               <label className="block text-xs text-slate-600 font-bold mb-1.5 flex items-center gap-1.5">
                 <User size={13} className="text-[#e8583a]" />
-                <span>Full Name <span className="text-red-500">*</span></span>
+                <span>
+                  Full Name <span className="text-red-500">*</span>
+                </span>
               </label>
               <input
                 type="text"
@@ -240,7 +234,9 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
             <div>
               <label className="block text-xs text-slate-600 font-bold mb-1.5 flex items-center gap-1.5">
                 <Briefcase size={13} className="text-[#e8583a]" />
-                <span>Job Title <span className="text-red-500">*</span></span>
+                <span>
+                  Job Title <span className="text-red-500">*</span>
+                </span>
               </label>
               <input
                 type="text"
@@ -258,14 +254,15 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
             <div>
               <label className="block text-xs text-slate-600 font-bold mb-1.5 flex items-center gap-1.5">
                 <Building2 size={13} className="text-[#e8583a]" />
-                <span>Team / Department <span className="text-red-500">*</span></span>
+                <span>
+                  Team / Department <span className="text-red-500">*</span>
+                </span>
               </label>
               <div className="relative">
                 <select
                   value={team}
                   onChange={(e) => setTeam(e.target.value)}
-                  className="w-full h-10 px-3 pr-9 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[#e8583a] focus:ring-2 focus:ring-[#e8583a]/15 transition-all appearance-none cursor-pointer"
-                >
+                  className="w-full h-10 px-3 pr-9 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[#e8583a] focus:ring-2 focus:ring-[#e8583a]/15 transition-all appearance-none cursor-pointer">
                   {availableTeams.map((t) => (
                     <option key={t} value={t}>
                       {t}
@@ -291,8 +288,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
                   onChange={(e) =>
                     setReportingManagerId(e.target.value ? Number(e.target.value) : null)
                   }
-                  className="w-full h-10 px-3 pr-9 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[#e8583a] focus:ring-2 focus:ring-[#e8583a]/15 transition-all appearance-none cursor-pointer"
-                >
+                  className="w-full h-10 px-3 pr-9 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[#e8583a] focus:ring-2 focus:ring-[#e8583a]/15 transition-all appearance-none cursor-pointer">
                   {flatUsers.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.username} ({u.designation || u.role})
@@ -358,7 +354,9 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
             <div>
               <label className="block text-xs text-slate-600 font-bold mb-1.5 flex items-center gap-1.5">
                 <Image size={13} className="text-slate-400" />
-                <span>Profile Photo URL <span className="text-slate-400 font-normal">(Optional)</span></span>
+                <span>
+                  Profile Photo URL <span className="text-slate-400 font-normal">(Optional)</span>
+                </span>
               </label>
               <input
                 type="url"
@@ -376,15 +374,13 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="h-10 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-            >
+              className="h-10 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="h-10 px-6 rounded-xl bg-[#e8583a] hover:bg-[#d04a2e] text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md disabled:opacity-50"
-            >
+              className="h-10 px-6 rounded-xl bg-[#e8583a] hover:bg-[#d04a2e] text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md disabled:opacity-50">
               {isLoading && <Loader2 size={14} className="animate-spin" />}
               <span>Add Employee</span>
             </button>

@@ -45,7 +45,8 @@ export function useInvoiceDownload({ recordAuditLog }: UseInvoiceDownloadOptions
           'DOWNLOAD_INVOICE',
           `Generated & downloaded invoice PDF for ${getInvoiceDisplayNumber(invoiceToDownload) || invoice.id}`,
           {
-            invoiceId: invoiceToDownload.id !== undefined ? String(invoiceToDownload.id) : invoice.id,
+            invoiceId:
+              invoiceToDownload.id !== undefined ? String(invoiceToDownload.id) : invoice.id,
             client: invoiceToDownload.client,
             amount: Number(invoiceToDownload.amount || 0),
           }

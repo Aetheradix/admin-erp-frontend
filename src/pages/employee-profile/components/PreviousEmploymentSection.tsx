@@ -44,7 +44,9 @@ export function PreviousEmploymentSection({
   isSaving,
   readOnly,
 }: Props) {
-  const [entries, setEntries] = useState<EmploymentHistoryEntry[]>(data && data.length > 0 ? data : []);
+  const [entries, setEntries] = useState<EmploymentHistoryEntry[]>(
+    data && data.length > 0 ? data : []
+  );
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const isLocalChange = useRef(false);
@@ -112,9 +114,7 @@ export function PreviousEmploymentSection({
         localData: e.target?.result as string,
       });
       const next = entries.map((en) =>
-        en.id === entryId
-          ? { ...en, documentIds: [...(en.documentIds || []), doc.id] }
-          : en
+        en.id === entryId ? { ...en, documentIds: [...(en.documentIds || []), doc.id] } : en
       );
       setEntries(next);
       notifyChange(next);

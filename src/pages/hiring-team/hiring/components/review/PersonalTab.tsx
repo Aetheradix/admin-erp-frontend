@@ -34,10 +34,7 @@ export function PersonalTab({ profile }: PersonalTabProps) {
           className="col-span-2"
           plain
         />
-        <DetailField
-          label="Emergency Contact Name"
-          value={personal?.emergencyContactName || '—'}
-        />
+        <DetailField label="Emergency Contact Name" value={personal?.emergencyContactName || '—'} />
         <DetailField
           label="Emergency Contact Phone"
           value={personal?.emergencyContactPhone || '—'}

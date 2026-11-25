@@ -80,9 +80,7 @@ export function filterHierarchyTree(
     return null;
   };
 
-  return unifiedTree
-    .map(filterNode)
-    .filter((node): node is HierarchyNodeUser => Boolean(node));
+  return unifiedTree.map(filterNode).filter((node): node is HierarchyNodeUser => Boolean(node));
 }
 
 export function computeDepartmentFilters(flatUsers: HierarchyNodeUser[]) {

@@ -21,7 +21,12 @@ export function getRoleBadgeClass(role?: string): string {
   if (clean.includes('developer') || clean.includes('engineer') || clean.includes('devops')) {
     return 'bg-sky-500/10 text-sky-600 border-sky-500/20';
   }
-  if (clean.includes('analyst') || clean.includes('design') || clean.includes('ui') || clean.includes('ux')) {
+  if (
+    clean.includes('analyst') ||
+    clean.includes('design') ||
+    clean.includes('ui') ||
+    clean.includes('ux')
+  ) {
     return 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20';
   }
   if (clean.includes('employee') || clean.includes('staff')) {

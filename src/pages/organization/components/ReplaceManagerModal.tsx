@@ -198,4 +198,3 @@ export const ReplaceManagerModal: React.FC<ReplaceManagerModalProps> = ({
     </Modal>
   );
 };
-

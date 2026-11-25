@@ -181,9 +181,7 @@ const Gallery = () => {
     );
   }
 
-  const uniqueCategoriesCount = new Set(
-    items.map((i) => i.category).filter(Boolean)
-  ).size;
+  const uniqueCategoriesCount = new Set(items.map((i) => i.category).filter(Boolean)).size;
 
   return (
     <div className="flex flex-col gap-8 pb-12">

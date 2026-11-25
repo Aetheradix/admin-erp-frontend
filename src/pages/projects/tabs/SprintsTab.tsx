@@ -2,18 +2,7 @@ import { useState } from 'react';
 import type { Project, Sprint } from '@/types/project';
 import { Sparkles, Calendar, Plus } from 'lucide-react';
 import { projectService } from '@/services/projectService';
-import {
-  Card,
-  Button,
-  Tag,
-  Modal,
-  Form,
-  Input,
-  Progress,
-  Row,
-  Col,
-  message,
-} from 'antd';
+import { Card, Button, Tag, Modal, Form, Input, Progress, Row, Col, message } from 'antd';
 
 const { TextArea } = Input;
 
@@ -63,23 +52,31 @@ export function SprintsTab({ project, sprints, onSprintsUpdated }: SprintsTabPro
                 <Sparkles size={14} /> Active Sprint
               </div>
               <h3 className="text-lg font-black text-foreground">{activeSprint.name}</h3>
-              <p className="text-xs text-muted mt-0.5">{activeSprint.goal || 'No sprint goal specified'}</p>
+              <p className="text-xs text-muted mt-0.5">
+                {activeSprint.goal || 'No sprint goal specified'}
+              </p>
               <div className="flex items-center gap-4 text-xs font-semibold text-muted mt-3">
                 <span className="flex items-center gap-1">
                   <Calendar size={13} /> {activeSprint.startDate} to {activeSprint.endDate}
                 </span>
                 <span>•</span>
-                <span>Capacity: {activeSprint.capacity} {project.estimationUnit}</span>
+                <span>
+                  Capacity: {activeSprint.capacity} {project.estimationUnit}
+                </span>
               </div>
             </div>
 
             <div className="w-full md:w-56 text-right">
-              <span className="text-2xl font-black text-foreground">{activeSprint.completedPoints}</span>
+              <span className="text-2xl font-black text-foreground">
+                {activeSprint.completedPoints}
+              </span>
               <span className="text-xs text-muted"> / {activeSprint.committedPoints} pts</span>
               <Progress
                 percent={
                   activeSprint.committedPoints > 0
-                    ? Math.round((activeSprint.completedPoints / activeSprint.committedPoints) * 100)
+                    ? Math.round(
+                        (activeSprint.completedPoints / activeSprint.committedPoints) * 100
+                      )
                     : 0
                 }
                 size="small"
@@ -132,9 +129,13 @@ export function SprintsTab({ project, sprints, onSprintsUpdated }: SprintsTabPro
                     {sprint.status}
                   </Tag>
                 </div>
-                <p className="text-xs text-muted line-clamp-2 mb-3">{sprint.goal || 'No goal set'}</p>
+                <p className="text-xs text-muted line-clamp-2 mb-3">
+                  {sprint.goal || 'No goal set'}
+                </p>
                 <div className="flex items-center justify-between text-xs text-muted pt-2 border-t border-border-subtle">
-                  <span>{sprint.startDate} to {sprint.endDate}</span>
+                  <span>
+                    {sprint.startDate} to {sprint.endDate}
+                  </span>
                   <span className="font-bold text-foreground">
                     {sprint.completedPoints} / {sprint.committedPoints} {project.estimationUnit}
                   </span>
@@ -162,7 +163,11 @@ export function SprintsTab({ project, sprints, onSprintsUpdated }: SprintsTabPro
           </Form.Item>
 
           <Form.Item name="goal" label="Sprint Goal">
-            <TextArea rows={3} placeholder="Primary objective to achieve by sprint end" className="rounded-xl" />
+            <TextArea
+              rows={3}
+              placeholder="Primary objective to achieve by sprint end"
+              className="rounded-xl"
+            />
           </Form.Item>
 
           <Form.Item name="capacity" label={`Team Capacity (${project.estimationUnit})`}>

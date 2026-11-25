@@ -83,8 +83,7 @@ export function useCompanyProfile({ hqOffice, totalEmployeesCount }: UseCompanyP
       companyInfo.phone_country_code,
       companyInfo.phone_number
     );
-    const currentHqOfficeId =
-      db?.hq_office_id ?? hqOffice?.id ?? companyInfo.hq_office_id ?? null;
+    const currentHqOfficeId = db?.hq_office_id ?? hqOffice?.id ?? companyInfo.hq_office_id ?? null;
 
     setEditForm({
       name: companyInfo.name,

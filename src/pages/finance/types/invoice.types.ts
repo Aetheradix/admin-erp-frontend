@@ -1,4 +1,3 @@
-
 export interface InvoiceItem {
   description: string;
   quantity: number;
@@ -48,5 +47,3 @@ export interface Invoice {
     invoiceUrl?: string;
   };
 }
-
-

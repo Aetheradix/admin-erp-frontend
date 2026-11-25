@@ -1,11 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  CalendarDays,
-  FileCheck2,
-  ArrowUpRight,
-  CreditCard,
-} from 'lucide-react';
+import { CalendarDays, FileCheck2, ArrowUpRight, CreditCard } from 'lucide-react';
 import type { DashboardPayroll } from '@/types/dashboard';
 
 interface CompactPayrollCardProps {
@@ -34,9 +29,7 @@ export const CompactPayrollCard: React.FC<CompactPayrollCardProps> = ({ payroll,
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-1">
             <CreditCard size={11} /> Compensation
           </span>
-          <h3 className="text-sm font-black text-foreground">
-            Payroll & Payslips
-          </h3>
+          <h3 className="text-sm font-black text-foreground">Payroll & Payslips</h3>
         </div>
 
         <button
@@ -114,4 +107,3 @@ export const CompactPayrollCard: React.FC<CompactPayrollCardProps> = ({ payroll,
     </div>
   );
 };
-

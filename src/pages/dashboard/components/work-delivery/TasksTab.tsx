@@ -40,7 +40,9 @@ export function TasksTab({ tasks }: { tasks: Task[] }) {
                     {task.task_title}
                   </h4>
                   {task.task_description && (
-                    <p className="text-[10px] text-muted truncate mt-0.5">{task.task_description}</p>
+                    <p className="text-[10px] text-muted truncate mt-0.5">
+                      {task.task_description}
+                    </p>
                   )}
                 </div>
               </div>

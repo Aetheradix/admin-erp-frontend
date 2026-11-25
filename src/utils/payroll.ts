@@ -128,7 +128,13 @@ export const extractSlipSeqFromText = (text?: string | null): number | null => {
  */
 export const parseSlipNumber = (
   slipNumber?: string | null
-): { employeeCode: string; month: string; year: string; slipNo: string; sequence: number } | null => {
+): {
+  employeeCode: string;
+  month: string;
+  year: string;
+  slipNo: string;
+  sequence: number;
+} | null => {
   if (!slipNumber) return null;
   const trimmed = String(slipNumber).trim();
   if (!trimmed) return null;
@@ -294,10 +300,7 @@ export const normalizeToDashedSlipNumber = (slipNumber?: string | null): string 
  * 5. Explicit sequence property on record (e.g. slip_sequence, sequence).
  * 6. Dynamic fallback sequence passed by the caller (fallbackSequence) or defaults.
  */
-export const extractSlipNumber = (
-  item: any,
-  fallbackSequence?: number
-): string => {
+export const extractSlipNumber = (item: any, fallbackSequence?: number): string => {
   if (!item || typeof item !== 'object') return '';
 
   const id = item.id || item.salary_slip_id || item.slip_id;
@@ -340,13 +343,15 @@ export const extractSlipNumber = (
   if (cleanEmpCode && monthYearStr) {
     const key = `${cleanEmpCode}_${monthYearStr}`;
     if (overrides[key]) return normalizeToDashedSlipNumber(overrides[key]);
-    if (overrides[key.toUpperCase()]) return normalizeToDashedSlipNumber(overrides[key.toUpperCase()]);
+    if (overrides[key.toUpperCase()])
+      return normalizeToDashedSlipNumber(overrides[key.toUpperCase()]);
   }
   const uId = item.user_id || item.userId;
   if (uId && monthYearStr) {
     const key = `${uId}_${monthYearStr}`;
     if (overrides[key]) return normalizeToDashedSlipNumber(overrides[key]);
-    if (overrides[key.toUpperCase()]) return normalizeToDashedSlipNumber(overrides[key.toUpperCase()]);
+    if (overrides[key.toUpperCase()])
+      return normalizeToDashedSlipNumber(overrides[key.toUpperCase()]);
   }
 
   // 2. Check serialized tag in remarks or hr_note (the primary database persistence layer)
@@ -366,9 +371,7 @@ export const extractSlipNumber = (
   }
 
   // 4. Check explicit sequence fields on the record
-  const explicitSeq = Number(
-    item.slip_sequence || item.slipSequence || item.sequence || 0
-  );
+  const explicitSeq = Number(item.slip_sequence || item.slipSequence || item.sequence || 0);
   if (explicitSeq && explicitSeq > 0) {
     return generateSlipNumber(cleanEmpCode || 'EMP1', monthYearStr, explicitSeq);
   }
@@ -386,7 +389,11 @@ export const extractSlipNumber = (
     item.salary_slip_no ||
     item.salary_slip_number;
 
-  if (candidateSlip && String(candidateSlip).trim() !== '' && String(candidateSlip).trim() !== 'null') {
+  if (
+    candidateSlip &&
+    String(candidateSlip).trim() !== '' &&
+    String(candidateSlip).trim() !== 'null'
+  ) {
     const trimmedCandidate = String(candidateSlip).trim();
     // If candidate defaulted to 001 but a distinct sequential fallback sequence is provided (>1),
     // prefer the sequential fallback so not everyone ends up with 001
@@ -400,4 +407,3 @@ export const extractSlipNumber = (
   const effectiveSeq = fallbackSequence && fallbackSequence > 0 ? fallbackSequence : 1;
   return generateSlipNumber(cleanEmpCode || 'EMP1', monthYearStr, effectiveSeq);
 };
-

@@ -73,7 +73,9 @@ export function HolidayMonthGrid({ calendar }: { calendar: HolidayCalendarState 
           const isToday = dateStr === todayKey;
 
           return (
-            <div key={`day-${dayNum}`} className="relative group/cal flex items-center justify-center">
+            <div
+              key={`day-${dayNum}`}
+              className="relative group/cal flex items-center justify-center">
               <div
                 className={cn(
                   'w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold transition-all relative',

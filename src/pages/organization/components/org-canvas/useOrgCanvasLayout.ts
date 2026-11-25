@@ -69,11 +69,7 @@ export function useOrgCanvasLayout(
       };
       return empty;
     }
-    return computeHorizontalTreeLayout(
-      unifiedRoot,
-      expandedNodes,
-      filterEval.highlightedIds
-    );
+    return computeHorizontalTreeLayout(unifiedRoot, expandedNodes, filterEval.highlightedIds);
   }, [unifiedRoot, expandedNodes, filterEval.highlightedIds]);
 
   return { filterEval, layoutResult };

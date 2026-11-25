@@ -180,7 +180,6 @@ export const ProfileInfoTab = ({
   const effectivePermanentAddress =
     personal?.permanentAddress || personal?.currentAddress || user.address || 'Not specified';
 
-
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-300">
       {/* ── 1. Contact Information Matrix ── */}
@@ -423,9 +422,15 @@ export const ProfileInfoTab = ({
                   {isLoadingField.accountNumber ? (
                     <i className="pi pi-spin pi-spinner text-[10px]" />
                   ) : visibleFields.accountNumber ? (
-                    <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                    <EyeOff
+                      size={11}
+                      className="text-primary group-hover:scale-110 transition-transform"
+                    />
                   ) : (
-                    <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                    <Eye
+                      size={11}
+                      className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform"
+                    />
                   )}
                   <span>{visibleFields.accountNumber ? 'Hide' : 'Reveal'}</span>
                 </button>
@@ -509,9 +514,15 @@ export const ProfileInfoTab = ({
                     {isLoadingField.panNumber ? (
                       <i className="pi pi-spin pi-spinner text-[10px]" />
                     ) : visibleFields.panNumber ? (
-                      <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                      <EyeOff
+                        size={11}
+                        className="text-primary group-hover:scale-110 transition-transform"
+                      />
                     ) : (
-                      <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                      <Eye
+                        size={11}
+                        className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform"
+                      />
                     )}
                     <span>{visibleFields.panNumber ? 'Hide' : 'Reveal'}</span>
                   </button>
@@ -546,9 +557,15 @@ export const ProfileInfoTab = ({
                     {isLoadingField.aadhaarNumber ? (
                       <i className="pi pi-spin pi-spinner text-[10px]" />
                     ) : visibleFields.aadhaarNumber ? (
-                      <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                      <EyeOff
+                        size={11}
+                        className="text-primary group-hover:scale-110 transition-transform"
+                      />
                     ) : (
-                      <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                      <Eye
+                        size={11}
+                        className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform"
+                      />
                     )}
                     <span>{visibleFields.aadhaarNumber ? 'Hide' : 'Reveal'}</span>
                   </button>
@@ -581,9 +598,15 @@ export const ProfileInfoTab = ({
                     {isLoadingField.passportNumber ? (
                       <i className="pi pi-spin pi-spinner text-[10px]" />
                     ) : visibleFields.passportNumber ? (
-                      <EyeOff size={11} className="text-primary group-hover:scale-110 transition-transform" />
+                      <EyeOff
+                        size={11}
+                        className="text-primary group-hover:scale-110 transition-transform"
+                      />
                     ) : (
-                      <Eye size={11} className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform" />
+                      <Eye
+                        size={11}
+                        className="text-muted group-hover:text-foreground group-hover:scale-110 transition-transform"
+                      />
                     )}
                     <span>{visibleFields.passportNumber ? 'Hide' : 'Reveal'}</span>
                   </button>

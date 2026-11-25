@@ -7,11 +7,7 @@ interface AutoTableDocument extends jsPDF {
   lastAutoTable?: { finalY?: number };
 }
 
-export function exportAuditBookPdf(
-  metrics: AuditBookMetrics,
-  year: string,
-  quarter: string
-): void {
+export function exportAuditBookPdf(metrics: AuditBookMetrics, year: string, quarter: string): void {
   const { income, expenses, totalRevenue, totalExpenses, netProfitLoss, grossMargin } = metrics;
   const fmt = formatAuditCurrency;
 

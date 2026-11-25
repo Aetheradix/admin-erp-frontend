@@ -15,12 +15,7 @@ import {
   Modal,
   message,
 } from 'antd';
-import {
-  Settings,
-  UserPlus,
-  Trash2,
-  AlertTriangle,
-} from 'lucide-react';
+import { Settings, UserPlus, Trash2, AlertTriangle } from 'lucide-react';
 import {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
@@ -79,7 +74,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
       message.success('Project settings saved successfully');
       onProjectUpdated();
     } catch (err: unknown) {
-      const msg = (err as { data?: { message?: string } })?.data?.message || 'Failed to update project';
+      const msg =
+        (err as { data?: { message?: string } })?.data?.message || 'Failed to update project';
       message.error(msg);
     }
   };
@@ -161,7 +157,10 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
           .toUpperCase();
         return (
           <Space size={8}>
-            <Avatar size="small" src={record.image_url} className="bg-primary/20 text-primary font-bold text-xs">
+            <Avatar
+              size="small"
+              src={record.image_url}
+              className="bg-primary/20 text-primary font-bold text-xs">
               {initials}
             </Avatar>
             <div className="flex flex-col">
@@ -232,7 +231,11 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
             health: project.health || 'on_track',
             department_id: project.department_id,
             start_date: project.start_date ? String(project.start_date).split('T')[0] : undefined,
-            end_date: project.end_date ? String(project.end_date).split('T')[0] : (project.deadline ? String(project.deadline).split('T')[0] : undefined),
+            end_date: project.end_date
+              ? String(project.end_date).split('T')[0]
+              : project.deadline
+                ? String(project.deadline).split('T')[0]
+                : undefined,
             methodology: project.methodology || 'scrum',
           }}
           onFinish={handleUpdateGeneral}>
@@ -320,7 +323,11 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
           </Row>
 
           <div className="flex justify-end pt-2">
-            <Button type="primary" htmlType="submit" loading={updating} className="rounded-xl font-bold">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={updating}
+              className="rounded-xl font-bold">
               Save Changes
             </Button>
           </div>

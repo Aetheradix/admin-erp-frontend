@@ -164,18 +164,17 @@ export const useProfile = () => {
 
     const userRole = authUser?.role || 'User';
     const dbRoles = (matchedStaff?.roles as any[]) || (currentDbUser?.roles as any);
-    const initialRoles =
-      (Array.isArray(dbRoles) && dbRoles.length > 0
-        ? dbRoles.map((r: any) => ({
-            id: String(r.id || r.name),
-            name: typeof r === 'string' ? r : r.name,
-            color:
-              (r.name || r)?.toLowerCase().includes('admin') ||
-              (r.name || r)?.toLowerCase().includes('founder')
-                ? 'red'
-                : 'blue',
-          }))
-        : null) ||
+    const initialRoles = (Array.isArray(dbRoles) && dbRoles.length > 0
+      ? dbRoles.map((r: any) => ({
+          id: String(r.id || r.name),
+          name: typeof r === 'string' ? r : r.name,
+          color:
+            (r.name || r)?.toLowerCase().includes('admin') ||
+            (r.name || r)?.toLowerCase().includes('founder')
+              ? 'red'
+              : 'blue',
+        }))
+      : null) ||
       (authUserRecord?.roles as Array<{
         id: string;
         name: string;
@@ -348,7 +347,7 @@ export const useProfile = () => {
             reportsCount: 1,
             image: matchedStaff.reporting_manager_image || undefined,
           }
-        : (record.manager as ManagerInfo) ?? prev.manager,
+        : ((record.manager as ManagerInfo) ?? prev.manager),
 
       roles: (() => {
         // Priority 1: matchedStaff.roles from database (Single source of truth!)
@@ -747,7 +746,9 @@ export const useProfile = () => {
     }
   };
 
-  const updateRolesLocally = (newRoles: Array<{ id: string | number; name: string; color?: string }>) => {
+  const updateRolesLocally = (
+    newRoles: Array<{ id: string | number; name: string; color?: string }>
+  ) => {
     const formatted = newRoles.map((r) => ({
       id: String(r.id),
       name: r.name,

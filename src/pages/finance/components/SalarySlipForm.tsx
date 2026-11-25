@@ -413,7 +413,9 @@ const SalarySlipForm = ({
   const [isCompanyExpanded, setIsCompanyExpanded] = useState<boolean>(false);
   const [selectedEmployeeObj, setSelectedEmployeeObj] = useState<any>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-  const [isCtcManualOverride, setIsCtcManualOverride] = useState<boolean>(Boolean(initialValues?.totalCompensation));
+  const [isCtcManualOverride, setIsCtcManualOverride] = useState<boolean>(
+    Boolean(initialValues?.totalCompensation)
+  );
   const [showTaxProjectionModal, setShowTaxProjectionModal] = useState<boolean>(false);
   const [showTaxCalculator, setShowTaxCalculator] = useState<boolean>(true);
   const [deductIncomeTax, setDeductIncomeTax] = useState<boolean>(() => {
@@ -422,9 +424,7 @@ const SalarySlipForm = ({
       const existingTds = Number(raw.income_tax_tds || raw.incomeTaxTds || 0);
       if (existingTds > 0) return true;
       if (Array.isArray(initialValues.deductions)) {
-        const found = initialValues.deductions.find((d: any) =>
-          isIncomeTaxTdsName(d.name || '')
-        );
+        const found = initialValues.deductions.find((d: any) => isIncomeTaxTdsName(d.name || ''));
         return Number(found?.amount || 0) > 0;
       }
     }
@@ -620,7 +620,9 @@ const SalarySlipForm = ({
           ];
 
     // Generate proper professional slip number
-    const empCode = formatEmployeeCode(raw.employee_code || initialValues.employeeCode || initialValues.employeeId || '');
+    const empCode = formatEmployeeCode(
+      raw.employee_code || initialValues.employeeCode || initialValues.employeeId || ''
+    );
     const defaultMonthYear = `${monthVal} ${yearVal}`;
     const rawInitialSlipNo =
       extractSlipNumber(initialValues || raw) ||
@@ -631,7 +633,9 @@ const SalarySlipForm = ({
     setSlipSequence(initialSlipSeq);
     setSlipSeqInput(String(initialSlipSeq).padStart(3, '0'));
 
-    const generatedSlipNo = empCode ? generateSlipNumber(empCode, defaultMonthYear, initialSlipSeq) : '';
+    const generatedSlipNo = empCode
+      ? generateSlipNumber(empCode, defaultMonthYear, initialSlipSeq)
+      : '';
 
     // 9. Update Form State (Preserving all saved values including PAN, Status, and Account Number)
     setFormData({
@@ -697,10 +701,7 @@ const SalarySlipForm = ({
           'Seema Srivastava'
       ),
       signatoryRole: String(
-        raw.signatory_role ||
-          raw.signatoryRole ||
-          initialValues.signatoryRole ||
-          '(Director)'
+        raw.signatory_role || raw.signatoryRole || initialValues.signatoryRole || '(Director)'
       ),
       paymentStatus: String(
         raw.payment_status || raw.paymentStatus || initialValues.paymentStatus || 'pending'
@@ -757,7 +758,10 @@ const SalarySlipForm = ({
   ): Promise<string | null> => {
     const activeMonthYear =
       targetMonthYear || formData.monthYear || `${months[new Date().getMonth()]} ${currentYear}`;
-    const parts = activeMonthYear.trim().split(/[\s\/\-]+/).filter(Boolean);
+    const parts = activeMonthYear
+      .trim()
+      .split(/[\s\/\-]+/)
+      .filter(Boolean);
     let targetMonth = 0;
     let targetYear = 0;
     for (const p of parts) {
@@ -883,7 +887,6 @@ const SalarySlipForm = ({
     const updatedSlipNo = generateSlipNumber(empCode, my, valid);
     setFormData((prev) => ({ ...prev, paySlipNo: updatedSlipNo }));
   };
-
 
   const handlePaySlipNoDirectChange = (value: string) => {
     updateField('paySlipNo', value);
@@ -1085,9 +1088,13 @@ const SalarySlipForm = ({
   const liveTaxResult: TaxCalculationResult | null = useMemo(() => {
     if (estimatedAnnualGross <= 0) return null;
     const mult =
-      formData.payCycle === 'Weekly' ? 52 :
-      formData.payCycle === 'Bi-Weekly' ? 26 :
-      formData.payCycle === 'Semi-Monthly' ? 24 : 12;
+      formData.payCycle === 'Weekly'
+        ? 52
+        : formData.payCycle === 'Bi-Weekly'
+          ? 26
+          : formData.payCycle === 'Semi-Monthly'
+            ? 24
+            : 12;
     const annualBasic =
       Number(formData.totalCompensation) > 0
         ? Math.round(Number(formData.totalCompensation) * 0.4)
@@ -1105,7 +1112,14 @@ const SalarySlipForm = ({
       previousEmployerYtd:
         selectedEmployeeObj?.previousEmployerYtd || selectedEmployeeObj?.previous_employer_ytd,
     });
-  }, [estimatedAnnualGross, formData.totalCompensation, formData.taxRegime, formData.baseSalary, formData.payCycle, selectedEmployeeObj]);
+  }, [
+    estimatedAnnualGross,
+    formData.totalCompensation,
+    formData.taxRegime,
+    formData.baseSalary,
+    formData.payCycle,
+    selectedEmployeeObj,
+  ]);
 
   // Auto-sync TDS amount in deductions when liveTaxResult updates if TDS deduction is enabled
   useEffect(() => {
@@ -1228,7 +1242,9 @@ const SalarySlipForm = ({
                       : 'Admin')
           ).trim();
 
-          const formattedRole = displayPosition.startsWith('(') ? displayPosition : `(${displayPosition})`;
+          const formattedRole = displayPosition.startsWith('(')
+            ? displayPosition
+            : `(${displayPosition})`;
 
           if (!list.some((existing) => existing.name.toLowerCase() === name.toLowerCase())) {
             list.push({
@@ -1404,23 +1420,26 @@ const SalarySlipForm = ({
           (e) => e.name.toLowerCase().includes('hra') || e.name.toLowerCase().includes('house rent')
         );
         const hraAmount = Math.round(detectedBaseSalary * 0.5);
-        if (hraIdx !== -1 && (!updatedEarnings[hraIdx].amount || Number(updatedEarnings[hraIdx].amount) === 0)) {
+        if (
+          hraIdx !== -1 &&
+          (!updatedEarnings[hraIdx].amount || Number(updatedEarnings[hraIdx].amount) === 0)
+        ) {
           updatedEarnings[hraIdx] = { ...updatedEarnings[hraIdx], amount: hraAmount };
         }
       }
 
       const sumEarn = updatedEarnings.reduce((s, it) => s + (Number(it.amount) || 0), 0);
       const mult =
-        prev.payCycle === 'Weekly' ? 52 :
-        prev.payCycle === 'Bi-Weekly' ? 26 :
-        prev.payCycle === 'Semi-Monthly' ? 24 : 12;
+        prev.payCycle === 'Weekly'
+          ? 52
+          : prev.payCycle === 'Bi-Weekly'
+            ? 26
+            : prev.payCycle === 'Semi-Monthly'
+              ? 24
+              : 12;
       const effectiveCtc =
         prev.totalCompensation ||
-        (detectedTotalComp > 0
-          ? detectedTotalComp
-          : sumEarn > 0
-            ? sumEarn * mult
-            : '');
+        (detectedTotalComp > 0 ? detectedTotalComp : sumEarn > 0 ? sumEarn * mult : '');
 
       const updated = {
         ...prev,
@@ -1434,7 +1453,7 @@ const SalarySlipForm = ({
         totalCompensation: effectiveCtc,
         taxRegime: detectedRegime || prev.taxRegime,
         panNumber: detectedPan || prev.panNumber || '',
-        paySlipNo: isEditing && prev.paySlipNo ? prev.paySlipNo : (generatedSlipNo || prev.paySlipNo),
+        paySlipNo: isEditing && prev.paySlipNo ? prev.paySlipNo : generatedSlipNo || prev.paySlipNo,
         earnings: updatedEarnings,
       };
 
@@ -1645,8 +1664,7 @@ const SalarySlipForm = ({
         const hraIndex = updatedEarnings.findIndex(
           (e) => e.name.toLowerCase().includes('hra') || e.name.toLowerCase().includes('house rent')
         );
-        const calculatedHra =
-          Number(updatedValue) > 0 ? Math.round(Number(updatedValue) * 0.5) : 0;
+        const calculatedHra = Number(updatedValue) > 0 ? Math.round(Number(updatedValue) * 0.5) : 0;
         if (hraIndex !== -1) {
           updatedEarnings[hraIndex] = { ...updatedEarnings[hraIndex], amount: calculatedHra };
         } else if (calculatedHra > 0) {
@@ -1657,11 +1675,14 @@ const SalarySlipForm = ({
       // PAY-06: Auto-calculate Annual CTC from earnings
       const sumEarn = updatedEarnings.reduce((s, it) => s + (Number(it.amount) || 0), 0);
       const mult =
-        prev.payCycle === 'Weekly' ? 52 :
-        prev.payCycle === 'Bi-Weekly' ? 26 :
-        prev.payCycle === 'Semi-Monthly' ? 24 : 12;
-      const newCtc =
-        !isCtcManualOverride && sumEarn > 0 ? sumEarn * mult : prev.totalCompensation;
+        prev.payCycle === 'Weekly'
+          ? 52
+          : prev.payCycle === 'Bi-Weekly'
+            ? 26
+            : prev.payCycle === 'Semi-Monthly'
+              ? 24
+              : 12;
+      const newCtc = !isCtcManualOverride && sumEarn > 0 ? sumEarn * mult : prev.totalCompensation;
 
       return {
         ...prev,
@@ -1757,7 +1778,8 @@ const SalarySlipForm = ({
 
     // 5. Pay Slip Number
     const parsedFromInput = parseInt(slipSeqInput, 10);
-    const effectiveSeq = !isNaN(parsedFromInput) && parsedFromInput >= 1 ? parsedFromInput : slipSequence || 1;
+    const effectiveSeq =
+      !isNaN(parsedFromInput) && parsedFromInput >= 1 ? parsedFromInput : slipSequence || 1;
     let finalSlipNo = formData.paySlipNo?.trim();
     if (!finalSlipNo) {
       const fetched = await loadNextUniqueSlipNo();
@@ -1907,10 +1929,9 @@ const SalarySlipForm = ({
 
       // Deductions Breakdown - Strictly isolate Professional Tax and TDS
       const providentFund = findAmount(formData.deductions, ['pf', 'provident']);
-      const professionalTax =
-        formData.deductions.find((d) => isProfessionalTaxName(d.name))
-          ? Number(formData.deductions.find((d) => isProfessionalTaxName(d.name))?.amount) || 0
-          : 0;
+      const professionalTax = formData.deductions.find((d) => isProfessionalTaxName(d.name))
+        ? Number(formData.deductions.find((d) => isProfessionalTaxName(d.name))?.amount) || 0
+        : 0;
       const tdsItem = formData.deductions.find((d) => isIncomeTaxTdsName(d.name));
       const incomeTaxTds = deductIncomeTax && tdsItem ? Number(tdsItem.amount) || 0 : 0;
 
@@ -2220,7 +2241,8 @@ const SalarySlipForm = ({
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 line-clamp-1 max-w-md">
-                      {formData.companyAddress || 'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'}
+                      {formData.companyAddress ||
+                        'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'}
                     </p>
                   </div>
                 </div>
@@ -2616,7 +2638,10 @@ const SalarySlipForm = ({
                 {/* Slip Number / Sequence Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Slip Seq. <span className="text-xs text-gray-400 font-normal">({String(slipSequence).padStart(3, '0')})</span>
+                    Slip Seq.{' '}
+                    <span className="text-xs text-gray-400 font-normal">
+                      ({String(slipSequence).padStart(3, '0')})
+                    </span>
                   </label>
                   <div className="relative">
                     <input
@@ -2698,11 +2723,17 @@ const SalarySlipForm = ({
                     <p className="mt-1 text-xs text-red-500 font-medium">{errors.paySlipNo}</p>
                   ) : !formData.employeeId ? (
                     <p className="mt-1 text-[11px] text-amber-600 font-medium flex items-center gap-1">
-                      <AlertCircle size={12} /> Slip number is generated automatically once employee is selected.
+                      <AlertCircle size={12} /> Slip number is generated automatically once employee
+                      is selected.
                     </p>
                   ) : (
                     <p className="mt-1 text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-                      ✓ Generated in format {formatEmployeeCode(formData.employeeId) || 'EMP1'}-{selectedMonth ? String(months.indexOf(selectedMonth.toUpperCase()) + 1).padStart(2, '0') : '09'}{String(selectedYear).slice(-2)}{String(slipSequence).padStart(3, '0')}
+                      ✓ Generated in format {formatEmployeeCode(formData.employeeId) || 'EMP1'}-
+                      {selectedMonth
+                        ? String(months.indexOf(selectedMonth.toUpperCase()) + 1).padStart(2, '0')
+                        : '09'}
+                      {String(selectedYear).slice(-2)}
+                      {String(slipSequence).padStart(3, '0')}
                     </p>
                   )}
                 </div>
@@ -2884,7 +2915,9 @@ const SalarySlipForm = ({
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span className="font-semibold text-gray-900">{formData.employeeName}</span>
-                    <span className="text-gray-500 font-mono">Code: {formatEmployeeCode(formData.employeeId)}</span>
+                    <span className="text-gray-500 font-mono">
+                      Code: {formatEmployeeCode(formData.employeeId)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">Generated Slip No:</span>
@@ -2973,13 +3006,22 @@ const SalarySlipForm = ({
                     // PAY-06: Auto-calculate Annual CTC from earnings
                     const sumEarn = updated.reduce((s, it) => s + (Number(it.amount) || 0), 0);
                     const mult =
-                      prev.payCycle === 'Weekly' ? 52 :
-                      prev.payCycle === 'Bi-Weekly' ? 26 :
-                      prev.payCycle === 'Semi-Monthly' ? 24 : 12;
+                      prev.payCycle === 'Weekly'
+                        ? 52
+                        : prev.payCycle === 'Bi-Weekly'
+                          ? 26
+                          : prev.payCycle === 'Semi-Monthly'
+                            ? 24
+                            : 12;
                     const newCtc =
                       !isCtcManualOverride && sumEarn > 0 ? sumEarn * mult : prev.totalCompensation;
 
-                    return { ...prev, baseSalary: val, earnings: updated, totalCompensation: newCtc };
+                    return {
+                      ...prev,
+                      baseSalary: val,
+                      earnings: updated,
+                      totalCompensation: newCtc,
+                    };
                   });
                 }}
                 placeholder="e.g. 50000"
@@ -3339,9 +3381,12 @@ const SalarySlipForm = ({
                     <UserCheck size={16} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-gray-900">Signatory & HR Discrepancy Note</h4>
+                    <h4 className="text-sm font-bold text-gray-900">
+                      Signatory & HR Discrepancy Note
+                    </h4>
                     <p className="text-xs text-gray-500">
-                      Select authorized signatory (Admin, Super Admin, Finance Admin, HR Admin) and review discrepancy note.
+                      Select authorized signatory (Admin, Super Admin, Finance Admin, HR Admin) and
+                      review discrepancy note.
                     </p>
                   </div>
                 </div>
@@ -3350,13 +3395,16 @@ const SalarySlipForm = ({
               {/* Authorized Signatory Dropdown */}
               <div className="mb-4">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Authorized Signatory (Admin / Super Admin / Finance Admin / HR Admin) <span className="text-red-500">*</span>
+                  Authorized Signatory (Admin / Super Admin / Finance Admin / HR Admin){' '}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
                     value={
                       authorizedSignatories.find(
-                        (s) => s.name.toLowerCase() === (formData.authorizedSignatory || '').toLowerCase()
+                        (s) =>
+                          s.name.toLowerCase() ===
+                          (formData.authorizedSignatory || '').toLowerCase()
                       )?.key || ''
                     }
                     onChange={(e) => {
@@ -3378,7 +3426,8 @@ const SalarySlipForm = ({
                   </select>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1">
-                  Only verified administrators and directors appear in this authorized signatory list.
+                  Only verified administrators and directors appear in this authorized signatory
+                  list.
                 </p>
               </div>
 
@@ -3478,9 +3527,11 @@ const SalarySlipForm = ({
             id: selectedEmployeeObj?.id || formData.employeeId || formData.userId,
             userId: selectedEmployeeObj?.id || formData.employeeId || formData.userId,
             user_id: selectedEmployeeObj?.id || formData.employeeId || formData.userId,
-            name: formData.employeeName || selectedEmployeeObj?.username || selectedEmployeeObj?.name,
+            name:
+              formData.employeeName || selectedEmployeeObj?.username || selectedEmployeeObj?.name,
             employeeName: formData.employeeName || selectedEmployeeObj?.username,
-            employeeId: formData.employeeId || selectedEmployeeObj?.employee_code || selectedEmployeeObj?.id,
+            employeeId:
+              formData.employeeId || selectedEmployeeObj?.employee_code || selectedEmployeeObj?.id,
             department: formData.department || selectedEmployeeObj?.department,
             designation: formData.position || selectedEmployeeObj?.designation,
             totalCompensation: Number(formData.totalCompensation) || estimatedAnnualGross,

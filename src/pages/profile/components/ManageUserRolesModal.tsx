@@ -6,11 +6,7 @@ import { ShieldCheck, Sparkles, Check, Users } from 'lucide-react';
 import { useGetRolesQuery } from '@/store/api/roleApiSlice';
 import { useUpdateStaffMutation } from '@/store/api/userSlice';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  aggregateRolePermissions,
-  SYSTEM_ROLE_PERMISSIONS,
-  extractUserRoles,
-} from '@/utils/rbac';
+import { aggregateRolePermissions, SYSTEM_ROLE_PERMISSIONS, extractUserRoles } from '@/utils/rbac';
 import { recordAuditLog } from '@/services/auditService';
 
 export interface ManageUserRolesModalProps {
@@ -99,9 +95,7 @@ export const ManageUserRolesModal: React.FC<ManageUserRolesModalProps> = ({
       };
     });
 
-    const validRoleIds = roleObjects
-      .map((r) => Number(r.id))
-      .filter((id) => !isNaN(id) && id > 0);
+    const validRoleIds = roleObjects.map((r) => Number(r.id)).filter((id) => !isNaN(id) && id > 0);
 
     const userId = user.id;
 
@@ -120,9 +114,10 @@ export const ManageUserRolesModal: React.FC<ManageUserRolesModalProps> = ({
 
       message.success('User roles updated successfully.');
     } catch (err: unknown) {
-      const errMsg = (err as { data?: { message?: string }; error?: string })?.data?.message
-        || (err as { error?: string })?.error
-        || 'Save failed';
+      const errMsg =
+        (err as { data?: { message?: string }; error?: string })?.data?.message ||
+        (err as { error?: string })?.error ||
+        'Save failed';
       message.error(`Failed to save roles: ${errMsg}`);
       return; // Don't close modal or update local state if backend failed
     }
@@ -209,9 +204,7 @@ export const ManageUserRolesModal: React.FC<ManageUserRolesModalProps> = ({
               <Users className="w-3.5 h-3.5 text-primary" />
               <span>Assign Roles (Multiple Roles Supported) *</span>
             </label>
-            <span className="text-[11px] text-muted-foreground">
-              Select one or more roles
-            </span>
+            <span className="text-[11px] text-muted-foreground">Select one or more roles</span>
           </div>
           <AntSelect
             mode="multiple"
@@ -307,4 +300,3 @@ export const ManageUserRolesModal: React.FC<ManageUserRolesModalProps> = ({
     </Dialog>
   );
 };
-

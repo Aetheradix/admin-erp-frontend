@@ -8,7 +8,12 @@ interface DeleteOfficeDialogProps {
   onConfirm: () => void;
 }
 
-export function DeleteOfficeDialog({ visible, isDeleting, onHide, onConfirm }: DeleteOfficeDialogProps) {
+export function DeleteOfficeDialog({
+  visible,
+  isDeleting,
+  onHide,
+  onConfirm,
+}: DeleteOfficeDialogProps) {
   return (
     <Dialog
       visible={visible}
@@ -19,12 +24,15 @@ export function DeleteOfficeDialog({ visible, isDeleting, onHide, onConfirm }: D
       contentClassName="p-6"
       headerClassName="px-6 pt-6 pb-2 text-lg font-black tracking-tight border-none"
       pt={{
-        root: { className: 'rounded-[28px] overflow-hidden border-none shadow-2xl bg-surface-elevated' },
+        root: {
+          className: 'rounded-[28px] overflow-hidden border-none shadow-2xl bg-surface-elevated',
+        },
         mask: { className: 'backdrop-blur-md bg-black/40' },
       }}>
       <div className="space-y-4">
         <p className="text-xs text-muted font-medium">
-          Are you sure you want to remove this office location? Employees will no longer be able to check in against this geofence.
+          Are you sure you want to remove this office location? Employees will no longer be able to
+          check in against this geofence.
         </p>
         <div className="flex justify-end gap-2.5 pt-2">
           <Button

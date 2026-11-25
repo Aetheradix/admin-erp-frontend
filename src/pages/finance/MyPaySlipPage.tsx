@@ -21,7 +21,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { message } from 'antd';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useGetSalarySlipsByEmployeeIdQuery, useGetAllSalarySlipsQuery } from '@/store/api/financeApiSlice';
+import {
+  useGetSalarySlipsByEmployeeIdQuery,
+  useGetAllSalarySlipsQuery,
+} from '@/store/api/financeApiSlice';
 import type { SalaryBreakdownItem } from '@/store/api/financeApiSlice';
 
 import SalarySlipTemplate from './components/SalarySlipTemplate';
@@ -251,13 +254,13 @@ export const formatApiRecord = (item: Record<string, unknown>): PayrollRecord =>
     isVoid: resolvePayrollStatus(item) === 'void',
     voidReason: String(
       findDeepValue(item, ['void_reason', 'voidReason']) ||
-      (String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID: ')
-        ? String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '')
-            .split('[VOID: ')[1]
-            ?.split(']')[0]
-            ?.split('|')[0]
-            ?.trim()
-        : '')
+        (String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '').includes('[VOID: ')
+          ? String(findDeepValue(item, ['hr_note', 'hrNote', 'remarks']) || '')
+              .split('[VOID: ')[1]
+              ?.split(']')[0]
+              ?.split('|')[0]
+              ?.trim()
+          : '')
     ),
     paymentStatus: resolvePayrollStatus(item),
   };
@@ -293,7 +296,9 @@ const MyPaySlipPage = () => {
     user?.role === 'FinanceAdmin' ||
     user?.role === 'HrAdmin';
 
-  const shouldFetchAll = Boolean(isElevated && !isEmpLoading && (!empSlipsData || !empSlipsData?.length));
+  const shouldFetchAll = Boolean(
+    isElevated && !isEmpLoading && (!empSlipsData || !empSlipsData?.length)
+  );
 
   const {
     data: allSlipsData,
@@ -424,7 +429,12 @@ const MyPaySlipPage = () => {
     // Strictly filter to ensure ONLY the current employee's slips are included
     const userRecords = rawList.filter((item) => {
       const itemUserId = findDeepValue(item, ['user_id', 'userId']);
-      const itemEmpCode = findDeepValue(item, ['employee_code', 'employeeCode', 'employee_id', 'employeeId']);
+      const itemEmpCode = findDeepValue(item, [
+        'employee_code',
+        'employeeCode',
+        'employee_id',
+        'employeeId',
+      ]);
       const itemUsername = findDeepValue(item, ['username', 'employeeName', 'employee_name']);
       const itemEmail = findDeepValue(item, ['user_email', 'email', 'userEmail']);
 
@@ -510,7 +520,10 @@ const MyPaySlipPage = () => {
     parsed.sort((a, b) => {
       const aMonthYear = a.monthYear || '';
       const bMonthYear = b.monthYear || '';
-      return String(bMonthYear).localeCompare(String(aMonthYear)) || Number(b.id || 0) - Number(a.id || 0);
+      return (
+        String(bMonthYear).localeCompare(String(aMonthYear)) ||
+        Number(b.id || 0) - Number(a.id || 0)
+      );
     });
 
     return parsed;

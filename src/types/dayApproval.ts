@@ -35,11 +35,7 @@ export interface DayApprovalActionPayload {
  * - Partially Processed: Some days have been processed while others are still pending.
  */
 export type OverallRequestStatus =
-  | 'Pending'
-  | 'Approved'
-  | 'Rejected'
-  | 'Partially Approved'
-  | 'Partially Processed';
+  'Pending' | 'Approved' | 'Rejected' | 'Partially Approved' | 'Partially Processed';
 
 /**
  * Compute the overall status from a list of DayApproval records.

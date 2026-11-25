@@ -10,7 +10,9 @@ export function useBranchesAccess(): boolean {
     can('organization:manage') ||
     Boolean(
       roles?.some((r) => {
-        const lr = String(r).toLowerCase().replace(/[\s_-]/g, '');
+        const lr = String(r)
+          .toLowerCase()
+          .replace(/[\s_-]/g, '');
         return lr.includes('admin') || lr.includes('hr');
       })
     )

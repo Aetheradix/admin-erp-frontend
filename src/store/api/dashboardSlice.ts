@@ -26,7 +26,8 @@ export const dashboardSlice = apiSlice.injectEndpoints({
     }),
 
     getNextSalarySchedule: builder.query<NextSalarySchedule, string | void>({
-      query: (date) => (date ? `/dashboard/next-salary-schedule?date=${date}` : '/dashboard/next-salary-schedule'),
+      query: (date) =>
+        date ? `/dashboard/next-salary-schedule?date=${date}` : '/dashboard/next-salary-schedule',
       transformResponse: (response: { success: boolean; data: NextSalarySchedule }) => {
         return response.data;
       },

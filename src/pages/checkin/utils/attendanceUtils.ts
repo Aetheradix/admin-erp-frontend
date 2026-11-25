@@ -7,9 +7,9 @@ export interface BreakItem {
   status?: 'IN_PROGRESS' | 'COMPLETED' | string;
   break_type?: string;
   date?: string;
-  break_note?: string | null;     // What employee noted when taking break
-  maxAllowedMinutes?: number;     // Policy limit (e.g. Tea: 15m, Lunch: 45m)
-  isOverTime?: boolean;           // true if durationMinutes > maxAllowedMinutes
+  break_note?: string | null; // What employee noted when taking break
+  maxAllowedMinutes?: number; // Policy limit (e.g. Tea: 15m, Lunch: 45m)
+  isOverTime?: boolean; // true if durationMinutes > maxAllowedMinutes
 }
 
 export interface DayDetailedRecord {

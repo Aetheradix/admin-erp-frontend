@@ -12,7 +12,14 @@ interface OfficesGridProps {
   onDelete: (id: number) => void;
 }
 
-export function OfficesGrid({ offices, isLoading, canManage, onCreate, onEdit, onDelete }: OfficesGridProps) {
+export function OfficesGrid({
+  offices,
+  isLoading,
+  canManage,
+  onCreate,
+  onEdit,
+  onDelete,
+}: OfficesGridProps) {
   return (
     <div className="space-y-6">
       {isLoading ? (
@@ -27,7 +34,8 @@ export function OfficesGrid({ offices, isLoading, canManage, onCreate, onEdit, o
           </div>
           <h3 className="text-lg font-black text-foreground">No Office Locations Configured</h3>
           <p className="text-xs text-muted max-w-md mx-auto">
-            Add your company's physical headquarters or regional branches with latitude, longitude, and geofence radius to enforce on-premise attendance.
+            Add your company's physical headquarters or regional branches with latitude, longitude,
+            and geofence radius to enforce on-premise attendance.
           </p>
           {canManage && (
             <Button onClick={onCreate} className="rounded-2xl! px-6! mx-auto">

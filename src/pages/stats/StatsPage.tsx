@@ -39,9 +39,7 @@ export function StatsPage() {
 
   const completedProjects = projects.filter((p) => p.status === COMPLETED_STATUS).length;
   const completionRate =
-    projects.length === 0
-      ? '0%'
-      : `${Math.round((completedProjects / projects.length) * 100)}%`;
+    projects.length === 0 ? '0%' : `${Math.round((completedProjects / projects.length) * 100)}%`;
 
   if (projectsLoading || statsLoading || hierarchyLoading) {
     return (

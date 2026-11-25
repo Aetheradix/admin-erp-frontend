@@ -91,8 +91,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick, clas
           {project.deadline
             ? `Due ${String(project.deadline).split('T')[0]}`
             : project.end_date
-            ? `Due ${String(project.end_date).split('T')[0]}`
-            : 'No deadline'}
+              ? `Due ${String(project.end_date).split('T')[0]}`
+              : 'No deadline'}
         </span>
 
         <span className="flex items-center gap-1 font-bold text-primary group-hover:translate-x-1 transition-transform">

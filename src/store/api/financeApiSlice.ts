@@ -299,7 +299,10 @@ const mapSalarySlipResponse = (payload: any) => {
           ? slip.earnings
           : [
               { name: 'Basic Salary', amount: Number(slip.basic_salary || 0) },
-              { name: 'House Rent Allowance (HRA)', amount: Number(slip.house_rent_allowance || 0) },
+              {
+                name: 'House Rent Allowance (HRA)',
+                amount: Number(slip.house_rent_allowance || 0),
+              },
               { name: 'Special Allowance', amount: Number(slip.special_allowance || 0) },
               { name: 'Conveyance Allowance', amount: Number(slip.conveyance_allowance || 0) },
               { name: 'Bonus', amount: Number(slip.bonus || 0) },
@@ -780,10 +783,7 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Get Next Unique Payslip Number (Guaranteed month-wide uniqueness)
-    getNextPayslipNumber: builder.query<
-      NextPayslipNumberResponse,
-      GetNextPayslipNumberParams
-    >({
+    getNextPayslipNumber: builder.query<NextPayslipNumberResponse, GetNextPayslipNumberParams>({
       query: (params) => {
         const search = new URLSearchParams();
         if (params.month !== undefined && params.month !== null) {

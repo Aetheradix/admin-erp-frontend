@@ -56,7 +56,9 @@ export function InvitationExpiration({ record }: { record: InvitationRecord }) {
       <span className={isPast ? 'text-error font-semibold' : 'text-foreground'}>
         {new Date(record.expiresAt).toLocaleDateString()}
       </span>
-      <span className="text-[10px] text-muted">{isPast ? 'Expired token' : 'Valid for 7 days'}</span>
+      <span className="text-[10px] text-muted">
+        {isPast ? 'Expired token' : 'Valid for 7 days'}
+      </span>
     </div>
   );
 }
@@ -68,7 +70,12 @@ interface InvitationActionsProps {
   onRevoke: (record: InvitationRecord) => void;
 }
 
-export function InvitationActions({ record, onCopyLink, onResend, onRevoke }: InvitationActionsProps) {
+export function InvitationActions({
+  record,
+  onCopyLink,
+  onResend,
+  onRevoke,
+}: InvitationActionsProps) {
   return (
     <div className="flex items-center gap-2">
       {record.status === 'pending' && (

@@ -42,8 +42,8 @@ export function InviteUserDialog({
       }}>
       <div className="flex flex-col gap-5">
         <p className="text-xs text-muted -mt-2">
-          Send an onboarding invitation. An immutable audit record will track when the invitation was
-          issued, the recipient, and status changes until onboarding is completed.
+          Send an onboarding invitation. An immutable audit record will track when the invitation
+          was issued, the recipient, and status changes until onboarding is completed.
         </p>
 
         <FormField label="Full Name">

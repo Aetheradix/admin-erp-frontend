@@ -36,10 +36,7 @@ export function SearchInput({
       <Search
         size={iconSize}
         aria-hidden="true"
-        className={
-          iconClassName ??
-          DEFAULT_ICON_CLASSES
-        }
+        className={iconClassName ?? DEFAULT_ICON_CLASSES}
       />
       <Input
         value={value}

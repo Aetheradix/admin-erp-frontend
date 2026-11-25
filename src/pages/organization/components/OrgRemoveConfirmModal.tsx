@@ -74,17 +74,15 @@ export const OrgRemoveConfirmModal: React.FC<OrgRemoveConfirmModalProps> = ({
       }
       centered
       destroyOnClose
-      width={460}
-    >
+      width={460}>
       <div className="py-3 space-y-4">
         <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 flex items-start gap-3">
           <AlertTriangle className="text-red-600 shrink-0 mt-0.5" size={20} />
           <div className="text-xs text-red-900 dark:text-red-200 space-y-1">
-            <p className="font-bold text-sm">
-              Confirm removal of {user.username}?
-            </p>
+            <p className="font-bold text-sm">Confirm removal of {user.username}?</p>
             <p className="leading-relaxed">
-              This action will remove the employee from the organization hierarchy and company staff directory.
+              This action will remove the employee from the organization hierarchy and company staff
+              directory.
             </p>
           </div>
         </div>
@@ -97,8 +95,9 @@ export const OrgRemoveConfirmModal: React.FC<OrgRemoveConfirmModalProps> = ({
                 Automatic Team Rollup ({directReportsCount} Direct Reports)
               </span>
               <p className="text-muted-foreground leading-relaxed">
-                All {directReportsCount} direct reports will be safely reassigned to report directly to{' '}
-                <strong className="text-foreground">{managerName}</strong> to preserve organizational continuity.
+                All {directReportsCount} direct reports will be safely reassigned to report directly
+                to <strong className="text-foreground">{managerName}</strong> to preserve
+                organizational continuity.
               </p>
             </div>
           </div>
@@ -111,4 +110,3 @@ export const OrgRemoveConfirmModal: React.FC<OrgRemoveConfirmModalProps> = ({
     </Modal>
   );
 };
-

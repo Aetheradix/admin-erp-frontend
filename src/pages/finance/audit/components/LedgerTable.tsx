@@ -89,9 +89,7 @@ export function LedgerTable({ title, entries, color, icon, defaultOpen = true }:
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontWeight: 800, fontSize: 16, color }}>
-            {formatAuditCurrency(total)}
-          </div>
+          <div style={{ fontWeight: 800, fontSize: 16, color }}>{formatAuditCurrency(total)}</div>
           {open ? (
             <ChevronUp size={16} color="#64748b" />
           ) : (

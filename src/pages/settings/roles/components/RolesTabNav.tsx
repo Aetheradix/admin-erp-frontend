@@ -7,7 +7,11 @@ interface RolesTabNavProps {
   onChange: (tab: RolesTab) => void;
 }
 
-const TABS: Array<{ id: RolesTab; icon: React.ComponentType<{ className?: string }>; label: (count: number) => string }> = [
+const TABS: Array<{
+  id: RolesTab;
+  icon: React.ComponentType<{ className?: string }>;
+  label: (count: number) => string;
+}> = [
   { id: 'roles', icon: Shield, label: (count) => `Role Directory (${count})` },
   { id: 'matrix', icon: KeyRound, label: () => 'Permission Matrix (Modules × Actions)' },
   { id: 'assignments', icon: Users, label: () => 'User Role Assignments' },

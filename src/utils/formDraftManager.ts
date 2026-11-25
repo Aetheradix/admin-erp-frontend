@@ -42,11 +42,7 @@ function sanitizeForPersistentStorage(section: string, data: any): any {
 /**
  * Saves a form draft with timestamp
  */
-export function saveFormDraft(
-  userId: string | number,
-  section: string,
-  data: any
-): void {
+export function saveFormDraft(userId: string | number, section: string, data: any): void {
   if (!userId || !section || !data) return;
 
   const key = `${DRAFT_PREFIX}${userId}_${section}`;
@@ -156,4 +152,3 @@ export function isDataModified(saved: any, current: any): boolean {
     return true;
   }
 }
-

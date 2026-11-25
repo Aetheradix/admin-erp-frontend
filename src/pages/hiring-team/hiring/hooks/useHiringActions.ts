@@ -12,7 +12,11 @@ interface UseHiringActionsParams {
   setSelectedProfile: (profile: ProfileCompletionData | null) => void;
 }
 
-export function useHiringActions({ actor, refreshList, setSelectedProfile }: UseHiringActionsParams) {
+export function useHiringActions({
+  actor,
+  refreshList,
+  setSelectedProfile,
+}: UseHiringActionsParams) {
   const handleApprove = (
     userId: number | string,
     employeeEmail?: string,

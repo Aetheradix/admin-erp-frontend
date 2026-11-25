@@ -17,12 +17,7 @@ import {
 } from '@/store/api/leaveSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { Button } from '@/components/ui/primitives/Button';
-import {
-  ShieldCheck,
-  Plus,
-  Trash2,
-  Repeat,
-} from 'lucide-react';
+import { ShieldCheck, Plus, Trash2, Repeat } from 'lucide-react';
 
 export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
   const { data: policies = [] } = useGetLeavePoliciesQuery();
@@ -47,15 +42,25 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
         max_carry_forward_days: Number(values.max_carry_forward_days || 0),
         allow_encashment: 0,
         max_encashment_days: 0,
-        max_consecutive_days: values.max_consecutive_days ? Number(values.max_consecutive_days) : null,
+        max_consecutive_days: values.max_consecutive_days
+          ? Number(values.max_consecutive_days)
+          : null,
         min_notice_days: Number(values.min_notice_days || 0),
       }).unwrap();
 
-      showToast({ severity: 'success', summary: 'Success', detail: 'Leave policy created successfully' });
+      showToast({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Leave policy created successfully',
+      });
       setShowModal(false);
       form.resetFields();
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Could not save policy' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Could not save policy',
+      });
     }
   };
 
@@ -64,7 +69,11 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
       await deletePolicy(id).unwrap();
       showToast({ severity: 'info', summary: 'Removed', detail: `Policy "${policyName}" deleted` });
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Could not delete policy' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Could not delete policy',
+      });
     }
   };
 
@@ -81,7 +90,8 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
               Enterprise Leave Policy Engine
             </h3>
             <p className="text-xs text-muted">
-              Configure dynamic quotas, accrual intervals, sandwich rules, and carry-forward formulas.
+              Configure dynamic quotas, accrual intervals, sandwich rules, and carry-forward
+              formulas.
             </p>
           </div>
         </div>
@@ -136,13 +146,17 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
 
               <div className="grid grid-cols-2 gap-3 my-5 p-4 rounded-2xl bg-surface-elevated/60 border border-border-subtle/60 text-xs">
                 <div>
-                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">Quota</span>
+                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
+                    Quota
+                  </span>
                   <p className="font-black text-foreground text-sm mt-0.5">
                     {p.yearly_quota} days / yr
                   </p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">Accrual</span>
+                  <span className="text-[10px] font-extrabold text-muted uppercase tracking-wider">
+                    Accrual
+                  </span>
                   <p className="font-black text-foreground text-sm mt-0.5 capitalize">
                     {p.accrual_frequency.replace('_', ' ').toLowerCase()}
                   </p>
@@ -191,7 +205,11 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
       <Modal
         open={showModal}
         onCancel={() => setShowModal(false)}
-        title={<span className="text-base font-black text-foreground">Create Declarative Leave Policy</span>}
+        title={
+          <span className="text-base font-black text-foreground">
+            Create Declarative Leave Policy
+          </span>
+        }
         footer={null}
         centered
         width={580}
@@ -245,7 +263,10 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
             label={<span className="text-xs font-bold text-foreground">Policy Display Name</span>}
             name="name"
             rules={[{ required: true, message: 'Please enter policy name' }]}>
-            <Input placeholder="e.g. Standard Casual Leave Policy 2026" className="rounded-xl py-2" />
+            <Input
+              placeholder="e.g. Standard Casual Leave Policy 2026"
+              className="rounded-xl py-2"
+            />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-3">
@@ -257,7 +278,9 @@ export function LeavePolicyStudio({ isAdmin }: { isAdmin: boolean }) {
             </Form.Item>
 
             <Form.Item
-              label={<span className="text-xs font-bold text-foreground">Max Consecutive Days</span>}
+              label={
+                <span className="text-xs font-bold text-foreground">Max Consecutive Days</span>
+              }
               name="max_consecutive_days">
               <InputNumber min={1} className="w-full rounded-xl py-1" />
             </Form.Item>

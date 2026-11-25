@@ -35,9 +35,7 @@ export function EditManagerDialog({
               {state.user.username.slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <span className="font-bold text-foreground text-sm block">
-                {state.user.username}
-              </span>
+              <span className="font-bold text-foreground text-sm block">{state.user.username}</span>
               <span className="text-xs text-muted-foreground">
                 {state.user.designation || state.user.role} • {state.user.department}
               </span>

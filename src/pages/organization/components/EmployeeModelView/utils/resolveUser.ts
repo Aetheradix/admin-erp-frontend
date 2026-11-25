@@ -10,7 +10,9 @@ interface ExtractedTarget {
   name: string | null;
 }
 
-export function extractTargetIdentifiers(target: EmployeeInput | null | undefined): ExtractedTarget {
+export function extractTargetIdentifiers(
+  target: EmployeeInput | null | undefined
+): ExtractedTarget {
   if (target === null || target === undefined) {
     return { id: null, code: null, email: null, name: null };
   }
@@ -34,7 +36,11 @@ export function extractTargetIdentifiers(target: EmployeeInput | null | undefine
 
 export function matchesUser(u: HierarchyNodeUser, target: ExtractedTarget): boolean {
   if (target.id && String(u.id) === target.id) return true;
-  if (target.code && u.employee_code && u.employee_code.toLowerCase() === target.code.toLowerCase()) {
+  if (
+    target.code &&
+    u.employee_code &&
+    u.employee_code.toLowerCase() === target.code.toLowerCase()
+  ) {
     return true;
   }
   if (target.id && u.employee_code && u.employee_code.toLowerCase() === target.id.toLowerCase()) {
@@ -56,7 +62,8 @@ export function mapDbUserToHierarchy(dbU: StaffMember): HierarchyNodeUser {
     designation: dbU.designation || dbU.role,
     employee_code: code,
     image_url: dbU.image_url || dbU.image,
-    reporting_manager_id: (dbU as { reporting_manager_id?: number | null }).reporting_manager_id ?? null,
+    reporting_manager_id:
+      (dbU as { reporting_manager_id?: number | null }).reporting_manager_id ?? null,
     directReports: [],
     subordinatesCount: 0,
   };

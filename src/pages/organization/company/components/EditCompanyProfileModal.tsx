@@ -32,8 +32,7 @@ export function EditCompanyProfileModal({
   onSave,
   onAddLocation,
 }: EditCompanyProfileModalProps) {
-  const labelClass =
-    'text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]';
+  const labelClass = 'text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]';
 
   return (
     <Dialog

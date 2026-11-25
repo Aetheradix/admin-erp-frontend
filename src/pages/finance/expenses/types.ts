@@ -10,13 +10,7 @@ export interface UserOption {
 }
 
 export type DateRangePreset =
-  | 'all'
-  | '7days'
-  | '30days'
-  | 'last_month'
-  | '1year'
-  | '3years'
-  | 'custom';
+  'all' | '7days' | '30days' | 'last_month' | '1year' | '3years' | 'custom';
 
 export interface ExpenseFilters {
   category: string;

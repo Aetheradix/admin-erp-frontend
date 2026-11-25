@@ -53,6 +53,6 @@ export const formatPriceWithCurrency = (
 ): string => {
   const num = typeof amount === 'number' ? amount : parseFloat(String(amount || 0)) || 0;
   const sym = getCurrencySymbol(currency || 'INR');
-  const locale = (!currency || currency.toUpperCase() === 'INR') ? 'en-IN' : undefined;
+  const locale = !currency || currency.toUpperCase() === 'INR' ? 'en-IN' : undefined;
   return `${sym}${num.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 };

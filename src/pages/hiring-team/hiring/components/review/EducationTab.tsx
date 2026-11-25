@@ -24,9 +24,7 @@ export function EducationTab({ profile }: EducationTabProps) {
                 {edu.startYear} – {edu.endYear}
               </span>
             </div>
-            {edu.grade && (
-              <div className="text-xs text-muted">Grade / Percentage: {edu.grade}</div>
-            )}
+            {edu.grade && <div className="text-xs text-muted">Grade / Percentage: {edu.grade}</div>}
           </div>
         ))
       ) : (

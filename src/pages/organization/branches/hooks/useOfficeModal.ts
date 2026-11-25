@@ -75,7 +75,11 @@ export function useOfficeModal() {
 
   const handleDetectLocation = async () => {
     if (!navigator.geolocation) {
-      showToast({ severity: 'error', summary: 'GPS Error', detail: 'Geolocation is not supported by your browser.' });
+      showToast({
+        severity: 'error',
+        summary: 'GPS Error',
+        detail: 'Geolocation is not supported by your browser.',
+      });
       return;
     }
     setIsDetectingLocation(true);
@@ -98,7 +102,7 @@ export function useOfficeModal() {
         latitude: lat,
         longitude: lon,
         address: prev.address ? prev.address : resolvedAddress,
-        name: prev.name ? prev.name : (resolvedAddress ? resolvedAddress.split(',')[0] : prev.name),
+        name: prev.name ? prev.name : resolvedAddress ? resolvedAddress.split(',')[0] : prev.name,
       }));
       if (resolvedAddress) {
         setSearchQuery(resolvedAddress);
@@ -133,10 +137,18 @@ export function useOfficeModal() {
     try {
       if (editingOffice) {
         await updateOffice({ id: editingOffice.id, ...payload }).unwrap();
-        showToast({ severity: 'success', summary: 'Updated', detail: `Office "${formData.name}" geofence updated.` });
+        showToast({
+          severity: 'success',
+          summary: 'Updated',
+          detail: `Office "${formData.name}" geofence updated.`,
+        });
       } else {
         await createOffice(payload).unwrap();
-        showToast({ severity: 'success', summary: 'Created', detail: `New office "${formData.name}" registered.` });
+        showToast({
+          severity: 'success',
+          summary: 'Created',
+          detail: `New office "${formData.name}" registered.`,
+        });
       }
       setShowModal(false);
       setFormData(EMPTY_OFFICE_FORM);

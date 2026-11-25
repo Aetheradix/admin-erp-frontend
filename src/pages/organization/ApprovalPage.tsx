@@ -25,7 +25,8 @@ function ApprovalPage() {
 
   const isAuthorized = useMemo(() => {
     if (isSuperAdmin(currentAuthUser) || isRbacSuperadmin) return true;
-    if (can('user:approve') || can('user:invite') || can('user:manage') || can('user:view')) return true;
+    if (can('user:approve') || can('user:invite') || can('user:manage') || can('user:view'))
+      return true;
     const userRoles = getUserRoles(currentAuthUser);
     return userRoles.some((r) => ['SuperAdmin', 'Admin', 'HrAdmin'].includes(r));
   }, [currentAuthUser, isRbacSuperadmin, can]);
@@ -116,7 +117,8 @@ function ApprovalPage() {
       <div className="p-8 text-center bg-white rounded-2xl border border-border-subtle shadow-sm my-8">
         <h3 className="text-base font-bold text-foreground">Access Restricted</h3>
         <p className="text-xs text-muted-foreground mt-1">
-          You do not have administrative privileges to manage user account approvals or dispatch invitations.
+          You do not have administrative privileges to manage user account approvals or dispatch
+          invitations.
         </p>
       </div>
     );

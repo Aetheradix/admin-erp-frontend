@@ -2,10 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Modal, Form, Select, Input, DatePicker, Alert, Button, Badge } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { Users } from 'lucide-react';
-import {
-  useBulkHandoverMutation,
-  type HierarchyNodeUser,
-} from '@/store/api/organizationApiSlice';
+import { useBulkHandoverMutation, type HierarchyNodeUser } from '@/store/api/organizationApiSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
 
@@ -156,7 +153,11 @@ export const BulkHandoverModal: React.FC<BulkHandoverModalProps> = ({
               <span className="text-xs font-bold text-foreground">
                 Affected Direct Reports ({affectedReports.length})
               </span>
-              <Badge count={affectedReports.length} overflowCount={99} style={{ backgroundColor: '#E8583A' }} />
+              <Badge
+                count={affectedReports.length}
+                overflowCount={99}
+                style={{ backgroundColor: '#E8583A' }}
+              />
             </div>
 
             {affectedReports.length === 0 ? (
@@ -212,4 +213,3 @@ export const BulkHandoverModal: React.FC<BulkHandoverModalProps> = ({
     </Modal>
   );
 };
-

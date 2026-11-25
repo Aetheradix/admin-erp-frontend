@@ -78,7 +78,8 @@ function InlineStatCard({ item }: { item: StatCardItem }) {
         : {})}
       className={cn(
         'bg-white p-6 rounded-[32px] border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex items-center gap-6 group',
-        isInteractive && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+        isInteractive &&
+          'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
         item.className
       )}>
       <div

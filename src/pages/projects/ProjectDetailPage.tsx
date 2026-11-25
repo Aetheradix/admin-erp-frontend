@@ -1,11 +1,27 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  FolderKanban, MessageSquare, Play, FileText, Clock,
-  ArrowLeft, Calendar, Sparkles, Columns, ListTodo, Layers, Activity,
+  FolderKanban,
+  MessageSquare,
+  Play,
+  FileText,
+  Clock,
+  ArrowLeft,
+  Calendar,
+  Sparkles,
+  Columns,
+  ListTodo,
+  Layers,
+  Activity,
 } from 'lucide-react';
 import { projectService } from '@/services/projectService';
-import type { Milestone as MilestoneType, ProjectTask, Dependency, Sprint, ProjectDocument } from '@/types/project';
+import type {
+  Milestone as MilestoneType,
+  ProjectTask,
+  Dependency,
+  Sprint,
+  ProjectDocument,
+} from '@/types/project';
 import type { Project } from '@/types/project';
 import type { ProjectPhase } from '@/types/phase';
 import { OverviewTab } from './tabs/OverviewTab';
@@ -23,7 +39,11 @@ import { StatusTag } from '@/components/projects/StatusTag';
 import { AssigneeAvatar } from '@/components/projects/AssigneeAvatar';
 import { Tabs, Button, Tag, Space, message, Spin } from 'antd';
 import { Plus, Settings } from 'lucide-react';
-import { useGetProjectByIdQuery, useUpdateProjectMutation, useGetProjectTasksQuery } from '@/store/api/projectApiSlice';
+import {
+  useGetProjectByIdQuery,
+  useUpdateProjectMutation,
+  useGetProjectTasksQuery,
+} from '@/store/api/projectApiSlice';
 import type { BackendProject, BackendTask } from '@/store/api/projectApiSlice';
 
 // Map BackendProject → local Project shape (best-effort)
@@ -61,8 +81,16 @@ function mapBackendTaskToProjectTask(bt: BackendTask, _projectKey: string = 'PRJ
   let mappedStatus: ProjectTask['status'] = 'To Do';
   const raw = (bt.task_status || '').trim();
   if (raw === 'Completed' || raw === 'Done') mappedStatus = 'Done';
-  else if (raw === 'On-Going' || raw === 'In Progress' || raw === 'In-Progress') mappedStatus = 'In Progress';
-  else if (raw === 'In Review' || raw === 'In-Review' || raw === 'QA' || raw === 'In QA' || raw === 'Testing') mappedStatus = 'In Review';
+  else if (raw === 'On-Going' || raw === 'In Progress' || raw === 'In-Progress')
+    mappedStatus = 'In Progress';
+  else if (
+    raw === 'In Review' ||
+    raw === 'In-Review' ||
+    raw === 'QA' ||
+    raw === 'In QA' ||
+    raw === 'Testing'
+  )
+    mappedStatus = 'In Review';
   else if (raw === 'Blocked') mappedStatus = 'Blocked';
   else if (raw === 'Cancelled') mappedStatus = 'Cancelled';
   else mappedStatus = 'To Do';
@@ -110,7 +138,11 @@ export function ProjectDetailPage() {
   const projectId = id ? Number(id) : undefined;
 
   // Try real API first
-  const { data: backendProject, isLoading: loadingReal, refetch: refetchReal } = useGetProjectByIdQuery(projectId!, {
+  const {
+    data: backendProject,
+    isLoading: loadingReal,
+    refetch: refetchReal,
+  } = useGetProjectByIdQuery(projectId!, {
     skip: !projectId || isNaN(projectId),
   });
 
@@ -166,7 +198,9 @@ export function ProjectDetailPage() {
 
   // Merge live backend tasks and local storage tasks
   const tasks: ProjectTask[] = useMemo(() => {
-    const live = backendTasks.map((bt) => mapBackendTaskToProjectTask(bt, backendProject?.project_key || 'PRJ'));
+    const live = backendTasks.map((bt) =>
+      mapBackendTaskToProjectTask(bt, backendProject?.project_key || 'PRJ')
+    );
     if (live.length === 0) return localTasks;
     // Combine live and local so newly created items never disappear
     const liveIds = new Set(live.map((t) => t.id));
@@ -188,15 +222,15 @@ export function ProjectDetailPage() {
   }
 
   // Prefer backend data, fall back to local
-  const project: Project | null = backendProject
-    ? mapBackendToLocal(backendProject)
-    : localProject;
+  const project: Project | null = backendProject ? mapBackendToLocal(backendProject) : localProject;
 
   if (!project) {
     return (
       <div className="flex justify-center items-center py-24 text-muted">
         Project not found.{' '}
-        <Button type="link" onClick={() => navigate('/projects')}>Back to Projects</Button>
+        <Button type="link" onClick={() => navigate('/projects')}>
+          Back to Projects
+        </Button>
       </div>
     );
   }
@@ -204,7 +238,10 @@ export function ProjectDetailPage() {
   const handleStartProject = async () => {
     if (backendProject) {
       try {
-        await updateProject({ id: backendProject.project_id, data: { project_status: 'active' } }).unwrap();
+        await updateProject({
+          id: backendProject.project_id,
+          data: { project_status: 'active' },
+        }).unwrap();
         message.success(`Project ${project.name} is now ACTIVE!`);
         refetchReal();
       } catch {
@@ -307,12 +344,7 @@ export function ProjectDetailPage() {
         </span>
       ),
       children: (
-        <PhasesTab
-          project={project}
-          phases={phases}
-          tasks={tasks}
-          onPhasesUpdated={loadData}
-        />
+        <PhasesTab project={project} phases={phases} tasks={tasks} onPhasesUpdated={loadData} />
       ),
     },
     {
@@ -322,13 +354,7 @@ export function ProjectDetailPage() {
           <Sparkles size={14} /> Sprints
         </span>
       ),
-      children: (
-        <SprintsTab
-          project={project}
-          sprints={sprints}
-          onSprintsUpdated={loadData}
-        />
-      ),
+      children: <SprintsTab project={project} sprints={sprints} onSprintsUpdated={loadData} />,
     },
     {
       key: 'documents',
@@ -341,11 +367,7 @@ export function ProjectDetailPage() {
         </span>
       ),
       children: (
-        <DocumentsTab
-          project={project}
-          documents={documents}
-          onDocumentsUpdated={loadData}
-        />
+        <DocumentsTab project={project} documents={documents} onDocumentsUpdated={loadData} />
       ),
     },
     {
@@ -359,32 +381,31 @@ export function ProjectDetailPage() {
     },
     // Activity tab — real backend data
     ...(backendProject
-      ? [{
-          key: 'activity',
-          label: (
-            <span className="flex items-center gap-1.5 font-bold">
-              <Activity size={14} /> Activity
-            </span>
-          ),
-          children: <ActivityTab projectId={backendProject.project_id} />,
-        }]
+      ? [
+          {
+            key: 'activity',
+            label: (
+              <span className="flex items-center gap-1.5 font-bold">
+                <Activity size={14} /> Activity
+              </span>
+            ),
+            children: <ActivityTab projectId={backendProject.project_id} />,
+          },
+        ]
       : []),
     // Settings tab — real backend data & team management
     ...(backendProject
-      ? [{
-          key: 'settings',
-          label: (
-            <span className="flex items-center gap-1.5 font-bold">
-              <Settings size={14} /> Settings
-            </span>
-          ),
-          children: (
-            <ProjectSettingsTab
-              project={backendProject}
-              onProjectUpdated={loadData}
-            />
-          ),
-        }]
+      ? [
+          {
+            key: 'settings',
+            label: (
+              <span className="flex items-center gap-1.5 font-bold">
+                <Settings size={14} /> Settings
+              </span>
+            ),
+            children: <ProjectSettingsTab project={backendProject} onProjectUpdated={loadData} />,
+          },
+        ]
       : []),
   ];
 

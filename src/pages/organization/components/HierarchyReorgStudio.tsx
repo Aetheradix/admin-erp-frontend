@@ -97,13 +97,16 @@ export const HierarchyReorgStudio: React.FC<HierarchyReorgStudioProps> = ({
             Structural Reorganization & Governance Operations
           </h3>
           <p className="text-xs text-muted mt-0.5 max-w-2xl">
-            Execute enterprise-grade structural changes with automatic cycle detection, transactional closure-table updates, and immutable audit logs.
+            Execute enterprise-grade structural changes with automatic cycle detection,
+            transactional closure-table updates, and immutable audit logs.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <span className="text-[10px] font-bold text-muted uppercase block">Active Managers</span>
+            <span className="text-[10px] font-bold text-muted uppercase block">
+              Active Managers
+            </span>
             <span className="text-xl font-black text-foreground">{stats.totalManagers}</span>
           </div>
           <div className="h-8 w-px bg-border-subtle" />
@@ -124,7 +127,8 @@ export const HierarchyReorgStudio: React.FC<HierarchyReorgStudioProps> = ({
               className="p-5 rounded-2xl bg-surface border border-border-subtle shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between group">
               <div>
                 <div className="mb-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold border ${flow.color}`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold border ${flow.color}`}>
                     <Icon size={18} />
                   </div>
                 </div>
@@ -133,9 +137,7 @@ export const HierarchyReorgStudio: React.FC<HierarchyReorgStudioProps> = ({
                   {flow.title}
                 </h4>
 
-                <p className="text-xs text-muted mt-1 leading-relaxed">
-                  {flow.desc}
-                </p>
+                <p className="text-xs text-muted mt-1 leading-relaxed">{flow.desc}</p>
               </div>
 
               <div className="pt-4 mt-4 border-t border-border-subtle/60">
@@ -154,4 +156,3 @@ export const HierarchyReorgStudio: React.FC<HierarchyReorgStudioProps> = ({
     </div>
   );
 };
-

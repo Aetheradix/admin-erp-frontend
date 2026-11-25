@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Typography, Tag, Button, Empty, Avatar, Space } from 'antd';
-import { ApartmentOutlined, UserOutlined, ArrowRightOutlined, TeamOutlined } from '@ant-design/icons';
+import {
+  ApartmentOutlined,
+  UserOutlined,
+  ArrowRightOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { departmentService } from '@/services/departmentService';
 import type { Department } from '@/types/department';
@@ -23,7 +28,8 @@ export default function DepartmentsListPage() {
           Department Governance & Capacity Dashboards
         </Title>
         <Paragraph type="secondary">
-          Monitor department reporting chains, active employee workloads, bottlenecks, and project assignments across StartupOS.
+          Monitor department reporting chains, active employee workloads, bottlenecks, and project
+          assignments across StartupOS.
         </Paragraph>
       </div>
 
@@ -41,12 +47,24 @@ export default function DepartmentsListPage() {
               <Col xs={24} sm={12} lg={8} key={dept.id}>
                 <Card
                   hoverable
-                  style={{ borderRadius: 12, height: '100%', display: 'flex', flexDirection: 'column' }}
-                  bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1 }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                  style={{
+                    borderRadius: 12,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                  bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: 12,
+                    }}>
                     <div>
-                      <Title level={4} style={{ margin: 0 }}>{dept.name}</Title>
+                      <Title level={4} style={{ margin: 0 }}>
+                        {dept.name}
+                      </Title>
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         {dept.description || 'Active business unit'}
                       </Text>
@@ -59,19 +77,36 @@ export default function DepartmentsListPage() {
                       <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1677ff' }} />
                       <div>
                         <div style={{ fontSize: 12, color: '#8c8c8c' }}>Department Head</div>
-                        <div style={{ fontWeight: 600, fontSize: 13 }}>{head?.userName || 'Alex Mercer'}</div>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>
+                          {head?.userName || 'Alex Mercer'}
+                        </div>
                       </div>
                     </div>
 
-                    <div style={{ background: '#fafafa', padding: 10, borderRadius: 8, marginTop: 12 }}>
+                    <div
+                      style={{
+                        background: '#fafafa',
+                        padding: 10,
+                        borderRadius: 8,
+                        marginTop: 12,
+                      }}>
                       <Row gutter={8}>
                         <Col span={12}>
-                          <Text type="secondary" style={{ fontSize: 11 }}>Active Tasks</Text>
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            Active Tasks
+                          </Text>
                           <div style={{ fontSize: 16, fontWeight: 700 }}>{totalTasks}</div>
                         </Col>
                         <Col span={12}>
-                          <Text type="secondary" style={{ fontSize: 11 }}>Overdue</Text>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: totalOverdue > 0 ? '#cf1322' : '#3f8600' }}>
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            Overdue
+                          </Text>
+                          <div
+                            style={{
+                              fontSize: 16,
+                              fontWeight: 700,
+                              color: totalOverdue > 0 ? '#cf1322' : '#3f8600',
+                            }}>
                             {totalOverdue}
                           </div>
                         </Col>
@@ -84,8 +119,7 @@ export default function DepartmentsListPage() {
                     <Button
                       type="primary"
                       icon={<ArrowRightOutlined />}
-                      onClick={() => navigate(`/departments/${dept.id}`)}
-                    >
+                      onClick={() => navigate(`/departments/${dept.id}`)}>
                       View Dashboard
                     </Button>
                   </Space>

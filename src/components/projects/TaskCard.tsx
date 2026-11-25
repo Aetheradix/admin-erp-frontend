@@ -56,10 +56,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, className = '
           <span className="text-[11px] text-muted-foreground/60">No due date</span>
         )}
 
-        <AssigneeAvatar
-          name={task.assignedToName}
-          size={22}
-        />
+        <AssigneeAvatar name={task.assignedToName} size={22} />
       </div>
     </Card>
   );

@@ -16,9 +16,7 @@ export function formatCurrency(
   options: FormatCurrencyOptions = {}
 ): string {
   const parsed =
-    typeof amount === 'number'
-      ? amount
-      : Number.parseFloat(String(amount ?? '').replace(/,/g, ''));
+    typeof amount === 'number' ? amount : Number.parseFloat(String(amount ?? '').replace(/,/g, ''));
 
   if (!Number.isFinite(parsed)) return options.fallback ?? FALLBACK.EMPTY;
 

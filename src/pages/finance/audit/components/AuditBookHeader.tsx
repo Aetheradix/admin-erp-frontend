@@ -1,11 +1,4 @@
-import {
-  AlertCircle,
-  BookOpen,
-  CheckCircle,
-  Download,
-  Printer,
-  RefreshCw,
-} from 'lucide-react';
+import { AlertCircle, BookOpen, CheckCircle, Download, Printer, RefreshCw } from 'lucide-react';
 import { AUDIT_BOOK_YEARS, AUDIT_QUARTERS } from '../constants';
 
 interface AuditBookHeaderProps {

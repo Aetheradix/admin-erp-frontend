@@ -43,7 +43,12 @@ const SHIFT_DISPLAY = '10:00 AM – 05:00 PM';
 /**
  * Haversine distance calculator between two GPS points in meters.
  */
-export function computeDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+export function computeDistanceMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
   const R = 6371e3;
   const p1 = (lat1 * Math.PI) / 180;
   const p2 = (lat2 * Math.PI) / 180;
@@ -57,7 +62,6 @@ export function computeDistanceMeters(lat1: number, lon1: number, lat2: number, 
   return Math.round(R * c * 10) / 10;
 }
 
-
 export interface GeoLocationState {
   latitude: number | null;
   longitude: number | null;
@@ -67,7 +71,6 @@ export interface GeoLocationState {
   locationName: string | null;
   permissionGranted: boolean;
 }
-
 
 /**
  * Acquire high-accuracy position promise compatible with incognito and private browsing.
@@ -86,7 +89,6 @@ export const useAttendance = () => {
   const { data: offices = [] } = useGetActiveOfficesQuery();
   const [selectedOfficeId, setSelectedOfficeId] = useState<number | null>(null);
   const [isVerifyingGeofence, setIsVerifyingGeofence] = useState<boolean>(false);
-
 
   // WFH vs Office Work Mode toggle (defaults to 'office')
   const [workMode, setWorkMode] = useState<'office' | 'wfh'>('office');
@@ -148,14 +150,16 @@ export const useAttendance = () => {
       });
 
       // Asynchronously fetch human-readable street address for pinpoint display
-      reverseGeocode(best.latitude, best.longitude).then((addr) => {
-        if (addr) {
-          setGeoLocation((prev) => ({
-            ...prev,
-            locationName: addr,
-          }));
-        }
-      }).catch(() => {});
+      reverseGeocode(best.latitude, best.longitude)
+        .then((addr) => {
+          if (addr) {
+            setGeoLocation((prev) => ({
+              ...prev,
+              locationName: addr,
+            }));
+          }
+        })
+        .catch(() => {});
     } catch (err: any) {
       let msg = 'Failed to get location';
       if (err.code === 1) {
@@ -198,8 +202,12 @@ export const useAttendance = () => {
       history.forEach((h: any) => {
         const matchingIndex = generated.findIndex((g) => g.date === h.date);
         if (matchingIndex !== -1) {
-          const checkInStr = h.check_in_time ? formatTimeDisplay(h.check_in_time) : (h.checkIn || generated[matchingIndex].checkIn);
-          const checkOutStr = h.check_out_time ? formatTimeDisplay(h.check_out_time) : (h.checkOut || generated[matchingIndex].checkOut);
+          const checkInStr = h.check_in_time
+            ? formatTimeDisplay(h.check_in_time)
+            : h.checkIn || generated[matchingIndex].checkIn;
+          const checkOutStr = h.check_out_time
+            ? formatTimeDisplay(h.check_out_time)
+            : h.checkOut || generated[matchingIndex].checkOut;
           const workMins = h.work_duration != null ? Number(h.work_duration) : null;
           const breakMins = h.total_break_minutes != null ? Number(h.total_break_minutes) : null;
 
@@ -216,8 +224,12 @@ export const useAttendance = () => {
             check_out_latitude: h.check_out_latitude,
             check_out_longitude: h.check_out_longitude,
             check_out_location: h.check_out_location,
-            totalBreakMinutes: breakMins != null ? breakMins : generated[matchingIndex].totalBreakMinutes,
-            netWorkingHours: workMins != null ? Number((workMins / 60).toFixed(2)) : generated[matchingIndex].netWorkingHours,
+            totalBreakMinutes:
+              breakMins != null ? breakMins : generated[matchingIndex].totalBreakMinutes,
+            netWorkingHours:
+              workMins != null
+                ? Number((workMins / 60).toFixed(2))
+                : generated[matchingIndex].netWorkingHours,
           };
         }
       });
@@ -230,7 +242,6 @@ export const useAttendance = () => {
   const monthSummary = useMemo(() => {
     return calculateMonthSummary(monthRecords);
   }, [monthRecords]);
-
 
   // Target office for geofence verification (selected or closest)
   const activeOffice: Office | null = useMemo(() => {
@@ -300,7 +311,11 @@ export const useAttendance = () => {
   }, [status?.record]);
 
   const checkInTimeDisplay = checkInDate ? formatTimeDisplay(checkInDate) : '—';
-  const checkOutTimeDisplay = isCheckedIn ? 'In Progress' : (checkOutDate ? formatTimeDisplay(checkOutDate) : '—');
+  const checkOutTimeDisplay = isCheckedIn
+    ? 'In Progress'
+    : checkOutDate
+      ? formatTimeDisplay(checkOutDate)
+      : '—';
   const shiftTimingDisplay = SHIFT_DISPLAY;
 
   // Currently selected date detail record
@@ -321,11 +336,26 @@ export const useAttendance = () => {
           const e = b.break_end ? new Date(b.break_end) : null;
           const startTimeStr = s && !isNaN(s.getTime()) ? formatTimeDisplay(s) : '—';
           const isOngoing = b.status === 'IN_PROGRESS' || b.break_end === null;
-          const endTimeStr = isOngoing ? 'In Progress' : (e && !isNaN(e.getTime()) ? formatTimeDisplay(e) : '—');
-          const duration = b.duration != null && b.duration >= 0 ? b.duration : (s && !isNaN(s.getTime()) ? Math.max(0, Math.floor((time.getTime() - s.getTime()) / 60000)) : 0);
+          const endTimeStr = isOngoing
+            ? 'In Progress'
+            : e && !isNaN(e.getTime())
+              ? formatTimeDisplay(e)
+              : '—';
+          const duration =
+            b.duration != null && b.duration >= 0
+              ? b.duration
+              : s && !isNaN(s.getTime())
+                ? Math.max(0, Math.floor((time.getTime() - s.getTime()) / 60000))
+                : 0;
           const breakType = b.break_type || (b.break_note ? b.break_note : `Break #${idx + 1}`);
-          const label = breakType.toLowerCase().includes('break') ? breakType : `${breakType} Break`;
-          const maxAllowed = breakType.toLowerCase().includes('tea') ? 15 : (breakType.toLowerCase().includes('lunch') ? 45 : 30);
+          const label = breakType.toLowerCase().includes('break')
+            ? breakType
+            : `${breakType} Break`;
+          const maxAllowed = breakType.toLowerCase().includes('tea')
+            ? 15
+            : breakType.toLowerCase().includes('lunch')
+              ? 45
+              : 30;
           return {
             id: `real-break-${b.id || idx}`,
             label,
@@ -343,7 +373,8 @@ export const useAttendance = () => {
       }
 
       const completedBreakMins = status?.total_break_minutes ?? 0;
-      const activeBreakStart = (status?.activeBreak as any)?.break_start || (status?.activeBreak as any)?.start_time;
+      const activeBreakStart =
+        (status?.activeBreak as any)?.break_start || (status?.activeBreak as any)?.start_time;
       let activeBreakMins = 0;
       if (status?.onBreak && activeBreakStart) {
         const started = new Date(activeBreakStart);
@@ -373,10 +404,18 @@ export const useAttendance = () => {
 
       return {
         ...baseRecord,
-        checkIn: (status?.record as any)?.check_in_time ? formatTimeDisplay((status.record as any).check_in_time) : baseRecord.checkIn,
-        checkOut: (status?.record as any)?.check_out_time ? formatTimeDisplay((status.record as any).check_out_time) : (status?.status === 'checked-in' ? 'In Progress' : baseRecord.checkOut),
-        check_in_location: (status?.record as any)?.check_in_location || baseRecord.check_in_location,
-        check_out_location: (status?.record as any)?.check_out_location || baseRecord.check_out_location,
+        checkIn: (status?.record as any)?.check_in_time
+          ? formatTimeDisplay((status.record as any).check_in_time)
+          : baseRecord.checkIn,
+        checkOut: (status?.record as any)?.check_out_time
+          ? formatTimeDisplay((status.record as any).check_out_time)
+          : status?.status === 'checked-in'
+            ? 'In Progress'
+            : baseRecord.checkOut,
+        check_in_location:
+          (status?.record as any)?.check_in_location || baseRecord.check_in_location,
+        check_out_location:
+          (status?.record as any)?.check_out_location || baseRecord.check_out_location,
         breaks: mappedBreaks,
         totalBreakMinutes: totalBreakMins,
         grossWorkingHours: grossHours,
@@ -408,20 +447,34 @@ export const useAttendance = () => {
       const h = Math.floor(diffMinutes / 60);
       const m = diffMinutes % 60;
       const display = h > 0 ? `${h}h ${m}m late` : `${m} min late`;
-      return { punctualityStatus: 'late' as const, isLate: true, lateDurationDisplay: display, earlyDurationDisplay: '' };
+      return {
+        punctualityStatus: 'late' as const,
+        isLate: true,
+        lateDurationDisplay: display,
+        earlyDurationDisplay: '',
+      };
     } else if (diffMinutes < -GRACE_MINUTES) {
       // EARLY
       const absDiff = Math.abs(diffMinutes);
       const h = Math.floor(absDiff / 60);
       const m = absDiff % 60;
       const display = h > 0 ? `${h}h ${m}m early` : `${m} min early`;
-      return { punctualityStatus: 'early' as const, isLate: false, lateDurationDisplay: '', earlyDurationDisplay: display };
+      return {
+        punctualityStatus: 'early' as const,
+        isLate: false,
+        lateDurationDisplay: '',
+        earlyDurationDisplay: display,
+      };
     } else {
       // ON TIME (within grace window)
-      return { punctualityStatus: 'on-time' as const, isLate: false, lateDurationDisplay: '', earlyDurationDisplay: '' };
+      return {
+        punctualityStatus: 'on-time' as const,
+        isLate: false,
+        lateDurationDisplay: '',
+        earlyDurationDisplay: '',
+      };
     }
   }, [checkInDate]);
-
 
   // ── Live elapsed working time (ticks every second via `time`) ──
   const liveWorkingTime = useMemo(() => {
@@ -489,7 +542,8 @@ export const useAttendance = () => {
           check_out_latitude: checkoutLat,
           check_out_longitude: checkoutLon,
           check_out_location:
-            geoLocation.locationName || (workMode === 'wfh' ? 'Remote / Home' : (activeOffice?.name || 'Office HQ')),
+            geoLocation.locationName ||
+            (workMode === 'wfh' ? 'Remote / Home' : activeOffice?.name || 'Office HQ'),
         }).unwrap();
 
         showToast({
@@ -542,7 +596,8 @@ export const useAttendance = () => {
             if (posErr?.code === 1) {
               userMsg = 'Please enable location permission to check in.';
             } else if (posErr?.code === 2) {
-              userMsg = 'Unable to determine your current location. Please verify device GPS is active.';
+              userMsg =
+                'Unable to determine your current location. Please verify device GPS is active.';
             } else if (posErr?.code === 3) {
               userMsg = 'Location request timed out. Please try again.';
             }
@@ -652,8 +707,13 @@ export const useAttendance = () => {
         }
 
         const effectiveNote = break_note || break_type;
-        const break_status_message = customRemark || breakNote || (effectiveNote.toLowerCase().includes(break_type.toLowerCase()) ? effectiveNote : `${break_type}: ${effectiveNote}`);
-       
+        const break_status_message =
+          customRemark ||
+          breakNote ||
+          (effectiveNote.toLowerCase().includes(break_type.toLowerCase())
+            ? effectiveNote
+            : `${break_type}: ${effectiveNote}`);
+
         const res = await takeBreak({
           break_type,
           break_note: effectiveNote,

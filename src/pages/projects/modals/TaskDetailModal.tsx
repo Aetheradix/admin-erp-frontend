@@ -127,7 +127,9 @@ export function TaskDetailModal({
       projectService.saveTask(updatedTask);
     }
 
-    message.success(`Task reassigned to ${assigneeObj.userName} (Manager: ${managerObj?.userName || reporting?.reportingManagerName || 'Dept Head'})!`);
+    message.success(
+      `Task reassigned to ${assigneeObj.userName} (Manager: ${managerObj?.userName || reporting?.reportingManagerName || 'Dept Head'})!`
+    );
     setShowReassignModal(false);
     setNewAssigneeId(undefined);
     setNewManagerId(undefined);
@@ -137,7 +139,9 @@ export function TaskDetailModal({
 
   const handleStatusChange = (newStatusVal: string) => {
     if (!projectService.canTransition(status, newStatusVal)) {
-      message.warning(`Transition from "${status}" to "${newStatusVal}" is not permitted by workflow rules.`);
+      message.warning(
+        `Transition from "${status}" to "${newStatusVal}" is not permitted by workflow rules.`
+      );
       return;
     }
     setStatus(newStatusVal);
@@ -212,12 +216,12 @@ export function TaskDetailModal({
             <span className="font-mono text-xs font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10">
               {project.key}-{task.keyNumber}
             </span>
-            <Tag color={currentStatusObj?.color || 'blue'} className="font-bold uppercase text-[10px] m-0">
+            <Tag
+              color={currentStatusObj?.color || 'blue'}
+              className="font-bold uppercase text-[10px] m-0">
               {status}
             </Tag>
-            <span className="text-xs text-muted font-semibold capitalize">
-              {task.type}
-            </span>
+            <span className="text-xs text-muted font-semibold capitalize">{task.type}</span>
           </Space>
         </div>
       }
@@ -278,7 +282,9 @@ export function TaskDetailModal({
                     key={st.id}
                     className="flex items-center justify-between p-2 rounded-lg bg-surface-subtle border border-border-subtle text-xs">
                     <span>{st.title}</span>
-                    <Tag color={st.status === 'Done' ? 'green' : 'default'} className="text-[10px] m-0 uppercase font-bold">
+                    <Tag
+                      color={st.status === 'Done' ? 'green' : 'default'}
+                      className="text-[10px] m-0 uppercase font-bold">
                       {st.status}
                     </Tag>
                   </div>
@@ -410,7 +416,10 @@ export function TaskDetailModal({
           </Col>
 
           {/* Right Sidebar Attributes (9 cols) */}
-          <Col xs={24} md={9} className="space-y-3 bg-surface-subtle/50 p-4 rounded-2xl border border-border-subtle">
+          <Col
+            xs={24}
+            md={9}
+            className="space-y-3 bg-surface-subtle/50 p-4 rounded-2xl border border-border-subtle">
             <div>
               <label className="text-[11px] font-bold text-muted block mb-1">Status</label>
               <Select
@@ -467,12 +476,26 @@ export function TaskDetailModal({
 
             <Row gutter={8}>
               <Col span={12}>
-                <Form.Item name="startDate" label={<span className="flex items-center gap-1"><Calendar size={11} /> Start</span>} className="mb-2">
+                <Form.Item
+                  name="startDate"
+                  label={
+                    <span className="flex items-center gap-1">
+                      <Calendar size={11} /> Start
+                    </span>
+                  }
+                  className="mb-2">
                   <Input type="date" className="rounded-lg text-xs" />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="dueDate" label={<span className="flex items-center gap-1"><Calendar size={11} /> Due</span>} className="mb-2">
+                <Form.Item
+                  name="dueDate"
+                  label={
+                    <span className="flex items-center gap-1">
+                      <Calendar size={11} /> Due
+                    </span>
+                  }
+                  className="mb-2">
                   <Input type="date" className="rounded-lg text-xs" />
                 </Form.Item>
               </Col>
@@ -480,7 +503,14 @@ export function TaskDetailModal({
 
             <Row gutter={8}>
               <Col span={8}>
-                <Form.Item name="durationDays" label={<span className="flex items-center gap-1"><Clock size={11} /> Days</span>} className="mb-2">
+                <Form.Item
+                  name="durationDays"
+                  label={
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} /> Days
+                    </span>
+                  }
+                  className="mb-2">
                   <Input type="number" min={1} className="rounded-lg text-xs" />
                 </Form.Item>
               </Col>
@@ -519,11 +549,15 @@ export function TaskDetailModal({
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-border/20">
                   <span className="text-muted">Assigned To:</span>
-                  <span className="font-semibold">{task.assignedToName || task.assigneeNames?.[0] || 'Alex Mercer'}</span>
+                  <span className="font-semibold">
+                    {task.assignedToName || task.assigneeNames?.[0] || 'Alex Mercer'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-border/20">
                   <span className="text-muted">Direct Manager:</span>
-                  <span className="font-medium text-primary">{task.reportingManagerName || 'Liam Chen'}</span>
+                  <span className="font-medium text-primary">
+                    {task.reportingManagerName || 'Liam Chen'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-border/20">
                   <span className="text-muted">Dept Head:</span>
@@ -535,7 +569,9 @@ export function TaskDetailModal({
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-muted">Created By:</span>
-                  <span className="text-muted font-mono text-[11px]">{task.createdByName || 'System Seed'}</span>
+                  <span className="text-muted font-mono text-[11px]">
+                    {task.createdByName || 'System Seed'}
+                  </span>
                 </div>
               </div>
 
@@ -562,7 +598,9 @@ export function TaskDetailModal({
         title={
           <Space>
             <UserCheck size={16} className="text-primary" />
-            <span className="font-bold text-sm">Reassign Task & Manager ({project.key}-{task.keyNumber})</span>
+            <span className="font-bold text-sm">
+              Reassign Task & Manager ({project.key}-{task.keyNumber})
+            </span>
           </Space>
         }
         open={showReassignModal}
@@ -572,7 +610,8 @@ export function TaskDetailModal({
         centered>
         <div className="space-y-4 my-2">
           <p className="text-xs text-muted">
-            Select a new assignee and reporting manager from active employees loaded from the database.
+            Select a new assignee and reporting manager from active employees loaded from the
+            database.
           </p>
 
           <div>

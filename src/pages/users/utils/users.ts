@@ -2,13 +2,7 @@ import type { RoleItem } from '@/store/api/roleApiSlice';
 import type { StaffMember } from '@/types/models';
 import type { User } from '@/types/auth';
 import { getUserRoles, isSuperAdmin } from '@/utils/pagePermissions';
-import type {
-  ChangedField,
-  EditUserForm,
-  OptionItem,
-  UserRecord,
-  UsersTab,
-} from '../types';
+import type { ChangedField, EditUserForm, OptionItem, UserRecord, UsersTab } from '../types';
 
 export type ApiUser = StaffMember & {
   contact_number?: string;
@@ -69,7 +63,11 @@ export function mergeUserRecords(
   return [...extraLocal, ...mapped];
 }
 
-export function filterUserRecords(users: UserRecord[], activeTab: UsersTab, search: string): UserRecord[] {
+export function filterUserRecords(
+  users: UserRecord[],
+  activeTab: UsersTab,
+  search: string
+): UserRecord[] {
   return users
     .filter((u) => {
       if (activeTab === 'All Users') return true;
@@ -121,8 +119,8 @@ export function buildDepartmentOptions(
       const name =
         typeof d === 'string'
           ? d
-          : (d as { department_name?: string; name?: string })?.department_name ??
-            (d as { name?: string })?.name;
+          : ((d as { department_name?: string; name?: string })?.department_name ??
+            (d as { name?: string })?.name);
       if (name && typeof name === 'string' && name.trim()) {
         deptsMap.set(name.trim().toLowerCase(), name.trim());
       }
@@ -143,7 +141,8 @@ export function buildDepartmentOptions(
 export function buildChangedFields(orig: UserRecord, edited: EditUserForm): ChangedField[] {
   const changed: ChangedField[] = [];
   if (orig.name !== edited.name) changed.push({ field: 'name', from: orig.name, to: edited.name });
-  if (orig.email !== edited.email) changed.push({ field: 'email', from: orig.email, to: edited.email });
+  if (orig.email !== edited.email)
+    changed.push({ field: 'email', from: orig.email, to: edited.email });
   if (orig.role !== edited.role) changed.push({ field: 'role', from: orig.role, to: edited.role });
   if (orig.department !== edited.department) {
     changed.push({ field: 'department', from: orig.department, to: edited.department });

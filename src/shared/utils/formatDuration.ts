@@ -11,10 +11,7 @@ export function formatElapsedMinutes(totalMinutes: number): string {
   return `${hours}h ${minutes}m`;
 }
 
-export function formatClockTime(
-  input: string | Date | null | undefined,
-  fallback = '—'
-): string {
+export function formatClockTime(input: string | Date | null | undefined, fallback = '—'): string {
   if (!input) return fallback;
   const date = typeof input === 'string' ? new Date(input) : input;
   if (Number.isNaN(date.getTime())) return fallback;

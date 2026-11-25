@@ -13,7 +13,9 @@ import { EmployeeModelViewModal } from '@/pages/organization/components/Employee
 import type { StaffMember } from '@/types/models';
 
 export function StaffList() {
-  const [selectedEmployeeForModel, setSelectedEmployeeForModel] = useState<StaffMember | null>(null);
+  const [selectedEmployeeForModel, setSelectedEmployeeForModel] = useState<StaffMember | null>(
+    null
+  );
   const {
     handleSubmit,
     onAddMember,

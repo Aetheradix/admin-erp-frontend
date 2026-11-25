@@ -38,12 +38,14 @@ function readStoredLogs(): InvoiceAuditLog[] {
 
 export function useInvoiceAuditTrail({ username, userEmail }: UseInvoiceAuditTrailOptions) {
   const [localAuditLogs, setLocalAuditLogs] = useState<InvoiceAuditLog[]>(readStoredLogs);
-  const { data: backendLogsData, isLoading: isLogsLoading, refetch: refetchLogs } =
-    useGetInvoiceAuditLogsQuery(undefined, { refetchOnMountOrArgChange: true });
+  const {
+    data: backendLogsData,
+    isLoading: isLogsLoading,
+    refetch: refetchLogs,
+  } = useGetInvoiceAuditLogsQuery(undefined, { refetchOnMountOrArgChange: true });
 
   const [createInvoiceAuditLogApi] = useCreateInvoiceAuditLogMutation();
-  const [clearMonthAuditLogsApi, { isLoading: isClearingMonth }] =
-    useClearMonthAuditLogsMutation();
+  const [clearMonthAuditLogsApi, { isLoading: isClearingMonth }] = useClearMonthAuditLogsMutation();
 
   const [showClearMonthModal, setShowClearMonthModal] = useState(false);
   const [selectedClearMonth, setSelectedClearMonth] = useState(() => new Date().getMonth() + 1);

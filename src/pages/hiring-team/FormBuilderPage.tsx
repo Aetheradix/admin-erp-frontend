@@ -19,9 +19,7 @@ export default function FormBuilderPage() {
         onSave={builder.save}
       />
 
-      <FormBuilderBanner
-        activeSections={builder.sections.filter((s) => !s.hidden).length}
-      />
+      <FormBuilderBanner activeSections={builder.sections.filter((s) => !s.hidden).length} />
 
       <div className="space-y-4">
         {builder.sections.map((section, index) => (
@@ -37,8 +35,7 @@ export default function FormBuilderPage() {
               onChangeTeam: (team) => builder.changeSectionTeam(section.id, team),
               onToggleRequired: () => builder.toggleSectionRequired(section.id),
               onToggleHidden: () => builder.toggleSectionHidden(section.id),
-              onToggleFieldRequired: (fieldId) =>
-                builder.toggleFieldRequired(section.id, fieldId),
+              onToggleFieldRequired: (fieldId) => builder.toggleFieldRequired(section.id, fieldId),
               onToggleFieldHidden: (fieldId) => builder.toggleFieldHidden(section.id, fieldId),
               onRemoveField: (fieldId) => builder.removeField(section.id, fieldId),
               onOpenAddField: () => ui.openAddField(section.id),

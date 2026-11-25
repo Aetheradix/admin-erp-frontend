@@ -34,11 +34,16 @@ export const ProjectsCard: React.FC<ProjectsCardProps> = React.memo(({ departmen
       {matchedProjects.length > 0 ? (
         <div className="space-y-2">
           {matchedProjects.map((proj) => (
-            <div key={proj.id} className="p-2.5 rounded-xl bg-white border border-slate-200/70 flex items-center justify-between gap-2">
+            <div
+              key={proj.id}
+              className="p-2.5 rounded-xl bg-white border border-slate-200/70 flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <span className="text-xs font-bold text-slate-900 block truncate">{proj.title || proj.name}</span>
+                <span className="text-xs font-bold text-slate-900 block truncate">
+                  {proj.title || proj.name}
+                </span>
                 <span className="text-[10px] text-slate-500 block truncate mt-0.5">
-                  {proj.category || department || 'General'} · {proj.client || 'Internal Initiative'}
+                  {proj.category || department || 'General'} ·{' '}
+                  {proj.client || 'Internal Initiative'}
                 </span>
               </div>
               <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full border shrink-0 flex items-center gap-1 bg-blue-50 text-[#0078d4] border-blue-200">

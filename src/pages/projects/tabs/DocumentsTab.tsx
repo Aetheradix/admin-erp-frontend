@@ -1,22 +1,8 @@
 import { useState } from 'react';
 import type { Project, ProjectDocument, DocumentPhase } from '@/types/project';
-import {
-  FileText,
-  Download,
-  CheckCircle2,
-  XCircle,
-} from 'lucide-react';
+import { FileText, Download, CheckCircle2, XCircle } from 'lucide-react';
 import { projectService } from '@/services/projectService';
-import {
-  Card,
-  Progress,
-  Button,
-  Tag,
-  Modal,
-  Input,
-  Space,
-  message,
-} from 'antd';
+import { Card, Progress, Button, Tag, Modal, Input, Space, message } from 'antd';
 
 const { TextArea } = Input;
 
@@ -46,9 +32,14 @@ export function DocumentsTab({ project, documents, onDocumentsUpdated }: Documen
   const progressPct = activeCount > 0 ? Math.round((doneCount / activeCount) * 100) : 0;
 
   const handleDownloadTemplate = (doc: ProjectDocument) => {
-    const blob = new Blob([`StartupOS Document Template\nProject: ${project.name} (${project.key})\nDocument: ${doc.name}\nPhase: ${doc.phase}`], {
-      type: 'text/plain',
-    });
+    const blob = new Blob(
+      [
+        `StartupOS Document Template\nProject: ${project.name} (${project.key})\nDocument: ${doc.name}\nPhase: ${doc.phase}`,
+      ],
+      {
+        type: 'text/plain',
+      }
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -79,7 +70,9 @@ export function DocumentsTab({ project, documents, onDocumentsUpdated }: Documen
   return (
     <div className="space-y-6">
       {/* Progress Metric Card */}
-      <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs" styles={{ body: { padding: '20px' } }}>
+      <Card
+        className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs"
+        styles={{ body: { padding: '20px' } }}>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
@@ -98,7 +91,11 @@ export function DocumentsTab({ project, documents, onDocumentsUpdated }: Documen
               <span className="text-muted">Progress</span>
               <span className="text-primary">{progressPct}%</span>
             </div>
-            <Progress percent={progressPct} showInfo={false} strokeColor="var(--primary, #3b82f6)" />
+            <Progress
+              percent={progressPct}
+              showInfo={false}
+              strokeColor="var(--primary, #3b82f6)"
+            />
           </div>
         </div>
       </Card>
@@ -139,17 +136,26 @@ export function DocumentsTab({ project, documents, onDocumentsUpdated }: Documen
                                 ? 'bg-slate-500/15 text-slate-400'
                                 : 'bg-primary/10 text-primary'
                           }`}>
-                          {isDone ? <CheckCircle2 size={14} /> : isNotNeeded ? <XCircle size={14} /> : <FileText size={14} />}
+                          {isDone ? (
+                            <CheckCircle2 size={14} />
+                          ) : isNotNeeded ? (
+                            <XCircle size={14} />
+                          ) : (
+                            <FileText size={14} />
+                          )}
                         </span>
                         <div className="min-w-0">
-                          <p className={`font-semibold ${isNotNeeded ? 'line-through text-muted' : 'text-foreground'}`}>
+                          <p
+                            className={`font-semibold ${isNotNeeded ? 'line-through text-muted' : 'text-foreground'}`}>
                             {doc.name}
                           </p>
                           <p className="text-[10px] text-muted flex items-center gap-2">
                             <span>Role: {doc.ownerRole}</span>
                             {doc.ownerName && <span>• Assigned: {doc.ownerName}</span>}
                             {isNotNeeded && doc.notNeededReason && (
-                              <span className="text-amber-500 font-medium">• Reason: {doc.notNeededReason}</span>
+                              <span className="text-amber-500 font-medium">
+                                • Reason: {doc.notNeededReason}
+                              </span>
                             )}
                           </p>
                         </div>
@@ -216,7 +222,8 @@ export function DocumentsTab({ project, documents, onDocumentsUpdated }: Documen
         okText="Confirm Exemption"
         centered>
         <p className="text-xs text-muted mb-2">
-          State the audit rationale for why <strong>{reasonModalDoc?.name}</strong> is not needed for this project:
+          State the audit rationale for why <strong>{reasonModalDoc?.name}</strong> is not needed
+          for this project:
         </p>
         <TextArea
           rows={3}

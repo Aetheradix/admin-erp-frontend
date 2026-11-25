@@ -44,7 +44,7 @@ export const TeamAvailabilityCard: React.FC = () => {
 
   // Filter ALL colleagues currently on break for the hero MS Teams presence section
   const onBreakMembers = useMemo(() => {
-    return (data?.active_breaks && data.active_breaks.length > 0)
+    return data?.active_breaks && data.active_breaks.length > 0
       ? data.active_breaks
       : members.filter((m) => m.availability_status === 'ON_BREAK');
   }, [data?.active_breaks, members]);
@@ -138,7 +138,8 @@ export const TeamAvailabilityCard: React.FC = () => {
               {onBreakMembers.length > 0 ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-wider animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                  {onBreakMembers.length} {onBreakMembers.length === 1 ? 'colleague away' : 'colleagues away'}
+                  {onBreakMembers.length}{' '}
+                  {onBreakMembers.length === 1 ? 'colleague away' : 'colleagues away'}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
@@ -160,7 +161,10 @@ export const TeamAvailabilityCard: React.FC = () => {
             onClick={() => refetch()}
             disabled={isFetching}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-subtle hover:bg-surface-elevated border border-border-subtle text-xs font-bold text-foreground transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50">
-            <RefreshCw size={12} className={isFetching ? 'animate-spin text-primary' : 'text-muted'} />
+            <RefreshCw
+              size={12}
+              className={isFetching ? 'animate-spin text-primary' : 'text-muted'}
+            />
             <span>{isFetching ? 'Syncing...' : 'Sync Now'}</span>
           </button>
           <span className="text-[10px] text-muted font-semibold hidden md:inline-block">
@@ -173,7 +177,9 @@ export const TeamAvailabilityCard: React.FC = () => {
       {isLoading ? (
         <div className="py-12 flex flex-col items-center justify-center text-center">
           <RefreshCw size={24} className="animate-spin text-amber-500 mb-2" />
-          <span className="text-xs font-bold text-muted">Checking team presence & break sessions...</span>
+          <span className="text-xs font-bold text-muted">
+            Checking team presence & break sessions...
+          </span>
         </div>
       ) : onBreakMembers.length === 0 ? (
         /* Empty State: Everyone is Available (Clean White State) */
@@ -186,7 +192,8 @@ export const TeamAvailabilityCard: React.FC = () => {
               Everyone is available — no active breaks right now
             </h3>
             <p className="text-xs text-muted font-medium max-w-md">
-              All colleagues who have checked in are currently available at their desks. Feel free to collaborate and reach out!
+              All colleagues who have checked in are currently available at their desks. Feel free
+              to collaborate and reach out!
             </p>
           </div>
         </div>
@@ -198,9 +205,7 @@ export const TeamAvailabilityCard: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
               Colleagues Currently On Break ({onBreakMembers.length})
             </span>
-            <span className="text-[10px] font-bold text-muted">
-              Live updates every 10s
-            </span>
+            <span className="text-[10px] font-bold text-muted">Live updates every 10s</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -265,9 +270,7 @@ export const TeamAvailabilityCard: React.FC = () => {
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                         <span>{breakInfo?.break_type || 'Break'}</span>
                       </div>
-                      <span className="font-bold text-muted text-xs">
-                        {elapsed}m elapsed
-                      </span>
+                      <span className="font-bold text-muted text-xs">{elapsed}m elapsed</span>
                     </div>
 
                     {/* Status Message / Comment Note (MS Teams Status Message) */}

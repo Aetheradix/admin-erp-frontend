@@ -1,1 +1,4 @@
-export { buildBezierPath, type BezierPoint as ConnectorPoint } from '@/shared/utils/buildBezierPath';
+export {
+  buildBezierPath,
+  type BezierPoint as ConnectorPoint,
+} from '@/shared/utils/buildBezierPath';

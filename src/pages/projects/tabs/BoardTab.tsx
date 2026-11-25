@@ -3,17 +3,7 @@ import type { Project, ProjectTask, Milestone } from '@/types/project';
 import type { ProjectPhase } from '@/types/phase';
 import type { TaskStatus } from '@/types/taskStatus';
 import { Clock, SlidersHorizontal, Plus, Sparkles, CheckSquare } from 'lucide-react';
-import {
-  Button,
-  Select,
-  Tag,
-  Card,
-  Input,
-  Badge,
-  Radio,
-  Space,
-  message,
-} from 'antd';
+import { Button, Select, Tag, Card, Input, Badge, Radio, Space, message } from 'antd';
 import { projectService } from '@/services/projectService';
 import { StatusSettingsModal } from '../modals/StatusSettingsModal';
 import { SmartTaskCreateModal } from '../modals/SmartTaskCreateModal';
@@ -62,12 +52,12 @@ export function BoardTab({
         newStatus === 'Done' || newStatus === 'Completed'
           ? 'Completed'
           : newStatus === 'In Review' || newStatus === 'QA'
-          ? 'In Review'
-          : newStatus === 'Blocked'
-          ? 'Blocked'
-          : newStatus === 'In Progress'
-          ? 'In Progress'
-          : 'Pending';
+            ? 'In Review'
+            : newStatus === 'Blocked'
+              ? 'Blocked'
+              : newStatus === 'In Progress'
+                ? 'In Progress'
+                : 'Pending';
       await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
     } catch {
       // offline fallback
@@ -84,12 +74,12 @@ export function BoardTab({
         statusName === 'Done' || statusName === 'Completed'
           ? 'Completed'
           : statusName === 'In Review' || statusName === 'QA'
-          ? 'In Review'
-          : statusName === 'Blocked'
-          ? 'Blocked'
-          : statusName === 'In Progress'
-          ? 'In Progress'
-          : 'Pending';
+            ? 'In Review'
+            : statusName === 'Blocked'
+              ? 'Blocked'
+              : statusName === 'In Progress'
+                ? 'In Progress'
+                : 'Pending';
       await createTaskReal({
         task_title: quickTitle.trim(),
         task_description: quickTitle.trim(),

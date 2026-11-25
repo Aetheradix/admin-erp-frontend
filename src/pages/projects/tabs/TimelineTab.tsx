@@ -32,7 +32,10 @@ export function TimelineTab({ project, milestones, tasks, dependencies }: Timeli
 
     const minD = new Date(min + 'T00:00:00');
     const maxD = new Date(max + 'T00:00:00');
-    const diff = Math.max(15, Math.ceil((maxD.getTime() - minD.getTime()) / (1000 * 60 * 60 * 24)) + 7);
+    const diff = Math.max(
+      15,
+      Math.ceil((maxD.getTime() - minD.getTime()) / (1000 * 60 * 60 * 24)) + 7
+    );
 
     return { minDate: minD, totalDays: diff };
   }, [tasks, milestones, project]);
@@ -64,7 +67,9 @@ export function TimelineTab({ project, milestones, tasks, dependencies }: Timeli
   return (
     <div className="space-y-4">
       {/* Timeline Controls */}
-      <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs" styles={{ body: { padding: '12px 16px' } }}>
+      <Card
+        className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs"
+        styles={{ body: { padding: '12px 16px' } }}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Space size="middle">
             <span className="text-xs font-semibold text-muted">Zoom:</span>
@@ -106,7 +111,9 @@ export function TimelineTab({ project, milestones, tasks, dependencies }: Timeli
                     <span className="font-mono text-[10px] font-bold text-primary mr-2">
                       {project.key}-{task.keyNumber}
                     </span>
-                    <span className="font-semibold text-foreground truncate block">{task.title}</span>
+                    <span className="font-semibold text-foreground truncate block">
+                      {task.title}
+                    </span>
                   </div>
                   {isCrit && (
                     <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/15 text-rose-500 uppercase">
@@ -194,13 +201,17 @@ export function TimelineTab({ project, milestones, tasks, dependencies }: Timeli
                       : 'bg-surface-elevated text-foreground border border-border-subtle';
 
                 return (
-                  <div key={task.id} className="h-12 border-b border-border-subtle/50 relative flex items-center">
+                  <div
+                    key={task.id}
+                    className="h-12 border-b border-border-subtle/50 relative flex items-center">
                     <div
                       style={{ left: startX, width }}
                       className={`absolute h-7 rounded-lg px-2 flex items-center justify-between text-[11px] font-bold shadow-xs transition-all cursor-pointer hover:scale-y-110 ${barColor}`}
                       title={`${task.title} (${task.startDate} to ${task.dueDate})`}>
                       <span className="truncate">{task.title}</span>
-                      <span className="text-[9px] opacity-80 shrink-0 ml-1">{task.durationDays}d</span>
+                      <span className="text-[9px] opacity-80 shrink-0 ml-1">
+                        {task.durationDays}d
+                      </span>
                     </div>
                   </div>
                 );

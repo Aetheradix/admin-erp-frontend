@@ -11,8 +11,7 @@ interface UseExpenseExportOptions {
   dateRangeLabel: string;
 }
 
-const EMPTY_EXPORT_MESSAGE =
-  'No expense records available to export for the selected filters.';
+const EMPTY_EXPORT_MESSAGE = 'No expense records available to export for the selected filters.';
 
 export function useExpenseExport({
   expenses,

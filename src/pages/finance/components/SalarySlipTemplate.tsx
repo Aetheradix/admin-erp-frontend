@@ -181,7 +181,10 @@ export const formatPayPeriodDisplay = (payPeriod?: string, monthYear?: string): 
     'NOVEMBER',
     'DECEMBER',
   ];
-  const parts = source.trim().split(/[\s\/\-]+/).filter(Boolean);
+  const parts = source
+    .trim()
+    .split(/[\s\/\-]+/)
+    .filter(Boolean);
   let foundMonth = 'DECEMBER';
   let foundYear = new Date().getFullYear();
   for (const p of parts) {
@@ -189,7 +192,9 @@ export const formatPayPeriodDisplay = (payPeriod?: string, monthYear?: string): 
     if (!isNaN(num) && num >= 1900 && num <= 2100) {
       foundYear = num;
     } else {
-      const idx = months.findIndex((m) => m === p.toUpperCase() || m.startsWith(p.toUpperCase().slice(0, 3)));
+      const idx = months.findIndex(
+        (m) => m === p.toUpperCase() || m.startsWith(p.toUpperCase().slice(0, 3))
+      );
       if (idx !== -1) foundMonth = months[idx];
     }
   }
@@ -232,9 +237,9 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
 
   const isVoid = Boolean(
     data.isVoid ||
-      data.paymentStatus === 'void' ||
-      data.paymentStatus === 'Void' ||
-      (typeof data.hrNote === 'string' && data.hrNote.includes('[VOID'))
+    data.paymentStatus === 'void' ||
+    data.paymentStatus === 'Void' ||
+    (typeof data.hrNote === 'string' && data.hrNote.includes('[VOID'))
   );
 
   return (
@@ -284,7 +289,8 @@ const SalarySlipTemplate = forwardRef<HTMLDivElement, SalarySlipTemplateProps>((
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '16px' }}>⚠️</span>
               <span>
-                THIS SALARY SLIP HAS BEEN MARKED AS VOID. NOT VALID FOR FINANCIAL OR TAX FILING PURPOSES.
+                THIS SALARY SLIP HAS BEEN MARKED AS VOID. NOT VALID FOR FINANCIAL OR TAX FILING
+                PURPOSES.
               </span>
             </div>
             {data.voidReason && (

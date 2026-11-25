@@ -20,7 +20,8 @@ export function WhatWeDoTab({ companyInfo }: WhatWeDoTabProps) {
           </div>
           <h3 className="text-2xl font-black text-foreground">Our Purpose & Mission</h3>
           <p className="text-sm text-foreground/80 leading-relaxed">
-            {companyInfo.mission || 'No mission statement defined yet. Use Edit Profile to configure.'}
+            {companyInfo.mission ||
+              'No mission statement defined yet. Use Edit Profile to configure.'}
           </p>
         </motion.div>
 
@@ -33,7 +34,8 @@ export function WhatWeDoTab({ companyInfo }: WhatWeDoTabProps) {
           </div>
           <h3 className="text-2xl font-black text-foreground">Long-Term Vision</h3>
           <p className="text-sm text-foreground/80 leading-relaxed">
-            {companyInfo.vision || 'No vision statement defined yet. Use Edit Profile to configure.'}
+            {companyInfo.vision ||
+              'No vision statement defined yet. Use Edit Profile to configure.'}
           </p>
         </motion.div>
       </div>

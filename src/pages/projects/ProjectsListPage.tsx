@@ -160,14 +160,12 @@ export function ProjectsListPage() {
   // ── Dynamic Stats (all computed from live project data) ──────────────────
   const stats = useMemo(() => {
     const total = projects.length;
-    const active = projects.filter(
-      (p) => p.project_status?.toLowerCase() === 'active'
-    ).length;
-    const planning = projects.filter(
-      (p) => p.project_status?.toLowerCase() === 'planning'
-    ).length;
+    const active = projects.filter((p) => p.project_status?.toLowerCase() === 'active').length;
+    const planning = projects.filter((p) => p.project_status?.toLowerCase() === 'planning').length;
     const onHold = projects.filter(
-      (p) => p.project_status?.toLowerCase() === 'on hold' || p.project_status?.toLowerCase() === 'on_hold'
+      (p) =>
+        p.project_status?.toLowerCase() === 'on hold' ||
+        p.project_status?.toLowerCase() === 'on_hold'
     ).length;
     const completed = projects.filter(
       (p) => p.project_status?.toLowerCase() === 'completed'
@@ -184,7 +182,8 @@ export function ProjectsListPage() {
       const dept = p.department_name || '';
       const q = search.toLowerCase();
 
-      const matchSearch = !search || name.includes(q) || key.includes(q) || dept.toLowerCase().includes(q);
+      const matchSearch =
+        !search || name.includes(q) || key.includes(q) || dept.toLowerCase().includes(q);
       const matchDept = deptFilter === 'all' || dept === deptFilter;
 
       let matchStatus = true;
@@ -432,9 +431,7 @@ export function ProjectsListPage() {
               color={card.color}
               accent={card.accent}
               active={statusFilter === card.key}
-              onClick={() =>
-                setStatusFilter((prev) => (prev === card.key ? 'all' : card.key))
-              }
+              onClick={() => setStatusFilter((prev) => (prev === card.key ? 'all' : card.key))}
             />
           </Col>
         ))}
@@ -466,7 +463,10 @@ export function ProjectsListPage() {
 
           {statusFilter !== 'all' && (
             <Tooltip title="Clear status filter">
-              <Button size="middle" onClick={() => setStatusFilter('all')} className="rounded-lg text-xs">
+              <Button
+                size="middle"
+                onClick={() => setStatusFilter('all')}
+                className="rounded-lg text-xs">
                 Clear Filter
               </Button>
             </Tooltip>
@@ -539,11 +539,7 @@ export function ProjectsListPage() {
         destroyOnClose
         centered
         width={620}>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormFinish}
-          className="pt-2">
+        <Form form={form} layout="vertical" onFinish={handleFormFinish} className="pt-2">
           {/* Row 1: Name */}
           <Form.Item
             name="project_name"
@@ -593,7 +589,11 @@ export function ProjectsListPage() {
 
           {/* Description */}
           <Form.Item name="description" label="Description">
-            <TextArea rows={2} placeholder="Scope, deliverables, key goals..." className="rounded-lg" />
+            <TextArea
+              rows={2}
+              placeholder="Scope, deliverables, key goals..."
+              className="rounded-lg"
+            />
           </Form.Item>
 
           {/* Row 4: Dates */}

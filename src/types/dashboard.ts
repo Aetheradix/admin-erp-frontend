@@ -188,7 +188,16 @@ export interface HeatmapCell {
   month: number;
   year: number;
   dayOfWeek: number;
-  status: 'present' | 'late' | 'wfh' | 'leave' | 'holiday' | 'weekend' | 'absent' | 'incomplete' | 'future';
+  status:
+    | 'present'
+    | 'late'
+    | 'wfh'
+    | 'leave'
+    | 'holiday'
+    | 'weekend'
+    | 'absent'
+    | 'incomplete'
+    | 'future';
   workingHours: number;
   checkInTime: string | null;
   checkOutTime: string | null;

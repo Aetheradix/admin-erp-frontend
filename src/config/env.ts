@@ -16,7 +16,6 @@ const getApiBaseUrl = (): string => {
     return import.meta.env.VITE_API_BASE_URL;
   }
 
-
   // Priority 2: Host-based mapping
   if (HOST_MAPPING[hostname]) {
     return HOST_MAPPING[hostname];

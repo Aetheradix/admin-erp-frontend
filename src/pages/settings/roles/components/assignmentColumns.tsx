@@ -97,7 +97,9 @@ export function buildAssignmentColumns({
                       {p}
                     </span>
                   ))}
-                  {perms.length > 25 && <span className="text-[10px]">+{perms.length - 25} more</span>}
+                  {perms.length > 25 && (
+                    <span className="text-[10px]">+{perms.length - 25} more</span>
+                  )}
                 </div>
               </div>
             }>

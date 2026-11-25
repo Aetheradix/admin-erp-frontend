@@ -100,7 +100,9 @@ const MyBookingsPage = () => {
         <div>
           <p>{value || '-'}</p>
           {booking.notes && (
-            <p className="text-xs text-muted-foreground italic truncate max-w-xs">{booking.notes}</p>
+            <p className="text-xs text-muted-foreground italic truncate max-w-xs">
+              {booking.notes}
+            </p>
           )}
         </div>
       ),

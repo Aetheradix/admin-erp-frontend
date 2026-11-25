@@ -39,7 +39,10 @@ export function DepartmentFilterChips({
             className={`h-7 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
               isActive ? activeChipClass : idleChipClass
             }`}>
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color.dot }} />
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: color.dot }}
+            />
             <span>{dept.name}</span>
           </button>
         );

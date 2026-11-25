@@ -310,7 +310,9 @@ export function AttendanceCalendar({
             const specificDay = hoveredTooltip.request.day_approvals?.find(
               (d) => d.date === hoveredTooltip.dateStr
             );
-            const effectiveStatus = specificDay ? specificDay.status : hoveredTooltip.request.status;
+            const effectiveStatus = specificDay
+              ? specificDay.status
+              : hoveredTooltip.request.status;
             const remarkToShow = specificDay?.remark || hoveredTooltip.request.admin_comment;
 
             return (

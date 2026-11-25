@@ -29,7 +29,9 @@ export const LocationPinpointMap: React.FC<LocationPinpointMapProps> = ({
         className={`w-full rounded-2xl bg-surface-subtle border border-dashed border-border-subtle flex flex-col items-center justify-center p-4 text-center text-muted ${className}`}>
         <MapPin size={24} className="opacity-40 mb-1.5" />
         <span className="text-xs font-semibold">Location not selected or coordinates pending</span>
-        <span className="text-[10px] text-muted/70">Search an address or pin from GPS to preview map</span>
+        <span className="text-[10px] text-muted/70">
+          Search an address or pin from GPS to preview map
+        </span>
       </div>
     );
   }
@@ -63,8 +65,12 @@ export const LocationPinpointMap: React.FC<LocationPinpointMapProps> = ({
             <span>
               {latitude.toFixed(4)}°, {longitude.toFixed(4)}°
             </span>
-            {accuracy && <span className="text-muted font-normal text-[10px]">±{Math.round(accuracy)}m</span>}
-            {radius && <span className="text-primary font-black text-[10px]">| {radius}m zone</span>}
+            {accuracy && (
+              <span className="text-muted font-normal text-[10px]">±{Math.round(accuracy)}m</span>
+            )}
+            {radius && (
+              <span className="text-primary font-black text-[10px]">| {radius}m zone</span>
+            )}
           </div>
         )}
 

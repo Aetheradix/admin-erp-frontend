@@ -78,7 +78,9 @@ export function CompactWorkDeliveryCard({
             },
             {
               key: 'activity',
-              label: <TabLabel icon={Activity}>Recent Activity ({activityTimeline.length})</TabLabel>,
+              label: (
+                <TabLabel icon={Activity}>Recent Activity ({activityTimeline.length})</TabLabel>
+              ),
               children: <ActivityTab items={activityTimeline} />,
             },
             {

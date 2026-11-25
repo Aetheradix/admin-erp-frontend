@@ -9,19 +9,22 @@ interface ActivityTimelineProps {
 }
 
 const ACTION_CONFIG: Record<string, { color: string; label: string }> = {
-  project_created:       { color: 'green',     label: 'Project Created' },
-  project_updated:       { color: 'blue',      label: 'Project Updated' },
-  project_deleted:       { color: 'red',       label: 'Project Deleted' },
-  ownership_transferred: { color: 'purple',    label: 'Ownership Transferred' },
-  manager_updated:       { color: 'gold',      label: 'Manager Updated' },
-  member_added:          { color: 'cyan',      label: 'Member Added' },
-  member_removed:        { color: 'orange',    label: 'Member Removed' },
-  task_created:          { color: 'geekblue',  label: 'Task Created' },
-  task_updated:          { color: 'blue',      label: 'Task Updated' },
-  task_reassigned:       { color: 'magenta',   label: 'Task Reassigned' },
+  project_created: { color: 'green', label: 'Project Created' },
+  project_updated: { color: 'blue', label: 'Project Updated' },
+  project_deleted: { color: 'red', label: 'Project Deleted' },
+  ownership_transferred: { color: 'purple', label: 'Ownership Transferred' },
+  manager_updated: { color: 'gold', label: 'Manager Updated' },
+  member_added: { color: 'cyan', label: 'Member Added' },
+  member_removed: { color: 'orange', label: 'Member Removed' },
+  task_created: { color: 'geekblue', label: 'Task Created' },
+  task_updated: { color: 'blue', label: 'Task Updated' },
+  task_reassigned: { color: 'magenta', label: 'Task Reassigned' },
 };
 
-export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, className = '' }) => {
+export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
+  activities,
+  className = '',
+}) => {
   if (!activities || activities.length === 0) {
     return (
       <Empty

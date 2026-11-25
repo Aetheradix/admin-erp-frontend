@@ -237,11 +237,7 @@ export const GalleryForm = ({ initialData, onSubmit, onCancel }: GalleryFormProp
           disabled={isUploadingImage}
           className="px-10! h-12 rounded-3xl! font-black tracking-wide shadow-lg shadow-primary/20"
           aria-label={initialData ? 'Update asset details' : 'Add asset to gallery collection'}>
-          {isUploadingImage
-            ? 'Uploading...'
-            : initialData
-              ? 'Update Asset'
-              : 'Add to Collection'}
+          {isUploadingImage ? 'Uploading...' : initialData ? 'Update Asset' : 'Add to Collection'}
         </Button>
       </div>
     </div>

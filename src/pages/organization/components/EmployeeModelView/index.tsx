@@ -23,23 +23,55 @@ export const EmployeeModelViewModal: React.FC<EmployeeModelViewModalProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const { flatUsers, flatUsersById, childrenByManagerId, dbUsers, offices, companyProfile, isLoadingHierarchy } =
-    useOrgModel();
+  const {
+    flatUsers,
+    flatUsersById,
+    childrenByManagerId,
+    dbUsers,
+    offices,
+    companyProfile,
+    isLoadingHierarchy,
+  } = useOrgModel();
   const resolveUser = useResolveUser(flatUsers, flatUsersById, dbUsers);
   useModalBehavior(isOpen, onClose, modalRef);
   const { copied: copiedEmail, copy: copyEmail } = useCopyToClipboard();
 
   const {
-    focusedNode, inspectedNode, navHistory, showDetail, setShowDetail, expandedSubTrees,
-    handleFocus, handleBack, handleInspect, toggleSubTree,
+    focusedNode,
+    inspectedNode,
+    navHistory,
+    showDetail,
+    setShowDetail,
+    expandedSubTrees,
+    handleFocus,
+    handleBack,
+    handleInspect,
+    toggleSubTree,
   } = useOrgNavigation({ isOpen, employee, resolveUser, flatUsersById });
 
-  const relations = useOrgRelations({ focusedNode, flatUsers, flatUsersById, childrenByManagerId, resolveUser });
+  const relations = useOrgRelations({
+    focusedNode,
+    flatUsers,
+    flatUsersById,
+    childrenByManagerId,
+    resolveUser,
+  });
   const layout = useOrgLayout({ focusedNode, ...relations }, expandedSubTrees);
-  const panZoom = usePanZoom({ containerRef, bounds: layout.bounds, centralPos: layout.centralPos, isOpen });
+  const panZoom = usePanZoom({
+    containerRef,
+    bounds: layout.bounds,
+    centralPos: layout.centralPos,
+    isOpen,
+  });
   const { handleFit } = panZoom;
   const profile = useInspectedProfile({
-    inspectedNode, dbUsers, offices, companyProfile, flatUsersById, childrenByManagerId, resolveUser,
+    inspectedNode,
+    dbUsers,
+    offices,
+    companyProfile,
+    flatUsersById,
+    childrenByManagerId,
+    resolveUser,
   });
 
   useEffect(() => {
@@ -55,8 +87,7 @@ export const EmployeeModelViewModal: React.FC<EmployeeModelViewModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/45 backdrop-blur-[2px] animate-in fade-in duration-200 select-none font-sans"
-      onClick={onClose}
-    >
+      onClick={onClose}>
       <div
         ref={modalRef}
         role="dialog"
@@ -64,15 +95,17 @@ export const EmployeeModelViewModal: React.FC<EmployeeModelViewModalProps> = ({
         aria-label="Employee Organizational Model"
         tabIndex={-1}
         className="w-full max-w-7xl h-[96vh] sm:h-[90vh] max-h-[940px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 relative focus:outline-none"
-        onClick={(e) => e.stopPropagation()}
-      >
+        onClick={(e) => e.stopPropagation()}>
         <ModalHeader
           focusedNode={focusedNode}
           navigationHistoryLength={navHistory.length}
           showDetailPanel={showDetail}
           onBackNavigation={handleBack}
           onToggleDetailPanel={() => setShowDetail((p) => !p)}
-          onViewFullTree={() => { onClose(); navigate('/org?tab=Organization+Hierarchy'); }}
+          onViewFullTree={() => {
+            onClose();
+            navigate('/org?tab=Organization+Hierarchy');
+          }}
           onClose={onClose}
         />
         <div className="flex-1 flex overflow-hidden relative">
@@ -119,8 +152,13 @@ export const EmployeeModelViewModal: React.FC<EmployeeModelViewModalProps> = ({
                 dbUserStatus={profile.inspectedDbUser?.status}
                 onSetCentral={() => handleFocus(inspectedNode)}
                 onClosePanel={() => setShowDetail(false)}
-                onScheduleClick={() => { onClose(); navigate(`/calendar?user=${encodeURIComponent(inspectedNode.username)}`); }}
-                onCopyEmail={() => copyEmail(inspectedNode.email, `Copied ${inspectedNode.email} to clipboard!`)}
+                onScheduleClick={() => {
+                  onClose();
+                  navigate(`/calendar?user=${encodeURIComponent(inspectedNode.username)}`);
+                }}
+                onCopyEmail={() =>
+                  copyEmail(inspectedNode.email, `Copied ${inspectedNode.email} to clipboard!`)
+                }
                 onInspectUser={handleInspect}
               />
             </>

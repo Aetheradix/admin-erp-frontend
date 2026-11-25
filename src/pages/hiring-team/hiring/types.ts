@@ -1,13 +1,7 @@
 export type HiringView = 'table' | 'onboarding';
 
 export type ReviewTab =
-  | 'overview'
-  | 'personal'
-  | 'bank'
-  | 'identity'
-  | 'employment'
-  | 'education'
-  | 'certifications';
+  'overview' | 'personal' | 'bank' | 'identity' | 'employment' | 'education' | 'certifications';
 
 export interface HiringActor {
   name: string;

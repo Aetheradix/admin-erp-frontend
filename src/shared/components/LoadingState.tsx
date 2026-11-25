@@ -18,10 +18,7 @@ export function LoadingState({
 }: LoadingStateProps) {
   if (variant === 'skeleton') {
     return (
-      <div
-        role="status"
-        aria-live="polite"
-        className={cn('flex flex-col gap-3', className)}>
+      <div role="status" aria-live="polite" className={cn('flex flex-col gap-3', className)}>
         {Array.from({ length: rows }, (_, index) => (
           <div
             key={index}

@@ -99,7 +99,10 @@ export interface BackendTask {
 export const projectApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // ── Projects ─────────────────────────────────────────────────────────────
-    getProjects: builder.query<Project[], { status?: string; search?: string; department_id?: number } | void>({
+    getProjects: builder.query<
+      Project[],
+      { status?: string; search?: string; department_id?: number } | void
+    >({
       query: (filters) => {
         const params = new URLSearchParams();
         if (filters && typeof filters === 'object') {
@@ -120,7 +123,10 @@ export const projectApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Raw backend projects (no field mapping)
-    getRawProjects: builder.query<BackendProject[], { status?: string; search?: string; department_id?: number } | void>({
+    getRawProjects: builder.query<
+      BackendProject[],
+      { status?: string; search?: string; department_id?: number } | void
+    >({
       query: (filters) => {
         const params = new URLSearchParams();
         if (filters && typeof filters === 'object') {
@@ -179,24 +185,54 @@ export const projectApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
-    addProjectMember: builder.mutation<ProjectMember[], { projectId: number; user_id: number; role?: string }>({
-      query: ({ projectId, ...body }) => ({ url: `/projects/${projectId}/members`, method: 'POST', body }),
-      invalidatesTags: (_r, _e, { projectId }) => [{ type: 'Projects', id: `members-${projectId}` }, 'Projects'],
+    addProjectMember: builder.mutation<
+      ProjectMember[],
+      { projectId: number; user_id: number; role?: string }
+    >({
+      query: ({ projectId, ...body }) => ({
+        url: `/projects/${projectId}/members`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_r, _e, { projectId }) => [
+        { type: 'Projects', id: `members-${projectId}` },
+        'Projects',
+      ],
     }),
 
     removeProjectMember: builder.mutation<void, { projectId: number; userId: number }>({
-      query: ({ projectId, userId }) => ({ url: `/projects/${projectId}/members/${userId}`, method: 'DELETE' }),
-      invalidatesTags: (_r, _e, { projectId }) => [{ type: 'Projects', id: `members-${projectId}` }, 'Projects'],
+      query: ({ projectId, userId }) => ({
+        url: `/projects/${projectId}/members/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, { projectId }) => [
+        { type: 'Projects', id: `members-${projectId}` },
+        'Projects',
+      ],
     }),
 
     // ── Ownership ─────────────────────────────────────────────────────────────
-    transferOwnership: builder.mutation<BackendProject, { projectId: number; new_owner_id: number; reason?: string }>({
-      query: ({ projectId, ...body }) => ({ url: `/projects/${projectId}/transfer-ownership`, method: 'POST', body }),
+    transferOwnership: builder.mutation<
+      BackendProject,
+      { projectId: number; new_owner_id: number; reason?: string }
+    >({
+      query: ({ projectId, ...body }) => ({
+        url: `/projects/${projectId}/transfer-ownership`,
+        method: 'POST',
+        body,
+      }),
       invalidatesTags: (_r, _e, { projectId }) => [{ type: 'Projects', id: projectId }, 'Projects'],
     }),
 
-    updateProjectManager: builder.mutation<BackendProject, { projectId: number; manager_id: number }>({
-      query: ({ projectId, ...body }) => ({ url: `/projects/${projectId}/manager`, method: 'PUT', body }),
+    updateProjectManager: builder.mutation<
+      BackendProject,
+      { projectId: number; manager_id: number }
+    >({
+      query: ({ projectId, ...body }) => ({
+        url: `/projects/${projectId}/manager`,
+        method: 'PUT',
+        body,
+      }),
       invalidatesTags: (_r, _e, { projectId }) => [{ type: 'Projects', id: projectId }, 'Projects'],
     }),
 
@@ -221,7 +257,10 @@ export const projectApiSlice = apiSlice.injectEndpoints({
     }),
 
     // ── Tasks ─────────────────────────────────────────────────────────────────
-    getProjectTasks: builder.query<BackendTask[], { projectId?: number; assignedTo?: number; status?: string; search?: string } | void>({
+    getProjectTasks: builder.query<
+      BackendTask[],
+      { projectId?: number; assignedTo?: number; status?: string; search?: string } | void
+    >({
       query: (filters) => {
         const params = new URLSearchParams();
         if (filters && typeof filters === 'object') {
@@ -266,12 +305,18 @@ export const projectApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Tasks'],
     }),
 
-    reassignTask: builder.mutation<BackendTask, { id: number; new_user_id: number; new_manager_id?: number }>({
+    reassignTask: builder.mutation<
+      BackendTask,
+      { id: number; new_user_id: number; new_manager_id?: number }
+    >({
       query: ({ id, ...body }) => ({ url: `/tasks/${id}/reassign`, method: 'POST', body }),
       invalidatesTags: ['Tasks'],
     }),
 
-    getTaskStats: builder.query<{ total: number; completed: number; pending: number; inProgress: number }, { projectId?: number; assignedTo?: number } | void>({
+    getTaskStats: builder.query<
+      { total: number; completed: number; pending: number; inProgress: number },
+      { projectId?: number; assignedTo?: number } | void
+    >({
       query: (filters) => {
         const params = new URLSearchParams();
         if (filters && typeof filters === 'object') {

@@ -92,7 +92,9 @@ export function MediaUploader({
           variant="outline"
           onClick={() => inputRef.current?.click()}
           disabled={disabled || isUploading}
-          icon={isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}>
+          icon={
+            isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />
+          }>
           {isUploading ? 'Uploading…' : label}
         </Button>
       </div>

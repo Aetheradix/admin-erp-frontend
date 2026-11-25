@@ -36,9 +36,9 @@ export function OrgNodeCard({
   // Founder/CEO styling is based on the job title, not the RBAC role.
   const isFounderOrCeoNode = Boolean(
     !isUnassignedPool &&
-      !node.user.reporting_manager_id &&
-      (node.user.designation?.toLowerCase().includes('founder') ||
-        node.user.designation?.toLowerCase().includes('ceo'))
+    !node.user.reporting_manager_id &&
+    (node.user.designation?.toLowerCase().includes('founder') ||
+      node.user.designation?.toLowerCase().includes('ceo'))
   );
 
   const handleActivate = () => {

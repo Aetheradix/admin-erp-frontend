@@ -20,7 +20,8 @@ export const useApprovals = () => {
 
   const counts = {
     Pending: pendingLeaves.length,
-    Approved: leaves.filter((l: AttendanceRequest) => (l.status || '').toLowerCase() === 'approved').length,
+    Approved: leaves.filter((l: AttendanceRequest) => (l.status || '').toLowerCase() === 'approved')
+      .length,
     Rejected: leaves.filter(
       (l: AttendanceRequest) =>
         (l.status || '').toLowerCase() === 'rejected' ||

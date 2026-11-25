@@ -72,7 +72,9 @@ export function getUltraAccuratePosition(options?: {
         } else {
           isSettled = true;
           cleanup();
-          reject(new Error('GPS acquisition timed out. Please check that Location Services are enabled.'));
+          reject(
+            new Error('GPS acquisition timed out. Please check that Location Services are enabled.')
+          );
         }
       }
     }, timeoutMs);
@@ -121,4 +123,3 @@ export function getUltraAccuratePosition(options?: {
     }
   });
 }
-

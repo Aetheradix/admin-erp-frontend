@@ -141,16 +141,18 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
               {/* Check In Event */}
               {record.checkIn && (
                 <div className="relative flex items-start gap-3 group">
-                  <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
-                    record.isLate ? 'bg-amber-500' : 'bg-emerald-500'
-                  }`}>
+                  <div
+                    className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
+                      record.isLate ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`}>
                     <LogIn size={11} />
                   </div>
-                  <div className={`flex-1 p-3 rounded-2xl border ${
-                    record.isLate
-                      ? 'bg-amber-500/5 border-amber-500/25'
-                      : 'bg-surface-subtle border-border-subtle'
-                  }`}>
+                  <div
+                    className={`flex-1 p-3 rounded-2xl border ${
+                      record.isLate
+                        ? 'bg-amber-500/5 border-amber-500/25'
+                        : 'bg-surface-subtle border-border-subtle'
+                    }`}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-black text-foreground">First Check-In</span>
@@ -161,9 +163,12 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                           </span>
                         )}
                       </div>
-                      <span className={`text-xs font-black shrink-0 ${
-                        record.isLate ? 'text-amber-500' : 'text-emerald-500'
-                      }`}>{record.checkIn}</span>
+                      <span
+                        className={`text-xs font-black shrink-0 ${
+                          record.isLate ? 'text-amber-500' : 'text-emerald-500'
+                        }`}>
+                        {record.checkIn}
+                      </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold mt-1">
                       {record.is_wfh || record.work_mode === 'wfh' ? (
@@ -176,7 +181,8 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                         </span>
                       )}
                       <span className="inline-flex items-center gap-1 text-muted">
-                        <MapPin size={10} className="text-primary" /> {record.check_in_location || record.location || 'Office HQ'}
+                        <MapPin size={10} className="text-primary" />{' '}
+                        {record.check_in_location || record.location || 'Office HQ'}
                       </span>
                     </div>
                   </div>
@@ -186,28 +192,34 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
               {/* Breaks */}
               {record.breaks.map((b) => {
                 const isOngoing = b.status === 'IN_PROGRESS' || b.endTime === 'In Progress';
-                const isOverTime = !isOngoing && (b.isOverTime || (b.maxAllowedMinutes != null && b.durationMinutes > b.maxAllowedMinutes));
-                const overBy = b.maxAllowedMinutes != null ? b.durationMinutes - b.maxAllowedMinutes : 0;
+                const isOverTime =
+                  !isOngoing &&
+                  (b.isOverTime ||
+                    (b.maxAllowedMinutes != null && b.durationMinutes > b.maxAllowedMinutes));
+                const overBy =
+                  b.maxAllowedMinutes != null ? b.durationMinutes - b.maxAllowedMinutes : 0;
                 return (
                   <div key={b.id} className="relative flex items-start gap-3 group">
                     {/* Timeline dot — red if over limit, pulsing amber if ongoing, solid amber if completed */}
-                    <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
-                      isOverTime
-                        ? 'bg-red-500'
-                        : isOngoing
-                        ? 'bg-amber-500 animate-pulse'
-                        : 'bg-amber-500'
-                    }`}>
+                    <div
+                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full text-white flex items-center justify-center shadow-sm ${
+                        isOverTime
+                          ? 'bg-red-500'
+                          : isOngoing
+                            ? 'bg-amber-500 animate-pulse'
+                            : 'bg-amber-500'
+                      }`}>
                       <Coffee size={11} />
                     </div>
 
-                    <div className={`flex-1 p-3 rounded-2xl border transition-all ${
-                      isOverTime
-                        ? 'bg-red-500/5 border-red-500/25'
-                        : isOngoing
-                        ? 'bg-amber-500/10 border-amber-500/40 shadow-sm'
-                        : 'bg-surface-subtle border-border-subtle'
-                    }`}>
+                    <div
+                      className={`flex-1 p-3 rounded-2xl border transition-all ${
+                        isOverTime
+                          ? 'bg-red-500/5 border-red-500/25'
+                          : isOngoing
+                            ? 'bg-amber-500/10 border-amber-500/40 shadow-sm'
+                            : 'bg-surface-subtle border-border-subtle'
+                      }`}>
                       {/* Header row */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -234,9 +246,14 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                             </span>
                           )}
                         </div>
-                        <span className={`text-xs font-black shrink-0 ${
-                          isOverTime ? 'text-red-500' : isOngoing ? 'text-amber-500 font-extrabold' : 'text-amber-500'
-                        }`}>
+                        <span
+                          className={`text-xs font-black shrink-0 ${
+                            isOverTime
+                              ? 'text-red-500'
+                              : isOngoing
+                                ? 'text-amber-500 font-extrabold'
+                                : 'text-amber-500'
+                          }`}>
                           {formatMinutes(b.durationMinutes)} {isOngoing ? '(Live)' : ''}
                         </span>
                       </div>
@@ -249,10 +266,19 @@ export const DailyTimelineCard: React.FC<DailyTimelineCardProps> = ({ selectedDa
                       {/* Employee Note — white bg, bold text, icon */}
                       {b.break_note && (
                         <div className="mt-2 flex items-start gap-2 px-3 py-2 rounded-xl bg-white dark:bg-surface-elevated border border-border-subtle shadow-sm">
-                          <MessageSquare size={12} className={`shrink-0 mt-0.5 ${
-                            isOverTime ? 'text-red-500' : isOngoing ? 'text-amber-500' : 'text-muted'
-                          }`} />
-                          <span className="text-[11px] font-black text-foreground">{b.break_note}</span>
+                          <MessageSquare
+                            size={12}
+                            className={`shrink-0 mt-0.5 ${
+                              isOverTime
+                                ? 'text-red-500'
+                                : isOngoing
+                                  ? 'text-amber-500'
+                                  : 'text-muted'
+                            }`}
+                          />
+                          <span className="text-[11px] font-black text-foreground">
+                            {b.break_note}
+                          </span>
                         </div>
                       )}
 

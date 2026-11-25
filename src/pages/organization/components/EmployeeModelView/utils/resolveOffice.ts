@@ -47,7 +47,8 @@ export function resolveOffice(
     return {
       id: companyProfile.hq_office.id,
       name: companyProfile.hq_office.name || companyProfile.name || FALLBACKS.COMPANY_NAME,
-      address: companyProfile.hq_office.address || companyProfile.address || FALLBACKS.COMPANY_ADDRESS,
+      address:
+        companyProfile.hq_office.address || companyProfile.address || FALLBACKS.COMPANY_ADDRESS,
       timezone: FALLBACKS.DEFAULT_TIMEZONE,
       is_hq: true,
       latitude: Number(companyProfile.hq_office.latitude) || FALLBACKS.HQ_LATITUDE,

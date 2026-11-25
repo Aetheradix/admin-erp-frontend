@@ -38,7 +38,7 @@ export function ReviewDialog({
   onApprove,
   onOpenAssignId,
 }: ReviewDialogProps) {
-  const statusConf = profile ? STATUS_MAP[profile.status] ?? STATUS_MAP.incomplete : null;
+  const statusConf = profile ? (STATUS_MAP[profile.status] ?? STATUS_MAP.incomplete) : null;
 
   return (
     <Dialog
@@ -50,7 +50,11 @@ export function ReviewDialog({
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center">
               {profile?.profilePictureUrl ? (
-                <img src={profile.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={profile.profilePictureUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <User size={20} className="text-primary" />
               )}

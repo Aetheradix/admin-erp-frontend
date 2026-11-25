@@ -86,7 +86,9 @@ export const VoidPayrollModal: React.FC<VoidPayrollModalProps> = ({
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-slate-900">{record.employeeName}</span>
-                <span className="text-[11px] text-slate-500">ID: {record.employeeCode} • {record.department}</span>
+                <span className="text-[11px] text-slate-500">
+                  ID: {record.employeeCode} • {record.department}
+                </span>
               </div>
             </div>
             <span className="font-mono text-xs font-bold bg-white text-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
@@ -97,11 +99,18 @@ export const VoidPayrollModal: React.FC<VoidPayrollModalProps> = ({
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="flex items-center gap-2 text-slate-600">
               <Calendar size={14} className="text-slate-400" />
-              <span>Period: <strong>{record.monthYear}</strong></span>
+              <span>
+                Period: <strong>{record.monthYear}</strong>
+              </span>
             </div>
             <div className="flex items-center gap-2 text-slate-600">
               <IndianRupee size={14} className="text-slate-400" />
-              <span>Net Pay: <strong className="text-slate-900">₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
+              <span>
+                Net Pay:{' '}
+                <strong className="text-slate-900">
+                  ₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </strong>
+              </span>
             </div>
           </div>
         </div>
@@ -127,7 +136,8 @@ export const VoidPayrollModal: React.FC<VoidPayrollModalProps> = ({
         {/* Additional Explanation / Details */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-slate-700">
-            Discrepancy Details & Justification <span className="text-slate-400 font-normal">(Optional)</span>
+            Discrepancy Details & Justification{' '}
+            <span className="text-slate-400 font-normal">(Optional)</span>
           </label>
           <textarea
             rows={3}
@@ -145,9 +155,18 @@ export const VoidPayrollModal: React.FC<VoidPayrollModalProps> = ({
           <div className="flex flex-col gap-1 text-[11px] leading-relaxed">
             <span className="font-bold text-rose-900">What happens when marked as Void:</span>
             <ul className="list-disc list-inside space-y-0.5 text-rose-700">
-              <li>This payslip is flagged as <strong>VOID</strong> across financial records and reports.</li>
-              <li>A diagonal <strong>VOID watermark</strong> and cancellation banner will appear on the payslip.</li>
-              <li>An official audit log entry is saved under the <strong>3-month retention policy</strong>.</li>
+              <li>
+                This payslip is flagged as <strong>VOID</strong> across financial records and
+                reports.
+              </li>
+              <li>
+                A diagonal <strong>VOID watermark</strong> and cancellation banner will appear on
+                the payslip.
+              </li>
+              <li>
+                An official audit log entry is saved under the{' '}
+                <strong>3-month retention policy</strong>.
+              </li>
             </ul>
           </div>
         </div>

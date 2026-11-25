@@ -5,9 +5,7 @@ export function holidayDateKey(holidayDate: string): string {
   return typeof holidayDate === 'string' ? holidayDate.split('T')[0] : '';
 }
 
-export function indexHolidaysByDate(
-  allHolidays: CalendarHoliday[]
-): Map<string, CalendarHoliday> {
+export function indexHolidaysByDate(allHolidays: CalendarHoliday[]): Map<string, CalendarHoliday> {
   return createLookupMap(
     allHolidays.filter((holiday) => Boolean(holidayDateKey(holiday.holiday_date))),
     (holiday) => holidayDateKey(holiday.holiday_date)

@@ -101,7 +101,9 @@ export function UsersPage() {
           onFilterChange={setInvitationFilter}
           currentAuthUser={currentAuthUser}
           onResend={resend.handleResendInvitation}
-          onRevoke={(record) => actions.openConfirm({ type: 'revoke_invitation', targetInvitation: record })}
+          onRevoke={(record) =>
+            actions.openConfirm({ type: 'revoke_invitation', targetInvitation: record })
+          }
         />
       )}
 

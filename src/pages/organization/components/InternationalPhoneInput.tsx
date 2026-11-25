@@ -89,10 +89,9 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
           error
             ? 'border-red-400 ring-2 ring-red-100'
             : isOpen
-            ? 'border-primary ring-2 ring-primary/10'
-            : 'border-border-subtle hover:border-slate-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10'
-        } ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}`}
-      >
+              ? 'border-primary ring-2 ring-primary/10'
+              : 'border-border-subtle hover:border-slate-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10'
+        } ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}`}>
         {/* Country Selector Trigger Button */}
         <button
           type="button"
@@ -105,8 +104,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
             }
           }}
           className="h-full px-2.5 flex items-center gap-1.5 bg-slate-50/70 hover:bg-slate-100 text-slate-800 transition-colors border-r border-border-subtle shrink-0 cursor-pointer select-none rounded-l-md outline-none"
-          title={`Selected: ${currentCountry.name} (${currentCountry.dialCode})`}
-        >
+          title={`Selected: ${currentCountry.name} (${currentCountry.dialCode})`}>
           {/* Flag Image */}
           <img
             src={`https://flagcdn.com/w40/${currentCountry.code.toLowerCase()}.png`}
@@ -155,8 +153,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
-                  className="text-xs text-slate-400 hover:text-slate-700 px-1"
-                >
+                  className="text-xs text-slate-400 hover:text-slate-700 px-1">
                   ✕
                 </button>
               )}
@@ -180,8 +177,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
                         isSelected
                           ? 'bg-orange-50/70 text-[#e8583a] font-bold'
                           : 'hover:bg-slate-50 text-slate-700'
-                      }`}
-                    >
+                      }`}>
                       <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
                         <img
                           src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
@@ -192,7 +188,9 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
                           }}
                         />
                         <span className="truncate">{c.name}</span>
-                        {isSelected && <Check size={13} className="text-[#e8583a] shrink-0 ml-auto" />}
+                        {isSelected && (
+                          <Check size={13} className="text-[#e8583a] shrink-0 ml-auto" />
+                        )}
                       </div>
                       <span className="font-mono text-[11px] text-slate-400 shrink-0 pl-1">
                         {c.dialCode}

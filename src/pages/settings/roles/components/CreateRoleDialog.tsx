@@ -37,7 +37,11 @@ export function CreateRoleDialog({
     }));
 
   return (
-    <Dialog visible={visible} onHide={onClose} header="Create New Custom Role" className="max-w-2xl">
+    <Dialog
+      visible={visible}
+      onHide={onClose}
+      header="Create New Custom Role"
+      className="max-w-2xl">
       <div className="space-y-4 pt-4">
         <div>
           <label className="text-xs font-bold text-foreground block mb-1">Role Name *</label>

@@ -127,7 +127,9 @@ export const OffboardRollupModal: React.FC<OffboardRollupModalProps> = ({
                   {grandparentManager ? (
                     `${grandparentManager.username} (${grandparentManager.role})`
                   ) : (
-                    <span className="text-amber-600">None (Direct reports will become top-level)</span>
+                    <span className="text-amber-600">
+                      None (Direct reports will become top-level)
+                    </span>
                   )}
                 </strong>
               </div>
@@ -139,7 +141,9 @@ export const OffboardRollupModal: React.FC<OffboardRollupModalProps> = ({
                 Affected Direct Reports ({directReports.length}):
               </span>
               {directReports.length === 0 ? (
-                <span className="text-muted italic">No direct reports currently under this employee.</span>
+                <span className="text-muted italic">
+                  No direct reports currently under this employee.
+                </span>
               ) : (
                 <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto no-scrollbar">
                   {directReports.map((r) => (
@@ -190,4 +194,3 @@ export const OffboardRollupModal: React.FC<OffboardRollupModalProps> = ({
     </Modal>
   );
 };
-

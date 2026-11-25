@@ -54,8 +54,7 @@ export function useOrgRelations({
     return flatUsers
       .filter(
         (u) =>
-          u.reporting_manager_id === focusedNode.reporting_manager_id &&
-          u.id !== focusedNode.id
+          u.reporting_manager_id === focusedNode.reporting_manager_id && u.id !== focusedNode.id
       )
       .slice(0, 8);
   }, [focusedNode, flatUsers]);

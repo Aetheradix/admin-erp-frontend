@@ -10,7 +10,12 @@ interface UsersToolbarProps {
   onTabChange: (tab: UsersTab) => void;
 }
 
-export function UsersToolbar({ search, onSearchChange, activeTab, onTabChange }: UsersToolbarProps) {
+export function UsersToolbar({
+  search,
+  onSearchChange,
+  activeTab,
+  onTabChange,
+}: UsersToolbarProps) {
   return (
     <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div className="relative flex-1 max-w-md">

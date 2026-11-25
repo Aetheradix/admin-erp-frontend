@@ -186,10 +186,7 @@ export const CheckInPage: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-7 xl:col-span-8">
-              <DailyTimelineCard
-                selectedDate={time}
-                record={selectedDayRecord}
-              />
+              <DailyTimelineCard selectedDate={time} record={selectedDayRecord} />
             </div>
             <div className="lg:col-span-5 xl:col-span-4">
               <AttendanceInsights

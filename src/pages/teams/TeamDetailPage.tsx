@@ -4,16 +4,7 @@ import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { Button } from '@/components/ui/primitives/Button';
-import {
-  Users,
-  Crown,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  UserCog,
-  Search,
-  Folder,
-} from 'lucide-react';
+import { Users, Crown, ArrowLeft, Plus, Trash2, UserCog, Search, Folder } from 'lucide-react';
 import {
   useGetTeamByIdQuery,
   useGetTeamMembersQuery,
@@ -38,7 +29,11 @@ export function TeamDetailPage() {
     ['Admin', 'SuperAdmin', 'HrAdmin', 'admin', 'superadmin', 'hradmin'].includes(r)
   );
 
-  const { data: team, isLoading: teamLoading, isError: teamError } = useGetTeamByIdQuery(teamId, {
+  const {
+    data: team,
+    isLoading: teamLoading,
+    isError: teamError,
+  } = useGetTeamByIdQuery(teamId, {
     skip: !teamId,
   });
   const { data: members = [], isLoading: membersLoading } = useGetTeamMembersQuery(teamId, {
@@ -79,7 +74,9 @@ export function TeamDetailPage() {
     if (!selectedUserIds.length) return;
     setAddingMembers(true);
     try {
-      await Promise.all(selectedUserIds.map((userId) => addTeamMember({ teamId, userId }).unwrap()));
+      await Promise.all(
+        selectedUserIds.map((userId) => addTeamMember({ teamId, userId }).unwrap())
+      );
       setSelectedUserIds([]);
       setShowAddMembers(false);
     } catch {
@@ -91,7 +88,9 @@ export function TeamDetailPage() {
 
   const handleRemoveMember = async (userId: number, name: string) => {
     if (!window.confirm(`Remove ${name} from this team?`)) return;
-    await removeTeamMember({ teamId, userId }).unwrap().catch(() => null);
+    await removeTeamMember({ teamId, userId })
+      .unwrap()
+      .catch(() => null);
   };
 
   const handleChangeManager = async () => {
@@ -137,8 +136,7 @@ export function TeamDetailPage() {
             ) : (
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-xs shrink-0"
-                style={{ backgroundColor: team?.color || '#3B82F6' }}
-              >
+                style={{ backgroundColor: team?.color || '#3B82F6' }}>
                 {initials}
               </div>
             )}
@@ -169,7 +167,9 @@ export function TeamDetailPage() {
       title: 'Designation',
       dataIndex: 'designation',
       key: 'designation',
-      render: (desig: string) => <span className="text-sm text-muted font-medium">{desig || '—'}</span>,
+      render: (desig: string) => (
+        <span className="text-sm text-muted font-medium">{desig || '—'}</span>
+      ),
     },
     {
       title: 'Role',
@@ -185,7 +185,9 @@ export function TeamDetailPage() {
       title: 'Department',
       dataIndex: 'department',
       key: 'department',
-      render: (dept: string) => <span className="text-sm text-muted font-medium">{dept || '—'}</span>,
+      render: (dept: string) => (
+        <span className="text-sm text-muted font-medium">{dept || '—'}</span>
+      ),
     },
     {
       title: 'Joined',
@@ -208,8 +210,7 @@ export function TeamDetailPage() {
                 type="button"
                 onClick={() => handleRemoveMember(member.id, getDisplayName(member))}
                 className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                title="Remove member"
-              >
+                title="Remove member">
                 <Trash2 size={15} />
               </button>
             ),
@@ -242,8 +243,7 @@ export function TeamDetailPage() {
         <button
           type="button"
           onClick={() => navigate('/teams')}
-          className="flex items-center gap-2 text-sm font-bold text-muted hover:text-foreground transition-colors cursor-pointer"
-        >
+          className="flex items-center gap-2 text-sm font-bold text-muted hover:text-foreground transition-colors cursor-pointer">
           <ArrowLeft size={16} />
           Back to Teams
         </button>
@@ -254,14 +254,15 @@ export function TeamDetailPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-white rounded-2xl border border-border-subtle shadow-soft relative overflow-hidden"
-      >
-        <div className="absolute top-0 left-0 right-0 h-2 rounded-t-2xl" style={{ backgroundColor: team.color }} />
+        className="bg-white rounded-2xl border border-border-subtle shadow-soft relative overflow-hidden">
+        <div
+          className="absolute top-0 left-0 right-0 h-2 rounded-t-2xl"
+          style={{ backgroundColor: team.color }}
+        />
         <div className="p-8 pt-10 flex flex-col md:flex-row md:items-start gap-6">
           <div
             className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${team.color}20` }}
-          >
+            style={{ backgroundColor: `${team.color}20` }}>
             <Users size={30} style={{ color: team.color }} />
           </div>
           <div className="flex flex-col gap-2 flex-1">
@@ -269,8 +270,7 @@ export function TeamDetailPage() {
               <h1 className="text-2xl font-black text-foreground tracking-tight">{team.name}</h1>
               <span
                 className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md w-fit"
-                style={{ backgroundColor: `${team.color}15`, color: team.color }}
-              >
+                style={{ backgroundColor: `${team.color}15`, color: team.color }}>
                 {team.department}
               </span>
             </div>
@@ -331,8 +331,7 @@ export function TeamDetailPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden"
-      >
+        className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden">
         <div className="px-8 py-5 border-b border-border-subtle flex items-center justify-between">
           <span className="text-sm font-black text-foreground uppercase tracking-wider">
             Team Members
@@ -347,8 +346,7 @@ export function TeamDetailPage() {
               <button
                 type="button"
                 onClick={() => setShowAddMembers(true)}
-                className="text-xs font-bold text-primary hover:underline cursor-pointer"
-              >
+                className="text-xs font-bold text-primary hover:underline cursor-pointer">
                 Add the first member →
               </button>
             )}
@@ -383,11 +381,13 @@ export function TeamDetailPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-4">
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+            />
             <Input
               placeholder="Search employees..."
               value={memberSearch}
@@ -398,7 +398,9 @@ export function TeamDetailPage() {
           <div className="max-h-72 overflow-y-auto flex flex-col gap-1 pr-1">
             {availableUsers.length === 0 ? (
               <div className="text-center text-sm text-muted py-8 font-medium">
-                {memberSearch ? 'No matching employees found' : 'All employees are already in this team'}
+                {memberSearch
+                  ? 'No matching employees found'
+                  : 'All employees are already in this team'}
               </div>
             ) : (
               availableUsers.map((u) => {
@@ -408,8 +410,7 @@ export function TeamDetailPage() {
                 return (
                   <label
                     key={u.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isChecked ? 'bg-primary/8 border border-primary/30' : 'hover:bg-surface-subtle border border-transparent'}`}
-                  >
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isChecked ? 'bg-primary/8 border border-primary/30' : 'hover:bg-surface-subtle border border-transparent'}`}>
                     <input
                       type="checkbox"
                       checked={isChecked}
@@ -418,12 +419,13 @@ export function TeamDetailPage() {
                     />
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0"
-                      style={{ backgroundColor: team.color }}
-                    >
+                      style={{ backgroundColor: team.color }}>
                       {displayName.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-bold text-foreground truncate">{displayName}</span>
+                      <span className="text-sm font-bold text-foreground truncate">
+                        {displayName}
+                      </span>
                       <span className="text-xs text-muted truncate">{u.email}</span>
                     </div>
                     {u.designation && (
@@ -437,9 +439,7 @@ export function TeamDetailPage() {
             )}
           </div>
           <div className="flex justify-between items-center pt-3 border-t border-border-subtle">
-            <span className="text-xs text-muted font-bold">
-              {selectedUserIds.length} selected
-            </span>
+            <span className="text-xs text-muted font-bold">{selectedUserIds.length} selected</span>
             <div className="flex gap-3">
               <Button
                 variant="ghost"
@@ -470,15 +470,16 @@ export function TeamDetailPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted font-medium">
             Select a team member to become the new manager.
           </p>
           <div className="max-h-64 overflow-y-auto flex flex-col gap-1 pr-1">
             {members.length === 0 ? (
-              <div className="text-center text-sm text-muted py-8">No members in this team yet.</div>
+              <div className="text-center text-sm text-muted py-8">
+                No members in this team yet.
+              </div>
             ) : (
               members.map((member) => {
                 const displayName = getDisplayName(member);
@@ -487,8 +488,7 @@ export function TeamDetailPage() {
                 return (
                   <label
                     key={member.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isSelected ? 'bg-primary/8 border border-primary/30' : 'hover:bg-surface-subtle border border-transparent'}`}
-                  >
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isSelected ? 'bg-primary/8 border border-primary/30' : 'hover:bg-surface-subtle border border-transparent'}`}>
                     <input
                       type="radio"
                       name="manager"
@@ -498,8 +498,7 @@ export function TeamDetailPage() {
                     />
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0"
-                      style={{ backgroundColor: team.color }}
-                    >
+                      style={{ backgroundColor: team.color }}>
                       {getInitials(member)}
                     </div>
                     <div className="flex flex-col min-w-0">
@@ -511,7 +510,9 @@ export function TeamDetailPage() {
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-muted">{member.designation || member.email}</span>
+                      <span className="text-xs text-muted">
+                        {member.designation || member.email}
+                      </span>
                     </div>
                   </label>
                 );

@@ -20,7 +20,6 @@ import { LeavePolicyStudio } from './components/LeavePolicyStudio';
 import { LeaveBalanceLedger } from './components/LeaveBalanceLedger';
 import { Calendar, Wallet, ShieldCheck, CalendarDays as CalendarDaysIcon } from 'lucide-react';
 
-
 export function AttendancePage() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,7 +33,9 @@ export function AttendancePage() {
     }
   });
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'schedule' | 'balances' | 'holidays' | 'policies'>('schedule');
+  const [activeTab, setActiveTab] = useState<'schedule' | 'balances' | 'holidays' | 'policies'>(
+    'schedule'
+  );
   const [selectedDetailRequest, setSelectedDetailRequest] = useState<AttendanceRequest | null>(
     null
   );
@@ -54,7 +55,6 @@ export function AttendancePage() {
     handleReject,
   } = useAttendancePage();
 
-  
   const displayedRequests = targetUser
     ? requests.filter((r) => {
         const query = targetUser.toLowerCase();
@@ -186,7 +186,6 @@ export function AttendancePage() {
         )}
       </div>
 
-      
       {/* Module Navigation Tabs */}
       {!targetUser && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-border-subtle">
@@ -244,100 +243,95 @@ export function AttendancePage() {
         <LeaveBalanceLedger onApplyClick={() => setShowRequestForm(true)} />
       )}
 
-      {activeTab === 'holidays' && !targetUser && (
-        <CompanyCalendarStudio isAdmin={isAdmin} />
-      )}
+      {activeTab === 'holidays' && !targetUser && <CompanyCalendarStudio isAdmin={isAdmin} />}
 
-      {activeTab === 'policies' && !targetUser && (
-        <LeavePolicyStudio isAdmin={isAdmin} />
-      )}
+      {activeTab === 'policies' && !targetUser && <LeavePolicyStudio isAdmin={isAdmin} />}
 
       {activeTab === 'schedule' && (
         <>
+          {!targetUser && <AttendanceStats />}
 
-      {!targetUser && <AttendanceStats />}
+          {/* Main Calendar & Daily Planner Layout */}
+          <div className="flex flex-col xl:flex-row gap-8">
+            <div className="flex-1">
+              <AttendanceCalendar
+                records={records}
+                requests={displayedRequests}
+                onDateSelect={setSelectedDate}
+                onRequestClick={setSelectedDetailRequest}
+                selectedDate={selectedDate}
+              />
+            </div>
+            <div className="w-full xl:w-96">
+              <AttendancePlanner
+                selectedDate={selectedDate}
+                requests={displayedRequests}
+                isAdmin={isAdmin}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onRequestClick={setSelectedDetailRequest}
+              />
+            </div>
+          </div>
 
-      {/* Main Calendar & Daily Planner Layout */}
-      <div className="flex flex-col xl:flex-row gap-8">
-        <div className="flex-1">
-          <AttendanceCalendar
-            records={records}
-            requests={displayedRequests}
-            onDateSelect={setSelectedDate}
+          {/* Dedicated Pending Approvals Section for Admin / Approvers */}
+          {isAdmin && !targetUser && (
+            <PendingApprovals
+              requests={requests}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onSelectRequest={setSelectedDetailRequest}
+            />
+          )}
+
+          {/* Recent Requests / History Section */}
+          <RecentRequests
+            requests={targetUser ? displayedRequests : requests}
             onRequestClick={setSelectedDetailRequest}
-            selectedDate={selectedDate}
+            title={
+              targetUser
+                ? `${targetUser}'s Requests History`
+                : isAdmin
+                  ? 'All Team Requests History'
+                  : 'Recent Requests'
+            }
+            subtitle={
+              targetUser
+                ? `Track the status and timeline of @${targetUser}'s applications`
+                : isAdmin
+                  ? 'Chronological history of all employee WFH and Leave applications'
+                  : 'Track the status and history of your WFH and Leave applications'
+            }
           />
-        </div>
-        <div className="w-full xl:w-96">
-          <AttendancePlanner
-            selectedDate={selectedDate}
-            requests={displayedRequests}
+
+          {/* Request Details & Action Modal */}
+          <AttendanceDetailModal
+            request={selectedDetailRequest}
+            visible={!!selectedDetailRequest}
+            onHide={() => setSelectedDetailRequest(null)}
             isAdmin={isAdmin}
             onApprove={handleApprove}
             onReject={handleReject}
-            onRequestClick={setSelectedDetailRequest}
           />
-        </div>
-      </div>
 
-      {/* Dedicated Pending Approvals Section for Admin / Approvers */}
-      {isAdmin && !targetUser && (
-        <PendingApprovals
-          requests={requests}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          onSelectRequest={setSelectedDetailRequest}
-        />
-      )}
-
-      {/* Recent Requests / History Section */}
-      <RecentRequests
-        requests={targetUser ? displayedRequests : requests}
-        onRequestClick={setSelectedDetailRequest}
-        title={
-          targetUser
-            ? `${targetUser}'s Requests History`
-            : isAdmin
-              ? 'All Team Requests History'
-              : 'Recent Requests'
-        }
-        subtitle={
-          targetUser
-            ? `Track the status and timeline of @${targetUser}'s applications`
-            : isAdmin
-              ? 'Chronological history of all employee WFH and Leave applications'
-              : 'Track the status and history of your WFH and Leave applications'
-        }
-      />
-
-      {/* Request Details & Action Modal */}
-      <AttendanceDetailModal
-        request={selectedDetailRequest}
-        visible={!!selectedDetailRequest}
-        onHide={() => setSelectedDetailRequest(null)}
-        isAdmin={isAdmin}
-        onApprove={handleApprove}
-        onReject={handleReject}
-      />
-
-      {/* Submit Request Modal */}
-      <Dialog
-        visible={showRequestForm}
-        onHide={() => setShowRequestForm(false)}
-        header="Apply for WFH / Leave"
-        modal
-        className="w-full max-w-4xl mx-4"
-        contentClassName="p-10"
-        headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
-        pt={{
-          root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
-          mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}>
-        <AttendanceRequestForm
-          onSubmit={handleRequestSubmit}
-          onCancel={() => setShowRequestForm(false)}
-        />
-      </Dialog>
+          {/* Submit Request Modal */}
+          <Dialog
+            visible={showRequestForm}
+            onHide={() => setShowRequestForm(false)}
+            header="Apply for WFH / Leave"
+            modal
+            className="w-full max-w-4xl mx-4"
+            contentClassName="p-10"
+            headerClassName="px-10 pt-10 pb-4 text-2xl font-black tracking-tight border-none"
+            pt={{
+              root: { className: 'rounded-[48px] overflow-hidden border-none shadow-2xl bg-white' },
+              mask: { className: 'backdrop-blur-md bg-black/40' },
+            }}>
+            <AttendanceRequestForm
+              onSubmit={handleRequestSubmit}
+              onCancel={() => setShowRequestForm(false)}
+            />
+          </Dialog>
         </>
       )}
     </div>

@@ -34,32 +34,240 @@ const STORAGE_KEYS = {
 // ─── Starter Document Templates ──────────────────────────────────────────────
 
 export const STARTER_TEMPLATES: DocumentTemplate[] = [
-  { id: 1, name: 'Project Charter', phase: 'initiation', ownerRole: 'Project Manager', format: 'docx', isActive: true, version: 1 },
-  { id: 2, name: 'Statement of Work', phase: 'initiation', ownerRole: 'Project Manager', format: 'docx', isActive: true, version: 1 },
-  { id: 3, name: 'Stakeholder Register', phase: 'initiation', ownerRole: 'Project Manager', format: 'xlsx', isActive: true, version: 1 },
-  { id: 4, name: 'Business Requirements Document (BRD)', phase: 'requirements', ownerRole: 'Business Analyst', format: 'docx', isActive: true, version: 1 },
-  { id: 5, name: 'Software Requirements Spec (SRS)', phase: 'requirements', ownerRole: 'Business Analyst', format: 'docx', isActive: true, version: 1 },
-  { id: 6, name: 'User Stories & Acceptance Criteria', phase: 'requirements', ownerRole: 'Business Analyst', format: 'xlsx', isActive: true, version: 1 },
-  { id: 7, name: 'Requirements Traceability Matrix', phase: 'requirements', ownerRole: 'Business Analyst', format: 'xlsx', isActive: true, version: 1 },
-  { id: 8, name: 'Product Requirements Doc (PRD)', phase: 'requirements', ownerRole: 'Product Manager', format: 'docx', isActive: true, version: 1 },
-  { id: 9, name: 'Project Plan & Milestones', phase: 'planning', ownerRole: 'Project Manager', format: 'xlsx', isActive: true, version: 1 },
-  { id: 10, name: 'Risk & Issues Register', phase: 'planning', ownerRole: 'Project Manager', format: 'xlsx', isActive: true, version: 1 },
-  { id: 11, name: 'Communication Plan', phase: 'planning', ownerRole: 'Project Manager', format: 'docx', isActive: true, version: 1 },
-  { id: 12, name: 'Product Roadmap & Release Plan', phase: 'planning', ownerRole: 'Product Manager', format: 'xlsx', isActive: true, version: 1 },
-  { id: 13, name: 'Wireframes & UI Design Spec', phase: 'design', ownerRole: 'Designer', format: 'docx', isActive: true, version: 1 },
-  { id: 14, name: 'Architecture & Technical Design', phase: 'design', ownerRole: 'Tech Lead', format: 'docx', isActive: true, version: 1 },
-  { id: 15, name: 'Database Schema Design', phase: 'design', ownerRole: 'Tech Lead', format: 'docx', isActive: true, version: 1 },
-  { id: 16, name: 'API Specifications', phase: 'design', ownerRole: 'Developer', format: 'docx', isActive: true, version: 1 },
-  { id: 17, name: 'Coding Standards & PR Checklist', phase: 'build', ownerRole: 'Tech Lead', format: 'docx', isActive: true, version: 1 },
-  { id: 18, name: 'Release Notes', phase: 'build', ownerRole: 'Developer', format: 'docx', isActive: true, version: 1 },
-  { id: 19, name: 'Master Test Plan', phase: 'testing', ownerRole: 'QA Lead', format: 'docx', isActive: true, version: 1 },
-  { id: 20, name: 'Test Cases & Execution Matrix', phase: 'testing', ownerRole: 'QA Lead', format: 'xlsx', isActive: true, version: 1 },
-  { id: 21, name: 'Defect Log', phase: 'testing', ownerRole: 'QA Lead', format: 'xlsx', isActive: true, version: 1 },
-  { id: 22, name: 'UAT Plan & Sign-off Document', phase: 'testing', ownerRole: 'QA Lead', format: 'docx', isActive: true, version: 1 },
-  { id: 23, name: 'Deployment Runbook', phase: 'release', ownerRole: 'DevOps', format: 'docx', isActive: true, version: 1 },
-  { id: 24, name: 'Launch Checklist', phase: 'release', ownerRole: 'Product Manager', format: 'xlsx', isActive: true, version: 1 },
-  { id: 25, name: 'Handover & Knowledge Transfer', phase: 'closure', ownerRole: 'Project Manager', format: 'docx', isActive: true, version: 1 },
-  { id: 26, name: 'Project Closure & Retrospective', phase: 'closure', ownerRole: 'Project Manager', format: 'docx', isActive: true, version: 1 },
+  {
+    id: 1,
+    name: 'Project Charter',
+    phase: 'initiation',
+    ownerRole: 'Project Manager',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 2,
+    name: 'Statement of Work',
+    phase: 'initiation',
+    ownerRole: 'Project Manager',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 3,
+    name: 'Stakeholder Register',
+    phase: 'initiation',
+    ownerRole: 'Project Manager',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 4,
+    name: 'Business Requirements Document (BRD)',
+    phase: 'requirements',
+    ownerRole: 'Business Analyst',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 5,
+    name: 'Software Requirements Spec (SRS)',
+    phase: 'requirements',
+    ownerRole: 'Business Analyst',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 6,
+    name: 'User Stories & Acceptance Criteria',
+    phase: 'requirements',
+    ownerRole: 'Business Analyst',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 7,
+    name: 'Requirements Traceability Matrix',
+    phase: 'requirements',
+    ownerRole: 'Business Analyst',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 8,
+    name: 'Product Requirements Doc (PRD)',
+    phase: 'requirements',
+    ownerRole: 'Product Manager',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 9,
+    name: 'Project Plan & Milestones',
+    phase: 'planning',
+    ownerRole: 'Project Manager',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 10,
+    name: 'Risk & Issues Register',
+    phase: 'planning',
+    ownerRole: 'Project Manager',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 11,
+    name: 'Communication Plan',
+    phase: 'planning',
+    ownerRole: 'Project Manager',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 12,
+    name: 'Product Roadmap & Release Plan',
+    phase: 'planning',
+    ownerRole: 'Product Manager',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 13,
+    name: 'Wireframes & UI Design Spec',
+    phase: 'design',
+    ownerRole: 'Designer',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 14,
+    name: 'Architecture & Technical Design',
+    phase: 'design',
+    ownerRole: 'Tech Lead',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 15,
+    name: 'Database Schema Design',
+    phase: 'design',
+    ownerRole: 'Tech Lead',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 16,
+    name: 'API Specifications',
+    phase: 'design',
+    ownerRole: 'Developer',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 17,
+    name: 'Coding Standards & PR Checklist',
+    phase: 'build',
+    ownerRole: 'Tech Lead',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 18,
+    name: 'Release Notes',
+    phase: 'build',
+    ownerRole: 'Developer',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 19,
+    name: 'Master Test Plan',
+    phase: 'testing',
+    ownerRole: 'QA Lead',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 20,
+    name: 'Test Cases & Execution Matrix',
+    phase: 'testing',
+    ownerRole: 'QA Lead',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 21,
+    name: 'Defect Log',
+    phase: 'testing',
+    ownerRole: 'QA Lead',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 22,
+    name: 'UAT Plan & Sign-off Document',
+    phase: 'testing',
+    ownerRole: 'QA Lead',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 23,
+    name: 'Deployment Runbook',
+    phase: 'release',
+    ownerRole: 'DevOps',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 24,
+    name: 'Launch Checklist',
+    phase: 'release',
+    ownerRole: 'Product Manager',
+    format: 'xlsx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 25,
+    name: 'Handover & Knowledge Transfer',
+    phase: 'closure',
+    ownerRole: 'Project Manager',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
+  {
+    id: 26,
+    name: 'Project Closure & Retrospective',
+    phase: 'closure',
+    ownerRole: 'Project Manager',
+    format: 'docx',
+    isActive: true,
+    version: 1,
+  },
 ];
 
 // ─── Initial Seeded Data ─────────────────────────────────────────────────────
@@ -69,7 +277,8 @@ const SEED_PROJECTS: Project[] = [
     id: 1,
     key: 'CDR',
     name: 'Cedar Client Portal & Billing Suite',
-    description: 'Enterprise B2B client dashboard with invoice settlement, support ticket triage, and automated reporting.',
+    description:
+      'Enterprise B2B client dashboard with invoice settlement, support ticket triage, and automated reporting.',
     clientId: 1,
     clientName: 'Cedar Capital Group',
     leadUserId: 1,
@@ -95,7 +304,8 @@ const SEED_PROJECTS: Project[] = [
     id: 2,
     key: 'AETH',
     name: 'StartupOS Mobile Gateway',
-    description: 'Flutter hybrid mobile client for iOS and Android check-in and task notifications.',
+    description:
+      'Flutter hybrid mobile client for iOS and Android check-in and task notifications.',
     clientId: 2,
     clientName: 'Internal Product',
     leadUserId: 2,
@@ -118,9 +328,37 @@ const SEED_PROJECTS: Project[] = [
 ];
 
 const SEED_MILESTONES: Milestone[] = [
-  { id: 1, projectId: 1, name: 'M1: Architecture & API Foundation', targetDate: '2026-11-15', isFixed: true, requiresSignoff: false, status: 'completed', sortOrder: 1 },
-  { id: 2, projectId: 1, name: 'M2: Core Billing & Invoicing Engine', targetDate: '2026-12-05', isFixed: false, requiresSignoff: true, signoffStatus: 'pending', status: 'in_progress', sortOrder: 2 },
-  { id: 3, projectId: 1, name: 'M3: Client Portal Frontend & UAT', targetDate: '2026-12-20', isFixed: false, requiresSignoff: true, status: 'not_started', sortOrder: 3 },
+  {
+    id: 1,
+    projectId: 1,
+    name: 'M1: Architecture & API Foundation',
+    targetDate: '2026-11-15',
+    isFixed: true,
+    requiresSignoff: false,
+    status: 'completed',
+    sortOrder: 1,
+  },
+  {
+    id: 2,
+    projectId: 1,
+    name: 'M2: Core Billing & Invoicing Engine',
+    targetDate: '2026-12-05',
+    isFixed: false,
+    requiresSignoff: true,
+    signoffStatus: 'pending',
+    status: 'in_progress',
+    sortOrder: 2,
+  },
+  {
+    id: 3,
+    projectId: 1,
+    name: 'M3: Client Portal Frontend & UAT',
+    targetDate: '2026-12-20',
+    isFixed: false,
+    requiresSignoff: true,
+    status: 'not_started',
+    sortOrder: 3,
+  },
 ];
 
 const SEED_TASKS: ProjectTask[] = [
@@ -286,19 +524,124 @@ const SEED_SPRINTS: Sprint[] = [
 ];
 
 const SEED_TASK_STATUSES: TaskStatus[] = [
-  { id: 1, name: 'To Do', slug: 'to_do', category: 'initial', color: '#64748b', sortOrder: 1, isDefault: true, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
-  { id: 2, name: 'In Progress', slug: 'in_progress', category: 'active', color: '#3b82f6', sortOrder: 2, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
-  { id: 3, name: 'In Review', slug: 'in_review', category: 'active', color: '#8b5cf6', sortOrder: 3, isDefault: false, isActive: true, requiresApproval: false, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
-  { id: 4, name: 'Done', slug: 'done', category: 'completed', color: '#10b981', sortOrder: 4, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
-  { id: 5, name: 'Blocked', slug: 'blocked', category: 'active', color: '#f59e0b', sortOrder: 5, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
-  { id: 6, name: 'Cancelled', slug: 'cancelled', category: 'cancelled', color: '#ef4444', sortOrder: 6, isDefault: false, isActive: true, allowedTransitionIds: [1, 2, 3, 4, 5, 6] },
+  {
+    id: 1,
+    name: 'To Do',
+    slug: 'to_do',
+    category: 'initial',
+    color: '#64748b',
+    sortOrder: 1,
+    isDefault: true,
+    isActive: true,
+    allowedTransitionIds: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: 2,
+    name: 'In Progress',
+    slug: 'in_progress',
+    category: 'active',
+    color: '#3b82f6',
+    sortOrder: 2,
+    isDefault: false,
+    isActive: true,
+    allowedTransitionIds: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: 3,
+    name: 'In Review',
+    slug: 'in_review',
+    category: 'active',
+    color: '#8b5cf6',
+    sortOrder: 3,
+    isDefault: false,
+    isActive: true,
+    requiresApproval: false,
+    allowedTransitionIds: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: 4,
+    name: 'Done',
+    slug: 'done',
+    category: 'completed',
+    color: '#10b981',
+    sortOrder: 4,
+    isDefault: false,
+    isActive: true,
+    allowedTransitionIds: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: 5,
+    name: 'Blocked',
+    slug: 'blocked',
+    category: 'active',
+    color: '#f59e0b',
+    sortOrder: 5,
+    isDefault: false,
+    isActive: true,
+    allowedTransitionIds: [1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: 6,
+    name: 'Cancelled',
+    slug: 'cancelled',
+    category: 'cancelled',
+    color: '#ef4444',
+    sortOrder: 6,
+    isDefault: false,
+    isActive: true,
+    allowedTransitionIds: [1, 2, 3, 4, 5, 6],
+  },
 ];
 
 const SEED_PHASES: ProjectPhase[] = [
-  { id: 1, projectId: 1, name: 'Planning & Architecture', description: 'Tech stack alignment, DB schemas, initial wireframes', sortOrder: 1, ownerName: 'Alex Mercer', startDate: '2026-11-01', endDate: '2026-11-14', color: '#06b6d4', isCompleted: true },
-  { id: 2, projectId: 1, name: 'Core Engine & Invoicing', description: 'Payment webhooks, PDF generation, data pipelines', sortOrder: 2, ownerName: 'Hasmukh Patel', startDate: '2026-11-15', endDate: '2026-12-05', color: '#3b82f6', isCompleted: false },
-  { id: 3, projectId: 1, name: 'Frontend Portal & Dashboards', description: 'React client portal, analytics, responsive views', sortOrder: 3, ownerName: 'Elena Rostova', startDate: '2026-11-25', endDate: '2026-12-15', color: '#8b5cf6', isCompleted: false },
-  { id: 4, projectId: 1, name: 'Security Audit & Launch', description: 'Penetration testing, UAT, production deployment', sortOrder: 4, ownerName: 'Alex Mercer', startDate: '2026-12-16', endDate: '2026-12-25', color: '#10b981', isCompleted: false },
+  {
+    id: 1,
+    projectId: 1,
+    name: 'Planning & Architecture',
+    description: 'Tech stack alignment, DB schemas, initial wireframes',
+    sortOrder: 1,
+    ownerName: 'Alex Mercer',
+    startDate: '2026-11-01',
+    endDate: '2026-11-14',
+    color: '#06b6d4',
+    isCompleted: true,
+  },
+  {
+    id: 2,
+    projectId: 1,
+    name: 'Core Engine & Invoicing',
+    description: 'Payment webhooks, PDF generation, data pipelines',
+    sortOrder: 2,
+    ownerName: 'Hasmukh Patel',
+    startDate: '2026-11-15',
+    endDate: '2026-12-05',
+    color: '#3b82f6',
+    isCompleted: false,
+  },
+  {
+    id: 3,
+    projectId: 1,
+    name: 'Frontend Portal & Dashboards',
+    description: 'React client portal, analytics, responsive views',
+    sortOrder: 3,
+    ownerName: 'Elena Rostova',
+    startDate: '2026-11-25',
+    endDate: '2026-12-15',
+    color: '#8b5cf6',
+    isCompleted: false,
+  },
+  {
+    id: 4,
+    projectId: 1,
+    name: 'Security Audit & Launch',
+    description: 'Penetration testing, UAT, production deployment',
+    sortOrder: 4,
+    ownerName: 'Alex Mercer',
+    startDate: '2026-12-16',
+    endDate: '2026-12-25',
+    color: '#10b981',
+    isCompleted: false,
+  },
 ];
 
 const SEED_PHASE_TEMPLATES: PhaseTemplate[] = [
@@ -308,11 +651,36 @@ const SEED_PHASE_TEMPLATES: PhaseTemplate[] = [
     description: 'Best for Web, Mobile, and Cloud Application projects',
     projectType: 'Engineering',
     phases: [
-      { name: 'Requirements & Planning', description: 'BRD, SRS, architecture specs', color: '#64748b', durationDays: 14 },
-      { name: 'UI / UX Design', description: 'Figma mockups and interactive prototypes', color: '#ec4899', durationDays: 14 },
-      { name: 'Sprint Execution / Build', description: 'Backend APIs and Frontend engineering', color: '#3b82f6', durationDays: 30 },
-      { name: 'Testing & QA / UAT', description: 'Test matrix execution and user sign-offs', color: '#f59e0b', durationDays: 14 },
-      { name: 'Production Deployment', description: 'DevOps release runbook and launch', color: '#10b981', durationDays: 7 },
+      {
+        name: 'Requirements & Planning',
+        description: 'BRD, SRS, architecture specs',
+        color: '#64748b',
+        durationDays: 14,
+      },
+      {
+        name: 'UI / UX Design',
+        description: 'Figma mockups and interactive prototypes',
+        color: '#ec4899',
+        durationDays: 14,
+      },
+      {
+        name: 'Sprint Execution / Build',
+        description: 'Backend APIs and Frontend engineering',
+        color: '#3b82f6',
+        durationDays: 30,
+      },
+      {
+        name: 'Testing & QA / UAT',
+        description: 'Test matrix execution and user sign-offs',
+        color: '#f59e0b',
+        durationDays: 14,
+      },
+      {
+        name: 'Production Deployment',
+        description: 'DevOps release runbook and launch',
+        color: '#10b981',
+        durationDays: 7,
+      },
     ],
   },
   {
@@ -321,10 +689,30 @@ const SEED_PHASE_TEMPLATES: PhaseTemplate[] = [
     description: 'Best for product releases, seasonal campaigns, and PR',
     projectType: 'Marketing',
     phases: [
-      { name: 'Market Research & Goals', description: 'Audience analysis and KPIs', color: '#64748b', durationDays: 10 },
-      { name: 'Creative Strategy & Copy', description: 'Design assets, landing pages, copy', color: '#8b5cf6', durationDays: 14 },
-      { name: 'Channel Launch & Ads', description: 'Paid media, social, and email blasts', color: '#3b82f6', durationDays: 21 },
-      { name: 'Performance Analytics', description: 'Conversion tracking and retrospective', color: '#10b981', durationDays: 7 },
+      {
+        name: 'Market Research & Goals',
+        description: 'Audience analysis and KPIs',
+        color: '#64748b',
+        durationDays: 10,
+      },
+      {
+        name: 'Creative Strategy & Copy',
+        description: 'Design assets, landing pages, copy',
+        color: '#8b5cf6',
+        durationDays: 14,
+      },
+      {
+        name: 'Channel Launch & Ads',
+        description: 'Paid media, social, and email blasts',
+        color: '#3b82f6',
+        durationDays: 21,
+      },
+      {
+        name: 'Performance Analytics',
+        description: 'Conversion tracking and retrospective',
+        color: '#10b981',
+        durationDays: 7,
+      },
     ],
   },
 ];
@@ -435,12 +823,15 @@ class ProjectService {
       status: payload.status || 'planning',
       health: 'on_track',
       startDate: payload.startDate || new Date().toISOString().split('T')[0],
-      targetDate: payload.targetDate || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+      targetDate:
+        payload.targetDate || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
       methodology: payload.methodology || 'timeline_first',
       estimationUnit: payload.estimationUnit || 'hours',
       autoShiftMode: payload.autoShiftMode || 'flexible',
       color: payload.color || '#E8583A',
-      members: payload.members || [{ userId: 1, name: 'Alex Mercer', email: 'alex@aether.org', role: 'lead' }],
+      members: payload.members || [
+        { userId: 1, name: 'Alex Mercer', email: 'alex@aether.org', role: 'lead' },
+      ],
       ownershipTransferHistory: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -639,7 +1030,10 @@ class ProjectService {
     const projectTasks = this.getProjectTasks(dep.projectId);
     const allDeps = [...all.filter((d) => d.projectId === dep.projectId), candidate];
 
-    const cycle = detectCycle(allDeps, projectTasks.map((t) => t.id));
+    const cycle = detectCycle(
+      allDeps,
+      projectTasks.map((t) => t.id)
+    );
     if (cycle) {
       return { success: false, cycle };
     }
@@ -688,7 +1082,11 @@ class ProjectService {
     return all.filter((d) => d.projectId === Number(projectId));
   }
 
-  public updateDocumentStatus(id: number, status: ProjectDocument['status'], note?: string): boolean {
+  public updateDocumentStatus(
+    id: number,
+    status: ProjectDocument['status'],
+    note?: string
+  ): boolean {
     const all = this.getStorage<ProjectDocument[]>(STORAGE_KEYS.DOCUMENTS, []);
     const doc = all.find((d) => d.id === id);
     if (!doc) return false;
@@ -914,7 +1312,10 @@ class ProjectService {
   }
 
   // ─── Task Comments & Attachments ───
-  public addTaskComment(taskId: number, comment: { userId: number; userName: string; content: string }): TaskComment {
+  public addTaskComment(
+    taskId: number,
+    comment: { userId: number; userName: string; content: string }
+  ): TaskComment {
     const allTasks = this.getStorage<ProjectTask[]>(STORAGE_KEYS.TASKS, SEED_TASKS);
     const task = allTasks.find((t) => t.id === taskId);
     const newComment: TaskComment = {
@@ -932,7 +1333,10 @@ class ProjectService {
     return newComment;
   }
 
-  public addTaskAttachment(taskId: number, attachment: { name: string; url: string; sizeBytes?: number; uploadedBy: string }): TaskAttachment {
+  public addTaskAttachment(
+    taskId: number,
+    attachment: { name: string; url: string; sizeBytes?: number; uploadedBy: string }
+  ): TaskAttachment {
     const allTasks = this.getStorage<ProjectTask[]>(STORAGE_KEYS.TASKS, SEED_TASKS);
     const task = allTasks.find((t) => t.id === taskId);
     const newAtt: TaskAttachment = {
@@ -967,8 +1371,8 @@ class ProjectService {
       type: 'task',
       status: 'To Do',
       priority: subtask.priority || 'Medium',
-      assigneeIds: subtask.assigneeIds || (parent?.assigneeIds || [1]),
-      assigneeNames: subtask.assigneeNames || (parent?.assigneeNames || ['Alex Mercer']),
+      assigneeIds: subtask.assigneeIds || parent?.assigneeIds || [1],
+      assigneeNames: subtask.assigneeNames || parent?.assigneeNames || ['Alex Mercer'],
       startDate: subtask.startDate || parent?.startDate,
       dueDate: subtask.dueDate || parent?.dueDate,
       durationDays: subtask.durationDays || 1,
@@ -985,7 +1389,9 @@ class ProjectService {
     return newSub;
   }
 
-  public createTaskWithOwnership(payload: Partial<ProjectTask> & { projectId: number; title: string }): ProjectTask {
+  public createTaskWithOwnership(
+    payload: Partial<ProjectTask> & { projectId: number; title: string }
+  ): ProjectTask {
     const allTasks = this.getStorage<ProjectTask[]>(STORAGE_KEYS.TASKS, SEED_TASKS);
     const newId = allTasks.length > 0 ? Math.max(...allTasks.map((t) => t.id)) + 1 : 1;
     const newTask: ProjectTask = {
@@ -1004,7 +1410,9 @@ class ProjectService {
       statusId: payload.statusId,
       priority: payload.priority || 'Medium',
       assigneeIds: payload.assigneeIds || (payload.assignedToId ? [payload.assignedToId] : [1]),
-      assigneeNames: payload.assigneeNames || (payload.assignedToName ? [payload.assignedToName] : ['Alex Mercer']),
+      assigneeNames:
+        payload.assigneeNames ||
+        (payload.assignedToName ? [payload.assignedToName] : ['Alex Mercer']),
       collaboratorIds: payload.collaboratorIds || [],
       collaboratorNames: payload.collaboratorNames || [],
       startDate: payload.startDate,
@@ -1060,8 +1468,8 @@ class ProjectService {
     const historyItem: import('@/types/department').TaskAssignmentHistoryItem = {
       id: Date.now(),
       taskId,
-      fromUserId: task.assignedToId || (task.assigneeIds?.[0]),
-      fromUserName: task.assignedToName || (task.assigneeNames?.[0]),
+      fromUserId: task.assignedToId || task.assigneeIds?.[0],
+      fromUserName: task.assignedToName || task.assigneeNames?.[0],
       toUserId: newAssigneeId,
       toUserName: newAssigneeName,
       reassignedById,

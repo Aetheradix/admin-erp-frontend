@@ -58,13 +58,18 @@ export function buildActivityTimeline(
       type: 'leave',
       icon: Calendar,
       color:
-        leave.status === 'Approved' ? 'text-blue-500 bg-blue-500/10' : 'text-amber-500 bg-amber-500/10',
+        leave.status === 'Approved'
+          ? 'text-blue-500 bg-blue-500/10'
+          : 'text-amber-500 bg-amber-500/10',
     })),
     ...recentActivities.slice(0, ACTIVITY_INVENTORY_LIMIT).map((activity) => ({
       id: `inv-${activity.id}`,
       title: `${activity.action}: ${activity.itemName}`,
       time: activity.createdAt
-        ? new Date(activity.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        ? new Date(activity.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          })
         : 'Recently',
       type: 'inventory',
       icon: Package,

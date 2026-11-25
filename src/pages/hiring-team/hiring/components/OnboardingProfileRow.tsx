@@ -77,8 +77,7 @@ export function OnboardingProfileRow({
 
         <div className="flex items-center gap-2 shrink-0 ml-3">
           <span className="text-[11px] text-muted hidden md:block">
-            Updated{' '}
-            {profile.lastSavedAt ? new Date(profile.lastSavedAt).toLocaleDateString() : '—'}
+            Updated {profile.lastSavedAt ? new Date(profile.lastSavedAt).toLocaleDateString() : '—'}
           </span>
           {expanded ? (
             <ChevronUp

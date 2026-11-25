@@ -9,23 +9,21 @@ interface EmployeeAvatarProps {
   presence?: boolean;
 }
 
-export const EmployeeAvatar: React.FC<EmployeeAvatarProps> = React.memo(({
-  user,
-  size = 'md',
-  presence = true,
-}) => {
-  if (!user) return null;
+export const EmployeeAvatar: React.FC<EmployeeAvatarProps> = React.memo(
+  ({ user, size = 'md', presence = true }) => {
+    if (!user) return null;
 
-  return (
-    <Avatar
-      name={user.username}
-      imageUrl={user.image_url}
-      alt={user.username}
-      size={size}
-      backgroundColor={getDepartmentColor(user.department).text}
-      presence={presence}
-    />
-  );
-});
+    return (
+      <Avatar
+        name={user.username}
+        imageUrl={user.image_url}
+        alt={user.username}
+        size={size}
+        backgroundColor={getDepartmentColor(user.department).text}
+        presence={presence}
+      />
+    );
+  }
+);
 
 EmployeeAvatar.displayName = 'EmployeeAvatar';

@@ -81,11 +81,16 @@ export function buildPendingActions(
     {
       id: 'leaves',
       title:
-        pendingLeavesCount > 0 ? `${pendingLeavesCount} Pending Leave Requests` : 'Leaves All Clear',
-      subtitle: pendingLeavesCount > 0 ? 'Awaiting manager approval' : 'No requests pending approval',
+        pendingLeavesCount > 0
+          ? `${pendingLeavesCount} Pending Leave Requests`
+          : 'Leaves All Clear',
+      subtitle:
+        pendingLeavesCount > 0 ? 'Awaiting manager approval' : 'No requests pending approval',
       icon: Calendar,
       color:
-        pendingLeavesCount > 0 ? 'text-amber-500 bg-amber-500/10' : 'text-emerald-500 bg-emerald-500/10',
+        pendingLeavesCount > 0
+          ? 'text-amber-500 bg-amber-500/10'
+          : 'text-emerald-500 bg-emerald-500/10',
       actionText: 'Review',
       to: '/calendar',
     },
@@ -94,7 +99,8 @@ export function buildPendingActions(
       title: remainingTasks > 0 ? `${remainingTasks} Tasks In Progress` : 'All Tasks Completed',
       subtitle: remainingTasks > 0 ? 'Assigned tasks requiring completion' : 'Zero backlog',
       icon: remainingTasks > 0 ? AlertCircle : CheckCircle2,
-      color: remainingTasks > 0 ? 'text-primary bg-primary/10' : 'text-emerald-500 bg-emerald-500/10',
+      color:
+        remainingTasks > 0 ? 'text-primary bg-primary/10' : 'text-emerald-500 bg-emerald-500/10',
       actionText: 'Tasks',
       to: '/tasks',
     },

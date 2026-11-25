@@ -8,12 +8,7 @@ import {
 } from '@/store/api/leaveSlice';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { Button } from '@/components/ui/primitives/Button';
-import {
-  Wallet,
-  Sparkles,
-  Calculator,
-  CalendarCheck,
-} from 'lucide-react';
+import { Wallet, Sparkles, Calculator, CalendarCheck } from 'lucide-react';
 
 export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void }) {
   const currentYear = new Date().getFullYear();
@@ -59,7 +54,11 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
       }).unwrap();
       setPreviewResult(res);
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Preview Failed', detail: err?.data?.message || 'Calculation error' });
+      showToast({
+        severity: 'error',
+        summary: 'Preview Failed',
+        detail: err?.data?.message || 'Calculation error',
+      });
     }
   };
 
@@ -76,7 +75,8 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
               My Real-Time Leave Balances ({currentYear})
             </h3>
             <p className="text-xs text-muted">
-              Live double-entry ledger tracking opening credits, monthly accruals, approved deductions, and LOP.
+              Live double-entry ledger tracking opening credits, monthly accruals, approved
+              deductions, and LOP.
             </p>
           </div>
         </div>
@@ -104,9 +104,10 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
                   : 'bg-surface border-border-subtle hover:border-primary/30 shadow-xs'
               }`}>
               <div className="flex items-center justify-between">
-                <span className={`px-2.5 py-0.5 rounded-full font-black text-[10px] tracking-wider uppercase ${
-                  isLop ? 'bg-rose-500/20 text-rose-500' : 'bg-primary/10 text-primary'
-                }`}>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full font-black text-[10px] tracking-wider uppercase ${
+                    isLop ? 'bg-rose-500/20 text-rose-500' : 'bg-primary/10 text-primary'
+                  }`}>
                   {b.leave_type_code}
                 </span>
                 <span className="text-[11px] font-bold text-muted capitalize">
@@ -122,7 +123,9 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
                 <span className="text-3xl font-black text-foreground tracking-tight">
                   {isLop ? b.lop_balance : b.available_balance}
                 </span>
-                <span className="text-xs font-bold text-muted">days {isLop ? 'LOP taken' : 'available'}</span>
+                <span className="text-xs font-bold text-muted">
+                  days {isLop ? 'LOP taken' : 'available'}
+                </span>
               </div>
 
               <div className="mt-4 pt-3 border-t border-border-subtle/80 grid grid-cols-3 gap-1 text-[10px] text-muted">
@@ -136,7 +139,9 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
                 </div>
                 <div>
                   <span className="block font-bold">Pending</span>
-                  <span className="font-extrabold text-foreground">{b.pending_approval_balance}</span>
+                  <span className="font-extrabold text-foreground">
+                    {b.pending_approval_balance}
+                  </span>
                 </div>
               </div>
             </div>
@@ -153,14 +158,11 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
           </h4>
         </div>
         <p className="text-xs text-muted -mt-3">
-          Simulate an upcoming leave span to preview weekend skips, company holidays, sandwich rule deductions, and automatic Loss of Pay (LOP) splits.
+          Simulate an upcoming leave span to preview weekend skips, company holidays, sandwich rule
+          deductions, and automatic Loss of Pay (LOP) splits.
         </p>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleCalculatePreview}
-          className="w-full">
+        <Form form={form} layout="vertical" onFinish={handleCalculatePreview} className="w-full">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
             <Form.Item
               label={<span className="text-xs font-bold text-foreground">Leave Type</span>}
@@ -225,7 +227,9 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border-subtle">
               <div>
                 <p className="text-xs text-muted">
-                  Applied Policy: <strong className="text-foreground">{previewResult.policyName}</strong> ({previewResult.calendarName})
+                  Applied Policy:{' '}
+                  <strong className="text-foreground">{previewResult.policyName}</strong> (
+                  {previewResult.calendarName})
                 </p>
                 {previewResult.applySandwichRule && (
                   <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-black">
@@ -245,7 +249,9 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
                 </div>
                 {previewResult.lopDays > 0 && (
                   <div>
-                    <span className="text-rose-500 text-[10px] uppercase block">Loss of Pay (LOP)</span>
+                    <span className="text-rose-500 text-[10px] uppercase block">
+                      Loss of Pay (LOP)
+                    </span>
                     <span className="text-lg text-rose-500">{previewResult.lopDays}d</span>
                   </div>
                 )}
@@ -265,14 +271,18 @@ export function LeaveBalanceLedger({ onApplyClick }: { onApplyClick?: () => void
                       d.isLop
                         ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
                         : d.isSandwichApplied
-                        ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                        : d.isWeekend || d.isHoliday
-                        ? 'bg-surface text-muted border-border-subtle line-through opacity-70'
-                        : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                          : d.isWeekend || d.isHoliday
+                            ? 'bg-surface text-muted border-border-subtle line-through opacity-70'
+                            : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                     }`}>
                     <span>{d.date}</span>
                     <span className="text-[10px] font-extrabold opacity-80">
-                      ({d.deductionUnits}d {d.isSandwichApplied ? 'Sandwich' : d.holidayName || (d.isWeekend ? 'Off' : '')})
+                      ({d.deductionUnits}d{' '}
+                      {d.isSandwichApplied
+                        ? 'Sandwich'
+                        : d.holidayName || (d.isWeekend ? 'Off' : '')}
+                      )
                     </span>
                   </div>
                 ))}

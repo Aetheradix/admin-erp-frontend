@@ -231,16 +231,18 @@ export default function AppLayout() {
           isProfileIncomplete &&
           location.pathname !== '/profile-completion' && (
             <div
-              className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${empProfile?.status === 'changes_required'
-                ? 'bg-warning/10 border-warning/30 text-warning'
-                : 'bg-primary/10 border-primary/20 text-foreground'
-                }`}>
+              className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${
+                empProfile?.status === 'changes_required'
+                  ? 'bg-warning/10 border-warning/30 text-warning'
+                  : 'bg-primary/10 border-primary/20 text-foreground'
+              }`}>
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${empProfile?.status === 'changes_required'
-                    ? 'bg-warning/20 text-warning'
-                    : 'bg-primary/20 text-primary'
-                    }`}>
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                    empProfile?.status === 'changes_required'
+                      ? 'bg-warning/20 text-warning'
+                      : 'bg-primary/20 text-primary'
+                  }`}>
                   {empProfile?.status === 'changes_required' ? (
                     <AlertTriangle size={13} />
                   ) : (
@@ -256,7 +258,7 @@ export default function AppLayout() {
                   <span className="truncate">
                     {empProfile?.status === 'changes_required'
                       ? empProfile.reviewNotes ||
-                      'The hiring team requested updates to your submitted onboarding documents.'
+                        'The hiring team requested updates to your submitted onboarding documents.'
                       : `Your employee profile is ${profilePct}% complete. Please submit mandatory bank & identity details.`}
                   </span>
                 </div>
@@ -266,10 +268,11 @@ export default function AppLayout() {
                 <button
                   type="button"
                   onClick={() => setIsProfileModalOpen(true)}
-                  className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${empProfile?.status === 'changes_required'
-                    ? 'bg-warning text-white hover:bg-warning/90'
-                    : 'bg-primary text-white hover:bg-primary/90'
-                    }`}>
+                  className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${
+                    empProfile?.status === 'changes_required'
+                      ? 'bg-warning text-white hover:bg-warning/90'
+                      : 'bg-primary text-white hover:bg-primary/90'
+                  }`}>
                   <span>
                     {empProfile?.status === 'changes_required' ? 'Fix Now' : 'Complete Profile'}
                   </span>
@@ -291,8 +294,7 @@ export default function AppLayout() {
         <main className="app-main flex-1 min-w-0 overflow-y-auto p-3 sm:p-6 lg:p-10 bg-background custom-scrollbar">
           <div
             key={location.key}
-            className="app-page-content min-w-0 max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200"
-          >
+            className="app-page-content min-w-0 max-w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
             <PageAccessGuard>
               <Outlet />
             </PageAccessGuard>

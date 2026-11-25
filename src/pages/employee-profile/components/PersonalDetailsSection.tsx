@@ -111,7 +111,9 @@ export function PersonalDetailsSection({
             size="large"
             className="w-full rounded-xl!"
             value={form.dateOfBirth ? dayjs(form.dateOfBirth) : null}
-            onChange={(_, dateStr) => set('dateOfBirth', typeof dateStr === 'string' ? dateStr : '')}
+            onChange={(_, dateStr) =>
+              set('dateOfBirth', typeof dateStr === 'string' ? dateStr : '')
+            }
             disabled={readOnly}
           />
         </div>
@@ -205,9 +207,7 @@ export function PersonalDetailsSection({
           </div>
 
           {!readOnly && (
-            <Checkbox
-              checked={sameAddress}
-              onChange={(e) => handleSameAddress(e.target.checked)}>
+            <Checkbox checked={sameAddress} onChange={(e) => handleSameAddress(e.target.checked)}>
               <span className="text-xs text-muted font-semibold">Same as current address</span>
             </Checkbox>
           )}

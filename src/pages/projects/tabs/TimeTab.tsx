@@ -25,7 +25,9 @@ interface TimeTabProps {
 }
 
 export function TimeTab({ project, tasks }: TimeTabProps) {
-  const [entries, setEntries] = useState<TimeEntry[]>(() => projectService.getTimeEntries(project.id));
+  const [entries, setEntries] = useState<TimeEntry[]>(() =>
+    projectService.getTimeEntries(project.id)
+  );
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [selectedTaskId, setSelectedTaskId] = useState<number | undefined>(tasks[0]?.id);
@@ -44,8 +46,12 @@ export function TimeTab({ project, tasks }: TimeTabProps) {
   }, [isTimerRunning]);
 
   const formatTimer = (totalSeconds: number) => {
-    const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-    const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+    const hrs = Math.floor(totalSeconds / 3600)
+      .toString()
+      .padStart(2, '0');
+    const mins = Math.floor((totalSeconds % 3600) / 60)
+      .toString()
+      .padStart(2, '0');
     const secs = (totalSeconds % 60).toString().padStart(2, '0');
     return `${hrs}:${mins}:${secs}`;
   };
@@ -138,13 +144,17 @@ export function TimeTab({ project, tasks }: TimeTabProps) {
       dataIndex: 'userName',
       key: 'userName',
       width: 150,
-      render: (u: string) => <span className="text-xs font-bold text-foreground">{u || 'Member'}</span>,
+      render: (u: string) => (
+        <span className="text-xs font-bold text-foreground">{u || 'Member'}</span>
+      ),
     },
     {
       title: 'Task',
       dataIndex: 'taskTitle',
       key: 'taskTitle',
-      render: (t: string) => <span className="text-xs text-foreground font-semibold">{t || 'General Work'}</span>,
+      render: (t: string) => (
+        <span className="text-xs text-foreground font-semibold">{t || 'General Work'}</span>
+      ),
     },
     {
       title: 'Duration',
@@ -178,7 +188,9 @@ export function TimeTab({ project, tasks }: TimeTabProps) {
   return (
     <div className="space-y-6">
       {/* Live Timer Widget & KPI */}
-      <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs" styles={{ body: { padding: '20px' } }}>
+      <Card
+        className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs"
+        styles={{ body: { padding: '20px' } }}>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Timer Control */}
           <div className="flex flex-wrap items-center gap-3">

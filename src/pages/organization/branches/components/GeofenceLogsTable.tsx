@@ -12,7 +12,9 @@ export function GeofenceLogsTable({ logs, isLoading, onRefresh }: GeofenceLogsTa
     <div className="bg-surface-elevated rounded-3xl border border-border-subtle shadow-sm p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-black text-foreground">Geofence Check-in Verification History</h3>
+          <h3 className="text-base font-black text-foreground">
+            Geofence Check-in Verification History
+          </h3>
           <p className="text-xs text-muted font-medium">
             Live audit trail of all employee geofence boundary validations
           </p>
@@ -57,10 +59,13 @@ export function GeofenceLogsTable({ logs, isLoading, onRefresh }: GeofenceLogsTa
                       {new Date(log.created_at).toLocaleString()}
                     </td>
                     <td className="py-3 px-3 font-bold text-foreground">
-                      {log.username || log.email || (log.employee_code ? `Emp #${log.employee_code}` : `User #${log.user_id}`)}
+                      {log.username ||
+                        log.email ||
+                        (log.employee_code ? `Emp #${log.employee_code}` : `User #${log.user_id}`)}
                     </td>
                     <td className="py-3 px-3 text-foreground font-semibold">
-                      {log.office_name || (log.office_id ? `Office #${log.office_id}` : 'Remote / WFH')}
+                      {log.office_name ||
+                        (log.office_id ? `Office #${log.office_id}` : 'Remote / WFH')}
                     </td>
                     <td className="py-3 px-3 font-mono text-foreground">
                       {log.distance_meters !== null && log.distance_meters !== undefined ? (
@@ -77,15 +82,18 @@ export function GeofenceLogsTable({ logs, isLoading, onRefresh }: GeofenceLogsTa
                     </td>
                     <td className="py-3 px-3">
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isSuccess
-                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-red-500/15 text-red-600 dark:text-red-400'
-                          }`}>
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          isSuccess
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-red-500/15 text-red-600 dark:text-red-400'
+                        }`}>
                         {isSuccess ? <CheckCircle2 size={11} /> : <AlertTriangle size={11} />}
                         {log.status}
                       </span>
                       {log.failure_reason && (
-                        <p className="text-[10px] text-red-500 font-medium mt-0.5">{log.failure_reason}</p>
+                        <p className="text-[10px] text-red-500 font-medium mt-0.5">
+                          {log.failure_reason}
+                        </p>
                       )}
                     </td>
                   </tr>

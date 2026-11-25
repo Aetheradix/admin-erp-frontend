@@ -54,7 +54,10 @@ const initialAuditLogs: InvoiceAuditLog[] = [];
  * e.g., INV2610-004 (26 = 2026, 10 = October, 004 = 3 to 4 digit unique number)
  * Strictly limits the unique suffix to 3 to 4 digits (001 - 9999), never allowing long timestamps.
  */
-export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targetDate?: string): string {
+export function generateNextInvoiceNumber(
+  existingInvoices: Invoice[] = [],
+  targetDate?: string
+): string {
   let dateObj = new Date();
   if (targetDate) {
     const parsed = new Date(targetDate);
@@ -77,10 +80,7 @@ export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targ
 
   existingInvoices.forEach((inv) => {
     const id = String(
-      inv.id ||
-      (inv as any).invoice_number ||
-      (inv as any).invoiceNumber ||
-      ''
+      inv.id || (inv as any).invoice_number || (inv as any).invoiceNumber || ''
     ).trim();
 
     const match = id.match(exactRegex);
@@ -96,7 +96,11 @@ export function generateNextInvoiceNumber(existingInvoices: Invoice[] = [], targ
       const endMatch = id.match(/-(\d{1,4})$/);
       if (invDate && endMatch && endMatch[1]) {
         const d = new Date(invDate);
-        if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() + 1 === currentMonth) {
+        if (
+          !isNaN(d.getTime()) &&
+          d.getFullYear() === currentYear &&
+          d.getMonth() + 1 === currentMonth
+        ) {
           const num = parseInt(endMatch[1], 10);
           if (!isNaN(num) && num > 0 && num <= 9999) {
             usedSequences.add(num);
@@ -132,7 +136,10 @@ export function sanitizeInvoiceNumber(raw: string, fallbackDate?: string): strin
   const trimmed = String(raw || '').trim();
   const d = fallbackDate ? new Date(fallbackDate) : new Date();
   const yy = String(isNaN(d.getTime()) ? new Date().getFullYear() : d.getFullYear()).slice(-2);
-  const mm = String(isNaN(d.getTime()) ? new Date().getMonth() + 1 : d.getMonth() + 1).padStart(2, '0');
+  const mm = String(isNaN(d.getTime()) ? new Date().getMonth() + 1 : d.getMonth() + 1).padStart(
+    2,
+    '0'
+  );
   const standardPrefix = `INV${yy}${mm}-`;
 
   if (!trimmed) {
@@ -182,60 +189,52 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
   // Resolve invoiceNumber
   const invoiceNumber = String(
     parsedData.invoiceNumber ||
-    parsedData.invoice_number ||
-    raw.invoice_number ||
-    raw.invoiceNumber ||
-    inv.id ||
-    ''
+      parsedData.invoice_number ||
+      raw.invoice_number ||
+      raw.invoiceNumber ||
+      inv.id ||
+      ''
   ).trim();
 
   // Resolve billToName
   const billToName = String(
     parsedData.billToName ||
-    parsedData.bill_to_name ||
-    parsedData.client ||
-    inv.client ||
-    raw.bill_to_name ||
-    raw.billToName ||
-    ''
+      parsedData.bill_to_name ||
+      parsedData.client ||
+      inv.client ||
+      raw.bill_to_name ||
+      raw.billToName ||
+      ''
   ).trim();
 
   // Resolve billToPhone
   const billToPhone = String(
     parsedData.billToPhone ||
-    parsedData.bill_to_phone ||
-    raw.bill_to_phone ||
-    raw.billToPhone ||
-    raw.vendor_phone ||
-    raw.vendorPhone ||
-    raw.phone ||
-    ''
+      parsedData.bill_to_phone ||
+      raw.bill_to_phone ||
+      raw.billToPhone ||
+      raw.vendor_phone ||
+      raw.vendorPhone ||
+      raw.phone ||
+      ''
   ).trim();
 
   // Resolve dates
   const invoiceDate = String(
     parsedData.invoiceDate ||
-    parsedData.invoice_date ||
-    parsedData.date ||
-    inv.date ||
-    raw.invoice_date ||
-    raw.date ||
-    new Date().toISOString().slice(0, 10)
+      parsedData.invoice_date ||
+      parsedData.date ||
+      inv.date ||
+      raw.invoice_date ||
+      raw.date ||
+      new Date().toISOString().slice(0, 10)
   );
 
-  const dueDate = String(
-    parsedData.dueDate ||
-    parsedData.due_date ||
-    invoiceDate
-  );
+  const dueDate = String(parsedData.dueDate || parsedData.due_date || invoiceDate);
 
   // Resolve Tax Rate and amounts
-  const calculatedTaxRate = Number(
-    parsedData.gstRate ?? raw.gst_rate ?? raw.gstRate ?? 18
-  );
-  const totalAmount = Number(
-    inv.amount || parsedData.amount || parsedData.total || raw.total || 0
-  );
+  const calculatedTaxRate = Number(parsedData.gstRate ?? raw.gst_rate ?? raw.gstRate ?? 18);
+  const totalAmount = Number(inv.amount || parsedData.amount || parsedData.total || raw.total || 0);
   const taxableSubtotal = Math.round(totalAmount / (1 + calculatedTaxRate / 100));
 
   // Resolve items
@@ -251,12 +250,15 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
   let finalItems: InvoiceItem[] = [];
   if (Array.isArray(rawItems) && rawItems.length > 0) {
     finalItems = rawItems.map((item: any) => ({
-      description: String(item.description || item.name || 'Software Engineering & Enterprise Services'),
+      description: String(
+        item.description || item.name || 'Software Engineering & Enterprise Services'
+      ),
       quantity: Math.max(1, Number(item.quantity || item.qty || 1)),
       rate: Number(item.rate ?? item.price ?? item.amount ?? 0),
       inventory_item_id: item.inventory_item_id ? Number(item.inventory_item_id) : undefined,
       asset_id: item.asset_id ? String(item.asset_id) : undefined,
-      available_stock: item.available_stock !== undefined ? Number(item.available_stock) : undefined,
+      available_stock:
+        item.available_stock !== undefined ? Number(item.available_stock) : undefined,
     }));
   } else {
     finalItems = [
@@ -274,13 +276,25 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
     invoiceNumber,
     invoiceDate,
     dueDate,
-    placeOfSupply: String(parsedData.placeOfSupply || parsedData.place_of_supply || 'Madhya Pradesh'),
+    placeOfSupply: String(
+      parsedData.placeOfSupply || parsedData.place_of_supply || 'Madhya Pradesh'
+    ),
     status: (parsedData.status || inv.status || 'Pending') as 'Paid' | 'Pending' | 'Overdue',
 
-    companyName: String(parsedData.companyName || parsedData.company_name || 'Aetheradix Private Limited'),
-    companyContact: String(parsedData.companyContact || parsedData.company_contact || 'Pratyush Shrivastava'),
-    companyAddress: String(parsedData.companyAddress || parsedData.company_address || 'F-N 507, Crystal Tower, IBD Kings Park'),
-    companyCity: String(parsedData.companyCity || parsedData.company_city || 'Bawadia Kalan, Bhopal'),
+    companyName: String(
+      parsedData.companyName || parsedData.company_name || 'Aetheradix Private Limited'
+    ),
+    companyContact: String(
+      parsedData.companyContact || parsedData.company_contact || 'Pratyush Shrivastava'
+    ),
+    companyAddress: String(
+      parsedData.companyAddress ||
+        parsedData.company_address ||
+        'F-N 507, Crystal Tower, IBD Kings Park'
+    ),
+    companyCity: String(
+      parsedData.companyCity || parsedData.company_city || 'Bawadia Kalan, Bhopal'
+    ),
     companyState: String(parsedData.companyState || parsedData.company_state || 'Madhya Pradesh'),
     companyCountry: String(parsedData.companyCountry || parsedData.company_country || 'India'),
     companyPincode: String(parsedData.companyPincode || parsedData.company_pincode || '462039'),
@@ -288,7 +302,9 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
 
     billToName,
     billToPhone,
-    billToAddress: String(parsedData.billToAddress || parsedData.bill_to_address || 'Corporate Office, Sector A'),
+    billToAddress: String(
+      parsedData.billToAddress || parsedData.bill_to_address || 'Corporate Office, Sector A'
+    ),
     billToCity: String(parsedData.billToCity || parsedData.bill_to_city || 'Bhopal'),
     billToState: String(parsedData.billToState || parsedData.bill_to_state || 'Madhya Pradesh'),
     billToCountry: String(parsedData.billToCountry || parsedData.bill_to_country || 'India'),
@@ -297,13 +313,17 @@ export const getInvoiceFormData = (inv: Invoice): InvoiceForm => {
 
     items: finalItems,
     gstRate: calculatedTaxRate,
-    notes: String(parsedData.notes || 'Thank you for your business. Payment is due within 15 days.'),
+    notes: String(
+      parsedData.notes || 'Thank you for your business. Payment is due within 15 days.'
+    ),
   };
 };
 
 const createEmptyForm = (existingInvoices: Invoice[], defaultDate?: string): InvoiceForm => {
   const today = defaultDate ? new Date(defaultDate) : new Date();
-  const todayStr = isNaN(today.getTime()) ? new Date().toISOString().slice(0, 10) : today.toISOString().slice(0, 10);
+  const todayStr = isNaN(today.getTime())
+    ? new Date().toISOString().slice(0, 10)
+    : today.toISOString().slice(0, 10);
   const nextNum = generateNextInvoiceNumber(existingInvoices, todayStr);
   const due = new Date(today);
   due.setDate(due.getDate() + 15);
@@ -427,13 +447,14 @@ export function InvoicesPage() {
         const invNum = String(item.invoice_number || item.invoiceNumber || item.id || 'INV-000');
         const client = String(item.client || item.bill_to_name || item.billToName || 'Client');
         const amount = Number(item.amount || item.total || 0);
-        const status = (item.status === 'Paid' || item.status === 'Overdue' ? item.status : 'Pending') as
-          'Paid' | 'Pending' | 'Overdue';
+        const status = (
+          item.status === 'Paid' || item.status === 'Overdue' ? item.status : 'Pending'
+        ) as 'Paid' | 'Pending' | 'Overdue';
         const date = String(
           item.date ||
-          item.invoice_date ||
-          item.invoiceDate ||
-          new Date().toISOString().slice(0, 10)
+            item.invoice_date ||
+            item.invoiceDate ||
+            new Date().toISOString().slice(0, 10)
         );
 
         const partialInv: Invoice = {
@@ -457,7 +478,7 @@ export function InvoicesPage() {
             ...fullFormData,
             invoiceUrl: item.invoice_url || item.invoiceUrl || item.data?.invoiceUrl,
           },
-          ...((item.id !== undefined && String(item.id) !== invNum) ? { backendId: item.id } : {}),
+          ...(item.id !== undefined && String(item.id) !== invNum ? { backendId: item.id } : {}),
         };
       });
 
@@ -749,7 +770,12 @@ export function InvoicesPage() {
     recordAuditLog(
       'STATUS_UPDATE',
       `Updated status of invoice ${invoice.id} from ${prevStatus} to ${newStatus} for ${invoice.client}`,
-      { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount, skipBackendApi: true }
+      {
+        invoiceId: invoice.id,
+        client: invoice.client,
+        amount: invoice.amount,
+        skipBackendApi: true,
+      }
     );
 
     refetchLogs();
@@ -853,7 +879,9 @@ export function InvoicesPage() {
         data: {
           ...invoicePayload.data!,
         },
-        ...((editingInvoice as any)?.backendId ? { backendId: (editingInvoice as any).backendId } : {}),
+        ...((editingInvoice as any)?.backendId
+          ? { backendId: (editingInvoice as any).backendId }
+          : {}),
       };
 
       if (isUpdating && editingInvoice) {
@@ -861,7 +889,7 @@ export function InvoicesPage() {
         setInvoices((prev) =>
           prev.map((inv) =>
             inv.id.toLowerCase().trim() === editingInvoice.id.toLowerCase().trim() ||
-              ((inv as any).backendId && (inv as any).backendId === (editingInvoice as any).backendId)
+            ((inv as any).backendId && (inv as any).backendId === (editingInvoice as any).backendId)
               ? savedInvoice
               : inv
           )
@@ -891,7 +919,10 @@ export function InvoicesPage() {
             billToPhone: form.billToPhone,
             amount: savedInvoice.amount,
             total: savedInvoice.amount,
-            subtotal: form.items.reduce((s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0), 0),
+            subtotal: form.items.reduce(
+              (s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0),
+              0
+            ),
             gst_rate: form.gstRate,
             status: savedInvoice.status,
             date: savedInvoice.date,
@@ -927,7 +958,12 @@ export function InvoicesPage() {
         recordAuditLog(
           'UPDATE_INVOICE',
           `Updated invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
-          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount, skipBackendApi: true }
+          {
+            invoiceId: savedInvoice.id,
+            client: savedInvoice.client,
+            amount: savedInvoice.amount,
+            skipBackendApi: true,
+          }
         );
 
         message.success({
@@ -951,7 +987,10 @@ export function InvoicesPage() {
             billToPhone: form.billToPhone,
             amount: savedInvoice.amount,
             total: savedInvoice.amount,
-            subtotal: form.items.reduce((s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0), 0),
+            subtotal: form.items.reduce(
+              (s, it) => s + (Number(it.quantity) || 1) * (Number(it.rate) || 0),
+              0
+            ),
             gst_rate: form.gstRate,
             status: savedInvoice.status,
             date: savedInvoice.date,
@@ -987,16 +1026,19 @@ export function InvoicesPage() {
         recordAuditLog(
           'CREATE_INVOICE',
           `Created invoice ${savedInvoice.id} for ${savedInvoice.client} (₹${savedInvoice.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
-          { invoiceId: savedInvoice.id, client: savedInvoice.client, amount: savedInvoice.amount, skipBackendApi: true }
+          {
+            invoiceId: savedInvoice.id,
+            client: savedInvoice.client,
+            amount: savedInvoice.amount,
+            skipBackendApi: true,
+          }
         );
 
         // 4. Deduct inventory items referenced in this invoice if applicable
         try {
           const itemsToDeduct = safeItems
             .filter(
-              (item) =>
-                (item.inventory_item_id || item.asset_id) &&
-                Number(item.quantity) > 0
+              (item) => (item.inventory_item_id || item.asset_id) && Number(item.quantity) > 0
             )
             .map((item) => ({
               id: item.inventory_item_id,
@@ -1100,7 +1142,12 @@ export function InvoicesPage() {
         recordAuditLog(
           'DELETE_INVOICE',
           `Deleted invoice ${invoice.id} for ${invoice.client} (₹${Number(invoice.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })})`,
-          { invoiceId: invoice.id, client: invoice.client, amount: invoice.amount, skipBackendApi: true }
+          {
+            invoiceId: invoice.id,
+            client: invoice.client,
+            amount: invoice.amount,
+            skipBackendApi: true,
+          }
         );
 
         refetchLogs();
@@ -1141,11 +1188,15 @@ export function InvoicesPage() {
       const downloadFileName = `${(invoiceToDownload as any).invoice_number || (invoiceToDownload as any).invoiceNumber || invoiceToDownload.id}.pdf`;
       await downloadInvoicePDF(formData, downloadFileName);
 
-      recordAuditLog('DOWNLOAD_INVOICE', `Generated & downloaded invoice PDF for ${(invoiceToDownload as any).invoice_number || invoiceToDownload.id}`, {
-        invoiceId: invoiceToDownload.id,
-        client: invoiceToDownload.client,
-        amount: invoiceToDownload.amount,
-      });
+      recordAuditLog(
+        'DOWNLOAD_INVOICE',
+        `Generated & downloaded invoice PDF for ${(invoiceToDownload as any).invoice_number || invoiceToDownload.id}`,
+        {
+          invoiceId: invoiceToDownload.id,
+          client: invoiceToDownload.client,
+          amount: invoiceToDownload.amount,
+        }
+      );
 
       message.success({
         content: `Invoice ${(invoiceToDownload as any).invoice_number || invoiceToDownload.id} downloaded successfully.`,
@@ -1360,12 +1411,13 @@ export function InvoicesPage() {
               </span>
               <span className="text-sm font-bold text-slate-800">{viewingInvoice?.client}</span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${viewingInvoice?.status === 'Paid'
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                  : viewingInvoice?.status === 'Overdue'
-                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                    : 'bg-amber-100 text-amber-800 border border-amber-200'
-                  }`}>
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  viewingInvoice?.status === 'Paid'
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    : viewingInvoice?.status === 'Overdue'
+                      ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                      : 'bg-amber-100 text-amber-800 border border-amber-200'
+                }`}>
                 {viewingInvoice?.status}
               </span>
             </div>
@@ -1424,7 +1476,9 @@ export function InvoicesPage() {
               prev.filter((log) => {
                 const d = new Date(log.createdAt);
                 if (isNaN(d.getTime())) return true;
-                return !(d.getMonth() + 1 === selectedClearMonth && d.getFullYear() === selectedClearYear);
+                return !(
+                  d.getMonth() + 1 === selectedClearMonth && d.getFullYear() === selectedClearYear
+                );
               })
             );
             refetchLogs();
@@ -1441,8 +1495,9 @@ export function InvoicesPage() {
         cancelButtonProps={{ disabled: isClearingMonth }}>
         <div className="flex flex-col gap-3 py-2 text-sm text-slate-600">
           <p>
-            Select the specific <strong>1 month</strong> of invoice audit logs you wish to permanently clear.
-            All other months remain untouched, ensuring you never lose all 3 months of logs and keeping the other 2 months safely in the system.
+            Select the specific <strong>1 month</strong> of invoice audit logs you wish to
+            permanently clear. All other months remain untouched, ensuring you never lose all 3
+            months of logs and keeping the other 2 months safely in the system.
           </p>
           <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div>
@@ -1452,10 +1507,22 @@ export function InvoicesPage() {
                 onChange={(e) => setSelectedClearMonth(Number(e.target.value))}
                 className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
                 {[
-                  'January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'
+                  'January',
+                  'February',
+                  'March',
+                  'April',
+                  'May',
+                  'June',
+                  'July',
+                  'August',
+                  'September',
+                  'October',
+                  'November',
+                  'December',
                 ].map((m, idx) => (
-                  <option key={idx + 1} value={idx + 1}>{m}</option>
+                  <option key={idx + 1} value={idx + 1}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1466,13 +1533,22 @@ export function InvoicesPage() {
                 onChange={(e) => setSelectedClearYear(Number(e.target.value))}
                 className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
                 {[2024, 2025, 2026, 2027].map((y) => (
-                  <option key={y} value={y}>{y}</option>
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           <p className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-            ⚠️ <strong>Safety note:</strong> This action permanently purges only logs matching <strong>{new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</strong>. Logs outside this month will NOT be affected.
+            ⚠️ <strong>Safety note:</strong> This action permanently purges only logs matching{' '}
+            <strong>
+              {new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', {
+                month: 'long',
+                year: 'numeric',
+              })}
+            </strong>
+            . Logs outside this month will NOT be affected.
           </p>
         </div>
       </Modal>

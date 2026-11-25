@@ -47,7 +47,9 @@ export function OnboardingProfileDetail({ profile, formConfig }: OnboardingProfi
         </div>
         <div className="p-3 rounded-xl bg-white border border-border-subtle">
           <div className="text-[10px] font-bold text-muted uppercase mb-1">Bank</div>
-          <div className="text-xs font-semibold text-foreground">{profile.bank?.bankName || '—'}</div>
+          <div className="text-xs font-semibold text-foreground">
+            {profile.bank?.bankName || '—'}
+          </div>
         </div>
         <div className="p-3 rounded-xl bg-white border border-border-subtle">
           <div className="text-[10px] font-bold text-muted uppercase mb-1">Documents</div>

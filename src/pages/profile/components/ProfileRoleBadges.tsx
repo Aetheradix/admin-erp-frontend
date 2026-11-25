@@ -102,7 +102,10 @@ export const ProfileRoleBadges = ({
           onClick={handleManageRolesClick}
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 hover:border-primary text-xs font-bold text-primary hover:bg-primary/20 transition-all cursor-pointer shadow-2xs group"
           title="Manage Roles & Permissions">
-          <ShieldCheck size={13} className="text-primary group-hover:scale-110 transition-transform" />
+          <ShieldCheck
+            size={13}
+            className="text-primary group-hover:scale-110 transition-transform"
+          />
           <span>Manage Roles</span>
         </button>
       )}

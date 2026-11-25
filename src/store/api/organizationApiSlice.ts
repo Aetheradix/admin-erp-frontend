@@ -293,10 +293,7 @@ export const organizationApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Rebuild Closure Table Maintenance
-    rebuildClosureTable: builder.mutation<
-      { success: boolean; message: string },
-      void
-    >({
+    rebuildClosureTable: builder.mutation<{ success: boolean; message: string }, void>({
       query: () => ({
         url: '/organization/hierarchy/closure/rebuild',
         method: 'POST',

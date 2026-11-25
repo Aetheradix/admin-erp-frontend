@@ -27,8 +27,15 @@ export default function AuditBookPage() {
     [invoicesData, expensesData, selectedYear, selectedQuarter]
   );
 
-  const { income, expenses, totalRevenue, totalExpenses, netProfitLoss, grossMargin, expenseRatio } =
-    metrics;
+  const {
+    income,
+    expenses,
+    totalRevenue,
+    totalExpenses,
+    netProfitLoss,
+    grossMargin,
+    expenseRatio,
+  } = metrics;
   const isProfitable = netProfitLoss >= 0;
 
   const handleExportPDF = async () => {

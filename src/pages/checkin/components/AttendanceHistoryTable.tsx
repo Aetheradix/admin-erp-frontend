@@ -112,13 +112,68 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
   const columns: ColumnsType<DayDetailedRecord> = [
     { title: 'Date', dataIndex: 'date', key: 'date', render: (date) => formatDate(date) },
     { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusBadge },
-    { title: 'Mode & Geo', key: 'mode', render: (_, r) => <div className="flex flex-col gap-1 items-start">{r.is_wfh || r.work_mode === 'wfh' ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-[10px] border border-indigo-500/20"><Home size={11} /> WFH</span> : <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 font-black text-[10px] border border-emerald-500/20"><Building size={11} /> Office</span>}{r.check_in_location && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted truncate max-w-[130px]"><MapPin size={10} />{r.check_in_location}</span>}</div> },
+    {
+      title: 'Mode & Geo',
+      key: 'mode',
+      render: (_, r) => (
+        <div className="flex flex-col gap-1 items-start">
+          {r.is_wfh || r.work_mode === 'wfh' ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-[10px] border border-indigo-500/20">
+              <Home size={11} /> WFH
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 font-black text-[10px] border border-emerald-500/20">
+              <Building size={11} /> Office
+            </span>
+          )}
+          {r.check_in_location && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted truncate max-w-[130px]">
+              <MapPin size={10} />
+              {r.check_in_location}
+            </span>
+          )}
+        </div>
+      ),
+    },
     { title: 'Check In', dataIndex: 'checkIn', key: 'checkIn', render: (v) => v || '---' },
     { title: 'Check Out', dataIndex: 'checkOut', key: 'checkOut', render: (v) => v || '---' },
-    { title: 'Breaks', dataIndex: 'totalBreakMinutes', key: 'breaks', render: (v) => v > 0 ? formatMinutes(v) : '0m' },
-    { title: 'Net Hours', dataIndex: 'netWorkingHours', key: 'hours', render: (v) => v > 0 ? formatHoursAndMinutes(v) : '---' },
-    { title: 'Punctuality', key: 'punctuality', render: (_, r) => r.isLate ? <span className="text-warning font-black">+{r.lateMinutes}m Late</span> : r.status === 'Present' ? <span className="text-success font-black">On Time</span> : <span className="text-muted">---</span> },
-    { title: 'Overtime', dataIndex: 'overtimeHours', key: 'overtime', render: (v) => v > 0 ? <span className="text-purple-500 font-black inline-flex items-center gap-1"><Zap size={12} /> +{v}h</span> : <span className="text-muted">---</span> },
+    {
+      title: 'Breaks',
+      dataIndex: 'totalBreakMinutes',
+      key: 'breaks',
+      render: (v) => (v > 0 ? formatMinutes(v) : '0m'),
+    },
+    {
+      title: 'Net Hours',
+      dataIndex: 'netWorkingHours',
+      key: 'hours',
+      render: (v) => (v > 0 ? formatHoursAndMinutes(v) : '---'),
+    },
+    {
+      title: 'Punctuality',
+      key: 'punctuality',
+      render: (_, r) =>
+        r.isLate ? (
+          <span className="text-warning font-black">+{r.lateMinutes}m Late</span>
+        ) : r.status === 'Present' ? (
+          <span className="text-success font-black">On Time</span>
+        ) : (
+          <span className="text-muted">---</span>
+        ),
+    },
+    {
+      title: 'Overtime',
+      dataIndex: 'overtimeHours',
+      key: 'overtime',
+      render: (v) =>
+        v > 0 ? (
+          <span className="text-purple-500 font-black inline-flex items-center gap-1">
+            <Zap size={12} /> +{v}h
+          </span>
+        ) : (
+          <span className="text-muted">---</span>
+        ),
+    },
   ];
 
   return (
@@ -190,7 +245,18 @@ export const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
       </div>
 
       {/* Table Area */}
-      <AntTable<DayDetailedRecord> columns={columns} dataSource={filteredRecords} rowKey="id" pagination={false} locale={{ emptyText: 'No attendance records found matching filters.' }} scroll={{ x: 'max-content' }} onRow={(record) => ({ onClick: () => onSelectRecord?.(record), className: 'cursor-pointer' })} />
+      <AntTable<DayDetailedRecord>
+        columns={columns}
+        dataSource={filteredRecords}
+        rowKey="id"
+        pagination={false}
+        locale={{ emptyText: 'No attendance records found matching filters.' }}
+        scroll={{ x: 'max-content' }}
+        onRow={(record) => ({
+          onClick: () => onSelectRecord?.(record),
+          className: 'cursor-pointer',
+        })}
+      />
     </div>
   );
 };

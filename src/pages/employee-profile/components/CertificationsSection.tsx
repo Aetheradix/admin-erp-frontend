@@ -98,9 +98,7 @@ export function CertificationsSection({
         status: 'uploaded',
         localData: e.target?.result as string,
       });
-      const next = entries.map((en) =>
-        en.id === entryId ? { ...en, documentId: doc.id } : en
-      );
+      const next = entries.map((en) => (en.id === entryId ? { ...en, documentId: doc.id } : en));
       setEntries(next);
       notifyChange(next);
       showToast({

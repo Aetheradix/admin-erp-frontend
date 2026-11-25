@@ -11,7 +11,13 @@ interface AddFieldDialogProps {
   onCreate: () => void;
 }
 
-export function AddFieldDialog({ visible, draft, onChange, onClose, onCreate }: AddFieldDialogProps) {
+export function AddFieldDialog({
+  visible,
+  draft,
+  onChange,
+  onClose,
+  onCreate,
+}: AddFieldDialogProps) {
   return (
     <Dialog
       visible={visible}
@@ -84,7 +90,9 @@ export function AddFieldDialog({ visible, draft, onChange, onClose, onCreate }: 
             onChange={(e) => onChange({ required: e.target.checked })}
             className="rounded text-primary focus:ring-primary"
           />
-          <label htmlFor="fieldRequired" className="text-xs font-bold text-foreground cursor-pointer">
+          <label
+            htmlFor="fieldRequired"
+            className="text-xs font-bold text-foreground cursor-pointer">
             Mark this field as mandatory for profile submission
           </label>
         </div>

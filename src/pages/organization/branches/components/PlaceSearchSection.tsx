@@ -45,7 +45,10 @@ export function PlaceSearchSection({
           {isSearching ? (
             <RefreshCw size={14} className="animate-spin text-primary" />
           ) : searchQuery ? (
-            <button type="button" onClick={onClearSearch} className="text-muted hover:text-foreground">
+            <button
+              type="button"
+              onClick={onClearSearch}
+              className="text-muted hover:text-foreground">
               <X size={14} />
             </button>
           ) : null}

@@ -111,4 +111,3 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
     return null;
   }
 }
-

@@ -1,16 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Modal,
-  Tabs,
-  Form,
-  Select,
-  Input,
-  DatePicker,
-  Button,
-  Popconfirm,
-  Tag,
-  Spin,
-} from 'antd';
+import { Modal, Tabs, Form, Select, Input, DatePicker, Button, Popconfirm, Tag, Spin } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { Network, Trash2, UserPlus, Link2 } from 'lucide-react';
 import {
@@ -181,8 +170,12 @@ const MatrixManagerModalBody: React.FC<MatrixManagerModalBodyProps> = ({
             <Link2 size={16} />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-muted block">Selected Employee</span>
-            <strong className="text-foreground text-xs">{selectedUserObj?.username || 'None'}</strong>
+            <span className="text-[10px] uppercase font-bold text-muted block">
+              Selected Employee
+            </span>
+            <strong className="text-foreground text-xs">
+              {selectedUserObj?.username || 'None'}
+            </strong>
             <span className="text-muted block text-[11px]">{selectedUserObj?.email}</span>
           </div>
         </div>
@@ -321,7 +314,9 @@ const MatrixManagerModalBody: React.FC<MatrixManagerModalBodyProps> = ({
                   <div className="py-8 text-center text-muted text-xs border border-dashed border-border-subtle rounded-xl">
                     <Network size={24} className="mx-auto mb-1.5 opacity-40" />
                     <p className="font-bold text-foreground">No dotted-line managers assigned</p>
-                    <p className="text-[11px] text-muted">Use the "Assign Matrix Manager" tab to add one.</p>
+                    <p className="text-[11px] text-muted">
+                      Use the "Assign Matrix Manager" tab to add one.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -331,13 +326,21 @@ const MatrixManagerModalBody: React.FC<MatrixManagerModalBodyProps> = ({
                         className="p-3 rounded-xl bg-surface border border-border-subtle flex items-center justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <strong className="text-xs text-foreground font-black">{m.manager_name}</strong>
-                            <Tag color="purple" className="text-[9px] font-bold border-none m-0 rounded-md">
+                            <strong className="text-xs text-foreground font-black">
+                              {m.manager_name}
+                            </strong>
+                            <Tag
+                              color="purple"
+                              className="text-[9px] font-bold border-none m-0 rounded-md">
                               {m.relationship_type}
                             </Tag>
                           </div>
-                          <p className="text-[11px] text-muted mt-0.5">{m.manager_email} • {m.manager_designation || m.manager_role}</p>
-                          {m.reason && <p className="text-[10px] text-muted italic mt-0.5">"{m.reason}"</p>}
+                          <p className="text-[11px] text-muted mt-0.5">
+                            {m.manager_email} • {m.manager_designation || m.manager_role}
+                          </p>
+                          {m.reason && (
+                            <p className="text-[10px] text-muted italic mt-0.5">"{m.reason}"</p>
+                          )}
                         </div>
 
                         <Popconfirm
@@ -371,7 +374,8 @@ const MatrixManagerModalBody: React.FC<MatrixManagerModalBodyProps> = ({
                         <span
                           key={r.relation_id}
                           className="px-2 py-1 rounded-lg bg-surface border border-border-subtle text-xs text-foreground font-medium">
-                          {r.employee_name} <span className="text-[10px] text-muted">({r.relationship_type})</span>
+                          {r.employee_name}{' '}
+                          <span className="text-[10px] text-muted">({r.relationship_type})</span>
                         </span>
                       ))}
                     </div>

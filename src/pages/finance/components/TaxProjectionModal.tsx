@@ -322,19 +322,23 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     : clientTaxResult.totalAnnualTax;
 
   const projectedPeriodicTds = isBackendMatching
-    ? (activeBackendData?.taxCalculation?.projectedPeriodicTds ?? clientTaxResult.projectedMonthlyTds)
+    ? (activeBackendData?.taxCalculation?.projectedPeriodicTds ??
+      clientTaxResult.projectedMonthlyTds)
     : clientTaxResult.projectedMonthlyTds;
 
   const standardDeduction = isBackendMatching
-    ? (activeBackendData?.taxCalculation?.exemptionsAndDeductions?.standardDeduction ?? clientTaxResult.standardDeduction)
+    ? (activeBackendData?.taxCalculation?.exemptionsAndDeductions?.standardDeduction ??
+      clientTaxResult.standardDeduction)
     : clientTaxResult.standardDeduction;
 
   const totalExemptions = isBackendMatching
-    ? (activeBackendData?.taxCalculation?.exemptionsAndDeductions?.totalDeductions ?? clientTaxResult.totalExemptionsAndDeductions)
+    ? (activeBackendData?.taxCalculation?.exemptionsAndDeductions?.totalDeductions ??
+      clientTaxResult.totalExemptionsAndDeductions)
     : clientTaxResult.totalExemptionsAndDeductions;
 
   const grossTaxBeforeRebate = isBackendMatching
-    ? (activeBackendData?.taxCalculation?.grossTaxBeforeRebate ?? clientTaxResult.baseTaxBeforeRebate)
+    ? (activeBackendData?.taxCalculation?.grossTaxBeforeRebate ??
+      clientTaxResult.baseTaxBeforeRebate)
     : clientTaxResult.baseTaxBeforeRebate;
 
   const section87aRebate = isBackendMatching
@@ -346,44 +350,54 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
     : clientTaxResult.healthAndEducationCess;
 
   const employerPfDeduction = isBackendMatching
-    ? (activeBackendData?.annualCompensation?.employerContributions?.employerPf?.annual ?? clientTaxResult.employerPfDeduction)
+    ? (activeBackendData?.annualCompensation?.employerContributions?.employerPf?.annual ??
+      clientTaxResult.employerPfDeduction)
     : clientTaxResult.employerPfDeduction;
 
   const employerNpsDeduction = isBackendMatching
-    ? (activeBackendData?.annualCompensation?.employerContributions?.employerNps?.annual ?? clientTaxResult.employerNpsDeduction)
+    ? (activeBackendData?.annualCompensation?.employerContributions?.employerNps?.annual ??
+      clientTaxResult.employerNpsDeduction)
     : clientTaxResult.employerNpsDeduction;
 
   // Expected monthly pay card
-  const expectedMonthlyPay = (isBackendMatching && activeBackendData?.expectedMonthlyPay)
-    ? activeBackendData.expectedMonthlyPay
-    : {
-        grossPay: Math.round(annualGross / 12),
-        deductions: {
-          employeePf: Math.round((annualGross * 0.4 * 0.12) / 12),
-          professionalTax: 200,
-          incomeTaxTds: projectedPeriodicTds,
-          totalDeductions: Math.round((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds),
-        },
-        netTakeHomePay: Math.round(
-          annualGross / 12 - ((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds)
-        ),
-      };
+  const expectedMonthlyPay =
+    isBackendMatching && activeBackendData?.expectedMonthlyPay
+      ? activeBackendData.expectedMonthlyPay
+      : {
+          grossPay: Math.round(annualGross / 12),
+          deductions: {
+            employeePf: Math.round((annualGross * 0.4 * 0.12) / 12),
+            professionalTax: 200,
+            incomeTaxTds: projectedPeriodicTds,
+            totalDeductions: Math.round(
+              (annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds
+            ),
+          },
+          netTakeHomePay: Math.round(
+            annualGross / 12 - ((annualGross * 0.4 * 0.12) / 12 + 200 + projectedPeriodicTds)
+          ),
+        };
 
   // Regime comparison
-  const comparison = (isBackendMatching && activeBackendData?.regimeComparison)
-    ? {
-        recommendedRegime:
-          activeBackendData.regimeComparison.recommendedRegime === 'old'
-            ? ('Old Regime' as TaxRegime)
-            : ('New Regime' as TaxRegime),
-        taxDifference: activeBackendData.regimeComparison.annualSavings,
-        savingsMessage: activeBackendData.regimeComparison.explanation,
-      }
-    : clientComparison;
+  const comparison =
+    isBackendMatching && activeBackendData?.regimeComparison
+      ? {
+          recommendedRegime:
+            activeBackendData.regimeComparison.recommendedRegime === 'old'
+              ? ('Old Regime' as TaxRegime)
+              : ('New Regime' as TaxRegime),
+          taxDifference: activeBackendData.regimeComparison.annualSavings,
+          savingsMessage: activeBackendData.regimeComparison.explanation,
+        }
+      : clientComparison;
 
   // Monthly Schedule (12 months from backend or client generator)
   const monthlyScheduleRows = useMemo(() => {
-    if (isBackendMatching && activeBackendData?.monthlySchedule && activeBackendData.monthlySchedule.length > 0) {
+    if (
+      isBackendMatching &&
+      activeBackendData?.monthlySchedule &&
+      activeBackendData.monthlySchedule.length > 0
+    ) {
       return activeBackendData.monthlySchedule.map((row) => ({
         monthName: row.monthName,
         year: row.year,
@@ -738,30 +752,31 @@ export const TaxProjectionModal: React.FC<TaxProjectionModalProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                    {((isBackendMatching && activeBackendData?.taxCalculation?.slabs) || clientTaxResult.slabs).map(
-                      (slab: any, i: number) => {
-                        const slabLabel = slab.slab || slab.slabLabel;
-                        const rateText =
-                          slab.ratePercentage || `${Math.round((slab.rate || 0) * 100)}%`;
-                        const taxable = slab.taxableAmount ?? slab.taxableInSlab ?? 0;
-                        const taxVal = slab.tax ?? slab.taxAmount ?? 0;
+                    {(
+                      (isBackendMatching && activeBackendData?.taxCalculation?.slabs) ||
+                      clientTaxResult.slabs
+                    ).map((slab: any, i: number) => {
+                      const slabLabel = slab.slab || slab.slabLabel;
+                      const rateText =
+                        slab.ratePercentage || `${Math.round((slab.rate || 0) * 100)}%`;
+                      const taxable = slab.taxableAmount ?? slab.taxableInSlab ?? 0;
+                      const taxVal = slab.tax ?? slab.taxAmount ?? 0;
 
-                        return (
-                          <tr key={i} className={taxVal > 0 ? 'bg-slate-50/50' : ''}>
-                            <td className="py-2">{slabLabel}</td>
-                            <td className="py-2 text-right font-mono font-bold text-slate-600">
-                              {rateText}
-                            </td>
-                            <td className="py-2 text-right font-mono">
-                              ₹{Number(taxable).toLocaleString('en-IN')}
-                            </td>
-                            <td className="py-2 text-right font-mono font-bold text-slate-900">
-                              ₹{Number(taxVal).toLocaleString('en-IN')}
-                            </td>
-                          </tr>
-                        );
-                      }
-                    )}
+                      return (
+                        <tr key={i} className={taxVal > 0 ? 'bg-slate-50/50' : ''}>
+                          <td className="py-2">{slabLabel}</td>
+                          <td className="py-2 text-right font-mono font-bold text-slate-600">
+                            {rateText}
+                          </td>
+                          <td className="py-2 text-right font-mono">
+                            ₹{Number(taxable).toLocaleString('en-IN')}
+                          </td>
+                          <td className="py-2 text-right font-mono font-bold text-slate-900">
+                            ₹{Number(taxVal).toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                   <tfoot className="border-t-2 border-slate-200 text-slate-900 text-xs font-bold">
                     <tr>

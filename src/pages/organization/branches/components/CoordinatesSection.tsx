@@ -43,7 +43,10 @@ export function CoordinatesSection({
             placeholder="e.g. 12.9716"
             value={formData.latitude === '' ? '' : String(formData.latitude)}
             onChange={(e) =>
-              setFormData({ ...formData, latitude: e.target.value === '' ? '' : Number(e.target.value) })
+              setFormData({
+                ...formData,
+                latitude: e.target.value === '' ? '' : Number(e.target.value),
+              })
             }
             required
           />
@@ -57,7 +60,10 @@ export function CoordinatesSection({
             placeholder="e.g. 77.5946"
             value={formData.longitude === '' ? '' : String(formData.longitude)}
             onChange={(e) =>
-              setFormData({ ...formData, longitude: e.target.value === '' ? '' : Number(e.target.value) })
+              setFormData({
+                ...formData,
+                longitude: e.target.value === '' ? '' : Number(e.target.value),
+              })
             }
             required
           />

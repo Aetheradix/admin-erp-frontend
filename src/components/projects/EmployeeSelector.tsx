@@ -56,7 +56,8 @@ export const EmployeeSelector: React.FC<EmployeeSelectorProps> = ({
       options={options}
       optionRender={(option) => {
         const emp = option.data.employee;
-        const safeEmpName = (emp?.userName && typeof emp.userName === 'string' && emp.userName.trim()) || 'User';
+        const safeEmpName =
+          (emp?.userName && typeof emp.userName === 'string' && emp.userName.trim()) || 'User';
         const initials = safeEmpName
           .split(' ')
           .filter(Boolean)
@@ -70,9 +71,7 @@ export const EmployeeSelector: React.FC<EmployeeSelectorProps> = ({
         return (
           <div className="flex items-center justify-between py-1">
             <Space size={8}>
-              <Avatar
-                size="small"
-                className="bg-primary/20 text-primary font-bold text-xs">
+              <Avatar size="small" className="bg-primary/20 text-primary font-bold text-xs">
                 {initials}
               </Avatar>
               <div className="flex flex-col">
@@ -90,8 +89,8 @@ export const EmployeeSelector: React.FC<EmployeeSelectorProps> = ({
                   workload.workloadLabel === 'Overloaded'
                     ? 'error'
                     : workload.workloadLabel === 'Heavy'
-                    ? 'warning'
-                    : 'success'
+                      ? 'warning'
+                      : 'success'
                 }
                 className="text-[10px] m-0 rounded-md">
                 {workload.openTasks ?? 0} tasks

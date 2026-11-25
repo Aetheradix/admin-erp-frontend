@@ -76,48 +76,355 @@ const SEED_DEPARTMENTS: Department[] = [
 ];
 
 const SEED_TEAMS: Team[] = [
-  { id: 1, name: 'Frontend Guild', departmentId: 1, departmentName: 'Engineering', leadUserId: 106, leadUserName: 'Liam Chen', memberCount: 3, isActive: true },
-  { id: 2, name: 'Core Backend', departmentId: 1, departmentName: 'Engineering', leadUserId: 107, leadUserName: 'Sofia Patel', memberCount: 3, isActive: true },
-  { id: 3, name: 'Product Growth', departmentId: 2, departmentName: 'Product & Design', leadUserId: 108, leadUserName: 'Lucas Scott', memberCount: 2, isActive: true },
-  { id: 4, name: 'Brand & Digital', departmentId: 3, departmentName: 'Marketing', leadUserId: 109, leadUserName: 'Zoe Kravitz', memberCount: 2, isActive: true },
+  {
+    id: 1,
+    name: 'Frontend Guild',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    leadUserId: 106,
+    leadUserName: 'Liam Chen',
+    memberCount: 3,
+    isActive: true,
+  },
+  {
+    id: 2,
+    name: 'Core Backend',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    leadUserId: 107,
+    leadUserName: 'Sofia Patel',
+    memberCount: 3,
+    isActive: true,
+  },
+  {
+    id: 3,
+    name: 'Product Growth',
+    departmentId: 2,
+    departmentName: 'Product & Design',
+    leadUserId: 108,
+    leadUserName: 'Lucas Scott',
+    memberCount: 2,
+    isActive: true,
+  },
+  {
+    id: 4,
+    name: 'Brand & Digital',
+    departmentId: 3,
+    departmentName: 'Marketing',
+    leadUserId: 109,
+    leadUserName: 'Zoe Kravitz',
+    memberCount: 2,
+    isActive: true,
+  },
 ];
 
 const SEED_MEMBERS: DepartmentMember[] = [
   // Engineering
-  { userId: 101, userName: 'Alex Mercer', email: 'alex@aether.io', designation: 'VP of Engineering', departmentId: 1, departmentName: 'Engineering', isTeamLeader: false, isDepartmentHead: true, employmentStatus: 'Active', joinedAt: '2025-01-15' },
-  { userId: 106, userName: 'Liam Chen', email: 'liam@aether.io', designation: 'Staff Frontend Engineer / Team Lead', departmentId: 1, departmentName: 'Engineering', teamId: 1, teamName: 'Frontend Guild', reportingManagerId: 101, reportingManagerName: 'Alex Mercer', isTeamLeader: true, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-03-01' },
-  { userId: 110, userName: 'Maya Lin', email: 'maya@aether.io', designation: 'Senior Frontend Developer', departmentId: 1, departmentName: 'Engineering', teamId: 1, teamName: 'Frontend Guild', reportingManagerId: 106, reportingManagerName: 'Liam Chen', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-06-10' },
-  { userId: 107, userName: 'Sofia Patel', email: 'sofia@aether.io', designation: 'Lead Systems Architect', departmentId: 1, departmentName: 'Engineering', teamId: 2, teamName: 'Core Backend', reportingManagerId: 101, reportingManagerName: 'Alex Mercer', isTeamLeader: true, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-02-15' },
-  { userId: 111, userName: 'David Kim', email: 'david@aether.io', designation: 'Backend Engineer', departmentId: 1, departmentName: 'Engineering', teamId: 2, teamName: 'Core Backend', reportingManagerId: 107, reportingManagerName: 'Sofia Patel', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-07-20' },
-  { userId: 112, userName: 'Nadia Thorne', email: 'nadia@aether.io', designation: 'QA Automation Lead', departmentId: 1, departmentName: 'Engineering', reportingManagerId: 101, reportingManagerName: 'Alex Mercer', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-04-12' },
+  {
+    userId: 101,
+    userName: 'Alex Mercer',
+    email: 'alex@aether.io',
+    designation: 'VP of Engineering',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    isTeamLeader: false,
+    isDepartmentHead: true,
+    employmentStatus: 'Active',
+    joinedAt: '2025-01-15',
+  },
+  {
+    userId: 106,
+    userName: 'Liam Chen',
+    email: 'liam@aether.io',
+    designation: 'Staff Frontend Engineer / Team Lead',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    teamId: 1,
+    teamName: 'Frontend Guild',
+    reportingManagerId: 101,
+    reportingManagerName: 'Alex Mercer',
+    isTeamLeader: true,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-03-01',
+  },
+  {
+    userId: 110,
+    userName: 'Maya Lin',
+    email: 'maya@aether.io',
+    designation: 'Senior Frontend Developer',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    teamId: 1,
+    teamName: 'Frontend Guild',
+    reportingManagerId: 106,
+    reportingManagerName: 'Liam Chen',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-06-10',
+  },
+  {
+    userId: 107,
+    userName: 'Sofia Patel',
+    email: 'sofia@aether.io',
+    designation: 'Lead Systems Architect',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    teamId: 2,
+    teamName: 'Core Backend',
+    reportingManagerId: 101,
+    reportingManagerName: 'Alex Mercer',
+    isTeamLeader: true,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-02-15',
+  },
+  {
+    userId: 111,
+    userName: 'David Kim',
+    email: 'david@aether.io',
+    designation: 'Backend Engineer',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    teamId: 2,
+    teamName: 'Core Backend',
+    reportingManagerId: 107,
+    reportingManagerName: 'Sofia Patel',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-07-20',
+  },
+  {
+    userId: 112,
+    userName: 'Nadia Thorne',
+    email: 'nadia@aether.io',
+    designation: 'QA Automation Lead',
+    departmentId: 1,
+    departmentName: 'Engineering',
+    reportingManagerId: 101,
+    reportingManagerName: 'Alex Mercer',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-04-12',
+  },
 
   // Product & Design
-  { userId: 102, userName: 'Elena Rostova', email: 'elena@aether.io', designation: 'Head of Product', departmentId: 2, departmentName: 'Product & Design', isTeamLeader: false, isDepartmentHead: true, employmentStatus: 'Active', joinedAt: '2025-01-20' },
-  { userId: 108, userName: 'Lucas Scott', email: 'lucas@aether.io', designation: 'Senior Product Manager', departmentId: 2, departmentName: 'Product & Design', teamId: 3, teamName: 'Product Growth', reportingManagerId: 102, reportingManagerName: 'Elena Rostova', isTeamLeader: true, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-05-01' },
-  { userId: 113, userName: 'Chloe Dubois', email: 'chloe@aether.io', designation: 'Principal UI/UX Designer', departmentId: 2, departmentName: 'Product & Design', reportingManagerId: 102, reportingManagerName: 'Elena Rostova', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-03-15' },
-  { userId: 114, userName: 'Tariq Al-Mansoor', email: 'tariq@aether.io', designation: 'UX Researcher', departmentId: 2, departmentName: 'Product & Design', reportingManagerId: 102, reportingManagerName: 'Elena Rostova', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'On Leave', joinedAt: '2025-08-01' },
+  {
+    userId: 102,
+    userName: 'Elena Rostova',
+    email: 'elena@aether.io',
+    designation: 'Head of Product',
+    departmentId: 2,
+    departmentName: 'Product & Design',
+    isTeamLeader: false,
+    isDepartmentHead: true,
+    employmentStatus: 'Active',
+    joinedAt: '2025-01-20',
+  },
+  {
+    userId: 108,
+    userName: 'Lucas Scott',
+    email: 'lucas@aether.io',
+    designation: 'Senior Product Manager',
+    departmentId: 2,
+    departmentName: 'Product & Design',
+    teamId: 3,
+    teamName: 'Product Growth',
+    reportingManagerId: 102,
+    reportingManagerName: 'Elena Rostova',
+    isTeamLeader: true,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-05-01',
+  },
+  {
+    userId: 113,
+    userName: 'Chloe Dubois',
+    email: 'chloe@aether.io',
+    designation: 'Principal UI/UX Designer',
+    departmentId: 2,
+    departmentName: 'Product & Design',
+    reportingManagerId: 102,
+    reportingManagerName: 'Elena Rostova',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-03-15',
+  },
+  {
+    userId: 114,
+    userName: 'Tariq Al-Mansoor',
+    email: 'tariq@aether.io',
+    designation: 'UX Researcher',
+    departmentId: 2,
+    departmentName: 'Product & Design',
+    reportingManagerId: 102,
+    reportingManagerName: 'Elena Rostova',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'On Leave',
+    joinedAt: '2025-08-01',
+  },
 
   // Marketing
-  { userId: 103, userName: 'Marcus Vance', email: 'marcus@aether.io', designation: 'Chief Marketing Officer', departmentId: 3, departmentName: 'Marketing', isTeamLeader: false, isDepartmentHead: true, employmentStatus: 'Active', joinedAt: '2025-01-10' },
-  { userId: 109, userName: 'Zoe Kravitz', email: 'zoe@aether.io', designation: 'Digital Marketing Lead', departmentId: 3, departmentName: 'Marketing', teamId: 4, teamName: 'Brand & Digital', reportingManagerId: 103, reportingManagerName: 'Marcus Vance', isTeamLeader: true, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-04-18' },
-  { userId: 115, userName: 'Rohan Mehra', email: 'rohan@aether.io', designation: 'Content Strategist', departmentId: 3, departmentName: 'Marketing', reportingManagerId: 109, reportingManagerName: 'Zoe Kravitz', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-09-01' },
+  {
+    userId: 103,
+    userName: 'Marcus Vance',
+    email: 'marcus@aether.io',
+    designation: 'Chief Marketing Officer',
+    departmentId: 3,
+    departmentName: 'Marketing',
+    isTeamLeader: false,
+    isDepartmentHead: true,
+    employmentStatus: 'Active',
+    joinedAt: '2025-01-10',
+  },
+  {
+    userId: 109,
+    userName: 'Zoe Kravitz',
+    email: 'zoe@aether.io',
+    designation: 'Digital Marketing Lead',
+    departmentId: 3,
+    departmentName: 'Marketing',
+    teamId: 4,
+    teamName: 'Brand & Digital',
+    reportingManagerId: 103,
+    reportingManagerName: 'Marcus Vance',
+    isTeamLeader: true,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-04-18',
+  },
+  {
+    userId: 115,
+    userName: 'Rohan Mehra',
+    email: 'rohan@aether.io',
+    designation: 'Content Strategist',
+    departmentId: 3,
+    departmentName: 'Marketing',
+    reportingManagerId: 109,
+    reportingManagerName: 'Zoe Kravitz',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-09-01',
+  },
 
   // Finance
-  { userId: 104, userName: 'Sarah Jenkins', email: 'sarah@aether.io', designation: 'Director of Finance', departmentId: 4, departmentName: 'Finance & Operations', isTeamLeader: false, isDepartmentHead: true, employmentStatus: 'Active', joinedAt: '2025-01-05' },
-  { userId: 116, userName: 'Vikram Joshi', email: 'vikram@aether.io', designation: 'Senior Financial Analyst', departmentId: 4, departmentName: 'Finance & Operations', reportingManagerId: 104, reportingManagerName: 'Sarah Jenkins', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-05-15' },
+  {
+    userId: 104,
+    userName: 'Sarah Jenkins',
+    email: 'sarah@aether.io',
+    designation: 'Director of Finance',
+    departmentId: 4,
+    departmentName: 'Finance & Operations',
+    isTeamLeader: false,
+    isDepartmentHead: true,
+    employmentStatus: 'Active',
+    joinedAt: '2025-01-05',
+  },
+  {
+    userId: 116,
+    userName: 'Vikram Joshi',
+    email: 'vikram@aether.io',
+    designation: 'Senior Financial Analyst',
+    departmentId: 4,
+    departmentName: 'Finance & Operations',
+    reportingManagerId: 104,
+    reportingManagerName: 'Sarah Jenkins',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-05-15',
+  },
 
   // HR
-  { userId: 105, userName: 'Priya Sharma', email: 'priya@aether.io', designation: 'Head of People & Culture', departmentId: 5, departmentName: 'Human Resources', isTeamLeader: false, isDepartmentHead: true, employmentStatus: 'Active', joinedAt: '2025-02-01' },
-  { userId: 117, userName: 'Ananya Roy', email: 'ananya@aether.io', designation: 'Talent Acquisition Specialist', departmentId: 5, departmentName: 'Human Resources', reportingManagerId: 105, reportingManagerName: 'Priya Sharma', isTeamLeader: false, isDepartmentHead: false, employmentStatus: 'Active', joinedAt: '2025-06-25' },
+  {
+    userId: 105,
+    userName: 'Priya Sharma',
+    email: 'priya@aether.io',
+    designation: 'Head of People & Culture',
+    departmentId: 5,
+    departmentName: 'Human Resources',
+    isTeamLeader: false,
+    isDepartmentHead: true,
+    employmentStatus: 'Active',
+    joinedAt: '2025-02-01',
+  },
+  {
+    userId: 117,
+    userName: 'Ananya Roy',
+    email: 'ananya@aether.io',
+    designation: 'Talent Acquisition Specialist',
+    departmentId: 5,
+    departmentName: 'Human Resources',
+    reportingManagerId: 105,
+    reportingManagerName: 'Priya Sharma',
+    isTeamLeader: false,
+    isDepartmentHead: false,
+    employmentStatus: 'Active',
+    joinedAt: '2025-06-25',
+  },
 ];
 
 const SEED_ASSIGNMENT_RULES: AssignmentPermissionRule[] = [
-  { id: 1, roleKey: 'SuperAdmin', roleLabel: 'Super Administrator', canAssignScope: 'any', crossDeptAllowed: true, requiresOverride: false, notes: 'Full access to assign tasks anywhere across the company.' },
-  { id: 2, roleKey: 'Admin', roleLabel: 'Administrator', canAssignScope: 'any', crossDeptAllowed: true, requiresOverride: false, notes: 'Can assign to all departments and teams.' },
-  { id: 3, roleKey: 'HrAdmin', roleLabel: 'HR Administrator', canAssignScope: 'own_dept', crossDeptAllowed: false, requiresOverride: true, notes: 'Primarily assigns within HR or cross-dept with supervisor override.' },
-  { id: 4, roleKey: 'FinanceAdmin', roleLabel: 'Finance Administrator', canAssignScope: 'own_dept', crossDeptAllowed: false, requiresOverride: true, notes: 'Assigns within Finance & Operations.' },
-  { id: 5, roleKey: 'Employee', roleLabel: 'Regular Employee / Team Member', canAssignScope: 'project_members', crossDeptAllowed: false, requiresOverride: true, notes: 'Can only delegate tasks to coworkers in the same project or team.' },
-  { id: 6, roleKey: 'Inventory operator', roleLabel: 'Inventory Operator', canAssignScope: 'self_only', crossDeptAllowed: false, requiresOverride: true, notes: 'Restricted assignment scope.' },
+  {
+    id: 1,
+    roleKey: 'SuperAdmin',
+    roleLabel: 'Super Administrator',
+    canAssignScope: 'any',
+    crossDeptAllowed: true,
+    requiresOverride: false,
+    notes: 'Full access to assign tasks anywhere across the company.',
+  },
+  {
+    id: 2,
+    roleKey: 'Admin',
+    roleLabel: 'Administrator',
+    canAssignScope: 'any',
+    crossDeptAllowed: true,
+    requiresOverride: false,
+    notes: 'Can assign to all departments and teams.',
+  },
+  {
+    id: 3,
+    roleKey: 'HrAdmin',
+    roleLabel: 'HR Administrator',
+    canAssignScope: 'own_dept',
+    crossDeptAllowed: false,
+    requiresOverride: true,
+    notes: 'Primarily assigns within HR or cross-dept with supervisor override.',
+  },
+  {
+    id: 4,
+    roleKey: 'FinanceAdmin',
+    roleLabel: 'Finance Administrator',
+    canAssignScope: 'own_dept',
+    crossDeptAllowed: false,
+    requiresOverride: true,
+    notes: 'Assigns within Finance & Operations.',
+  },
+  {
+    id: 5,
+    roleKey: 'Employee',
+    roleLabel: 'Regular Employee / Team Member',
+    canAssignScope: 'project_members',
+    crossDeptAllowed: false,
+    requiresOverride: true,
+    notes: 'Can only delegate tasks to coworkers in the same project or team.',
+  },
+  {
+    id: 6,
+    roleKey: 'Inventory operator',
+    roleLabel: 'Inventory Operator',
+    canAssignScope: 'self_only',
+    crossDeptAllowed: false,
+    requiresOverride: true,
+    notes: 'Restricted assignment scope.',
+  },
 ];
 
 class DepartmentService {
@@ -181,7 +488,9 @@ class DepartmentService {
   public getDepartmentHead(deptId: number): DepartmentMember | undefined {
     const dept = this.getDepartmentById(deptId);
     if (!dept) return undefined;
-    return this.getAllEmployees().find((m) => m.userId === dept.headUserId || (m.departmentId === deptId && m.isDepartmentHead));
+    return this.getAllEmployees().find(
+      (m) => m.userId === dept.headUserId || (m.departmentId === deptId && m.isDepartmentHead)
+    );
   }
 
   public getEmployeeById(userId: number): DepartmentMember | undefined {
@@ -218,11 +527,11 @@ class DepartmentService {
     // Derive deterministic realistic workload metrics based on userId
     const baseOpen = (userId * 3) % 9;
     const openTasks = baseOpen === 0 ? 2 : baseOpen;
-    const overdueTasks = (userId % 4 === 0) ? 1 : (userId % 7 === 0 ? 2 : 0);
-    const completedThisWeek = (userId * 2) % 6 + 1;
+    const overdueTasks = userId % 4 === 0 ? 1 : userId % 7 === 0 ? 2 : 0;
+    const completedThisWeek = ((userId * 2) % 6) + 1;
     const activeProjects = (userId % 3) + 1;
 
-    let score = (openTasks * 10) + (overdueTasks * 20);
+    let score = openTasks * 10 + overdueTasks * 20;
     if (score > 100) score = 100;
 
     let workloadLabel: EmployeeWorkload['workloadLabel'] = 'Light';
@@ -257,12 +566,15 @@ class DepartmentService {
   }
 
   // Recommendations
-  public getSmartRecommendations(deptId: number, _taskPriority: string): SmartAssignmentRecommendation[] {
+  public getSmartRecommendations(
+    deptId: number,
+    _taskPriority: string
+  ): SmartAssignmentRecommendation[] {
     const workloads = this.getWorkloadsForDept(deptId);
     return workloads
       .map((w) => {
         // Lower workload score = higher recommendation score
-        const score = 100 - w.workloadScore - (w.overdueTasks * 15);
+        const score = 100 - w.workloadScore - w.overdueTasks * 15;
         let reason = 'Balanced capacity and active in department.';
         if (w.workloadLabel === 'Light') {
           reason = 'Optimal availability; low active task backlog.';
@@ -286,7 +598,10 @@ class DepartmentService {
 
   // Permissions
   public getAssignmentPermissionRules(): AssignmentPermissionRule[] {
-    return this.getStorage<AssignmentPermissionRule[]>(STORAGE_KEYS.ASSIGNMENT_RULES, SEED_ASSIGNMENT_RULES);
+    return this.getStorage<AssignmentPermissionRule[]>(
+      STORAGE_KEYS.ASSIGNMENT_RULES,
+      SEED_ASSIGNMENT_RULES
+    );
   }
 
   public updateAssignmentPermissionRule(
@@ -329,7 +644,9 @@ class DepartmentService {
   // Assignment history
   public getTaskAssignmentHistory(taskId: number): TaskAssignmentHistoryItem[] {
     const all = this.getStorage<TaskAssignmentHistoryItem[]>(STORAGE_KEYS.ASSIGNMENT_HISTORY, []);
-    return all.filter((h) => h.taskId === taskId).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return all
+      .filter((h) => h.taskId === taskId)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }
 
   public addTaskAssignmentHistory(
@@ -391,9 +708,12 @@ class DepartmentService {
     // Convert live users into DepartmentMember items
     const liveMembers: DepartmentMember[] = flatUsers.map((u) => {
       const deptId = u.department_id || 1;
-      const deptObj = departments.find((d) => d.id === deptId || d.name.toLowerCase() === (u.department || '').toLowerCase());
+      const deptObj = departments.find(
+        (d) => d.id === deptId || d.name.toLowerCase() === (u.department || '').toLowerCase()
+      );
       const isHead = deptObj ? deptObj.headUserId === u.id : false;
-      const isActive = u.account_status === 'Approved' || u.status === 'Active' || u.status === 'active';
+      const isActive =
+        u.account_status === 'Approved' || u.status === 'Active' || u.status === 'active';
 
       return {
         userId: u.id,
@@ -401,10 +721,13 @@ class DepartmentService {
         email: u.email,
         designation: u.designation || 'Specialist',
         departmentId: deptObj ? deptObj.id : deptId,
-        departmentName: deptObj ? deptObj.name : (u.department || 'General'),
+        departmentName: deptObj ? deptObj.name : u.department || 'General',
         reportingManagerId: u.reporting_manager_id ?? undefined,
         reportingManagerName: u.reporting_manager_name ?? undefined,
-        isTeamLeader: u.role?.toLowerCase().includes('lead') || u.role?.toLowerCase().includes('manager') || false,
+        isTeamLeader:
+          u.role?.toLowerCase().includes('lead') ||
+          u.role?.toLowerCase().includes('manager') ||
+          false,
         isDepartmentHead: isHead,
         employmentStatus: isActive ? 'Active' : 'Inactive',
         joinedAt: '2026-01-01',

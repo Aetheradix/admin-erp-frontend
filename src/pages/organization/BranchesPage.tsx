@@ -12,7 +12,11 @@ import type { BranchesPageProps, BranchesSubTab } from './branches/types';
 
 export type { BranchesPageProps } from './branches/types';
 
-export function BranchesPage({ autoOpenHQ, autoOpenCreate, onClearAutoOpen }: BranchesPageProps = {}) {
+export function BranchesPage({
+  autoOpenHQ,
+  autoOpenCreate,
+  onClearAutoOpen,
+}: BranchesPageProps = {}) {
   const canManage = useBranchesAccess();
   const [activeSubTab, setActiveSubTab] = useState<BranchesSubTab>('offices');
 
@@ -37,7 +41,15 @@ export function BranchesPage({ autoOpenHQ, autoOpenCreate, onClearAutoOpen }: Br
       }
       onClearAutoOpen?.();
     }
-  }, [autoOpenHQ, autoOpenCreate, isLoadingOffices, offices, onClearAutoOpen, openCreate, openEdit]);
+  }, [
+    autoOpenHQ,
+    autoOpenCreate,
+    isLoadingOffices,
+    offices,
+    onClearAutoOpen,
+    openCreate,
+    openEdit,
+  ]);
 
   return (
     <div className="flex flex-col gap-6 pb-20 animate-in fade-in duration-500">

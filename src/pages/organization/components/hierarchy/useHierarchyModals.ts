@@ -4,10 +4,7 @@ import {
   useUpdateDepartmentHierarchyMutation,
   useUpdateReportingManagerMutation,
 } from '@/store/api/organizationApiSlice';
-import type {
-  DepartmentHierarchyItem,
-  HierarchyNodeUser,
-} from '@/store/api/organizationApiSlice';
+import type { DepartmentHierarchyItem, HierarchyNodeUser } from '@/store/api/organizationApiSlice';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
 import type {
   AddEmployeeModalState,
@@ -115,7 +112,9 @@ export function useHierarchyModals(refetch: () => unknown) {
         headUserId: editDeptModal.selectedHeadId,
         parentDepartmentId: editDeptModal.parentDeptId,
       }).unwrap();
-      message.success(`Department ${editDeptModal.department.department_name} updated successfully.`);
+      message.success(
+        `Department ${editDeptModal.department.department_name} updated successfully.`
+      );
       closeEditDepartment();
       refetch();
     } catch (error) {

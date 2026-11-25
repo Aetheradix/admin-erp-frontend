@@ -32,9 +32,7 @@ export function ExpenseStatsCards({ stats }: ExpenseStatsCardsProps) {
       </div>
       <div className="p-4 bg-green-50/50 rounded-lg border border-green-200 shadow-sm">
         <p className="text-xs font-semibold text-green-700 uppercase">Paid ({stats.paidCount})</p>
-        <p className="text-xl font-bold text-green-900 mt-1">
-          {formatCurrency(stats.paidAmount)}
-        </p>
+        <p className="text-xl font-bold text-green-900 mt-1">{formatCurrency(stats.paidAmount)}</p>
       </div>
       <div className="p-4 bg-red-50/50 rounded-lg border border-red-200 shadow-sm">
         <p className="text-xs font-semibold text-red-700 uppercase">

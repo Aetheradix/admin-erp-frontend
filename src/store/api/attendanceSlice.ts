@@ -56,7 +56,6 @@ export interface GeofenceAuditLog {
   created_at: string;
 }
 
-
 export interface CheckInPayload {
   remark?: string;
   work_mode?: 'office' | 'wfh' | 'field';
@@ -125,15 +124,14 @@ export const attendanceSlice = apiSlice.injectEndpoints({
 
         const rec = response.data.record;
 
-        const isCheckedIn = response.data.status === 'CHECKED_IN' || response.data.status === 'ON_BREAK';
+        const isCheckedIn =
+          response.data.status === 'CHECKED_IN' || response.data.status === 'ON_BREAK';
 
         return {
           status: isCheckedIn ? 'checked-in' : 'checked-out',
           onBreak: response.data.onBreak ?? response.data.status === 'ON_BREAK',
           activeBreak: response.data.activeBreak ?? null,
-          lastAction: rec?.check_in_time
-            ? new Date(rec.check_in_time).toISOString()
-            : null,
+          lastAction: rec?.check_in_time ? new Date(rec.check_in_time).toISOString() : null,
           dbStatus: response.data.status,
           work_mode: rec?.work_mode || (rec?.is_wfh ? 'wfh' : 'office'),
           is_wfh: Boolean(rec?.is_wfh || rec?.work_mode === 'wfh'),
@@ -195,7 +193,12 @@ export const attendanceSlice = apiSlice.injectEndpoints({
 
     takeBreak: builder.mutation<
       { success: boolean; message: string; data: BreakRecord },
-      { break_note?: string; break_type?: string; type?: string; break_status_message?: string } | void
+      {
+        break_note?: string;
+        break_type?: string;
+        type?: string;
+        break_status_message?: string;
+      } | void
     >({
       query: (body) => ({
         url: '/attendance/break/start',
@@ -213,7 +216,6 @@ export const attendanceSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Attendance'],
     }),
 
-    
     getActiveOffices: builder.query<Office[], void>({
       query: () => '/attendance/offices',
       transformResponse: (res: { data?: Office[] } | Office[]) => {
@@ -285,7 +287,9 @@ export const attendanceSlice = apiSlice.injectEndpoints({
         url: '/attendance/team-availability',
         params: params || {},
       }),
-      transformResponse: (response: { success: boolean; data: TeamAvailabilityResponse } | TeamAvailabilityResponse) => {
+      transformResponse: (
+        response: { success: boolean; data: TeamAvailabilityResponse } | TeamAvailabilityResponse
+      ) => {
         return (response as { data: TeamAvailabilityResponse })?.data ?? response;
       },
       providesTags: ['Attendance'],

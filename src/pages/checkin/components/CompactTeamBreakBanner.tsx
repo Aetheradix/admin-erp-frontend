@@ -7,15 +7,18 @@ interface CompactTeamBreakBannerProps {
   onViewTeamTab?: () => void;
 }
 
-export const CompactTeamBreakBanner: React.FC<CompactTeamBreakBannerProps> = ({ onViewTeamTab }) => {
+export const CompactTeamBreakBanner: React.FC<CompactTeamBreakBannerProps> = ({
+  onViewTeamTab,
+}) => {
   const { data, isLoading } = useGetTeamAvailabilityQuery(undefined, {
     pollingInterval: 10000,
   });
 
   const members: TeamMemberAvailability[] = data?.members ?? [];
-  const onBreakMembers: TeamMemberAvailability[] = (data?.active_breaks && data.active_breaks.length > 0)
-    ? data.active_breaks
-    : members.filter((m) => m.availability_status === 'ON_BREAK');
+  const onBreakMembers: TeamMemberAvailability[] =
+    data?.active_breaks && data.active_breaks.length > 0
+      ? data.active_breaks
+      : members.filter((m) => m.availability_status === 'ON_BREAK');
 
   if (isLoading) {
     return null; // Don't show jarring loading skeleton on top banner

@@ -13,11 +13,27 @@ import {
   Building2,
   History,
 } from 'lucide-react';
-import { Card, Row, Col, Progress, Tag, Button, Space, Modal, Select, Input, message, Timeline } from 'antd';
+import {
+  Card,
+  Row,
+  Col,
+  Progress,
+  Tag,
+  Button,
+  Space,
+  Modal,
+  Select,
+  Input,
+  message,
+  Timeline,
+} from 'antd';
 import { departmentService } from '@/services/departmentService';
 import { projectService } from '@/services/projectService';
 import { useAuth } from '@/hooks/useAuth';
-import { useUpdateProjectManagerMutation, useTransferOwnershipMutation } from '@/store/api/projectApiSlice';
+import {
+  useUpdateProjectManagerMutation,
+  useTransferOwnershipMutation,
+} from '@/store/api/projectApiSlice';
 
 interface OverviewTabProps {
   project: Project;
@@ -28,7 +44,14 @@ interface OverviewTabProps {
   onProjectUpdated?: () => void;
 }
 
-export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, onProjectUpdated }: OverviewTabProps) {
+export function OverviewTab({
+  project,
+  milestones,
+  tasks,
+  sprints,
+  onTabChange,
+  onProjectUpdated,
+}: OverviewTabProps) {
   const { user } = useAuth();
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [newOwnerId, setNewOwnerId] = useState<number | undefined>();
@@ -45,7 +68,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
   const [transferOwnershipMutation] = useTransferOwnershipMutation();
 
   const completedTasks = tasks.filter((t) => t.status === 'Done').length;
-  const inProgressTasks = tasks.filter((t) => t.status === 'In Progress' || t.status === 'In Review').length;
+  const inProgressTasks = tasks.filter(
+    (t) => t.status === 'In Progress' || t.status === 'In Review'
+  ).length;
   const progressPct = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
   const activeSprint = sprints.find((s) => s.status === 'active');
 
@@ -53,7 +78,11 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
     project.health === 'on_track' ? 'green' : project.health === 'at_risk' ? 'gold' : 'red';
 
   const healthLabel =
-    project.health === 'on_track' ? 'On Track' : project.health === 'at_risk' ? 'At Risk' : 'Off Track';
+    project.health === 'on_track'
+      ? 'On Track'
+      : project.health === 'at_risk'
+        ? 'At Risk'
+        : 'Off Track';
 
   const eligibleEmployees = departmentService.getAllEmployees();
 
@@ -120,7 +149,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
       {/* KPI Cards Row */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full" styles={{ body: { padding: '20px' } }}>
+          <Card
+            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
+            styles={{ body: { padding: '20px' } }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-muted">Project Health</span>
               <Tag color={healthColor} className="font-bold text-[10px] uppercase m-0">
@@ -130,13 +161,20 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
             <div className="mt-2">
               <span className="text-2xl font-black text-foreground">{progressPct}%</span>
               <span className="text-xs text-muted ml-2">completed</span>
-              <Progress percent={progressPct} showInfo={false} strokeColor="var(--primary, #3b82f6)" className="mt-2" />
+              <Progress
+                percent={progressPct}
+                showInfo={false}
+                strokeColor="var(--primary, #3b82f6)"
+                className="mt-2"
+              />
             </div>
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full" styles={{ body: { padding: '20px' } }}>
+          <Card
+            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
+            styles={{ body: { padding: '20px' } }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-muted">Active Sprint</span>
               <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
@@ -157,7 +195,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full" styles={{ body: { padding: '20px' } }}>
+          <Card
+            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
+            styles={{ body: { padding: '20px' } }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-muted">Task Pipeline</span>
               <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
@@ -167,13 +207,17 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground">{completedTasks}</span>
               <span className="text-xs text-muted">/ {tasks.length} done</span>
-              <span className="text-xs font-bold text-amber-500 ml-auto">({inProgressTasks} active)</span>
+              <span className="text-xs font-bold text-amber-500 ml-auto">
+                ({inProgressTasks} active)
+              </span>
             </div>
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full" styles={{ body: { padding: '20px' } }}>
+          <Card
+            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
+            styles={{ body: { padding: '20px' } }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-muted">Target Timeline</span>
               <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
@@ -196,11 +240,14 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <ShieldCheck className="text-primary" size={20} />
-              <h3 className="text-base font-black text-foreground">Project Governance & Ownership</h3>
+              <h3 className="text-base font-black text-foreground">
+                Project Governance & Ownership
+              </h3>
               <Tag color="cyan">{project.key}</Tag>
             </div>
             <p className="text-xs text-muted">
-              Live organizational accountability structure connecting the project to company departments and delivery leads.
+              Live organizational accountability structure connecting the project to company
+              departments and delivery leads.
             </p>
           </div>
 
@@ -226,13 +273,21 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
 
         <Row gutter={[16, 16]} className="mt-4 pt-4 border-t border-primary/10">
           <Col xs={12} sm={6}>
-            <span className="text-[11px] font-semibold text-muted uppercase block">Project Owner</span>
-            <span className="text-sm font-bold text-foreground block mt-0.5">{project.ownerName || project.leadName || 'Alex Mercer'}</span>
+            <span className="text-[11px] font-semibold text-muted uppercase block">
+              Project Owner
+            </span>
+            <span className="text-sm font-bold text-foreground block mt-0.5">
+              {project.ownerName || project.leadName || 'Alex Mercer'}
+            </span>
             <span className="text-[11px] text-muted">Accountable for Delivery</span>
           </Col>
           <Col xs={12} sm={6}>
-            <span className="text-[11px] font-semibold text-muted uppercase block">Project Manager</span>
-            <span className="text-sm font-bold text-foreground block mt-0.5">{project.projectManagerName || project.leadName || 'Alex Mercer'}</span>
+            <span className="text-[11px] font-semibold text-muted uppercase block">
+              Project Manager
+            </span>
+            <span className="text-sm font-bold text-foreground block mt-0.5">
+              {project.projectManagerName || project.leadName || 'Alex Mercer'}
+            </span>
             <span className="text-[11px] text-muted">Sprint & Team Lead</span>
           </Col>
           <Col xs={12} sm={6}>
@@ -241,11 +296,15 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
               <Building2 size={13} className="text-primary inline" />
               {project.departmentName || 'Engineering'}
             </span>
-            <span className="text-[11px] text-muted">Head: {project.deptHeadName || 'Alex Mercer'}</span>
+            <span className="text-[11px] text-muted">
+              Head: {project.deptHeadName || 'Alex Mercer'}
+            </span>
           </Col>
           <Col xs={12} sm={6}>
             <span className="text-[11px] font-semibold text-muted uppercase block">Created By</span>
-            <span className="text-sm font-bold text-foreground block mt-0.5">{project.createdByName || 'Authenticated User'}</span>
+            <span className="text-sm font-bold text-foreground block mt-0.5">
+              {project.createdByName || 'Authenticated User'}
+            </span>
             <span className="text-[11px] text-muted">Initial Reporter</span>
           </Col>
         </Row>
@@ -262,9 +321,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
                 color: 'blue',
                 children: (
                   <div className="text-xs">
-                    <span className="font-bold">{h.transferredByName}</span> transferred ownership from{' '}
-                    <span className="font-semibold">{h.fromUserName || 'Initial Owner'}</span> to{' '}
-                    <span className="font-semibold text-primary">{h.toUserName}</span> on{' '}
+                    <span className="font-bold">{h.transferredByName}</span> transferred ownership
+                    from <span className="font-semibold">{h.fromUserName || 'Initial Owner'}</span>{' '}
+                    to <span className="font-semibold text-primary">{h.toUserName}</span> on{' '}
                     <span className="text-muted">{new Date(h.timestamp).toLocaleDateString()}</span>
                     <p className="text-muted text-[11px] italic mt-0.5">"{h.reason}"</p>
                   </div>
@@ -311,7 +370,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                            isDone ? 'bg-emerald-500/15 text-emerald-500' : 'bg-primary/10 text-primary'
+                            isDone
+                              ? 'bg-emerald-500/15 text-emerald-500'
+                              : 'bg-primary/10 text-primary'
                           }`}>
                           {isDone ? <CheckCircle2 size={16} /> : <Clock size={16} />}
                         </div>
@@ -319,7 +380,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
                           <h4 className="text-xs font-bold text-foreground truncate">{m.name}</h4>
                           <p className="text-[11px] text-muted flex items-center gap-2">
                             <span>Target: {m.targetDate}</span>
-                            {m.isFixed && <span className="text-amber-500 font-semibold">• Fixed Date</span>}
+                            {m.isFixed && (
+                              <span className="text-amber-500 font-semibold">• Fixed Date</span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -330,7 +393,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
                             Sign-off Req
                           </Tag>
                         )}
-                        <Tag color={isDone ? 'green' : 'blue'} className="text-[10px] font-bold uppercase m-0">
+                        <Tag
+                          color={isDone ? 'green' : 'blue'}
+                          className="text-[10px] font-bold uppercase m-0">
                           {m.status.replace('_', ' ')}
                         </Tag>
                       </Space>
@@ -396,12 +461,14 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
         centered>
         <div className="space-y-4 my-2">
           <p className="text-xs text-muted">
-            Transferring ownership reassigns final delivery accountability to the selected employee. An audit record
-            will be preserved with your identity, timestamp, and justification.
+            Transferring ownership reassigns final delivery accountability to the selected employee.
+            An audit record will be preserved with your identity, timestamp, and justification.
           </p>
 
           <div>
-            <label className="text-xs font-bold text-foreground block mb-1.5">New Project Owner</label>
+            <label className="text-xs font-bold text-foreground block mb-1.5">
+              New Project Owner
+            </label>
             <Select
               className="w-full"
               placeholder="Search and select active employee..."
@@ -417,7 +484,9 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
           </div>
 
           <div>
-            <label className="text-xs font-bold text-foreground block mb-1.5">Business Rationale</label>
+            <label className="text-xs font-bold text-foreground block mb-1.5">
+              Business Rationale
+            </label>
             <Input.TextArea
               rows={3}
               value={transferReason}
@@ -445,7 +514,8 @@ export function OverviewTab({ project, milestones, tasks, sprints, onTabChange, 
         centered>
         <div className="space-y-4 my-2">
           <p className="text-xs text-muted">
-            Select the designated Project Manager / Delivery Lead responsible for milestone execution and task oversight.
+            Select the designated Project Manager / Delivery Lead responsible for milestone
+            execution and task oversight.
           </p>
 
           <div>

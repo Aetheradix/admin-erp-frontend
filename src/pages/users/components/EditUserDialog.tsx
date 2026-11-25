@@ -105,7 +105,9 @@ export function EditUserDialog({
             showSearch
             placeholder="Select reporting manager (optional)"
             filterOption={(input, option) =>
-              String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              String(option?.label ?? '')
+                .toLowerCase()
+                .includes(input.toLowerCase())
             }
             value={form.reportingManagerId ?? undefined}
             onChange={(val: number | undefined) => updateForm({ reportingManagerId: val ?? null })}
@@ -135,7 +137,12 @@ export function EditUserDialog({
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
           <Button variant="ghost" label="Cancel" onClick={onClose} className="rounded-md!" />
-          <Button label="Save Changes" icon="pi pi-check" onClick={onSave} className="rounded-md! px-6!" />
+          <Button
+            label="Save Changes"
+            icon="pi pi-check"
+            onClick={onSave}
+            className="rounded-md! px-6!"
+          />
         </div>
       </div>
     </Dialog>

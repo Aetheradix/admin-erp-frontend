@@ -15,12 +15,16 @@ interface HierarchyHeaderProps {
 
 const pillClass = (active: boolean) =>
   `px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
-    active ? 'bg-white text-primary font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
+    active
+      ? 'bg-white text-primary font-bold shadow-xs'
+      : 'text-muted-foreground hover:text-foreground'
   }`;
 
 const plainPillClass = (active: boolean) =>
   `px-3 py-1 rounded-full transition-all cursor-pointer ${
-    active ? 'bg-white text-primary font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
+    active
+      ? 'bg-white text-primary font-bold shadow-xs'
+      : 'text-muted-foreground hover:text-foreground'
   }`;
 
 export function HierarchyHeader({
@@ -39,11 +43,17 @@ export function HierarchyHeader({
         <h1 className="text-xl font-bold tracking-tight text-foreground">Organization map</h1>
 
         <div className="flex items-center p-0.5 bg-surface-subtle rounded-full border border-border-subtle text-xs font-medium">
-          <button type="button" onClick={() => onViewModeChange('map')} className={pillClass(viewMode === 'map')}>
+          <button
+            type="button"
+            onClick={() => onViewModeChange('map')}
+            className={pillClass(viewMode === 'map')}>
             <GitBranch size={12} />
             <span>Map</span>
           </button>
-          <button type="button" onClick={() => onViewModeChange('list')} className={pillClass(viewMode === 'list')}>
+          <button
+            type="button"
+            onClick={() => onViewModeChange('list')}
+            className={pillClass(viewMode === 'list')}>
             <FolderTree size={12} />
             <span>Tree List</span>
           </button>

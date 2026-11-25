@@ -80,25 +80,29 @@ export function LeaveApproverConfigModal({ visible, onClose }: LeaveApproverConf
     {
       value: 'default_founder',
       title: 'Founder / Primary Executive (Default)',
-      description: 'By default, company Founder or System Executive is assigned as primary Leave Approver.',
+      description:
+        'By default, company Founder or System Executive is assigned as primary Leave Approver.',
       icon: <ShieldCheck className="w-5 h-5 text-primary" />,
     },
     {
       value: 'reporting_manager',
       title: 'Direct Reporting Manager (Hierarchy)',
-      description: "Dynamically assigns each employee's direct reporting manager based on the organizational hierarchy.",
+      description:
+        "Dynamically assigns each employee's direct reporting manager based on the organizational hierarchy.",
       icon: <GitBranch className="w-5 h-5 text-indigo-500" />,
     },
     {
       value: 'hr',
       title: 'Human Resources (HR)',
-      description: 'Authorized HR managers responsible for personnel and leaves process all approvals.',
+      description:
+        'Authorized HR managers responsible for personnel and leaves process all approvals.',
       icon: <Briefcase className="w-5 h-5 text-emerald-500" />,
     },
     {
       value: 'specific_user',
       title: 'Specific Authorized Person',
-      description: 'Assign a designated individual within the company as the single leave authority.',
+      description:
+        'Assign a designated individual within the company as the single leave authority.',
       icon: <UserCheck className="w-5 h-5 text-amber-500" />,
     },
     {
@@ -117,8 +121,9 @@ export function LeaveApproverConfigModal({ visible, onClose }: LeaveApproverConf
       className="max-w-2xl">
       <div className="space-y-6 pt-2">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Configure how leave and WFH requests are routed for administrative review. Rules can route requests
-          to the <strong>Founder</strong>, <strong>HR</strong>, the employee's <strong>Direct Manager</strong> in the organization hierarchy, or a custom approver.
+          Configure how leave and WFH requests are routed for administrative review. Rules can route
+          requests to the <strong>Founder</strong>, <strong>HR</strong>, the employee's{' '}
+          <strong>Direct Manager</strong> in the organization hierarchy, or a custom approver.
         </p>
 
         {/* Rule Selector Options */}
@@ -204,7 +209,9 @@ export function LeaveApproverConfigModal({ visible, onClose }: LeaveApproverConf
         <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-3">
           <HelpCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            <strong>Dynamic Fallback Guarantee:</strong> If an employee has no assigned reporting manager or the designated approver is unavailable, requests automatically fall back to the Founder / SuperAdmin to ensure no request remains unaddressed.
+            <strong>Dynamic Fallback Guarantee:</strong> If an employee has no assigned reporting
+            manager or the designated approver is unavailable, requests automatically fall back to
+            the Founder / SuperAdmin to ensure no request remains unaddressed.
           </p>
         </div>
 
@@ -225,4 +232,3 @@ export function LeaveApproverConfigModal({ visible, onClose }: LeaveApproverConf
     </Dialog>
   );
 }
-

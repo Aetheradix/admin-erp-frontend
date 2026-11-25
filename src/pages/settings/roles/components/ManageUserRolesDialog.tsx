@@ -98,8 +98,8 @@ export function ManageUserRolesDialog({
           </div>
 
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Effective permissions are derived from all roles assigned to this user. The user inherits
-            the combined union of permissions from each role (e.g. Role A granting{' '}
+            Effective permissions are derived from all roles assigned to this user. The user
+            inherits the combined union of permissions from each role (e.g. Role A granting{' '}
             <span className="font-semibold text-foreground">View Users, Edit Users</span> combined
             with Role B granting{' '}
             <span className="font-semibold text-foreground">Manage Reports, Delete Reports</span>{' '}

@@ -138,8 +138,7 @@ export function filterHiringProfiles(
     if (activeTab === 'Changes Required') return p.status === 'changes_required';
     if (activeTab === 'Approved') return p.status === 'approved';
     if (activeTab === 'ID Assigned') return p.status === 'id_assigned';
-    if (activeTab === 'Incomplete')
-      return p.status === 'incomplete' || p.status === 'in_progress';
+    if (activeTab === 'Incomplete') return p.status === 'incomplete' || p.status === 'in_progress';
     return true;
   });
 }

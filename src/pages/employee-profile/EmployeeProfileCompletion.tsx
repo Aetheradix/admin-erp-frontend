@@ -36,11 +36,7 @@ import {
   type ProfileStatus,
   type FormSectionConfig,
 } from '@/services/employeeProfileService';
-import {
-  saveFormDraft,
-  getFormDraft,
-  clearFormDraft,
-} from '@/utils/formDraftManager';
+import { saveFormDraft, getFormDraft, clearFormDraft } from '@/utils/formDraftManager';
 import { SmartAlertBanner } from '@/components/common/SmartAlertBanner';
 import { AutosaveStatusBadge, type AutosaveStatus } from '@/components/common/AutosaveStatusBadge';
 
@@ -457,7 +453,16 @@ export default function EmployeeProfileCompletion({
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, profile, incompleteSections, formConfig, onClose, fullPage, navigate, setActiveSection]);
+  }, [
+    user,
+    profile,
+    incompleteSections,
+    formConfig,
+    onClose,
+    fullPage,
+    navigate,
+    setActiveSection,
+  ]);
 
   const goToNext = () => {
     if (activeIdx < activeSections.length - 1) {
@@ -840,7 +845,9 @@ export default function EmployeeProfileCompletion({
                   userId={user.id}
                   onSave={(data) => handleSaveSection('certifications', data)}
                   onSaveDraft={handleSaveDraft}
-                  onDraftChange={(data, isDirty) => handleDraftChange('certifications', data, isDirty)}
+                  onDraftChange={(data, isDirty) =>
+                    handleDraftChange('certifications', data, isDirty)
+                  }
                   isSaving={isSaving}
                   readOnly={isReadOnly}
                 />

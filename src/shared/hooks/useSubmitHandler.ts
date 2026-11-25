@@ -26,32 +26,29 @@ export interface SubmitOptions<R> {
 export function useSubmitHandler() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = useCallback(
-    async function run<R>(
-      action: () => Promise<R>,
-      options: SubmitOptions<R> = {}
-    ): Promise<R | undefined> {
-      setIsSubmitting(true);
-      try {
-        const result = await action();
-        if (options.success) emitToast(options.success, 'success');
-        options.onSuccess?.(result);
-        return result;
-      } catch (error) {
-        if (options.error) {
-          emitToast(options.error, 'error');
-        } else if (options.errorFallback) {
-          emitToast(getApiErrorMessage(error, options.errorFallback), 'error');
-        }
-        options.onError?.(error);
-        if (options.rethrow) throw error;
-        return undefined;
-      } finally {
-        setIsSubmitting(false);
+  const submit = useCallback(async function run<R>(
+    action: () => Promise<R>,
+    options: SubmitOptions<R> = {}
+  ): Promise<R | undefined> {
+    setIsSubmitting(true);
+    try {
+      const result = await action();
+      if (options.success) emitToast(options.success, 'success');
+      options.onSuccess?.(result);
+      return result;
+    } catch (error) {
+      if (options.error) {
+        emitToast(options.error, 'error');
+      } else if (options.errorFallback) {
+        emitToast(getApiErrorMessage(error, options.errorFallback), 'error');
       }
-    },
-    []
-  );
+      options.onError?.(error);
+      if (options.rethrow) throw error;
+      return undefined;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
 
   return { isSubmitting, submit };
 }

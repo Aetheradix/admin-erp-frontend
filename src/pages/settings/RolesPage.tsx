@@ -45,10 +45,7 @@ export function RolesPage() {
     return data.roles[0];
   }, [data.roles, state.selectedRoleForMatrix]);
 
-  const availableRoleOptions = useMemo(
-    () => buildAvailableRoleOptions(data.roles),
-    [data.roles]
-  );
+  const availableRoleOptions = useMemo(() => buildAvailableRoleOptions(data.roles), [data.roles]);
 
   const filteredUsers = useMemo(
     () => filterAssignableUsers(data.usersData ?? [], state.userSearchText),
@@ -71,7 +68,11 @@ export function RolesPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <RolesHeader canCreateRole={canCreate} onRefresh={handleRefresh} onCreate={roleForm.openCreateModal} />
+      <RolesHeader
+        canCreateRole={canCreate}
+        onRefresh={handleRefresh}
+        onCreate={roleForm.openCreateModal}
+      />
 
       <RolesStats
         totalRoles={data.roles.length}

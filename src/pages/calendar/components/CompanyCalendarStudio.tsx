@@ -33,7 +33,9 @@ import {
 
 export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const { data: calendars = [], isLoading: isLoadingCals } = useGetCalendarsQuery({ year: selectedYear });
+  const { data: calendars = [], isLoading: isLoadingCals } = useGetCalendarsQuery({
+    year: selectedYear,
+  });
 
   const [activeCalId, setActiveCalId] = useState<number | null>(null);
   const activeCalendar = calendars.find((c) => c.id === activeCalId) || calendars[0] || null;
@@ -71,11 +73,19 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
         country_code: values.country_code.toUpperCase(),
         weekend_mask: values.weekend_mask,
       }).unwrap();
-      showToast({ severity: 'success', summary: 'Success', detail: 'Calendar created successfully' });
+      showToast({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Calendar created successfully',
+      });
       setShowNewCalModal(false);
       createCalForm.resetFields();
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Failed to create calendar' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Failed to create calendar',
+      });
     }
   };
 
@@ -97,11 +107,19 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
         is_half_day: values.is_half_day ? 1 : 0,
         description: values.description?.trim() || null,
       }).unwrap();
-      showToast({ severity: 'success', summary: 'Saved', detail: `Holiday "${values.name}" added successfully` });
+      showToast({
+        severity: 'success',
+        summary: 'Saved',
+        detail: `Holiday "${values.name}" added successfully`,
+      });
       setShowNewHolidayModal(false);
       addHolidayForm.resetFields();
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Failed to add holiday' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Failed to add holiday',
+      });
     }
   };
 
@@ -134,19 +152,35 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
         is_half_day: values.is_half_day ? 1 : 0,
         description: values.description?.trim() || null,
       }).unwrap();
-      showToast({ severity: 'success', summary: 'Updated', detail: `Holiday "${values.name}" updated successfully` });
+      showToast({
+        severity: 'success',
+        summary: 'Updated',
+        detail: `Holiday "${values.name}" updated successfully`,
+      });
       setEditingHoliday(null);
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Failed to update holiday' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Failed to update holiday',
+      });
     }
   };
 
   const handleDeleteHoliday = async (holidayId: number, holidayName: string) => {
     try {
       await deleteHoliday(holidayId).unwrap();
-      showToast({ severity: 'info', summary: 'Removed', detail: `Holiday "${holidayName}" removed from calendar` });
+      showToast({
+        severity: 'info',
+        summary: 'Removed',
+        detail: `Holiday "${holidayName}" removed from calendar`,
+      });
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Could not delete holiday' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Could not delete holiday',
+      });
     }
   };
 
@@ -156,7 +190,11 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
       showToast({ severity: 'info', summary: 'Deleted', detail: `Calendar "${calName}" deleted` });
       setActiveCalId(null);
     } catch (err: any) {
-      showToast({ severity: 'error', summary: 'Failed', detail: err?.data?.message || 'Failed to delete calendar' });
+      showToast({
+        severity: 'error',
+        summary: 'Failed',
+        detail: err?.data?.message || 'Failed to delete calendar',
+      });
     }
   };
 
@@ -248,9 +286,7 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
               <span>{c.name}</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] ${
-                  isActive
-                    ? 'bg-background/20 text-background'
-                    : 'bg-surface-elevated text-muted'
+                  isActive ? 'bg-background/20 text-background' : 'bg-surface-elevated text-muted'
                 }`}>
                 {totalHolidays} holidays
               </span>
@@ -273,11 +309,24 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
                 )}
               </div>
               <p className="text-xs text-muted mt-1 flex items-center gap-3">
-                <span>Country: <strong className="text-foreground">{activeCalendar.country_code}</strong></span>
+                <span>
+                  Country:{' '}
+                  <strong className="text-foreground">{activeCalendar.country_code}</strong>
+                </span>
                 <span>•</span>
-                <span>Weekend: <strong className="text-foreground">{activeCalendar.weekend_mask === 65 ? 'Sat + Sun Off' : 'Custom'}</strong></span>
+                <span>
+                  Weekend:{' '}
+                  <strong className="text-foreground">
+                    {activeCalendar.weekend_mask === 65 ? 'Sat + Sun Off' : 'Custom'}
+                  </strong>
+                </span>
                 <span>•</span>
-                <span>Total Holidays: <strong className="text-foreground">{activeCalendar.holidays?.length || 0}</strong></span>
+                <span>
+                  Total Holidays:{' '}
+                  <strong className="text-foreground">
+                    {activeCalendar.holidays?.length || 0}
+                  </strong>
+                </span>
               </p>
             </div>
 
@@ -358,16 +407,23 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
               <tbody className="divide-y divide-border-subtle bg-white">
                 {filteredHolidays.map((h: CalendarHoliday) => {
                   const formattedDate = formatHolidayDate(h.holiday_date);
-                  const isFuture = new Date(h.holiday_date.split('T')[0]) >= new Date(new Date().toDateString());
+                  const isFuture =
+                    new Date(h.holiday_date.split('T')[0]) >= new Date(new Date().toDateString());
 
                   return (
                     <tr key={h.id} className="hover:bg-surface-elevated/40 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-foreground whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <CalendarIcon size={14} className={isFuture ? 'text-primary' : 'text-muted/60'} />
+                          <CalendarIcon
+                            size={14}
+                            className={isFuture ? 'text-primary' : 'text-muted/60'}
+                          />
                           <span>{formattedDate}</span>
                           {isFuture && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Upcoming" />
+                            <span
+                              className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                              title="Upcoming"
+                            />
                           )}
                         </div>
                       </td>
@@ -375,7 +431,9 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
                         <div className="flex flex-col">
                           <span>{h.name}</span>
                           {h.description && (
-                            <p className="text-[11px] font-normal text-muted mt-0.5">{h.description}</p>
+                            <p className="text-[11px] font-normal text-muted mt-0.5">
+                              {h.description}
+                            </p>
                           )}
                         </div>
                       </td>
@@ -385,8 +443,8 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
                             h.holiday_type === 'PUBLIC'
                               ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
                               : h.holiday_type === 'COMPANY'
-                              ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
-                              : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                                ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
+                                : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
                           }`}>
                           {h.holiday_type}
                         </span>
@@ -460,7 +518,9 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
       ) : (
         <div className="p-12 text-center text-muted rounded-3xl bg-surface border border-border-subtle">
           <p className="text-sm font-bold">
-            {isLoadingCals ? 'Loading organization calendars...' : `No calendar available for ${selectedYear}`}
+            {isLoadingCals
+              ? 'Loading organization calendars...'
+              : `No calendar available for ${selectedYear}`}
           </p>
         </div>
       )}
@@ -469,7 +529,11 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
       <Modal
         open={showNewCalModal}
         onCancel={() => setShowNewCalModal(false)}
-        title={<span className="text-base font-black text-foreground">Register New Calendar ({selectedYear})</span>}
+        title={
+          <span className="text-base font-black text-foreground">
+            Register New Calendar ({selectedYear})
+          </span>
+        }
         footer={null}
         centered
         destroyOnClose>
@@ -585,7 +649,11 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
           </div>
 
           <Form.Item
-            label={<span className="text-xs font-bold text-foreground">Description / Notes (Optional)</span>}
+            label={
+              <span className="text-xs font-bold text-foreground">
+                Description / Notes (Optional)
+              </span>
+            }
             name="description">
             <Input.TextArea
               rows={3}
@@ -664,7 +732,11 @@ export function CompanyCalendarStudio({ isAdmin }: { isAdmin: boolean }) {
           </div>
 
           <Form.Item
-            label={<span className="text-xs font-bold text-foreground">Description / Notes (Optional)</span>}
+            label={
+              <span className="text-xs font-bold text-foreground">
+                Description / Notes (Optional)
+              </span>
+            }
             name="description">
             <Input.TextArea rows={3} className="rounded-xl" />
           </Form.Item>

@@ -58,19 +58,42 @@ export interface TreeLayoutResult {
 }
 
 // ── Department Color System ──────────────────────────────────────────────────
-export const DEPARTMENT_PALETTE: Record<string, { bg: string; text: string; dot: string; border: string }> = {
-  Engineering: { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', dot: '#3b82f6', border: '#3b82f6' },
+export const DEPARTMENT_PALETTE: Record<
+  string,
+  { bg: string; text: string; dot: string; border: string }
+> = {
+  Engineering: {
+    bg: 'rgba(59, 130, 246, 0.15)',
+    text: '#3b82f6',
+    dot: '#3b82f6',
+    border: '#3b82f6',
+  },
   Product: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', dot: '#10b981', border: '#10b981' },
   Design: { bg: 'rgba(236, 72, 153, 0.15)', text: '#ec4899', dot: '#ec4899', border: '#ec4899' },
   Growth: { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', dot: '#f59e0b', border: '#f59e0b' },
   Marketing: { bg: 'rgba(249, 115, 22, 0.15)', text: '#f97316', dot: '#f97316', border: '#f97316' },
-  'People & Ops': { bg: 'rgba(139, 92, 246, 0.15)', text: '#8b5cf6', dot: '#8b5cf6', border: '#8b5cf6' },
+  'People & Ops': {
+    bg: 'rgba(139, 92, 246, 0.15)',
+    text: '#8b5cf6',
+    dot: '#8b5cf6',
+    border: '#8b5cf6',
+  },
   People: { bg: 'rgba(139, 92, 246, 0.15)', text: '#8b5cf6', dot: '#8b5cf6', border: '#8b5cf6' },
   HR: { bg: 'rgba(139, 92, 246, 0.15)', text: '#8b5cf6', dot: '#8b5cf6', border: '#8b5cf6' },
   Finance: { bg: 'rgba(6, 182, 212, 0.15)', text: '#06b6d4', dot: '#06b6d4', border: '#06b6d4' },
   Sales: { bg: 'rgba(244, 63, 94, 0.15)', text: '#f43f5e', dot: '#f43f5e', border: '#f43f5e' },
-  Operations: { bg: 'rgba(100, 116, 139, 0.15)', text: '#94a3b8', dot: '#94a3b8', border: '#94a3b8' },
-  Leadership: { bg: 'rgba(99, 102, 241, 0.15)', text: '#6366f1', dot: '#6366f1', border: '#6366f1' },
+  Operations: {
+    bg: 'rgba(100, 116, 139, 0.15)',
+    text: '#94a3b8',
+    dot: '#94a3b8',
+    border: '#94a3b8',
+  },
+  Leadership: {
+    bg: 'rgba(99, 102, 241, 0.15)',
+    text: '#6366f1',
+    dot: '#6366f1',
+    border: '#6366f1',
+  },
   Executive: { bg: 'rgba(99, 102, 241, 0.15)', text: '#6366f1', dot: '#6366f1', border: '#6366f1' },
 };
 
@@ -237,8 +260,7 @@ export function computeHorizontalTreeLayout(
 
       const firstChildY = childLayouts[0].y + childLayouts[0].height / 2;
       const lastChildY =
-        childLayouts[childLayouts.length - 1].y +
-        childLayouts[childLayouts.length - 1].height / 2;
+        childLayouts[childLayouts.length - 1].y + childLayouts[childLayouts.length - 1].height / 2;
 
       // Vertically center parent between first and last child centers
       assignedY = (firstChildY + lastChildY) / 2 - dims.height / 2;
@@ -283,9 +305,7 @@ export function computeHorizontalTreeLayout(
           const childCenterY = childNode.y + childNode.height / 2;
 
           const isPathHighlighted = Boolean(
-            highlightedIds &&
-              highlightedIds.has(user.id) &&
-              highlightedIds.has(child.id)
+            highlightedIds && highlightedIds.has(user.id) && highlightedIds.has(child.id)
           );
 
           connectors.push({
@@ -440,4 +460,3 @@ export function evaluateFilterAndSearch(
     isEmptyMatch: matchedIds.size === 0,
   };
 }
-

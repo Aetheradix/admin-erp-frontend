@@ -98,4 +98,3 @@ export function usePersistedTab<T extends string>({
 
   return [activeTab, setTab];
 }
-

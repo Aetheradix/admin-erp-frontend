@@ -210,7 +210,8 @@ export function StatusSettingsModal({
       destroyOnClose>
       <div className="space-y-4 py-2">
         <p className="text-xs text-muted">
-          Define dynamic workflow statuses for your project board, configure categories, and reorder columns.
+          Define dynamic workflow statuses for your project board, configure categories, and reorder
+          columns.
         </p>
 
         {/* Ant Design Statuses Table */}
@@ -261,16 +262,16 @@ export function StatusSettingsModal({
                   <Input type="color" className="h-9 p-1 rounded-lg w-20 cursor-pointer" />
                 </Form.Item>
 
-                <Form.Item
-                  name="requiresApproval"
-                  valuePropName="checked"
-                  className="pt-6">
+                <Form.Item name="requiresApproval" valuePropName="checked" className="pt-6">
                   <Checkbox>Requires Formal Sign-off</Checkbox>
                 </Form.Item>
               </div>
 
               <Form.Item name="description" label="Description / Guidelines">
-                <Input placeholder="Optional guidelines for moving tasks here" className="rounded-lg" />
+                <Input
+                  placeholder="Optional guidelines for moving tasks here"
+                  className="rounded-lg"
+                />
               </Form.Item>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-border-subtle">

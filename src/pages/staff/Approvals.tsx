@@ -9,7 +9,16 @@ import { ApprovalStats } from './components/ApprovalStats';
 import { DayWiseApprovalTable } from './components/DayWiseApprovalTable';
 import { LeaveApproverConfigModal } from './components/LeaveApproverConfigModal';
 import { useApprovals } from './hooks/useApprovals';
-import { Clock, CheckCircle2, XCircle, Calendar, Layers, Eye, ShieldAlert, Settings } from 'lucide-react';
+import {
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Calendar,
+  Layers,
+  Eye,
+  ShieldAlert,
+  Settings,
+} from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import { useNavigate } from 'react-router-dom';
 import { generateDateRange } from '@/types/dayApproval';

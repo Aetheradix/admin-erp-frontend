@@ -22,9 +22,7 @@ export function ReviewActionBar({
     <div className="border-t border-border-subtle pt-4 flex items-center justify-between">
       <div>
         {profile.employeeId && (
-          <span className="text-xs font-bold text-primary">
-            Assigned ID: {profile.employeeId}
-          </span>
+          <span className="text-xs font-bold text-primary">Assigned ID: {profile.employeeId}</span>
         )}
       </div>
       <div className="flex items-center gap-2">

@@ -220,9 +220,7 @@ const ResourceCalendarPage = () => {
         {/* Day Schedule Sidebar (1 col on large screens) */}
         <div className="lg:col-span-1 rounded-xl border bg-card p-5 shadow-sm space-y-4">
           <div>
-            <h3 className="font-semibold text-base">
-              {selectedDate.format('dddd, MMMM D, YYYY')}
-            </h3>
+            <h3 className="font-semibold text-base">{selectedDate.format('dddd, MMMM D, YYYY')}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               {selectedDayBookings.length === 0
                 ? 'No bookings scheduled for this date.'

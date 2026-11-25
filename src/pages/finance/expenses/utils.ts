@@ -10,7 +10,10 @@ export function getExpenseDate(expense: ExpenseRecord): string | undefined {
   return expense.expense_date || expense.created_at;
 }
 
-export function filterExpenses(expenses: ExpenseRecord[], filters: ExpenseFilters): ExpenseRecord[] {
+export function filterExpenses(
+  expenses: ExpenseRecord[],
+  filters: ExpenseFilters
+): ExpenseRecord[] {
   const category = filters.category.toLowerCase();
   const status = filters.status.toLowerCase();
   const search = filters.search.toLowerCase().trim();
@@ -88,7 +91,8 @@ export function filterExpensesByDateRange(
   });
 }
 
-export function getDatePresetLabel(  preset: DateRangePreset,
+export function getDatePresetLabel(
+  preset: DateRangePreset,
   customStartDate: string,
   customEndDate: string
 ): string {

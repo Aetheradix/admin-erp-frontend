@@ -29,9 +29,7 @@ export function useExpenseForm({ availableUsers, onCreate, onClose }: UseExpense
 
   const toggleUserSelection = useCallback((userId: number | string) => {
     setSelectedUserIds((previous) =>
-      previous.includes(userId)
-        ? previous.filter((id) => id !== userId)
-        : [...previous, userId]
+      previous.includes(userId) ? previous.filter((id) => id !== userId) : [...previous, userId]
     );
   }, []);
 

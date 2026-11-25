@@ -3,16 +3,7 @@ import type { Project, Milestone, ProjectTask } from '@/types/project';
 import type { ProjectPhase } from '@/types/phase';
 import type { TaskStatus } from '@/types/taskStatus';
 import { Target, ShieldCheck, Layers, Sparkles, Plus } from 'lucide-react';
-import {
-  Table,
-  Card,
-  Radio,
-  Select,
-  Tag,
-  Space,
-  Button,
-  message,
-} from 'antd';
+import { Table, Card, Radio, Select, Tag, Space, Button, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { projectService } from '@/services/projectService';
 import { SmartTaskCreateModal } from '../modals/SmartTaskCreateModal';
@@ -47,12 +38,12 @@ export function ListTab({
         newStatus === 'Done' || newStatus === 'Completed'
           ? 'Completed'
           : newStatus === 'In Review' || newStatus === 'QA'
-          ? 'In Review'
-          : newStatus === 'Blocked'
-          ? 'Blocked'
-          : newStatus === 'In Progress'
-          ? 'In Progress'
-          : 'Pending';
+            ? 'In Review'
+            : newStatus === 'Blocked'
+              ? 'Blocked'
+              : newStatus === 'In Progress'
+                ? 'In Progress'
+                : 'Pending';
       await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
     } catch {
       // offline fallback
@@ -240,9 +231,7 @@ export function ListTab({
             className="rounded-xl font-bold text-xs h-8">
             Assign Task
           </Button>
-          <span className="text-xs text-muted font-semibold">
-            Total: {tasks.length} tasks
-          </span>
+          <span className="text-xs text-muted font-semibold">Total: {tasks.length} tasks</span>
         </Space>
       </div>
 
@@ -271,7 +260,9 @@ export function ListTab({
                   <Space size={8}>
                     <span className="text-xs font-black text-foreground">{group.title}</span>
                     {group.subtitle?.includes('Sign-off') && (
-                      <Tag color="purple" className="text-[10px] font-bold flex items-center gap-1 m-0">
+                      <Tag
+                        color="purple"
+                        className="text-[10px] font-bold flex items-center gap-1 m-0">
                         <ShieldCheck size={11} /> Requires Sign-off
                       </Tag>
                     )}

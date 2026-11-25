@@ -14,9 +14,7 @@ export function IdentityTab({ profile }: IdentityTabProps) {
         <DetailField label="PAN Number" value={identity?.panNumber || '—'} mono />
         <DetailField
           label="Aadhaar Number"
-          value={
-            identity?.aadhaarNumber ? `•••• •••• ${identity.aadhaarNumber.slice(-4)}` : '—'
-          }
+          value={identity?.aadhaarNumber ? `•••• •••• ${identity.aadhaarNumber.slice(-4)}` : '—'}
           mono
         />
         <DetailField label="Passport Number" value={identity?.passportNumber || '—'} mono />

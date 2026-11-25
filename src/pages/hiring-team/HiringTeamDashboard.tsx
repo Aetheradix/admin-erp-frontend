@@ -78,9 +78,7 @@ export default function HiringTeamDashboard() {
       <HiringMetrics
         metrics={data.metrics}
         mainView={mainView}
-        onToggleOnboarding={() =>
-          setMainView(mainView === 'onboarding' ? 'table' : 'onboarding')
-        }
+        onToggleOnboarding={() => setMainView(mainView === 'onboarding' ? 'table' : 'onboarding')}
       />
 
       {mainView === 'onboarding' && (

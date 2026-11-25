@@ -5,14 +5,11 @@ interface ConnectorsLayerProps {
   connectors: ConnectorPath[];
 }
 
-export const ConnectorsLayer: React.FC<ConnectorsLayerProps> = React.memo(({
-  connectors,
-}) => {
+export const ConnectorsLayer: React.FC<ConnectorsLayerProps> = React.memo(({ connectors }) => {
   return (
     <svg
       className="absolute overflow-visible pointer-events-none"
-      style={{ left: 0, top: 0, width: 5000, height: 5000 }}
-    >
+      style={{ left: 0, top: 0, width: 5000, height: 5000 }}>
       {connectors.map((c) => (
         <path
           key={c.id}

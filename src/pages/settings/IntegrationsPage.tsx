@@ -288,9 +288,12 @@ export function IntegrationsPage() {
 
           <div className="flex items-center justify-between p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mt-2">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Direct API Integration (Secure)</span>
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                Direct API Integration (Secure)
+              </span>
               <span className="text-[10px] text-muted italic">
-                Credentials are sent directly to your Jira host over TLS. Public third-party CORS proxies are blocked.
+                Credentials are sent directly to your Jira host over TLS. Public third-party CORS
+                proxies are blocked.
               </span>
             </div>
           </div>

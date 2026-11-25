@@ -15,6 +15,13 @@ export function useOrgLayout(
         { focusedNode, reportingManager, grandManager, directReports, subUnderReportsMap },
         expandedSubTrees
       ),
-    [focusedNode, reportingManager, grandManager, directReports, subUnderReportsMap, expandedSubTrees]
+    [
+      focusedNode,
+      reportingManager,
+      grandManager,
+      directReports,
+      subUnderReportsMap,
+      expandedSubTrees,
+    ]
   );
 }

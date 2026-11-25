@@ -48,7 +48,11 @@ export function UserRoleAssignmentsView({
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="small" onClick={onRefresh} className="text-xs gap-1.5 font-bold">
+          <Button
+            variant="outline"
+            size="small"
+            onClick={onRefresh}
+            className="text-xs gap-1.5 font-bold">
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </Button>
         </div>

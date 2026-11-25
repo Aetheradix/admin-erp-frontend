@@ -10,9 +10,8 @@ export const useStaff = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
   const { searchQuery, setSearchQuery, activeDepartment, setActiveDepartment } = useStaffFilters();
-  const { handlePromote, handleDelete, handleSubmit } = useStaffMutations(
-    editingMember,
-    () => setShowForm(false)
+  const { handlePromote, handleDelete, handleSubmit } = useStaffMutations(editingMember, () =>
+    setShowForm(false)
   );
 
   const handleEdit = (id: string) => {

@@ -11,7 +11,14 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ icon: Icon, title, message, variant = 'card', action, className }: EmptyStateProps) {
+export function EmptyState({
+  icon: Icon,
+  title,
+  message,
+  variant = 'card',
+  action,
+  className,
+}: EmptyStateProps) {
   if (variant === 'ghost') {
     return (
       <div

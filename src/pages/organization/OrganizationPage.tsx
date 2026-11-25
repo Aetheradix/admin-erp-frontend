@@ -32,7 +32,9 @@ export function OrganizationPage() {
     can('organization:manage') ||
     Boolean(
       roles?.some((role) => {
-        const normalized = String(role).toLowerCase().replace(/[\s_-]/g, '');
+        const normalized = String(role)
+          .toLowerCase()
+          .replace(/[\s_-]/g, '');
         return normalized.includes('admin') || normalized.includes('hr');
       })
     );
@@ -90,11 +92,7 @@ export function OrganizationPage() {
       />
 
       <div className="bg-white rounded-2xl border border-border-subtle shadow-soft p-3">
-        <Tabs
-          items={ORGANIZATION_TABS}
-          activeItem={activeTab}
-          onItemChange={handleTabChange}
-        />
+        <Tabs items={ORGANIZATION_TABS} activeItem={activeTab} onItemChange={handleTabChange} />
       </div>
 
       {activeTab === 'Overview' && (

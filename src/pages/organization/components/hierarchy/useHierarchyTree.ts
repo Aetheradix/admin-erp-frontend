@@ -63,10 +63,7 @@ export function useHierarchyTree() {
     setExpandedNodes(allCollapsed);
   }, [flatUsers]);
 
-  const unifiedTree = useMemo(
-    () => buildUnifiedTree(rootUsers, flatUsers),
-    [rootUsers, flatUsers]
-  );
+  const unifiedTree = useMemo(() => buildUnifiedTree(rootUsers, flatUsers), [rootUsers, flatUsers]);
 
   const filteredTree = useMemo(
     () => filterHierarchyTree(unifiedTree, searchQuery, selectedDepartment),

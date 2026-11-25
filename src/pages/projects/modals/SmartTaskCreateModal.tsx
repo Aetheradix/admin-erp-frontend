@@ -115,8 +115,12 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
       const currentDept = departments.find((d) => d.id === selectedDeptId);
       const selPhase = phases.find((p) => p.id === values.phaseId);
 
-      const startDateStr = values.dateRange?.[0] ? dayjs(values.dateRange[0]).format('YYYY-MM-DD') : undefined;
-      const dueDateStr = values.dateRange?.[1] ? dayjs(values.dateRange[1]).format('YYYY-MM-DD') : undefined;
+      const startDateStr = values.dateRange?.[0]
+        ? dayjs(values.dateRange[0]).format('YYYY-MM-DD')
+        : undefined;
+      const dueDateStr = values.dateRange?.[1]
+        ? dayjs(values.dateRange[1]).format('YYYY-MM-DD')
+        : undefined;
 
       // 1. Create in real database backend
       try {
@@ -168,7 +172,9 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
         collaboratorIds: values.collaboratorIds || [],
       });
 
-      message.success(`Task created and assigned to ${selectedAssignee?.userName || 'Team'} successfully!`);
+      message.success(
+        `Task created and assigned to ${selectedAssignee?.userName || 'Team'} successfully!`
+      );
       onSuccess();
       onClose();
     } catch {
@@ -228,28 +234,33 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
                     return;
                   }
                   if (currentStep === 2) {
-                    form.validateFields().then(() => {
-                      setCurrentStep((prev) => prev + 1);
-                    }).catch(() => {
-                      message.error('Please provide a valid task title.');
-                    });
+                    form
+                      .validateFields()
+                      .then(() => {
+                        setCurrentStep((prev) => prev + 1);
+                      })
+                      .catch(() => {
+                        message.error('Please provide a valid task title.');
+                      });
                     return;
                   }
                   setCurrentStep((prev) => prev + 1);
-                }}
-              >
+                }}>
                 Next
               </Button>
             )}
             {currentStep === 3 && (
-              <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleSubmit} loading={isCreatingTask}>
+              <Button
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                onClick={handleSubmit}
+                loading={isCreatingTask}>
                 Save & Assign Task
               </Button>
             )}
           </Space>
         </div>
-      }
-    >
+      }>
       <Steps current={currentStep} items={steps} size="small" style={{ marginBottom: 24 }} />
 
       {/* STEP 0: Department Selection */}
@@ -269,8 +280,7 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
             <Radio.Group
               value={selectedDeptId}
               onChange={(e) => handleDeptSelect(e.target.value)}
-              style={{ width: '100%' }}
-            >
+              style={{ width: '100%' }}>
               <Space direction="vertical" style={{ width: '100%' }}>
                 {departments.map((dept) => (
                   <Radio.Button
@@ -283,9 +293,13 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
                       borderRadius: 8,
                       marginBottom: 8,
                       textAlign: 'left',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}>
                       <div>
                         <strong>{dept.name}</strong>
                         <div style={{ fontSize: 12, color: '#8c8c8c' }}>{dept.description}</div>
@@ -346,7 +360,8 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
                 key: 'userName',
                 render: (name: string, record) => (
                   <Space orientation="horizontal">
-                    <Avatar style={{ backgroundColor: record.isDepartmentHead ? '#1677ff' : '#52c41a' }}>
+                    <Avatar
+                      style={{ backgroundColor: record.isDepartmentHead ? '#1677ff' : '#52c41a' }}>
                       {name.charAt(0)}
                     </Avatar>
                     <div>
@@ -371,14 +386,22 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
                 title: 'Direct Manager',
                 dataIndex: 'reportingManagerName',
                 key: 'manager',
-                render: (val?: string) => val || <span style={{ color: '#8c8c8c' }}>Direct to Head</span>,
+                render: (val?: string) =>
+                  val || <span style={{ color: '#8c8c8c' }}>Direct to Head</span>,
               },
               {
                 title: 'Status',
                 dataIndex: 'employmentStatus',
                 key: 'status',
                 render: (status: string) => (
-                  <Tag color={status === 'Active' ? 'success' : status === 'On Leave' ? 'warning' : 'default'}>
+                  <Tag
+                    color={
+                      status === 'Active'
+                        ? 'success'
+                        : status === 'On Leave'
+                          ? 'warning'
+                          : 'default'
+                    }>
                     {status}
                   </Tag>
                 ),
@@ -400,13 +423,15 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
           <Form.Item
             name="title"
             label="Task Title"
-            rules={[{ required: true, message: 'Please enter a task title' }]}
-          >
+            rules={[{ required: true, message: 'Please enter a task title' }]}>
             <Input placeholder="e.g. Implement OAuth2 client credentials grant" />
           </Form.Item>
 
           <Form.Item name="description" label="Description">
-            <TextArea rows={3} placeholder="Provide details, acceptance criteria, or technical constraints..." />
+            <TextArea
+              rows={3}
+              placeholder="Provide details, acceptance criteria, or technical constraints..."
+            />
           </Form.Item>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

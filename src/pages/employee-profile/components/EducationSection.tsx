@@ -121,9 +121,7 @@ export function EducationSection({
         localData: e.target?.result as string,
       });
       const next = entries.map((en) =>
-        en.id === entryId
-          ? { ...en, documentIds: [...(en.documentIds || []), doc.id] }
-          : en
+        en.id === entryId ? { ...en, documentIds: [...(en.documentIds || []), doc.id] } : en
       );
       setEntries(next);
       notifyChange(next);

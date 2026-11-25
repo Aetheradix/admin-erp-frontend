@@ -19,7 +19,10 @@ export interface PasswordStrengthResult {
   isValid: boolean;
 }
 
-export function usePasswordStrength(password: string, confirmPassword?: string): PasswordStrengthResult {
+export function usePasswordStrength(
+  password: string,
+  confirmPassword?: string
+): PasswordStrengthResult {
   return useMemo(() => {
     const checks: PasswordChecks = {
       minLength: password.length >= PASSWORD_MIN_LENGTH,

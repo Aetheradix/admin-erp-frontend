@@ -53,9 +53,7 @@ export function CompactAttendanceHeatmap() {
           </span>
           <span className="text-[10px] text-muted font-bold">
             •{' '}
-            {totalLoggedHours > 0
-              ? `${Math.round(totalLoggedHours)} hrs logged`
-              : 'Daily presence'}
+            {totalLoggedHours > 0 ? `${Math.round(totalLoggedHours)} hrs logged` : 'Daily presence'}
           </span>
         </div>
 

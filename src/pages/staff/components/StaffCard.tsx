@@ -25,8 +25,9 @@ export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: Staf
   return (
     <div
       onClick={() => onClick?.(member)}
-      className={`group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden ${onClick ? 'cursor-pointer hover:border-primary/40' : ''
-        }`}>
+      className={`group relative bg-white rounded-4xl p-8 border border-border-subtle shadow-soft hover:shadow-lg transition-all duration-500 hover:-translate-y-1 overflow-hidden ${
+        onClick ? 'cursor-pointer hover:border-primary/40' : ''
+      }`}>
       {/* Action Buttons (Edit/Delete) - Absolute Positioned */}
       {(onEdit || onPromote || onDelete) && (
         <div
@@ -132,8 +133,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: Staf
             member.roles.map((role) => (
               <span
                 key={role.id}
-                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
-              >
+                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                 {role.name}
               </span>
             ))
@@ -172,9 +172,7 @@ export function StaffCard({ member, onEdit, onDelete, onPromote, onClick }: Staf
         </div>
 
         {/* Contact Quick Actions */}
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="grid grid-cols-2 gap-3 w-full pt-2">
+        <div onClick={(e) => e.stopPropagation()} className="grid grid-cols-2 gap-3 w-full pt-2">
           <a
             href={`mailto:${member.email}`}
             className="flex items-center justify-center gap-2 h-12 rounded-3xl bg-surface-subtle hover:bg-primary/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-primary/20 group/contact"

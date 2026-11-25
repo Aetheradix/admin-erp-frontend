@@ -35,7 +35,8 @@ export function SmartAlertBanner({
               Profile 100% Complete & Verified
             </div>
             <p className="text-xs text-success/80 mt-0.5">
-              All required fields and documents have been provided. You can update any section at any time.
+              All required fields and documents have been provided. You can update any section at
+              any time.
             </p>
           </div>
         </div>
@@ -141,4 +142,3 @@ export function SmartAlertBanner({
 
   return null;
 }
-

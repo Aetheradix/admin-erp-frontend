@@ -8,11 +8,7 @@ interface InvoiceSummarySectionProps {
   updateField: <K extends keyof InvoiceForm>(field: K, value: InvoiceForm[K]) => void;
 }
 
-export function InvoiceSummarySection({
-  form,
-  totals,
-  updateField,
-}: InvoiceSummarySectionProps) {
+export function InvoiceSummarySection({ form, totals, updateField }: InvoiceSummarySectionProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

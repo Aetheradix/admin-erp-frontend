@@ -96,10 +96,13 @@ export const mapAttendanceRecord = (record: Record<string, unknown>): Attendance
     work_mode: workMode,
     is_wfh: isWfh,
     check_in_latitude: record.check_in_latitude != null ? Number(record.check_in_latitude) : null,
-    check_in_longitude: record.check_in_longitude != null ? Number(record.check_in_longitude) : null,
+    check_in_longitude:
+      record.check_in_longitude != null ? Number(record.check_in_longitude) : null,
     check_in_location: record.check_in_location ? String(record.check_in_location) : null,
-    check_out_latitude: record.check_out_latitude != null ? Number(record.check_out_latitude) : null,
-    check_out_longitude: record.check_out_longitude != null ? Number(record.check_out_longitude) : null,
+    check_out_latitude:
+      record.check_out_latitude != null ? Number(record.check_out_latitude) : null,
+    check_out_longitude:
+      record.check_out_longitude != null ? Number(record.check_out_longitude) : null,
     check_out_location: record.check_out_location ? String(record.check_out_location) : null,
     device_info: record.device_info ? String(record.device_info) : null,
     remark: record.remark ? String(record.remark) : null,
@@ -346,5 +349,11 @@ export const mapProject = (project: Record<string, unknown>): Project => ({
 
   startDate: project.start_date ? String(project.start_date) : '',
 
-  endDate: project.end_date ? String(project.end_date) : project.endDate ? String(project.endDate) : project.deadline ? String(project.deadline) : undefined,
+  endDate: project.end_date
+    ? String(project.end_date)
+    : project.endDate
+      ? String(project.endDate)
+      : project.deadline
+        ? String(project.deadline)
+        : undefined,
 });

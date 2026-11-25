@@ -9,17 +9,15 @@ interface PersonListItemProps {
   size?: 'sm' | 'md';
 }
 
-export const PersonListItem: React.FC<PersonListItemProps> = React.memo(({
-  user,
-  onClick,
-  size = 'sm',
-}) => (
-  <SharedPersonListItem
-    user={user}
-    onClick={onClick}
-    size={size}
-    color={getDepartmentColor(user.department).text}
-  />
-));
+export const PersonListItem: React.FC<PersonListItemProps> = React.memo(
+  ({ user, onClick, size = 'sm' }) => (
+    <SharedPersonListItem
+      user={user}
+      onClick={onClick}
+      size={size}
+      color={getDepartmentColor(user.department).text}
+    />
+  )
+);
 
 PersonListItem.displayName = 'PersonListItem';

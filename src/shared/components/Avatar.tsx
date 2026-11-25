@@ -44,7 +44,11 @@ export const Avatar = memo(function Avatar({
   return (
     <div className={cn('relative shrink-0', className)}>
       {imageUrl ? (
-        <div className={cn(SIZE_MAP[size], 'rounded-full overflow-hidden border-2 border-white shadow-md')}>
+        <div
+          className={cn(
+            SIZE_MAP[size],
+            'rounded-full overflow-hidden border-2 border-white shadow-md'
+          )}>
           <img src={imageUrl} alt={alt ?? label} className="w-full h-full object-cover" />
         </div>
       ) : (

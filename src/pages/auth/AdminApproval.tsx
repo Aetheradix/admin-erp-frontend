@@ -20,7 +20,9 @@ const AdminApproval = () => {
   const handleConfirmApproval = async () => {
     if (isInvalidToken) {
       setStatus('error');
-      setMessage('Invalid or malformed approval token. Token must be a high-entropy security hash.');
+      setMessage(
+        'Invalid or malformed approval token. Token must be a high-entropy security hash.'
+      );
       return;
     }
 
@@ -60,7 +62,8 @@ const AdminApproval = () => {
                 Authorize Administrator Privilege
               </h2>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                You have arrived via an administrator activation link. Please click below to confirm and activate system privileges.
+                You have arrived via an administrator activation link. Please click below to confirm
+                and activate system privileges.
               </p>
             </div>
             <Button

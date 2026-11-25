@@ -78,12 +78,7 @@ export interface ChangedField {
 }
 
 export type UsersTab =
-  | 'All Users'
-  | 'Active'
-  | 'Away'
-  | 'Inactive'
-  | 'Invite Audit Log'
-  | 'System Audit Trail';
+  'All Users' | 'Active' | 'Away' | 'Inactive' | 'Invite Audit Log' | 'System Audit Trail';
 
 export interface InvitationCounts {
   all: number;

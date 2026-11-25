@@ -22,9 +22,7 @@ export const useBlogs = (id?: string) => {
   } = useGetBlogQuery(id as string, { skip: !id });
 
   // Fallback to list cache if single query isn't populated
-  const blog =
-    fetchedBlog ||
-    (id ? blogs.find((b) => String(b.id) === String(id)) : undefined);
+  const blog = fetchedBlog || (id ? blogs.find((b) => String(b.id) === String(id)) : undefined);
 
   // Mutations
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();

@@ -7,7 +7,12 @@ interface RolesStatsProps {
   permissionCount: number;
 }
 
-export function RolesStats({ totalRoles, systemRoles, customRoles, permissionCount }: RolesStatsProps) {
+export function RolesStats({
+  totalRoles,
+  systemRoles,
+  customRoles,
+  permissionCount,
+}: RolesStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-sm flex items-center justify-between">

@@ -41,7 +41,9 @@ export function useUserActions({
     setConfirmModal({ open: true, ...next });
   };
 
-  const handleExecuteRevokeInvitation = async (target: NonNullable<ConfirmModalState['targetInvitation']>) => {
+  const handleExecuteRevokeInvitation = async (
+    target: NonNullable<ConfirmModalState['targetInvitation']>
+  ) => {
     try {
       await revokeSystemInvitation(target.id).unwrap();
       message.warning(`Invitation for ${target.email} has been revoked and access invalidated.`);

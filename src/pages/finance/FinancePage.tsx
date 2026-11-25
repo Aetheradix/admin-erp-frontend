@@ -7,10 +7,7 @@ import { FinanceStats } from './components/FinanceStats';
 import { ReimbursementCard } from './components/ReimbursementCard';
 import { FinanceForm } from './components/FinanceForm';
 import { useFinancePage } from './hooks/useFinancePage';
-import {
-  REIMBURSEMENT_CATEGORIES,
-  REIMBURSEMENT_STATUSES,
-} from './reimbursements/constants';
+import { REIMBURSEMENT_CATEGORIES, REIMBURSEMENT_STATUSES } from './reimbursements/constants';
 import { ProgressSpinner } from '@/components/ui/composed/ProgressSpinner';
 import { Receipt } from 'lucide-react';
 

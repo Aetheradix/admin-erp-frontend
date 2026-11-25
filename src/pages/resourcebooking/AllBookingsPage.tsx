@@ -83,7 +83,9 @@ const AllBookingsPage = () => {
         <div>
           <p>{value || '-'}</p>
           {booking.notes && (
-            <p className="text-xs text-muted-foreground italic truncate max-w-xs">{booking.notes}</p>
+            <p className="text-xs text-muted-foreground italic truncate max-w-xs">
+              {booking.notes}
+            </p>
           )}
         </div>
       ),
@@ -93,7 +95,9 @@ const AllBookingsPage = () => {
       key: 'date_time',
       render: (_, booking) => (
         <div>
-          <p className="text-xs font-medium">{new Date(booking.start_datetime).toLocaleDateString()}</p>
+          <p className="text-xs font-medium">
+            {new Date(booking.start_datetime).toLocaleDateString()}
+          </p>
           <p className="text-xs text-muted-foreground">
             {new Date(booking.start_datetime).toLocaleTimeString([], {
               hour: '2-digit',

@@ -36,7 +36,9 @@ export function InvoiceItemsTable({ items }: InvoiceItemsTableProps) {
               <td style={{ padding: '12px', textAlign: 'right' }}>
                 {formatInvoiceCurrency(item.rate)}
               </td>
-              <td style={{ padding: '12px', textAlign: 'right' }}>{formatInvoiceCurrency(amount)}</td>
+              <td style={{ padding: '12px', textAlign: 'right' }}>
+                {formatInvoiceCurrency(amount)}
+              </td>
             </tr>
           );
         })}

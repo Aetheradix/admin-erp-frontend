@@ -128,12 +128,19 @@ export function DayWiseApprovalTable({
     });
   }, [dateRange, serverDays, request.day_approvals, request.id]);
 
-  const pendingDays = useMemo(() => displayRows.filter((d) => d.status === 'Pending'), [displayRows]);
+  const pendingDays = useMemo(
+    () => displayRows.filter((d) => d.status === 'Pending'),
+    [displayRows]
+  );
   const overallStatus = useMemo(() => computeOverallStatus(displayRows), [displayRows]);
 
   const actionLoading = isApproving || isRejecting;
 
-  const openActionDialog = (date: string, type: 'Approved' | 'Rejected', isChangeDecision = false) => {
+  const openActionDialog = (
+    date: string,
+    type: 'Approved' | 'Rejected',
+    isChangeDecision = false
+  ) => {
     const existing = displayRows.find((d) => d.date === date);
     setActionDialog({
       visible: true,
@@ -192,7 +199,8 @@ export function DayWiseApprovalTable({
       onDecisionChange?.();
     } catch (err: unknown) {
       const msg =
-        (err as { data?: { message?: string } })?.data?.message || 'Action failed. Please try again.';
+        (err as { data?: { message?: string } })?.data?.message ||
+        'Action failed. Please try again.';
       showToast({ severity: 'error', summary: 'Error', detail: msg, life: 4000 });
     }
   };
@@ -432,7 +440,9 @@ export function DayWiseApprovalTable({
                   <th className="py-3.5 px-4 w-10 text-center">
                     <input
                       type="checkbox"
-                      checked={pendingDays.length > 0 && selectedDates.length === pendingDays.length}
+                      checked={
+                        pendingDays.length > 0 && selectedDates.length === pendingDays.length
+                      }
                       onChange={toggleSelectAllPending}
                       disabled={pendingDays.length === 0}
                       className="rounded border-border-subtle cursor-pointer"
@@ -462,7 +472,8 @@ export function DayWiseApprovalTable({
                 displayRows.map((day) => {
                   const { dateFormatted, dayName } = formatDayComponents(day.date);
                   const statusStyle =
-                    STATUS_CONFIG[day.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.Pending;
+                    STATUS_CONFIG[day.status as keyof typeof STATUS_CONFIG] ??
+                    STATUS_CONFIG.Pending;
                   const isPending = day.status === 'Pending';
                   const isSelected = selectedDates.includes(day.date);
 
@@ -514,7 +525,9 @@ export function DayWiseApprovalTable({
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-start gap-1.5 text-xs text-foreground font-medium">
                               <MessageSquare size={12} className="shrink-0 mt-0.5 text-primary" />
-                              <span className="italic leading-relaxed line-clamp-2">"{day.remark}"</span>
+                              <span className="italic leading-relaxed line-clamp-2">
+                                "{day.remark}"
+                              </span>
                             </div>
                             {day.approver_name && (
                               <span className="text-[10px] text-muted font-bold ml-4">
@@ -555,7 +568,9 @@ export function DayWiseApprovalTable({
                             </div>
                           ) : (
                             <div className="flex items-center justify-end gap-2">
-                              <span className="text-[10px] text-muted font-bold italic">Decided</span>
+                              <span className="text-[10px] text-muted font-bold italic">
+                                Decided
+                              </span>
                               <button
                                 type="button"
                                 disabled={actionLoading}
@@ -608,7 +623,8 @@ export function DayWiseApprovalTable({
         headerClassName="px-6 pt-6 pb-2"
         pt={{
           root: {
-            className: 'rounded-3xl overflow-hidden border border-border-subtle shadow-2xl bg-white',
+            className:
+              'rounded-3xl overflow-hidden border border-border-subtle shadow-2xl bg-white',
           },
           mask: { className: 'backdrop-blur-md bg-black/40' },
         }}>
@@ -650,9 +666,7 @@ export function DayWiseApprovalTable({
             </label>
             <Textarea
               value={actionDialog.remark}
-              onChange={(e) =>
-                setActionDialog((prev) => ({ ...prev, remark: e.target.value }))
-              }
+              onChange={(e) => setActionDialog((prev) => ({ ...prev, remark: e.target.value }))}
               placeholder={
                 actionDialog.type === 'Rejected'
                   ? 'Enter clear reason for rejecting this specific day (e.g. Critical sprint milestone, team coverage needed)...'
@@ -714,7 +728,8 @@ export function DayWiseApprovalTable({
         headerClassName="px-6 pt-6 pb-2"
         pt={{
           root: {
-            className: 'rounded-3xl overflow-hidden border border-border-subtle shadow-2xl bg-white',
+            className:
+              'rounded-3xl overflow-hidden border border-border-subtle shadow-2xl bg-white',
           },
           mask: { className: 'backdrop-blur-md bg-black/40' },
         }}>
@@ -780,7 +795,8 @@ export function DayWiseApprovalTable({
         headerClassName="px-6 pt-6 pb-2"
         pt={{
           root: {
-            className: 'rounded-3xl overflow-hidden border border-border-subtle shadow-2xl bg-white',
+            className:
+              'rounded-3xl overflow-hidden border border-border-subtle shadow-2xl bg-white',
           },
           mask: { className: 'backdrop-blur-md bg-black/40' },
         }}>

@@ -30,7 +30,9 @@ export function JourneyView({
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className={`${stat.bg} rounded-2xl p-4 border border-border-subtle`}>
+          <div
+            key={stat.label}
+            className={`${stat.bg} rounded-2xl p-4 border border-border-subtle`}>
             <div className={`text-2xl font-black ${stat.color}`}>{stat.value}</div>
             <div className="text-xs text-muted font-semibold mt-0.5">{stat.label}</div>
           </div>

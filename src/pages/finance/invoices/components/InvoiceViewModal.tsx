@@ -22,7 +22,13 @@ function getStatusBadgeClass(status?: Invoice['status']): string {
   return 'bg-amber-100 text-amber-800 border border-amber-200';
 }
 
-export function InvoiceViewModal({ open, invoice, onClose, onEdit, onDownload }: InvoiceViewModalProps) {
+export function InvoiceViewModal({
+  open,
+  invoice,
+  onClose,
+  onEdit,
+  onDownload,
+}: InvoiceViewModalProps) {
   return (
     <Modal
       open={open}

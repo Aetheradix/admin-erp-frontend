@@ -99,8 +99,12 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
       key: 'progress',
       width: 140,
       sorter: (a, b) => {
-        const pa = a.progress ?? (a.task_count ? Math.round(((a.completed_task_count ?? 0) / a.task_count) * 100) : 0);
-        const pb = b.progress ?? (b.task_count ? Math.round(((b.completed_task_count ?? 0) / b.task_count) * 100) : 0);
+        const pa =
+          a.progress ??
+          (a.task_count ? Math.round(((a.completed_task_count ?? 0) / a.task_count) * 100) : 0);
+        const pb =
+          b.progress ??
+          (b.task_count ? Math.round(((b.completed_task_count ?? 0) / b.task_count) * 100) : 0);
         return pa - pb;
       },
       render: (_, record) => {
@@ -109,7 +113,8 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
           (record.task_count
             ? Math.round(((record.completed_task_count ?? 0) / record.task_count) * 100)
             : 0);
-        const color = pct >= 100 ? '#52c41a' : pct >= 60 ? '#1677ff' : pct >= 30 ? '#faad14' : '#ff4d4f';
+        const color =
+          pct >= 100 ? '#52c41a' : pct >= 60 ? '#1677ff' : pct >= 30 ? '#faad14' : '#ff4d4f';
         return (
           <div className="w-32">
             <Progress

@@ -2,7 +2,17 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/composed/PageHeader';
 import { Tabs } from '@/components/ui/primitives/Tabs';
-import { Calendar, User, Columns, LayoutGrid, ArrowRight, CheckCircle2, Clock, FolderKanban, Sparkles } from 'lucide-react';
+import {
+  Calendar,
+  User,
+  Columns,
+  LayoutGrid,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  FolderKanban,
+  Sparkles,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
@@ -226,7 +236,8 @@ export function TasksPage() {
       const mapped = realTasksData.map((bt: BackendTask): Task => {
         let mappedStatus: Task['status'] = 'Pending';
         if (bt.task_status === 'Completed' || bt.task_status === 'Done') mappedStatus = 'Done';
-        else if (bt.task_status === 'In Progress' || bt.task_status === 'On-Going') mappedStatus = 'In Progress';
+        else if (bt.task_status === 'In Progress' || bt.task_status === 'On-Going')
+          mappedStatus = 'In Progress';
         else mappedStatus = 'To Do';
 
         return {
@@ -372,7 +383,11 @@ export function TasksPage() {
     // Persist to backend database
     try {
       const backendStatus =
-        form.status === 'Done' ? 'Completed' : form.status === 'In Progress' ? 'On-Going' : 'Pending';
+        form.status === 'Done'
+          ? 'Completed'
+          : form.status === 'In Progress'
+            ? 'On-Going'
+            : 'Pending';
       await createTaskMutation({
         task_title: form.title,
         task_description: finalDescription,
@@ -476,10 +491,11 @@ export function TasksPage() {
               type="button"
               id="kanban-view-btn"
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${viewMode === 'kanban'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                viewMode === 'kanban'
                   ? 'bg-white text-primary shadow-xs'
                   : 'text-muted hover:text-foreground'
-                }`}>
+              }`}>
               <Columns size={14} />
               <span>Kanban Board</span>
             </button>
@@ -487,10 +503,11 @@ export function TasksPage() {
               type="button"
               id="grid-view-btn"
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${viewMode === 'grid'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                viewMode === 'grid'
                   ? 'bg-white text-primary shadow-xs'
                   : 'text-muted hover:text-foreground'
-                }`}>
+              }`}>
               <LayoutGrid size={14} />
               <span>Grid View</span>
             </button>
@@ -547,7 +564,8 @@ export function TasksPage() {
                         </span>
                       </div>
                       <span className="text-[10px] font-medium text-primary/80 bg-primary/5 self-start px-2 py-0.5 rounded-md border border-primary/10">
-                        {projects.find((p) => p.value === task.project)?.label || `Project #${task.project}`}
+                        {projects.find((p) => p.value === task.project)?.label ||
+                          `Project #${task.project}`}
                       </span>
                       <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed line-clamp-2">
                         {task.description}
@@ -555,7 +573,10 @@ export function TasksPage() {
                       <div className="flex items-center justify-between pt-2.5 border-t border-border-subtle/50 text-muted text-xs">
                         <div className="flex items-center gap-1.5">
                           <User size={12} />
-                          <span>{users.find((u) => u.value === task.assignee)?.label || `User #${task.assignee}`}</span>
+                          <span>
+                            {users.find((u) => u.value === task.assignee)?.label ||
+                              `User #${task.assignee}`}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Calendar size={12} />
@@ -637,7 +658,8 @@ export function TasksPage() {
                 </span>
               </div>
               <span className="text-xs font-medium text-primary/80 bg-primary/5 self-start px-3 py-1 rounded">
-                {projects.find((p) => p.value === task.project)?.label || `Project #${task.project}`}
+                {projects.find((p) => p.value === task.project)?.label ||
+                  `Project #${task.project}`}
               </span>
               <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed pt-1 line-clamp-3">
                 {task.description}

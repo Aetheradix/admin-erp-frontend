@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Table,
-  Tag,
-  Select,
-  DatePicker,
-  Button,
-  Tooltip,
-} from 'antd';
+import { Table, Tag, Select, DatePicker, Button, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import {
@@ -41,16 +34,12 @@ const ACTION_TYPE_OPTIONS = [
   { value: 'DEPARTMENT_HIERARCHY_UPDATED', label: 'DEPARTMENT_HIERARCHY_UPDATED' },
 ];
 
-export const HierarchyAuditTrailView: React.FC<HierarchyAuditTrailViewProps> = ({
-  flatUsers,
-}) => {
+export const HierarchyAuditTrailView: React.FC<HierarchyAuditTrailViewProps> = ({ flatUsers }) => {
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(15);
   const [selectedActionType, setSelectedActionType] = useState<string>('');
   const [selectedTargetUser, setSelectedTargetUser] = useState<number | undefined>();
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(
-    null
-  );
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   const queryParams = {
     page,
@@ -139,9 +128,7 @@ export const HierarchyAuditTrailView: React.FC<HierarchyAuditTrailViewProps> = (
           <span className="font-bold text-foreground block">
             {val ? dayjs(val).format('YYYY-MM-DD') : '-'}
           </span>
-          <span className="text-[10px] text-muted">
-            {val ? dayjs(val).format('HH:mm:ss') : ''}
-          </span>
+          <span className="text-[10px] text-muted">{val ? dayjs(val).format('HH:mm:ss') : ''}</span>
         </div>
       ),
     },
@@ -174,9 +161,13 @@ export const HierarchyAuditTrailView: React.FC<HierarchyAuditTrailViewProps> = (
         if (r.action_type === 'BULK_HANDOVER') {
           return (
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="font-medium text-muted">{r.from_manager_name || `ID:${r.from_manager_id}`}</span>
+              <span className="font-medium text-muted">
+                {r.from_manager_name || `ID:${r.from_manager_id}`}
+              </span>
               <ArrowRight size={12} className="text-primary shrink-0" />
-              <span className="font-bold text-foreground">{r.to_manager_name || `ID:${r.to_manager_id}`}</span>
+              <span className="font-bold text-foreground">
+                {r.to_manager_name || `ID:${r.to_manager_id}`}
+              </span>
               <Tag color="orange" className="text-[9px] font-bold border-none ml-1">
                 {r.affected_count} transferred
               </Tag>
@@ -340,4 +331,3 @@ export const HierarchyAuditTrailView: React.FC<HierarchyAuditTrailViewProps> = (
     </div>
   );
 };
-

@@ -6,12 +6,7 @@ export {
   type ChangedField,
 } from './buildChangedFields';
 export { buildQueryParams, buildQueryString, type QueryParamValue } from './buildQueryParams';
-export {
-  buildDayKey,
-  getMonthLayout,
-  shiftMonth,
-  type MonthLayout,
-} from './calendar';
+export { buildDayKey, getMonthLayout, shiftMonth, type MonthLayout } from './calendar';
 export { downloadTextFile } from './downloadFile';
 export { formatCurrency, type FormatCurrencyOptions } from './formatCurrency';
 export {
@@ -34,11 +29,7 @@ export {
   type FormatDateTimeOptions,
   type FormatTimeOptions,
 } from './formatDate';
-export {
-  formatClockTime,
-  formatElapsedMinutes,
-  formatSecondsClock,
-} from './formatDuration';
+export { formatClockTime, formatElapsedMinutes, formatSecondsClock } from './formatDuration';
 export { getInitials, type InitialsOptions } from './getInitials';
 export { countByStatus, filterBySearch, sumField } from './listStats';
 export { createGroupMap, createLookupMap, groupBy, indexBy } from './lookup';

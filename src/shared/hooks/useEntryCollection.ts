@@ -29,7 +29,8 @@ export function useEntryCollection<T>(
   );
 
   const replaceEntry = useCallback(
-    (index: number, entry: T) => commit(entries.map((current, i) => (i === index ? entry : current))),
+    (index: number, entry: T) =>
+      commit(entries.map((current, i) => (i === index ? entry : current))),
     [entries, commit]
   );
 

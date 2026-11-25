@@ -70,7 +70,7 @@ export function formatDatePreset(
 ): string {
   if (preset === 'iso') {
     const date = parseDate(input);
-    return date ? toDateInputValue(date) : fallback ?? FALLBACK.EMPTY;
+    return date ? toDateInputValue(date) : (fallback ?? FALLBACK.EMPTY);
   }
 
   if (preset === 'dayMonth') {

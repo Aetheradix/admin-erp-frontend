@@ -119,7 +119,10 @@ export const getPayrollStatusOverrides = (): Record<string, 'pending' | 'paid'> 
   }
 };
 
-export const savePayrollStatusOverride = (id: string | number, status: 'pending' | 'paid' | 'void') => {
+export const savePayrollStatusOverride = (
+  id: string | number,
+  status: 'pending' | 'paid' | 'void'
+) => {
   try {
     const current = getPayrollStatusOverrides();
     current[String(id)] = status as any;
@@ -152,7 +155,9 @@ export const resolvePayrollStatus = (item: Record<string, any>): 'void' | 'paid'
   }
 
   // 2. Fall back to server payment_status
-  const raw = String(item.payment_status || item.paymentStatus || item.status || '').toLowerCase().trim();
+  const raw = String(item.payment_status || item.paymentStatus || item.status || '')
+    .toLowerCase()
+    .trim();
   if (raw === 'paid') return 'paid';
   return 'pending';
 };
@@ -231,20 +236,18 @@ const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): Payro
       ? item.pay_frequency.charAt(0).toUpperCase() + item.pay_frequency.slice(1)
       : 'Monthly');
 
-  const rawPan = String(
-    item.pan_number || item.panNumber || item.pan || ''
-  ).trim();
+  const rawPan = String(item.pan_number || item.panNumber || item.pan || '').trim();
   const rawAccount = String(
     item.bank_account_number ||
-    item.bankAccountNumber ||
-    item.account_number ||
-    item.accountNumber ||
-    ''
+      item.bankAccountNumber ||
+      item.account_number ||
+      item.accountNumber ||
+      ''
   ).trim();
   const fullAddress = String(
     item.company_address ||
-    item.companyAddress ||
-    'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
+      item.companyAddress ||
+      'F-N 507, Crystal Tower, IBD Kings Park, Bawadia Kalan, Bhopal, MP | 462039'
   );
 
   const rawId = item.id || item.salary_slip_id || item.slip_id;
@@ -282,7 +285,11 @@ const formatApiRecord = (item: Record<string, any>, fallbackSeq?: number): Payro
     employeeCode: item.employee_code || String(item.user_id),
     position: item.designation || item.position || 'N/A',
     department: item.department || 'N/A',
-    accountNumber: rawAccount || (item.bank_account_number && item.bank_account_number !== 'N/A' ? item.bank_account_number : ''),
+    accountNumber:
+      rawAccount ||
+      (item.bank_account_number && item.bank_account_number !== 'N/A'
+        ? item.bank_account_number
+        : ''),
     account_number: rawAccount,
     bankAccountNumber: rawAccount,
     bank_account_number: rawAccount,
@@ -659,7 +666,9 @@ export default function PayrollPage() {
           prev.map((r) => {
             const isMatch =
               (targetId && r.id === targetId) ||
-              (targetEmpCode && r.employeeCode === targetEmpCode && r.monthYear === targetMonthYear) ||
+              (targetEmpCode &&
+                r.employeeCode === targetEmpCode &&
+                r.monthYear === targetMonthYear) ||
               (targetUserId && r.userId === targetUserId && r.monthYear === targetMonthYear);
             if (isMatch) {
               const updatedItem: PayrollRecord = {
@@ -671,7 +680,9 @@ export default function PayrollPage() {
                 paidDays: data.paidDays !== undefined ? Number(data.paidDays) : r.paidDays,
                 lopDays: data.lopDays !== undefined ? Number(data.lopDays) : r.lopDays,
                 totalCompensation:
-                  data.totalCompensation !== undefined && data.totalCompensation !== null && data.totalCompensation !== ''
+                  data.totalCompensation !== undefined &&
+                  data.totalCompensation !== null &&
+                  data.totalCompensation !== ''
                     ? Number(data.totalCompensation)
                     : r.totalCompensation,
                 department: String(data.department || r.department || 'N/A'),
@@ -682,7 +693,9 @@ export default function PayrollPage() {
                 accountNumber: String(data.accountNumber || r.accountNumber || ''),
                 companyName: String(data.companyName || r.companyName || 'AETHERADIX'),
                 companyAddress: String(data.companyAddress || r.companyAddress || ''),
-                authorizedSignatory: String(data.authorizedSignatory || r.authorizedSignatory || 'Seema Srivastava'),
+                authorizedSignatory: String(
+                  data.authorizedSignatory || r.authorizedSignatory || 'Seema Srivastava'
+                ),
                 signatoryRole: String(data.signatoryRole || r.signatoryRole || '(Director)'),
                 hrNote: String(data.hrNote || r.hrNote || ''),
                 paySlipNo: finalSlipNo || r.paySlipNo,
@@ -697,7 +710,9 @@ export default function PayrollPage() {
           prev.map((r) => {
             const isMatch =
               (targetId && r.id === targetId) ||
-              (targetEmpCode && r.employeeCode === targetEmpCode && r.monthYear === targetMonthYear) ||
+              (targetEmpCode &&
+                r.employeeCode === targetEmpCode &&
+                r.monthYear === targetMonthYear) ||
               (targetUserId && r.userId === targetUserId && r.monthYear === targetMonthYear);
             if (isMatch) {
               const updatedItem: PayrollRecord = {
@@ -709,7 +724,9 @@ export default function PayrollPage() {
                 paidDays: data.paidDays !== undefined ? Number(data.paidDays) : r.paidDays,
                 lopDays: data.lopDays !== undefined ? Number(data.lopDays) : r.lopDays,
                 totalCompensation:
-                  data.totalCompensation !== undefined && data.totalCompensation !== null && data.totalCompensation !== ''
+                  data.totalCompensation !== undefined &&
+                  data.totalCompensation !== null &&
+                  data.totalCompensation !== ''
                     ? Number(data.totalCompensation)
                     : r.totalCompensation,
                 department: String(data.department || r.department || 'N/A'),
@@ -720,7 +737,9 @@ export default function PayrollPage() {
                 accountNumber: String(data.accountNumber || r.accountNumber || ''),
                 companyName: String(data.companyName || r.companyName || 'AETHERADIX'),
                 companyAddress: String(data.companyAddress || r.companyAddress || ''),
-                authorizedSignatory: String(data.authorizedSignatory || r.authorizedSignatory || 'Seema Srivastava'),
+                authorizedSignatory: String(
+                  data.authorizedSignatory || r.authorizedSignatory || 'Seema Srivastava'
+                ),
                 signatoryRole: String(data.signatoryRole || r.signatoryRole || '(Director)'),
                 hrNote: String(data.hrNote || r.hrNote || ''),
                 paySlipNo: finalSlipNo || r.paySlipNo,
@@ -740,13 +759,16 @@ export default function PayrollPage() {
           message.success({ content: 'Salary slip updated successfully!', key });
           await Promise.all([refetchSlips(), refetchLogs()]);
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: targetId } }));
+            window.dispatchEvent(
+              new CustomEvent('payroll_data_updated', { detail: { id: targetId } })
+            );
             localStorage.setItem('aether_payroll_last_update', String(Date.now()));
           }
         } catch (apiErr: any) {
           console.error('Backend updateSalarySlip response:', apiErr);
           message.error({
-            content: apiErr?.data?.message || apiErr?.message || 'Failed to update salary slip on server.',
+            content:
+              apiErr?.data?.message || apiErr?.message || 'Failed to update salary slip on server.',
             key,
           });
           throw apiErr;
@@ -820,7 +842,9 @@ export default function PayrollPage() {
           message.success({ content: 'Salary slip deleted successfully!', key });
           await Promise.all([refetchSlips(), refetchLogs()]);
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id } }));
+            window.dispatchEvent(
+              new CustomEvent('payroll_data_updated', { detail: { id: record.id } })
+            );
             localStorage.setItem('aether_payroll_last_update', String(Date.now()));
           }
         } catch (error: any) {
@@ -964,12 +988,23 @@ export default function PayrollPage() {
           message.success({ content: 'Salary slip reactivated successfully.', key });
           await Promise.all([refetchSlips(), refetchLogs()]);
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: 'pending' } }));
-            window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id: record.id, status: 'pending' } }));
+            window.dispatchEvent(
+              new CustomEvent('payroll_data_updated', {
+                detail: { id: record.id, status: 'pending' },
+              })
+            );
+            window.dispatchEvent(
+              new CustomEvent('payroll_status_updated', {
+                detail: { id: record.id, status: 'pending' },
+              })
+            );
             localStorage.setItem('aether_payroll_last_update', String(Date.now()));
           }
         } catch (err: any) {
-          message.error({ content: err?.data?.message || 'Failed to reactivate salary slip.', key });
+          message.error({
+            content: err?.data?.message || 'Failed to reactivate salary slip.',
+            key,
+          });
         }
       },
     });
@@ -1024,8 +1059,14 @@ export default function PayrollPage() {
       message.success({ content: `Salary slip marked as ${newStatus.toUpperCase()}!`, key });
       await Promise.all([refetchSlips(), refetchLogs()]);
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: newStatus } }));
-        window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id: record.id, status: newStatus } }));
+        window.dispatchEvent(
+          new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: newStatus } })
+        );
+        window.dispatchEvent(
+          new CustomEvent('payroll_status_updated', {
+            detail: { id: record.id, status: newStatus },
+          })
+        );
         localStorage.setItem('aether_payroll_last_update', String(Date.now()));
       }
     } catch (err: any) {
@@ -1033,8 +1074,14 @@ export default function PayrollPage() {
       message.success({ content: `Salary slip marked as ${newStatus.toUpperCase()}.`, key });
       await Promise.all([refetchSlips(), refetchLogs()]);
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: newStatus } }));
-        window.dispatchEvent(new CustomEvent('payroll_status_updated', { detail: { id: record.id, status: newStatus } }));
+        window.dispatchEvent(
+          new CustomEvent('payroll_data_updated', { detail: { id: record.id, status: newStatus } })
+        );
+        window.dispatchEvent(
+          new CustomEvent('payroll_status_updated', {
+            detail: { id: record.id, status: newStatus },
+          })
+        );
         localStorage.setItem('aether_payroll_last_update', String(Date.now()));
       }
     }
@@ -1157,10 +1204,11 @@ export default function PayrollPage() {
             <button
               type="button"
               title="Click to toggle status (Pending / Paid)"
-              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition hover:brightness-95 cursor-pointer shadow-2xs ${isPaid
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                }`}>
+              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md transition hover:brightness-95 cursor-pointer shadow-2xs ${
+                isPaid
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+              }`}>
               {isPaid ? (
                 <>
                   <CheckCircle2 size={11} className="text-emerald-600" /> Paid
@@ -1195,8 +1243,9 @@ export default function PayrollPage() {
         return (
           <div className="flex flex-col">
             <span
-              className={`text-sm font-black ${isVoid ? 'text-slate-400 line-through' : 'text-slate-900'
-                }`}>
+              className={`text-sm font-black ${
+                isVoid ? 'text-slate-400 line-through' : 'text-slate-900'
+              }`}>
               ₹{Number(record.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
             {isVoid && (
@@ -1257,31 +1306,31 @@ export default function PayrollPage() {
                 { type: 'divider' },
                 ...(isVoid
                   ? [
-                    {
-                      key: 'unvoid',
-                      label: 'Reactivate (Unmark Void)',
-                      icon: <CheckCircle2 size={15} className="text-emerald-600" />,
-                    },
-                  ]
-                  : [
-                    (record.paymentStatus || '').toLowerCase() === 'paid'
-                      ? {
-                        key: 'markPending',
-                        label: 'Mark as Pending',
-                        icon: <Clock size={15} className="text-amber-600" />,
-                      }
-                      : {
-                        key: 'markPaid',
-                        label: 'Mark as Paid',
+                      {
+                        key: 'unvoid',
+                        label: 'Reactivate (Unmark Void)',
                         icon: <CheckCircle2 size={15} className="text-emerald-600" />,
                       },
-                    {
-                      key: 'void',
-                      label: 'Mark as Void',
-                      icon: <Ban size={15} className="text-rose-600" />,
-                      danger: true,
-                    },
-                  ]),
+                    ]
+                  : [
+                      (record.paymentStatus || '').toLowerCase() === 'paid'
+                        ? {
+                            key: 'markPending',
+                            label: 'Mark as Pending',
+                            icon: <Clock size={15} className="text-amber-600" />,
+                          }
+                        : {
+                            key: 'markPaid',
+                            label: 'Mark as Paid',
+                            icon: <CheckCircle2 size={15} className="text-emerald-600" />,
+                          },
+                      {
+                        key: 'void',
+                        label: 'Mark as Void',
+                        icon: <Ban size={15} className="text-rose-600" />,
+                        danger: true,
+                      },
+                    ]),
                 {
                   key: 'delete',
                   label: 'Delete Salary Slip',
@@ -1387,12 +1436,13 @@ export default function PayrollPage() {
 
         return (
           <span
-            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isVoid
-              ? 'bg-rose-100 text-rose-700 border border-rose-200'
-              : isCreate
-                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                : 'bg-slate-100 text-slate-700'
-              }`}>
+            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+              isVoid
+                ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                : isCreate
+                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  : 'bg-slate-100 text-slate-700'
+            }`}>
             {actionType}
           </span>
         );
@@ -1412,7 +1462,9 @@ export default function PayrollPage() {
       key: 'username',
       width: 170,
       render: (_, record) => (
-        <span className="text-xs text-slate-600 font-semibold">{record.username || record.user || 'System'}</span>
+        <span className="text-xs text-slate-600 font-semibold">
+          {record.username || record.user || 'System'}
+        </span>
       ),
     },
   ];
@@ -1681,7 +1733,9 @@ export default function PayrollPage() {
               prev.filter((log) => {
                 const d = new Date(log.createdAt || log.created_at);
                 if (isNaN(d.getTime())) return true;
-                return !(d.getMonth() + 1 === selectedClearMonth && d.getFullYear() === selectedClearYear);
+                return !(
+                  d.getMonth() + 1 === selectedClearMonth && d.getFullYear() === selectedClearYear
+                );
               })
             );
             refetchLogs();
@@ -1698,8 +1752,9 @@ export default function PayrollPage() {
         cancelButtonProps={{ disabled: isClearingMonth }}>
         <div className="flex flex-col gap-3 py-2 text-sm text-slate-600">
           <p>
-            Select the specific <strong>1 month</strong> of payroll audit logs you wish to permanently clear.
-            All other months remain untouched, ensuring you never lose all 3 months of logs and keeping the other 2 months safely in the system.
+            Select the specific <strong>1 month</strong> of payroll audit logs you wish to
+            permanently clear. All other months remain untouched, ensuring you never lose all 3
+            months of logs and keeping the other 2 months safely in the system.
           </p>
           <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div>
@@ -1709,10 +1764,22 @@ export default function PayrollPage() {
                 onChange={(e) => setSelectedClearMonth(Number(e.target.value))}
                 className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
                 {[
-                  'January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'
+                  'January',
+                  'February',
+                  'March',
+                  'April',
+                  'May',
+                  'June',
+                  'July',
+                  'August',
+                  'September',
+                  'October',
+                  'November',
+                  'December',
                 ].map((m, idx) => (
-                  <option key={idx + 1} value={idx + 1}>{m}</option>
+                  <option key={idx + 1} value={idx + 1}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1723,13 +1790,22 @@ export default function PayrollPage() {
                 onChange={(e) => setSelectedClearYear(Number(e.target.value))}
                 className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
                 {[2024, 2025, 2026, 2027].map((y) => (
-                  <option key={y} value={y}>{y}</option>
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           <p className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-            ⚠️ <strong>Safety note:</strong> This action permanently purges only logs matching <strong>{new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</strong>. Logs outside this month will NOT be affected.
+            ⚠️ <strong>Safety note:</strong> This action permanently purges only logs matching{' '}
+            <strong>
+              {new Date(selectedClearYear, selectedClearMonth - 1).toLocaleString('default', {
+                month: 'long',
+                year: 'numeric',
+              })}
+            </strong>
+            . Logs outside this month will NOT be affected.
           </p>
         </div>
       </Modal>

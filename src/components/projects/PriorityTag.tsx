@@ -8,7 +8,11 @@ interface PriorityTagProps {
   className?: string;
 }
 
-export const PriorityTag: React.FC<PriorityTagProps> = ({ priority, showIcon = true, className = '' }) => {
+export const PriorityTag: React.FC<PriorityTagProps> = ({
+  priority,
+  showIcon = true,
+  className = '',
+}) => {
   const norm = (priority || 'medium').toLowerCase();
 
   let color = 'default';

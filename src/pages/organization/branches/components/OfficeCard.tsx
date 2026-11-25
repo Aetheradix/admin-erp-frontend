@@ -28,12 +28,14 @@ export function OfficeCard({ office, index, canManage, onEdit, onDelete }: Offic
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      className={`bg-surface-elevated rounded-3xl border ${isActive ? 'border-border-subtle' : 'border-border-subtle/50 opacity-70'
-        } shadow-xs p-6 flex flex-col justify-between gap-5 group hover:shadow-md transition-all duration-300 relative overflow-hidden`}>
+      className={`bg-surface-elevated rounded-3xl border ${
+        isActive ? 'border-border-subtle' : 'border-border-subtle/50 opacity-70'
+      } shadow-xs p-6 flex flex-col justify-between gap-5 group hover:shadow-md transition-all duration-300 relative overflow-hidden`}>
       {/* Active Indicator Top Stripe */}
       <div
-        className={`absolute top-0 left-0 right-0 h-1 ${isActive ? 'bg-emerald-500' : 'bg-muted/30'
-          }`}
+        className={`absolute top-0 left-0 right-0 h-1 ${
+          isActive ? 'bg-emerald-500' : 'bg-muted/30'
+        }`}
       />
 
       {/* Header: Name and Status */}
@@ -52,11 +54,14 @@ export function OfficeCard({ office, index, canManage, onEdit, onDelete }: Offic
         </div>
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${isActive
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-              : 'bg-surface-subtle text-muted border border-border-subtle'
-              }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-muted'}`} />
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${
+              isActive
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                : 'bg-surface-subtle text-muted border border-border-subtle'
+            }`}>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-muted'}`}
+            />
             {isActive ? 'Active' : 'Inactive'}
           </span>
           {Boolean(office.is_hq || office.isHq) && (

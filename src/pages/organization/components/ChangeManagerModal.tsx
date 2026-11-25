@@ -113,11 +113,7 @@ export const ChangeManagerModal: React.FC<ChangeManagerModalProps> = ({
       footer={null}
       destroyOnClose
       width={560}>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        className="pt-2">
+      <Form form={form} layout="vertical" onFinish={handleSubmit} className="pt-2">
         {targetUserObj && (
           <div className="mb-4 p-3 rounded-xl bg-surface-subtle border border-border-subtle flex items-center justify-between text-xs">
             <div>
@@ -217,4 +213,3 @@ export const ChangeManagerModal: React.FC<ChangeManagerModalProps> = ({
     </Modal>
   );
 };
-

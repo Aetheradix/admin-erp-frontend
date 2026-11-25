@@ -70,9 +70,7 @@ export function OrgContextMenu({
           className="w-full px-3 py-2 text-left hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2 transition-colors cursor-pointer">
           <ChevronRight
             size={14}
-            className={`text-slate-400 transition-transform ${
-              node.isExpanded ? 'rotate-90' : ''
-            }`}
+            className={`text-slate-400 transition-transform ${node.isExpanded ? 'rotate-90' : ''}`}
           />
           <span>{node.isExpanded ? 'Collapse branch' : 'Expand branch'}</span>
         </button>

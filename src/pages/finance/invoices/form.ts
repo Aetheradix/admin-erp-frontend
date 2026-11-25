@@ -32,7 +32,10 @@ const todayIso = (): string => new Date().toISOString().slice(0, 10);
  * Scans all existing invoices, parses the current year and highest sequential suffix,
  * and increments by 1 with 3-digit zero-padding (e.g. INV-2026-005).
  */
-export function generateNextInvoiceNumber(existingInvoices: Invoice[], targetDate?: string): string {
+export function generateNextInvoiceNumber(
+  existingInvoices: Invoice[],
+  targetDate?: string
+): string {
   let dateObj = new Date();
   if (targetDate) {
     const parsed = new Date(targetDate);
@@ -133,11 +136,7 @@ function resolveItems(parsedData: AnyRecord, raw: AnyRecord, totalAmount: number
   const taxableSubtotal = Math.round(totalAmount / (1 + taxRate / 100));
   return [
     {
-      description: toText(
-        DEFAULT_ITEM_DESCRIPTION,
-        parsedData.description,
-        raw.description
-      ),
+      description: toText(DEFAULT_ITEM_DESCRIPTION, parsedData.description, raw.description),
       quantity: 1,
       rate: taxableSubtotal > 0 ? taxableSubtotal : totalAmount,
     },
@@ -192,7 +191,7 @@ export function getInvoiceFormData(inv: Invoice | BackendInvoiceRecord): Invoice
       parsedData.placeOfSupply,
       parsedData.place_of_supply
     ),
-    status: ((parsedData.status || (inv as Invoice).status || 'Pending') as InvoiceStatus),
+    status: (parsedData.status || (inv as Invoice).status || 'Pending') as InvoiceStatus,
 
     companyName: toText(
       DEFAULT_COMPANY_PROFILE.companyName,

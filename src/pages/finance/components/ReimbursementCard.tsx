@@ -2,10 +2,7 @@ import { FileText, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/shared/utils/formatCurrency';
 import type { Reimbursement } from '../reimbursements/types';
-import {
-  REIMBURSEMENT_STATUS_ICONS,
-  getReimbursementStatusStyles,
-} from '../reimbursements/status';
+import { REIMBURSEMENT_STATUS_ICONS, getReimbursementStatusStyles } from '../reimbursements/status';
 import { FALLBACK } from '@/shared/constants/fallbacks';
 
 interface ReimbursementCardProps {

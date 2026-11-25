@@ -58,7 +58,9 @@ export function OfficeFormDialog({
       contentClassName="p-6 max-h-[85vh] overflow-y-auto"
       headerClassName="px-6 pt-6 pb-2 text-lg font-black tracking-tight border-none"
       pt={{
-        root: { className: 'rounded-[28px] overflow-hidden border-none shadow-2xl bg-surface-elevated' },
+        root: {
+          className: 'rounded-[28px] overflow-hidden border-none shadow-2xl bg-surface-elevated',
+        },
         mask: { className: 'backdrop-blur-md bg-black/40' },
       }}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -126,7 +128,9 @@ export function OfficeFormDialog({
             onChange={(e) => setFormData({ ...formData, is_hq: e.target.checked })}
             className="rounded accent-amber-500 w-4 h-4 cursor-pointer"
           />
-          <label htmlFor="office_hq_checkbox" className="text-xs font-black text-amber-900 dark:text-amber-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-1">
+          <label
+            htmlFor="office_hq_checkbox"
+            className="text-xs font-black text-amber-900 dark:text-amber-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-1">
             <span>Designate as Organization Global Headquarters (Global HQ)</span>
           </label>
         </div>
@@ -140,7 +144,9 @@ export function OfficeFormDialog({
             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
             className="rounded accent-primary w-4 h-4 cursor-pointer"
           />
-          <label htmlFor="office_active_checkbox" className="text-xs font-bold text-foreground cursor-pointer">
+          <label
+            htmlFor="office_active_checkbox"
+            className="text-xs font-bold text-foreground cursor-pointer">
             Office is active for attendance geofence verification
           </label>
         </div>
@@ -157,7 +163,13 @@ export function OfficeFormDialog({
           <Button
             type="submit"
             disabled={isCreating || isUpdating}
-            label={isCreating || isUpdating ? 'Saving...' : editingOffice ? 'Save Changes' : 'Create Office'}
+            label={
+              isCreating || isUpdating
+                ? 'Saving...'
+                : editingOffice
+                  ? 'Save Changes'
+                  : 'Create Office'
+            }
             icon="pi pi-check"
             className="rounded-xl! px-6! bg-primary hover:bg-primary-hover text-white font-black"
           />

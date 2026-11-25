@@ -38,7 +38,7 @@ export function AssignIdDialog({
   onClose,
   onConfirm,
 }: AssignIdDialogProps) {
-  const statusConf = profile ? STATUS_MAP[profile.status] ?? STATUS_MAP.incomplete : null;
+  const statusConf = profile ? (STATUS_MAP[profile.status] ?? STATUS_MAP.incomplete) : null;
 
   return (
     <Dialog
@@ -59,7 +59,11 @@ export function AssignIdDialog({
           <div className="p-3.5 rounded-2xl bg-surface-subtle border border-border-subtle flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0 border border-primary/20">
               {profile.profilePictureUrl ? (
-                <img src={profile.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={profile.profilePictureUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <User size={18} className="text-primary" />
               )}

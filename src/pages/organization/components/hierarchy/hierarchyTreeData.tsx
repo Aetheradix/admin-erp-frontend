@@ -44,8 +44,8 @@ function buildEmployeeNode(
   // Founder/CEO styling is based on designation (job title), not the RBAC role.
   const isFounder = Boolean(
     !node.reporting_manager_id &&
-      (node.designation?.toLowerCase().includes('founder') ||
-        node.designation?.toLowerCase().includes('ceo'))
+    (node.designation?.toLowerCase().includes('founder') ||
+      node.designation?.toLowerCase().includes('ceo'))
   );
   const reports = node.directReports ?? [];
   const hasReports = reports.length > 0;
@@ -89,7 +89,8 @@ function buildEmployeeNode(
               </span>
               {isFounder ? (
                 <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 inline-flex items-center gap-1">
-                  <Crown size={10} className="text-amber-600" /> {node.designation || 'Founder & CEO'}
+                  <Crown size={10} className="text-amber-600" />{' '}
+                  {node.designation || 'Founder & CEO'}
                 </span>
               ) : (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">

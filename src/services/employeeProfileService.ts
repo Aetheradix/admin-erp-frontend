@@ -1108,10 +1108,7 @@ export function isSectionValidAndComplete(
       const p = profile.personal;
       if (!p) return false;
       return Boolean(
-        p.fullName?.trim() &&
-        p.email?.trim() &&
-        p.contactNumber?.trim() &&
-        p.currentAddress?.trim()
+        p.fullName?.trim() && p.email?.trim() && p.contactNumber?.trim() && p.currentAddress?.trim()
       );
     }
     case 'bank': {
@@ -1130,7 +1127,9 @@ export function isSectionValidAndComplete(
       const cleanPan = id.panNumber?.trim() || '';
       const cleanAadhaar = id.aadhaarNumber?.trim().replace(/[\s-]/g, '') || '';
       const hasPan = Boolean(cleanPan && (cleanPan.length === 10 || cleanPan.includes('•')));
-      const hasAadhaar = Boolean(cleanAadhaar && (cleanAadhaar.length === 12 || cleanAadhaar.includes('•')));
+      const hasAadhaar = Boolean(
+        cleanAadhaar && (cleanAadhaar.length === 12 || cleanAadhaar.includes('•'))
+      );
       if (!hasPan || !hasAadhaar) return false;
 
       if (id.passportNumber && id.passportNumber.trim() && !id.passportNumber.includes('•')) {
@@ -1140,29 +1139,37 @@ export function isSectionValidAndComplete(
       return true;
     }
     case 'education': {
-      if (!profile.education || !Array.isArray(profile.education) || profile.education.length === 0) {
+      if (
+        !profile.education ||
+        !Array.isArray(profile.education) ||
+        profile.education.length === 0
+      ) {
         return false;
       }
-      return profile.education.every(
-        (e) => Boolean(e.institution?.trim() && e.degree?.trim())
-      );
+      return profile.education.every((e) => Boolean(e.institution?.trim() && e.degree?.trim()));
     }
     case 'employment': {
       // Optional section: only marked complete if user added valid employment records
-      if (!profile.employment || !Array.isArray(profile.employment) || profile.employment.length === 0) {
+      if (
+        !profile.employment ||
+        !Array.isArray(profile.employment) ||
+        profile.employment.length === 0
+      ) {
         return false;
       }
-      return profile.employment.every(
-        (e) => Boolean(e.employer?.trim() && e.designation?.trim())
-      );
+      return profile.employment.every((e) => Boolean(e.employer?.trim() && e.designation?.trim()));
     }
     case 'certifications': {
       // Optional section: only marked complete if user added valid certifications
-      if (!profile.certifications || !Array.isArray(profile.certifications) || profile.certifications.length === 0) {
+      if (
+        !profile.certifications ||
+        !Array.isArray(profile.certifications) ||
+        profile.certifications.length === 0
+      ) {
         return false;
       }
-      return profile.certifications.every(
-        (c) => Boolean(c.title?.trim() && c.issuingOrganization?.trim())
+      return profile.certifications.every((c) =>
+        Boolean(c.title?.trim() && c.issuingOrganization?.trim())
       );
     }
     default:
@@ -1238,7 +1245,11 @@ export function getIncompleteRequiredSections(
 ): FormSectionConfig[] {
   if (!profile) {
     return formConfig.filter(
-      (s) => !s.hidden && s.id !== 'employment' && s.id !== 'certifications' && s.id !== 'profile_picture'
+      (s) =>
+        !s.hidden &&
+        s.id !== 'employment' &&
+        s.id !== 'certifications' &&
+        s.id !== 'profile_picture'
     );
   }
   return formConfig.filter(
@@ -1288,16 +1299,23 @@ export function getSectionMissingFields(
       const pan = id?.panNumber?.trim() || '';
       const aadhaar = id?.aadhaarNumber?.trim().replace(/[\s-]/g, '') || '';
       const isPanValid = pan.length === 10 || (pan.includes('•') && pan.length >= 7);
-      const isAadhaarValid = aadhaar.length === 12 || (aadhaar.includes('•') && aadhaar.length >= 8);
+      const isAadhaarValid =
+        aadhaar.length === 12 || (aadhaar.includes('•') && aadhaar.length >= 8);
       if (!isPanValid) missing.push('10-character PAN Card Number');
       if (!isAadhaarValid) missing.push('12-digit Aadhaar Number');
       break;
     }
     case 'education': {
-      if (!profile.education || !Array.isArray(profile.education) || profile.education.length === 0) {
+      if (
+        !profile.education ||
+        !Array.isArray(profile.education) ||
+        profile.education.length === 0
+      ) {
         missing.push('At least one Educational Qualification');
       } else {
-        const hasMissing = profile.education.some((e) => !e.institution?.trim() || !e.degree?.trim());
+        const hasMissing = profile.education.some(
+          (e) => !e.institution?.trim() || !e.degree?.trim()
+        );
         if (hasMissing) missing.push('Degree and Institution for all qualifications');
       }
       break;
@@ -1399,8 +1417,6 @@ export function removeDocument(userId: number, documentId: string): void {
   };
   saveEmployeeProfile(updated);
 }
-
-
 
 /**
  * Ensures an employee profile exists for an invited or registered user,
@@ -1672,4 +1688,3 @@ export async function fetchSensitiveVaultDetails(
     return null;
   }
 }
-

@@ -51,7 +51,9 @@ export function PreviewDialog({ visible, sections, onClose }: PreviewDialogProps
                   {sec.fields
                     .filter((f) => !f.hidden)
                     .map((field) => (
-                      <div key={field.key} className={field.type === 'textarea' ? 'col-span-2' : ''}>
+                      <div
+                        key={field.key}
+                        className={field.type === 'textarea' ? 'col-span-2' : ''}>
                         <label className="block text-[11px] font-bold text-foreground mb-1 uppercase tracking-wider">
                           {field.label} {field.required && <span className="text-error">*</span>}
                         </label>

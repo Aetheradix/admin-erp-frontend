@@ -63,7 +63,6 @@ export interface AuditLogEntry {
 const INVITATIONS_STORAGE_KEY = 'aether_user_invitations';
 const AUDIT_LOGS_STORAGE_KEY = 'aether_system_audit_logs';
 
-
 // Helper to notify all listening components that audit logs or invitations changed
 const notifyChange = (event: 'invitations' | 'audit_logs') => {
   broadcastSync(event);

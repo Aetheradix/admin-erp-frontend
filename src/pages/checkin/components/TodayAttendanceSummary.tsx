@@ -197,10 +197,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
           isOnBreak
             ? 'bg-amber-500'
             : isCheckedIn
-            ? isWfhCheckedIn
-              ? 'bg-indigo-500'
-              : 'bg-emerald-500'
-            : 'bg-primary'
+              ? isWfhCheckedIn
+                ? 'bg-indigo-500'
+                : 'bg-emerald-500'
+              : 'bg-primary'
         }`}
       />
 
@@ -214,7 +214,9 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
             {renderStatusBadge()}
           </div>
           <p className="text-xs font-semibold text-muted mt-0.5 flex items-center gap-2">
-            <span>Shift Window: <strong className="text-foreground">{shiftTimingDisplay}</strong></span>
+            <span>
+              Shift Window: <strong className="text-foreground">{shiftTimingDisplay}</strong>
+            </span>
             {isCheckedIn && status?.check_in_location && (
               <>
                 <span>&bull;</span>
@@ -235,13 +237,14 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               <span>
                 GPS: {geoLocation.latitude.toFixed(4)}°, {geoLocation.longitude.toFixed(4)}°
                 {geoLocation.accuracy !== null && (
-                  <span className={`ml-1 font-extrabold ${
-                    geoLocation.accuracy <= 20
-                      ? 'text-emerald-500'
-                      : geoLocation.accuracy <= 50
-                      ? 'text-primary'
-                      : 'text-amber-500'
-                  }`}>
+                  <span
+                    className={`ml-1 font-extrabold ${
+                      geoLocation.accuracy <= 20
+                        ? 'text-emerald-500'
+                        : geoLocation.accuracy <= 50
+                          ? 'text-primary'
+                          : 'text-amber-500'
+                    }`}>
                     ±{Math.round(geoLocation.accuracy)}m
                     {geoLocation.accuracy <= 20 ? ' (High Precision)' : ''}
                   </span>
@@ -253,7 +256,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                 disabled={geoLocation.isFetching}
                 title="Refresh GPS"
                 className="text-muted hover:text-primary transition-colors p-0.5 cursor-pointer">
-                <RefreshCw size={11} className={geoLocation.isFetching ? 'animate-spin text-primary' : ''} />
+                <RefreshCw
+                  size={11}
+                  className={geoLocation.isFetching ? 'animate-spin text-primary' : ''}
+                />
               </button>
             </div>
           ) : geoLocation.error ? (
@@ -273,34 +279,49 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               onClick={requestGeoLocation}
               disabled={geoLocation.isFetching}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-surface-subtle border border-border-subtle text-muted text-[11px] font-bold hover:text-foreground transition-colors cursor-pointer">
-              <Navigation size={12} className={geoLocation.isFetching ? 'animate-spin text-primary' : ''} />
-              <span>{geoLocation.isFetching ? 'Locking High-Accuracy GPS...' : 'Acquire High-Accuracy GPS'}</span>
+              <Navigation
+                size={12}
+                className={geoLocation.isFetching ? 'animate-spin text-primary' : ''}
+              />
+              <span>
+                {geoLocation.isFetching
+                  ? 'Locking High-Accuracy GPS...'
+                  : 'Acquire High-Accuracy GPS'}
+              </span>
             </button>
           )}
           {/* Geofence status badge */}
-          {workMode === 'office' && !isCheckedIn && (
-            isInsideGeofence === true ? (
+          {workMode === 'office' &&
+            !isCheckedIn &&
+            (isInsideGeofence === true ? (
               <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
                 <CheckCircle2 size={12} />
-                <span>Inside geofence · {distanceToOffice !== null ? `${Math.round(distanceToOffice)}m` : ''} from {activeOffice?.name || 'office'}</span>
+                <span>
+                  Inside geofence ·{' '}
+                  {distanceToOffice !== null ? `${Math.round(distanceToOffice)}m` : ''} from{' '}
+                  {activeOffice?.name || 'office'}
+                </span>
               </div>
             ) : isInsideGeofence === false ? (
               <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[11px] font-bold">
                 <AlertTriangle size={12} />
-                <span>Outside zone · {distanceToOffice !== null ? `${Math.round(distanceToOffice)}m` : '?'} from {activeOffice?.name || 'office'} (radius: {activeOffice?.radius ?? '?'}m)</span>
+                <span>
+                  Outside zone ·{' '}
+                  {distanceToOffice !== null ? `${Math.round(distanceToOffice)}m` : '?'} from{' '}
+                  {activeOffice?.name || 'office'} (radius: {activeOffice?.radius ?? '?'}m)
+                </span>
               </div>
             ) : (
               <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[11px] font-bold">
                 <MapPin size={12} />
                 <span>Enable GPS to verify office location</span>
               </div>
-            )
-          )}
+            ))}
         </div>
       </div>
 
       {/* Live Pinpoint Location Strip & Map Drawer */}
-      {(geoLocation.latitude !== null && geoLocation.longitude !== null) && (
+      {geoLocation.latitude !== null && geoLocation.longitude !== null && (
         <div className="bg-surface-subtle/70 rounded-2xl border border-border-subtle p-3.5 space-y-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
@@ -312,7 +333,8 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                   Current Pinpoint Location
                 </span>
                 <span className="text-xs font-bold text-foreground truncate block">
-                  {geoLocation.locationName || `${geoLocation.latitude.toFixed(4)}°, ${geoLocation.longitude.toFixed(4)}°`}
+                  {geoLocation.locationName ||
+                    `${geoLocation.latitude.toFixed(4)}°, ${geoLocation.longitude.toFixed(4)}°`}
                 </span>
               </div>
             </div>
@@ -378,10 +400,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                   isOnBreak
                     ? 'stroke-amber-500'
                     : isCheckedIn
-                    ? isWfhCheckedIn
-                      ? 'stroke-indigo-500'
-                      : 'stroke-emerald-500'
-                    : 'stroke-primary/40'
+                      ? isWfhCheckedIn
+                        ? 'stroke-indigo-500'
+                        : 'stroke-emerald-500'
+                      : 'stroke-primary/40'
                 }`}
                 strokeWidth="10"
                 strokeDasharray={RING_CIRCUMFERENCE}
@@ -427,9 +449,7 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                   <span className="font-mono text-2xl font-black text-foreground tracking-tight">
                     {formatTime(time)}
                   </span>
-                  <span className="text-[10px] font-bold text-muted mt-0.5">
-                    Ready to punch in
-                  </span>
+                  <span className="text-[10px] font-bold text-muted mt-0.5">Ready to punch in</span>
                 </>
               )}
             </div>
@@ -446,15 +466,15 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               {isOnBreak
                 ? 'Break In Progress'
                 : isCheckedIn
-                ? 'Your Shift is Active'
-                : 'Ready to Start Your Workday?'}
+                  ? 'Your Shift is Active'
+                  : 'Ready to Start Your Workday?'}
             </h3>
             <p className="text-xs text-muted font-medium mt-0.5">
               {isOnBreak
                 ? `Taking ${status?.activeBreak?.break_type || 'break'}${status?.activeBreak?.break_note ? `: "${status.activeBreak.break_note}"` : ''}. Resume whenever you're back.`
                 : isCheckedIn
-                ? `Punched in at ${checkInTimeDisplay}. Track breaks or punch out at shift end.`
-                : 'Select your work location mode and punch in to start recording your shift.'}
+                  ? `Punched in at ${checkInTimeDisplay}. Track breaks or punch out at shift end.`
+                  : 'Select your work location mode and punch in to start recording your shift.'}
             </p>
           </div>
 
@@ -469,7 +489,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                     ? 'bg-surface-elevated text-foreground shadow-xs border border-border-subtle'
                     : 'text-muted hover:text-foreground'
                 }`}>
-                <Building size={14} className={workMode === 'office' ? 'text-primary' : 'text-muted'} />
+                <Building
+                  size={14}
+                  className={workMode === 'office' ? 'text-primary' : 'text-muted'}
+                />
                 <span>In-Office</span>
               </button>
               <button
@@ -492,11 +515,16 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               <MapPin size={13} className="text-primary shrink-0" />
               <select
                 value={selectedOfficeId ?? ''}
-                onChange={(e) => setSelectedOfficeId(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  setSelectedOfficeId(e.target.value ? Number(e.target.value) : null)
+                }
                 className="bg-surface-subtle border border-border-subtle rounded-xl px-3 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:border-primary/50 cursor-pointer transition-colors">
                 <option value="">Auto-detect nearest office</option>
                 {offices.map((o) => (
-                  <option key={o.id} value={o.id}>{o.name}{o.address ? ` – ${o.address}` : ''}</option>
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                    {o.address ? ` – ${o.address}` : ''}
+                  </option>
                 ))}
               </select>
             </div>
@@ -518,14 +546,23 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                 {/* Geofence warning when outside */}
                 {workMode === 'office' && isInsideGeofence === false && !isVerifyingGeofence && (
                   <p className="w-full text-[11px] font-bold text-red-500 flex items-center gap-1">
-                    <AlertTriangle size={12} /> You are outside the permitted office zone. Move closer to check in.
+                    <AlertTriangle size={12} /> You are outside the permitted office zone. Move
+                    closer to check in.
                   </p>
                 )}
                 <button
                   type="button"
                   onClick={handleAttendance}
-                  disabled={isLoading || isVerifyingGeofence || (workMode === 'office' && isInsideGeofence === false)}
-                  title={workMode === 'office' && isInsideGeofence === false ? 'You are outside the office geofence' : undefined}
+                  disabled={
+                    isLoading ||
+                    isVerifyingGeofence ||
+                    (workMode === 'office' && isInsideGeofence === false)
+                  }
+                  title={
+                    workMode === 'office' && isInsideGeofence === false
+                      ? 'You are outside the office geofence'
+                      : undefined
+                  }
                   className={`w-full sm:w-auto min-w-[210px] h-13 px-8 rounded-2xl font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-98 transition-all flex items-center justify-center gap-2.5 ${
                     workMode === 'office' && isInsideGeofence === false
                       ? 'bg-red-500/20 border border-red-500/40 text-red-500 cursor-not-allowed shadow-none'
@@ -544,10 +581,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
                     {isVerifyingGeofence
                       ? 'Verifying location...'
                       : workMode === 'wfh'
-                      ? 'Punch In (Remote)'
-                      : workMode === 'office' && isInsideGeofence === false
-                      ? 'Outside Office Zone'
-                      : 'Punch In (Office)'}
+                        ? 'Punch In (Remote)'
+                        : workMode === 'office' && isInsideGeofence === false
+                          ? 'Outside Office Zone'
+                          : 'Punch In (Office)'}
                   </span>
                 </button>
               </>
@@ -682,9 +719,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
             <LogIn size={14} className={isLate ? 'text-amber-500' : 'text-primary'} />
           </div>
           <div className="mt-2">
-            <span className={`text-base sm:text-lg font-black block ${
-              isLate ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'
-            }`}>
+            <span
+              className={`text-base sm:text-lg font-black block ${
+                isLate ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'
+              }`}>
               {checkInTimeDisplay}
             </span>
             <div className="flex items-center gap-1 mt-0.5">
@@ -711,7 +749,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
         <div className="flex flex-col justify-between pt-2 md:pt-0 md:px-3">
           <div className="flex items-center justify-between text-muted">
             <span className="text-[10px] font-black uppercase tracking-wider">Live Session</span>
-            <Activity size={14} className={isCheckedIn ? 'text-emerald-500 animate-pulse' : 'text-muted'} />
+            <Activity
+              size={14}
+              className={isCheckedIn ? 'text-emerald-500 animate-pulse' : 'text-muted'}
+            />
           </div>
           <div className="mt-2">
             <span className="text-base sm:text-lg font-black text-foreground block">
@@ -727,7 +768,10 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
         <div className="flex flex-col justify-between pt-2 md:pt-0 md:px-3">
           <div className="flex items-center justify-between text-muted">
             <span className="text-[10px] font-black uppercase tracking-wider">Breaks</span>
-            <Coffee size={14} className={isOnBreak ? 'text-amber-500 animate-pulse' : 'text-muted'} />
+            <Coffee
+              size={14}
+              className={isOnBreak ? 'text-amber-500 animate-pulse' : 'text-muted'}
+            />
           </div>
           <div className="mt-2">
             <span className="text-base sm:text-lg font-black text-foreground block">
@@ -750,7 +794,9 @@ export const TodayAttendanceSummary: React.FC<TodayAttendanceSummaryProps> = ({
               {netWorkingDisplay}
             </span>
             <span className="text-[10px] font-bold text-muted mt-0.5 block">
-              {checkOutTimeDisplay !== '—' && checkOutTimeDisplay !== 'In Progress' ? `Out: ${checkOutTimeDisplay}` : 'Gross minus breaks'}
+              {checkOutTimeDisplay !== '—' && checkOutTimeDisplay !== 'In Progress'
+                ? `Out: ${checkOutTimeDisplay}`
+                : 'Gross minus breaks'}
             </span>
           </div>
         </div>

@@ -21,11 +21,7 @@ import {
 import { formatDate, parseDateOnly } from '@/utils/date';
 import { cn } from '@/utils/cn';
 import type { AttendanceRequest } from '@/types/models';
-import {
-  generateDateRange,
-  formatDayComponents,
-  type DayApproval,
-} from '@/types/dayApproval';
+import { generateDateRange, formatDayComponents, type DayApproval } from '@/types/dayApproval';
 
 interface RecentRequestsProps {
   requests: AttendanceRequest[];
@@ -56,7 +52,9 @@ export const RecentRequests = ({
   );
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [expandedRequestIds, setExpandedRequestIds] = useState<Record<string | number, boolean>>({});
+  const [expandedRequestIds, setExpandedRequestIds] = useState<Record<string | number, boolean>>(
+    {}
+  );
   const pageSize = 8;
 
   const toggleExpand = (id: string | number, e?: React.MouseEvent) => {
@@ -72,16 +70,17 @@ export const RecentRequests = ({
     return requests.filter((req) => {
       const status = (req.status || '').toLowerCase();
       if (statusFilter !== 'all') {
-        if (statusFilter === 'pending' && !status.includes('pending') && !status.includes('partial')) {
+        if (
+          statusFilter === 'pending' &&
+          !status.includes('pending') &&
+          !status.includes('partial')
+        ) {
           return false;
         }
         if (statusFilter === 'approved' && status !== 'approved') {
           return false;
         }
-        if (
-          statusFilter === 'rejected' &&
-          !status.includes('rejected')
-        ) {
+        if (statusFilter === 'rejected' && !status.includes('rejected')) {
           return false;
         }
       }
@@ -110,7 +109,9 @@ export const RecentRequests = ({
       return s === 'pending' || s.includes('partial');
     }).length;
     const approved = requests.filter((r) => (r.status || '').toLowerCase() === 'approved').length;
-    const rejected = requests.filter((r) => (r.status || '').toLowerCase().includes('rejected')).length;
+    const rejected = requests.filter((r) =>
+      (r.status || '').toLowerCase().includes('rejected')
+    ).length;
     return { all: requests.length, pending, approved, rejected };
   }, [requests]);
 

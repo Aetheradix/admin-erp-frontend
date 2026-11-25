@@ -98,7 +98,8 @@ export default function DeptHeadDashboard() {
       key: 'userName',
       render: (name: string, record: EmployeeWorkload) => (
         <Space>
-          <Avatar style={{ backgroundColor: record.userId === deptHead?.userId ? '#722ed1' : '#1677ff' }}>
+          <Avatar
+            style={{ backgroundColor: record.userId === deptHead?.userId ? '#722ed1' : '#1677ff' }}>
             {name.charAt(0)}
           </Avatar>
           <div>
@@ -114,7 +115,9 @@ export default function DeptHeadDashboard() {
       title: 'Open Tasks',
       dataIndex: 'openTasks',
       key: 'openTasks',
-      render: (val: number) => <Badge count={val} overflowCount={99} style={{ backgroundColor: '#108ee9' }} />,
+      render: (val: number) => (
+        <Badge count={val} overflowCount={99} style={{ backgroundColor: '#108ee9' }} />
+      ),
     },
     {
       title: 'Overdue',
@@ -182,8 +185,7 @@ export default function DeptHeadDashboard() {
           padding: 20,
           borderRadius: 12,
           border: '1px solid #f0f0f0',
-        }}
-      >
+        }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>
             <ApartmentOutlined style={{ color: '#1677ff', marginRight: 8 }} />
@@ -192,7 +194,9 @@ export default function DeptHeadDashboard() {
           <Text type="secondary">{department.description}</Text>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>Department Head</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Department Head
+          </Text>
           <div style={{ fontWeight: 700, fontSize: 16 }}>{deptHead?.userName || 'Alex Mercer'}</div>
           <Tag color="purple">{deptHead?.designation || 'VP'}</Tag>
         </div>
@@ -212,7 +216,9 @@ export default function DeptHeadDashboard() {
       {/* KPI Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+          <Card
+            bordered={false}
+            style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
             <Statistic
               title="Active Staff Tasks"
               value={totalTasks}
@@ -221,7 +227,9 @@ export default function DeptHeadDashboard() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+          <Card
+            bordered={false}
+            style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
             <Statistic
               title="Overdue Tasks"
               value={totalOverdue}
@@ -231,7 +239,9 @@ export default function DeptHeadDashboard() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+          <Card
+            bordered={false}
+            style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
             <Statistic
               title="Completed This Week"
               value={totalCompleted}
@@ -240,7 +250,9 @@ export default function DeptHeadDashboard() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+          <Card
+            bordered={false}
+            style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
             <Statistic
               title="Avg Capacity Utilization"
               value={averageWorkload}
@@ -255,8 +267,7 @@ export default function DeptHeadDashboard() {
       <Card
         title="Department Capacity & Workload Balance"
         bordered={false}
-        style={{ borderRadius: 12, marginBottom: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}
-      >
+        style={{ borderRadius: 12, marginBottom: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
         <Table
           dataSource={workloads}
           columns={workloadColumns}
@@ -270,24 +281,38 @@ export default function DeptHeadDashboard() {
       <Card
         title="Active Task Allocations by Staff Member"
         bordered={false}
-        style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}
-      >
+        style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
         <Collapse
           defaultActiveKey={workloads.slice(0, 2).map((w) => String(w.userId))}
           items={workloads.map((w) => {
-            const memberTasks = tasks.filter((t) => t.assignedToId === w.userId || t.assigneeIds?.includes(w.userId));
+            const memberTasks = tasks.filter(
+              (t) => t.assignedToId === w.userId || t.assigneeIds?.includes(w.userId)
+            );
             return {
               key: String(w.userId),
               label: (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingRight: 16 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                    paddingRight: 16,
+                  }}>
                   <Space>
-                    <Avatar size="small" style={{ backgroundColor: '#1677ff' }}>{w.userName.charAt(0)}</Avatar>
+                    <Avatar size="small" style={{ backgroundColor: '#1677ff' }}>
+                      {w.userName.charAt(0)}
+                    </Avatar>
                     <strong>{w.userName}</strong>
                     <span style={{ color: '#8c8c8c', fontSize: 12 }}>({w.designation})</span>
                   </Space>
                   <Space>
                     <Tag color={getTagColor(w.workloadLabel)}>{w.workloadLabel}</Tag>
-                    <Badge count={memberTasks.length} overflowCount={99} style={{ backgroundColor: '#52c41a' }} />
+                    <Badge
+                      count={memberTasks.length}
+                      overflowCount={99}
+                      style={{ backgroundColor: '#52c41a' }}
+                    />
                   </Space>
                 </div>
               ),
@@ -315,7 +340,9 @@ export default function DeptHeadDashboard() {
                       dataIndex: 'priority',
                       key: 'priority',
                       render: (p: string) => (
-                        <Tag color={p === 'High' ? 'red' : p === 'Medium' ? 'orange' : 'blue'}>{p}</Tag>
+                        <Tag color={p === 'High' ? 'red' : p === 'Medium' ? 'orange' : 'blue'}>
+                          {p}
+                        </Tag>
                       ),
                     },
                     {

@@ -2,10 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { Select } from 'antd';
 import { Dialog } from '@/components/ui/composed/Dialog';
 import { Button } from '@/components/ui/primitives/Button';
-import type {
-  DepartmentHierarchyItem,
-  HierarchyNodeUser,
-} from '@/store/api/organizationApiSlice';
+import type { DepartmentHierarchyItem, HierarchyNodeUser } from '@/store/api/organizationApiSlice';
 import type { EditDepartmentModalState } from './types';
 
 interface EditDepartmentDialogProps {
@@ -36,9 +33,7 @@ export function EditDepartmentDialog({
       {state.department && (
         <div className="space-y-4 pt-2">
           <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Department Name
-            </label>
+            <label className="text-xs font-bold text-foreground block mb-1">Department Name</label>
             <p className="text-sm font-black text-foreground">{state.department.department_name}</p>
           </div>
 

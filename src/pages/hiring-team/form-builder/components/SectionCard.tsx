@@ -114,7 +114,10 @@ export function SectionCard({
             </button>
           </div>
 
-          <button type="button" onClick={handlers.onToggleExpanded} className="p-2 text-muted hover:text-foreground">
+          <button
+            type="button"
+            onClick={handlers.onToggleExpanded}
+            className="p-2 text-muted hover:text-foreground">
             {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
           </button>
         </div>

@@ -35,7 +35,9 @@ export const DepartmentSummary: React.FC<DepartmentSummaryProps> = ({
           </div>
           <div>
             <h3 className="text-base font-black text-foreground">{department.name}</h3>
-            <span className="text-xs text-muted-foreground">{department.description || 'Department'}</span>
+            <span className="text-xs text-muted-foreground">
+              {department.description || 'Department'}
+            </span>
           </div>
         </div>
 
@@ -45,7 +47,9 @@ export const DepartmentSummary: React.FC<DepartmentSummaryProps> = ({
               {department.headUserName.slice(0, 2).toUpperCase()}
             </Avatar>
             <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold">Dept. Head</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                Dept. Head
+              </span>
               <span className="text-xs font-bold text-foreground">{department.headUserName}</span>
             </div>
           </div>

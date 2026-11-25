@@ -7,11 +7,7 @@ export { ContentCard, type ContentCardProps } from './ContentCard';
 export { ContentCardGrid, type ContentCardGridProps } from './ContentCardGrid';
 export { DataTable, type DataTableProps } from './DataTable';
 export { DetailModal, type DetailModalProps } from './DetailModal';
-export {
-  DetailSection,
-  type DetailSectionEmpty,
-  type DetailSectionProps,
-} from './DetailSection';
+export { DetailSection, type DetailSectionEmpty, type DetailSectionProps } from './DetailSection';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ErrorState, type ErrorStateProps } from './ErrorState';
 export { FilterBar, type FilterBarProps } from './FilterBar';
@@ -29,11 +25,7 @@ export { RemarkConfirmModal, type RemarkConfirmModalProps } from './RemarkConfir
 export { RowActions, type RowActionsProps } from './RowActions';
 export { SearchInput, type SearchInputProps } from './SearchInput';
 export { StatCard, type StatCardProps, type StatTone, type StatTrend } from './StatCard';
-export {
-  StatCardGrid,
-  type StatCardGridProps,
-  type StatCardItem,
-} from './StatCardGrid';
+export { StatCardGrid, type StatCardGridProps, type StatCardItem } from './StatCardGrid';
 export { StatusBadge, type StatusBadgeProps } from './StatusBadge';
 export { TabbedLayout, type TabbedLayoutProps } from './TabbedLayout';
 export { TagInput, type TagInputProps } from './TagInput';

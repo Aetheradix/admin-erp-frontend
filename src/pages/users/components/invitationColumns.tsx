@@ -57,8 +57,10 @@ export function buildInvitationColumns({
       title: 'Invited By (Admin)',
       key: 'invitedBy',
       render: (_, record) => {
-        const invName = record.invitedBy?.name || (currentAuthUser?.username || 'Administrator').trim();
-        const invEmail = record.invitedBy?.email || currentAuthUser?.email || 'admin@aetheradix.com';
+        const invName =
+          record.invitedBy?.name || (currentAuthUser?.username || 'Administrator').trim();
+        const invEmail =
+          record.invitedBy?.email || currentAuthUser?.email || 'admin@aetheradix.com';
         const invRole = record.invitedBy?.role || currentAuthUser?.role || 'SuperAdmin';
 
         return (

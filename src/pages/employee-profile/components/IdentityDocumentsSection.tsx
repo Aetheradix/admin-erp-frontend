@@ -2,7 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Shield, Upload, Save, FileText, X, Check, AlertTriangle, Cloud } from 'lucide-react';
 import { Input } from 'antd';
 import type { IdentityDocuments, ProfileDocument } from '@/services/employeeProfileService';
-import { addDocument, uploadSecureDocumentToBackend, PASSPORT_MAX_LENGTH, validatePassportNumber } from '@/services/employeeProfileService';
+import {
+  addDocument,
+  uploadSecureDocumentToBackend,
+  PASSPORT_MAX_LENGTH,
+  validatePassportNumber,
+} from '@/services/employeeProfileService';
 import { showToast } from '@/components/ui/composed/Toast.utils';
 import { isDataModified } from '@/utils/formDraftManager';
 

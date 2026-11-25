@@ -47,7 +47,6 @@ export interface LeaveApprovalHistoryItem {
   approver_image?: string;
 }
 
-
 export interface CalendarHoliday {
   id: number;
   calendar_id: number;
@@ -333,11 +332,11 @@ export const leaveSlice = apiSlice.injectEndpoints({
       { success: boolean; data: ResolvedLeaveApprover },
       number | string | void
     >({
-      query: (userId) => (userId ? `/leaves/approver-for-user/${userId}` : '/leaves/approver-for-me'),
+      query: (userId) =>
+        userId ? `/leaves/approver-for-user/${userId}` : '/leaves/approver-for-me',
       providesTags: ['LeaveApproverConfig', 'User'],
     }),
 
-    
     // ─── Calendars & Holidays ───────────────────────────────────────
     getUpcomingHolidays: builder.query<UpcomingHolidaysResponse, { limit?: number } | void>({
       query: (params) => ({
@@ -345,7 +344,9 @@ export const leaveSlice = apiSlice.injectEndpoints({
         params: params || {},
       }),
       transformResponse: (res: { data?: UpcomingHolidaysResponse } | UpcomingHolidaysResponse) => {
-        return (res as { data?: UpcomingHolidaysResponse })?.data ?? (res as UpcomingHolidaysResponse);
+        return (
+          (res as { data?: UpcomingHolidaysResponse })?.data ?? (res as UpcomingHolidaysResponse)
+        );
       },
       providesTags: ['Leaves'],
     }),
@@ -386,7 +387,10 @@ export const leaveSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Leaves'],
     }),
 
-    updateCalendar: builder.mutation<CompanyCalendar, { id: number | string } & Partial<CompanyCalendar>>({
+    updateCalendar: builder.mutation<
+      CompanyCalendar,
+      { id: number | string } & Partial<CompanyCalendar>
+    >({
       query: ({ id, ...body }) => ({
         url: '/calendars/' + id,
         method: 'PUT',
@@ -403,7 +407,10 @@ export const leaveSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Leaves'],
     }),
 
-    addHoliday: builder.mutation<CalendarHoliday, { calendarId: number | string } & Partial<CalendarHoliday>>({
+    addHoliday: builder.mutation<
+      CalendarHoliday,
+      { calendarId: number | string } & Partial<CalendarHoliday>
+    >({
       query: ({ calendarId, ...body }) => ({
         url: '/calendars/' + calendarId + '/holidays',
         method: 'POST',
@@ -467,7 +474,10 @@ export const leaveSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Leaves'],
     }),
 
-    updateLeavePolicy: builder.mutation<LeavePolicy, { id: number | string } & Partial<LeavePolicy>>({
+    updateLeavePolicy: builder.mutation<
+      LeavePolicy,
+      { id: number | string } & Partial<LeavePolicy>
+    >({
       query: ({ id, ...body }) => ({
         url: '/leaves/policies/' + id,
         method: 'PUT',
@@ -550,5 +560,4 @@ export const {
   useDeleteLeavePolicyMutation,
   useGetMyBalancesQuery,
   usePreviewLeaveDeductionMutation,
-
 } = leaveSlice;

@@ -60,7 +60,10 @@ export default function AssignmentPermissionsPage() {
       title: 'Allowed Assignment Scope',
       dataIndex: 'canAssignScope',
       key: 'canAssignScope',
-      render: (scope: AssignmentPermissionRule['canAssignScope'], record: AssignmentPermissionRule) => (
+      render: (
+        scope: AssignmentPermissionRule['canAssignScope'],
+        record: AssignmentPermissionRule
+      ) => (
         <Select
           value={scope}
           onChange={(val) => handleScopeChange(record.id, val)}
@@ -106,7 +109,11 @@ export default function AssignmentPermissionsPage() {
       title: 'Policy Guidance',
       dataIndex: 'notes',
       key: 'notes',
-      render: (notes: string) => <Text type="secondary" style={{ fontSize: 12 }}>{notes}</Text>,
+      render: (notes: string) => (
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          {notes}
+        </Text>
+      ),
     },
     {
       title: 'Action',
@@ -117,8 +124,7 @@ export default function AssignmentPermissionsPage() {
           size="small"
           icon={<SaveOutlined />}
           loading={savingId === record.id}
-          onClick={() => handleSave(record)}
-        >
+          onClick={() => handleSave(record)}>
           Save
         </Button>
       ),
@@ -133,7 +139,8 @@ export default function AssignmentPermissionsPage() {
           Smart Task Assignment & Governance Permissions
         </Title>
         <Paragraph type="secondary">
-          Configure which organizational roles can assign tasks, restrict cross-department delegation, and enforce supervisor sign-off rules.
+          Configure which organizational roles can assign tasks, restrict cross-department
+          delegation, and enforce supervisor sign-off rules.
         </Paragraph>
       </div>
 
@@ -146,13 +153,7 @@ export default function AssignmentPermissionsPage() {
       />
 
       <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-        <Table
-          dataSource={rules}
-          columns={columns}
-          rowKey="id"
-          pagination={false}
-          size="middle"
-        />
+        <Table dataSource={rules} columns={columns} rowKey="id" pagination={false} size="middle" />
       </Card>
     </div>
   );

@@ -7,10 +7,7 @@ interface SkillsTabProps {
   skills: string[];
 }
 
-export const SkillsTab: React.FC<SkillsTabProps> = React.memo(({
-  user,
-  skills,
-}) => {
+export const SkillsTab: React.FC<SkillsTabProps> = React.memo(({ user, skills }) => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-in fade-in duration-150">
       <div className="space-y-4">
@@ -33,8 +30,8 @@ export const SkillsTab: React.FC<SkillsTabProps> = React.memo(({
             Corporate Governance & Policy
           </span>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Authorized to access corporate ERP modules per organization security policy.
-            Leaves and WFH requests route through designated hierarchical manager.
+            Authorized to access corporate ERP modules per organization security policy. Leaves and
+            WFH requests route through designated hierarchical manager.
           </p>
         </div>
       </div>
@@ -47,12 +44,17 @@ export const SkillsTab: React.FC<SkillsTabProps> = React.memo(({
           <div className="flex flex-wrap gap-1.5">
             {(skills.length > 0
               ? skills
-              : ['React & TypeScript', 'Node.js Backend', 'System Architecture', 'Agile / Scrum', 'Enterprise Workflows']
+              : [
+                  'React & TypeScript',
+                  'Node.js Backend',
+                  'System Architecture',
+                  'Agile / Scrum',
+                  'Enterprise Workflows',
+                ]
             ).map((skill) => (
               <span
                 key={skill}
-                className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-[#0078d4]/10 hover:text-[#0078d4] text-slate-700 font-semibold text-[11px] border border-slate-200 transition-colors"
-              >
+                className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-[#0078d4]/10 hover:text-[#0078d4] text-slate-700 font-semibold text-[11px] border border-slate-200 transition-colors">
                 {skill}
               </span>
             ))}

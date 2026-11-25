@@ -36,7 +36,12 @@ export const useExpensesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredExpenses = useMemo(
-    () => filterExpenses(expenses, { category: activeCategory, status: activeStatus, search: searchQuery }),
+    () =>
+      filterExpenses(expenses, {
+        category: activeCategory,
+        status: activeStatus,
+        search: searchQuery,
+      }),
     [expenses, activeCategory, activeStatus, searchQuery]
   );
 

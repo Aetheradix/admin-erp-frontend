@@ -162,7 +162,8 @@ export function useVendorSelection({
       } catch (error: unknown) {
         const apiError = error as { data?: { message?: string }; message?: string };
         message.error({
-          content: apiError?.data?.message || apiError?.message || 'Failed to create vendor in database.',
+          content:
+            apiError?.data?.message || apiError?.message || 'Failed to create vendor in database.',
           key: 'vendor-create-error',
         });
       } finally {

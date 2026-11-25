@@ -51,7 +51,9 @@ export function OverviewTab({ profile, formConfig, onNavigate }: OverviewTabProp
                   key={section.id}
                   onClick={() => onNavigate(section.id as ReviewTab)}
                   className={`flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all hover:shadow-xs ${
-                    done ? 'bg-success/5 border-success/25' : 'bg-surface-subtle border-border-subtle'
+                    done
+                      ? 'bg-success/5 border-success/25'
+                      : 'bg-surface-subtle border-border-subtle'
                   }`}>
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center ${done ? 'bg-success/15' : 'bg-surface-subtle border border-border-subtle'}`}>
@@ -81,7 +83,9 @@ export function OverviewTab({ profile, formConfig, onNavigate }: OverviewTabProp
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {buildQuickSummary(profile).map((item) => (
-            <div key={item.label} className="p-3 rounded-xl bg-surface-subtle border border-border-subtle">
+            <div
+              key={item.label}
+              className="p-3 rounded-xl bg-surface-subtle border border-border-subtle">
               <div className="text-[10px] font-bold text-muted uppercase mb-0.5">{item.label}</div>
               <div className="text-xs font-semibold text-foreground">{item.value || '—'}</div>
             </div>

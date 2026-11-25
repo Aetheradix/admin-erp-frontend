@@ -1,11 +1,7 @@
 import type { UserRole } from '@/config/navItems';
 import type { User } from '@/types/auth';
 import type { InviteForm, UserRecord } from '../types';
-import {
-  ADMIN_FALLBACK_EMAIL,
-  ADMIN_FALLBACK_NAME,
-  ADMIN_FALLBACK_ROLE,
-} from '../constants';
+import { ADMIN_FALLBACK_EMAIL, ADMIN_FALLBACK_NAME, ADMIN_FALLBACK_ROLE } from '../constants';
 import { buildOnboardingUrl, getInitials } from '../utils';
 
 interface CreateInvitationPayload {
@@ -29,13 +25,15 @@ type SendInvitationTrigger = (body: { email: string; role: UserRole }) => {
   unwrap: () => Promise<unknown>;
 };
 
-type CreateStaffTrigger = (body: Partial<{
-  name: string;
-  email: string;
-  role: string;
-  department: string;
-  status: string;
-}>) => { unwrap: () => Promise<unknown> };
+type CreateStaffTrigger = (
+  body: Partial<{
+    name: string;
+    email: string;
+    role: string;
+    department: string;
+    status: string;
+  }>
+) => { unwrap: () => Promise<unknown> };
 
 interface DispatchInvitationParams {
   form: InviteForm;

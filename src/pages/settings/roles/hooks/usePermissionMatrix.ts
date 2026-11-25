@@ -1,5 +1,9 @@
 import { message } from 'antd';
-import { useUpdateRoleMutation, type PermissionItem, type RoleItem } from '@/store/api/roleApiSlice';
+import {
+  useUpdateRoleMutation,
+  type PermissionItem,
+  type RoleItem,
+} from '@/store/api/roleApiSlice';
 import { usePermission } from '@/hooks/usePermission';
 
 export function usePermissionMatrix() {

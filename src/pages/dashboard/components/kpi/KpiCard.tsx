@@ -36,11 +36,7 @@ export function KpiCard({ kpi }: { kpi: DashboardKpiItem }) {
         <span className="text-sm sm:text-base font-black text-foreground tracking-tight truncate">
           {kpi.value}
         </span>
-        <span
-          className={cn(
-            'text-[8.5px] font-bold px-1.5 rounded shrink-0',
-            kpi.badgeColor
-          )}>
+        <span className={cn('text-[8.5px] font-bold px-1.5 rounded shrink-0', kpi.badgeColor)}>
           {kpi.subtext}
         </span>
       </div>

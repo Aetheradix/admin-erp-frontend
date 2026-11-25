@@ -93,9 +93,7 @@ function formatSegment(segment: string): string {
   if (/^\d+$/.test(decoded)) {
     return `#${decoded}`;
   }
-  return decoded
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return decoded.replace(/[-_]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function resolveLabel(path: string, segment: string): string {
@@ -119,7 +117,10 @@ function buildBreadcrumbs(pathname: string, search: string): BreadcrumbItem[] {
     const pathUpToHere = `/${segments.slice(0, i + 1).join('/')}`;
 
     // Collapse non-routable intermediate blog ID/edit segments (e.g. /social/blogs/:id/edit or /blogs/edit/:id)
-    if ((prevSeg === 'blogs' && nextSeg === 'edit') || (seg === 'edit' && prevSeg === 'blogs' && nextSeg)) {
+    if (
+      (prevSeg === 'blogs' && nextSeg === 'edit') ||
+      (seg === 'edit' && prevSeg === 'blogs' && nextSeg)
+    ) {
       continue;
     }
 
@@ -219,11 +220,7 @@ export function GlobalBreadcrumb() {
           return (
             <React.Fragment key={`${crumb.to}-${index}`}>
               {index > 0 && (
-                <ChevronRight
-                  size={13}
-                  className="text-muted/45 shrink-0"
-                  aria-hidden="true"
-                />
+                <ChevronRight size={13} className="text-muted/45 shrink-0" aria-hidden="true" />
               )}
               <Link
                 to={crumb.to}
@@ -238,10 +235,7 @@ export function GlobalBreadcrumb() {
                 {isHome && (
                   <Home
                     size={13}
-                    className={cn(
-                      'shrink-0',
-                      crumb.isCurrent ? 'text-primary' : 'text-muted/80'
-                    )}
+                    className={cn('shrink-0', crumb.isCurrent ? 'text-primary' : 'text-muted/80')}
                   />
                 )}
                 <span>{crumb.label}</span>
@@ -280,4 +274,3 @@ export function GlobalBreadcrumb() {
     </div>
   );
 }
-

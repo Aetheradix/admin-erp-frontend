@@ -22,8 +22,7 @@ export function buildSavedInvoice(
   safeItems: InvoiceItem[]
 ): Invoice {
   const { total } = computeInvoiceTotals(safeItems, form.gstRate);
-  const status: InvoiceStatus =
-    form.status || (editingInvoice ? editingInvoice.status : 'Pending');
+  const status: InvoiceStatus = form.status || (editingInvoice ? editingInvoice.status : 'Pending');
 
   const invoice: Invoice = {
     id: form.invoiceNumber.trim(),

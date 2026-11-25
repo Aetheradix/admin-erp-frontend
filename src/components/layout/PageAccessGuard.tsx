@@ -105,7 +105,11 @@ export function PageAccessGuard({ children }: PageAccessGuardProps) {
       defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin'];
     } else if (currentPath.startsWith('/org')) {
       defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'];
-    } else if (currentPath.startsWith('/teams') || currentPath.startsWith('/staff') || currentPath.startsWith('/projects')) {
+    } else if (
+      currentPath.startsWith('/teams') ||
+      currentPath.startsWith('/staff') ||
+      currentPath.startsWith('/projects')
+    ) {
       defaultRoles = ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'];
     } else if (currentPath.startsWith('/settings')) {
       defaultRoles = ['SuperAdmin', 'Admin'];

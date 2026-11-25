@@ -179,7 +179,9 @@ export function TeamsPage() {
       color: form.color,
       status: 'Active',
     };
-    await createTeam(payload).unwrap().catch(() => null);
+    await createTeam(payload)
+      .unwrap()
+      .catch(() => null);
     setShowCreateModal(false);
     setForm(emptyForm);
   };
@@ -193,14 +195,18 @@ export function TeamsPage() {
       description: form.description || undefined,
       manager_id: form.manager_id ? Number(form.manager_id) : undefined,
       color: form.color,
-    }).unwrap().catch(() => null);
+    })
+      .unwrap()
+      .catch(() => null);
     setShowEditModal(false);
     setEditingTeam(null);
   };
 
   const handleDelete = async (team: Team) => {
     if (!window.confirm(`Delete team "${team.name}"? This cannot be undone.`)) return;
-    await deleteTeam(team.id).unwrap().catch(() => null);
+    await deleteTeam(team.id)
+      .unwrap()
+      .catch(() => null);
   };
 
   const teamColumns: ColumnsType<Team> = [
@@ -211,15 +217,13 @@ export function TeamsPage() {
         <div className="flex items-center gap-3 py-1">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-white text-xs shadow-xs"
-            style={{ backgroundColor: team.color }}
-          >
+            style={{ backgroundColor: team.color }}>
             <Users size={18} />
           </div>
           <div className="flex flex-col">
             <span
               onClick={() => navigate(`/teams/${team.id}`)}
-              className="text-sm font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
-            >
+              className="text-sm font-bold text-foreground hover:text-primary cursor-pointer transition-colors">
               {team.name}
             </span>
             {team.description && (
@@ -294,8 +298,7 @@ export function TeamsPage() {
             status === 'Active'
               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               : 'bg-muted/10 text-muted border border-border-subtle'
-          }`}
-        >
+          }`}>
           {status || 'Active'}
         </span>
       ),
@@ -309,8 +312,7 @@ export function TeamsPage() {
           <button
             type="button"
             onClick={() => navigate(`/teams/${team.id}`)}
-            className="text-xs font-bold text-primary hover:underline cursor-pointer px-2 py-1"
-          >
+            className="text-xs font-bold text-primary hover:underline cursor-pointer px-2 py-1">
             View →
           </button>
           {canManage && (
@@ -319,16 +321,14 @@ export function TeamsPage() {
                 type="button"
                 onClick={() => openEdit(team)}
                 className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                title="Edit team"
-              >
+                title="Edit team">
                 <Pencil size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(team)}
                 className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                title="Delete team"
-              >
+                title="Delete team">
                 <Trash2 size={14} />
               </button>
             </>
@@ -439,11 +439,15 @@ export function TeamsPage() {
         title="Teams"
         description="Manage teams across your organization."
         breadcrumbs={[{ label: 'Home', url: '/' }, { label: 'Teams' }]}
-        primaryAction={canManage ? {
-          label: 'Create Team',
-          onClick: openCreate,
-          icon: 'pi pi-plus',
-        } : undefined}
+        primaryAction={
+          canManage
+            ? {
+                label: 'Create Team',
+                onClick: openCreate,
+                icon: 'pi pi-plus',
+              }
+            : undefined
+        }
       />
 
       {/* Stats */}
@@ -456,8 +460,7 @@ export function TeamsPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-white p-6 rounded-xl border border-border-subtle shadow-soft flex flex-col gap-1"
-          >
+            className="bg-white p-6 rounded-xl border border-border-subtle shadow-soft flex flex-col gap-1">
             <span className="text-2xl font-black text-foreground">{stat.value}</span>
             <span className="text-[10px] font-extrabold text-muted uppercase tracking-[0.2em]">
               {stat.label}
@@ -481,8 +484,7 @@ export function TeamsPage() {
                   viewMode === 'table'
                     ? 'bg-white text-foreground shadow-xs'
                     : 'text-muted hover:text-foreground'
-                }`}
-              >
+                }`}>
                 <TableIcon size={14} />
                 Table
               </button>
@@ -493,8 +495,7 @@ export function TeamsPage() {
                   viewMode === 'cards'
                     ? 'bg-white text-foreground shadow-xs'
                     : 'text-muted hover:text-foreground'
-                }`}
-              >
+                }`}>
                 <LayoutGrid size={14} />
                 Cards
               </button>
@@ -502,7 +503,10 @@ export function TeamsPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+              />
               <input
                 type="text"
                 placeholder="Search teams..."
@@ -526,21 +530,21 @@ export function TeamsPage() {
                 selectedDeptFilter === 'ALL'
                   ? 'bg-primary text-white border-primary'
                   : 'bg-surface-subtle text-muted border-transparent hover:text-foreground hover:border-border-subtle'
-              }`}
-            >
+              }`}>
               All
             </button>
             {departmentOptions.map((d) => (
               <button
                 key={d.value}
                 type="button"
-                onClick={() => setSelectedDeptFilter(selectedDeptFilter === d.value ? 'ALL' : d.value)}
+                onClick={() =>
+                  setSelectedDeptFilter(selectedDeptFilter === d.value ? 'ALL' : d.value)
+                }
                 className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide cursor-pointer transition-all border ${
                   selectedDeptFilter === d.value
                     ? 'bg-primary text-white border-primary'
                     : 'bg-surface-subtle text-muted border-transparent hover:text-foreground hover:border-border-subtle'
-                }`}
-              >
+                }`}>
                 {d.label}
               </button>
             ))}
@@ -554,9 +558,7 @@ export function TeamsPage() {
           <span className="font-bold text-sm">
             {searchQuery ? `No teams matching "${searchQuery}"` : 'No teams yet'}
           </span>
-          {!searchQuery && canManage && (
-            <Button label="Create First Team" onClick={openCreate} />
-          )}
+          {!searchQuery && canManage && <Button label="Create First Team" onClick={openCreate} />}
         </div>
       ) : viewMode === 'table' ? (
         <div className="bg-white rounded-2xl border border-border-subtle shadow-soft overflow-hidden p-2">
@@ -581,8 +583,7 @@ export function TeamsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="bg-white rounded-2xl border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300 relative overflow-hidden"
-            >
+              className="bg-white rounded-2xl border border-border-subtle shadow-soft p-8 flex flex-col gap-6 group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
               <div
                 className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl"
                 style={{ backgroundColor: team.color }}
@@ -591,8 +592,7 @@ export function TeamsPage() {
                 <div className="flex items-center gap-4">
                   <div
                     className="w-14 h-14 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: `${team.color}15` }}
-                  >
+                    style={{ backgroundColor: `${team.color}15` }}>
                     <Users size={24} style={{ color: team.color }} />
                   </div>
                   <div>
@@ -608,18 +608,22 @@ export function TeamsPage() {
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); openEdit(team); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEdit(team);
+                      }}
                       className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                      title="Edit team"
-                    >
+                      title="Edit team">
                       <Pencil size={14} />
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(team); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(team);
+                      }}
                       className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                      title="Delete team"
-                    >
+                      title="Delete team">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -633,18 +637,21 @@ export function TeamsPage() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <Users size={13} className="text-muted" />
-                    <span className="text-xs font-bold text-muted">{team.member_count} members</span>
+                    <span className="text-xs font-bold text-muted">
+                      {team.member_count} members
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Folder size={13} className="text-muted" />
-                    <span className="text-xs font-bold text-muted">{team.project_count} projects</span>
+                    <span className="text-xs font-bold text-muted">
+                      {team.project_count} projects
+                    </span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => navigate(`/teams/${team.id}`)}
-                  className="text-xs font-bold text-primary hover:underline cursor-pointer"
-                >
+                  className="text-xs font-bold text-primary hover:underline cursor-pointer">
                   View →
                 </button>
               </div>
@@ -656,7 +663,10 @@ export function TeamsPage() {
       {/* Create Team Dialog */}
       <Dialog
         visible={showCreateModal}
-        onHide={() => { setShowCreateModal(false); setForm(emptyForm); }}
+        onHide={() => {
+          setShowCreateModal(false);
+          setForm(emptyForm);
+        }}
         header="Create New Team"
         modal
         className="w-full max-w-xl mx-4"
@@ -665,15 +675,17 @@ export function TeamsPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           {renderTeamFormFields()}
           <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
             <Button
               variant="ghost"
               label="Cancel"
-              onClick={() => { setShowCreateModal(false); setForm(emptyForm); }}
+              onClick={() => {
+                setShowCreateModal(false);
+                setForm(emptyForm);
+              }}
               className="rounded-md!"
             />
             <Button
@@ -690,7 +702,10 @@ export function TeamsPage() {
       {/* Edit Team Dialog */}
       <Dialog
         visible={showEditModal}
-        onHide={() => { setShowEditModal(false); setEditingTeam(null); }}
+        onHide={() => {
+          setShowEditModal(false);
+          setEditingTeam(null);
+        }}
         header="Edit Team"
         modal
         className="w-full max-w-xl mx-4"
@@ -699,15 +714,17 @@ export function TeamsPage() {
         pt={{
           root: { className: 'rounded-2xl overflow-hidden border-none shadow-2xl bg-white' },
           mask: { className: 'backdrop-blur-md bg-black/40' },
-        }}
-      >
+        }}>
         <div className="flex flex-col gap-5">
           {renderTeamFormFields()}
           <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
             <Button
               variant="ghost"
               label="Cancel"
-              onClick={() => { setShowEditModal(false); setEditingTeam(null); }}
+              onClick={() => {
+                setShowEditModal(false);
+                setEditingTeam(null);
+              }}
               className="rounded-md!"
             />
             <Button

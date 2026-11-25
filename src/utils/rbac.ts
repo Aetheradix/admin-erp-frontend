@@ -157,7 +157,10 @@ export const getPermissionAliases = (permission: string): string[] => {
 
   // Check in dictionary
   for (const [canonical, aliases] of Object.entries(COMMON_PERMISSION_MAPPINGS)) {
-    if (canonical.toLowerCase() === trimmed.toLowerCase() || aliases.some((a) => a.toLowerCase() === trimmed.toLowerCase())) {
+    if (
+      canonical.toLowerCase() === trimmed.toLowerCase() ||
+      aliases.some((a) => a.toLowerCase() === trimmed.toLowerCase())
+    ) {
       result.add(canonical);
       aliases.forEach((a) => result.add(a));
     }
@@ -197,7 +200,10 @@ export const extractUserRoles = (
 ): Array<{ id: string; name: string; color?: string; permissions?: string[] }> => {
   if (!user) return [];
 
-  const roleMap = new Map<string, { id: string; name: string; color?: string; permissions?: string[] }>();
+  const roleMap = new Map<
+    string,
+    { id: string; name: string; color?: string; permissions?: string[] }
+  >();
   const defaultColors = ['red', 'blue', 'emerald', 'amber', 'indigo', 'rose', 'purple', 'teal'];
 
   const getRoleColor = (roleName: string, index: number) => {
@@ -392,7 +398,9 @@ export const matchesPermission = (
 
   // 3. Known aliases match
   const aliases = getPermissionAliases(reqTrimmed);
-  if (aliases.some((alias) => userPermissions.some((p) => p.toLowerCase() === alias.toLowerCase()))) {
+  if (
+    aliases.some((alias) => userPermissions.some((p) => p.toLowerCase() === alias.toLowerCase()))
+  ) {
     return true;
   }
 
@@ -447,4 +455,3 @@ export const isUserSuperadmin = (user: any, extraRoles: string[] = []): boolean 
     return clean === 'superadmin';
   });
 };
-

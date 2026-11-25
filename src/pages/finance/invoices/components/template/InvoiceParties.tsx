@@ -16,9 +16,7 @@ export function InvoiceParties({ invoice }: InvoicePartiesProps) {
           fontSize: '18px',
           lineHeight: '28px',
         }}>
-        {invoice.companyName && (
-          <p style={{ margin: 0, fontWeight: 700 }}>{invoice.companyName}</p>
-        )}
+        {invoice.companyName && <p style={{ margin: 0, fontWeight: 700 }}>{invoice.companyName}</p>}
 
         {invoice.companyContact && <p style={{ margin: 0 }}>{invoice.companyContact}</p>}
 

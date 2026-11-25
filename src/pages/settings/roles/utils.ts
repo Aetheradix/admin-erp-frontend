@@ -48,7 +48,10 @@ export function findUserFromParam(
   );
 }
 
-export function buildRoleObjects(selectedRoleNames: string[], roles: RoleItem[]): StaffRoleObject[] {
+export function buildRoleObjects(
+  selectedRoleNames: string[],
+  roles: RoleItem[]
+): StaffRoleObject[] {
   return selectedRoleNames.map((name) => {
     const found = roles.find((r) => r.name.toLowerCase() === name.toLowerCase());
     return {

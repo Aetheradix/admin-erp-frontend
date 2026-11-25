@@ -21,5 +21,4 @@ export interface FinanceStats {
 }
 
 export type CreateReimbursementPayload =
-  | FormData
-  | Partial<Omit<Reimbursement, 'id' | 'created_at' | 'updated_at' | 'approved_at'>>;
+  FormData | Partial<Omit<Reimbursement, 'id' | 'created_at' | 'updated_at' | 'approved_at'>>;

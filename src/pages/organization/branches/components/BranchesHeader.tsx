@@ -36,7 +36,9 @@ export function BranchesHeader({
             <Radar size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-foreground tracking-tight">Office Geofencing & Hubs</h2>
+            <h2 className="text-xl font-black text-foreground tracking-tight">
+              Office Geofencing & Hubs
+            </h2>
             <p className="text-xs font-semibold text-muted mt-0.5">
               Register authorized workplace perimeters for accurate physical attendance check-ins
             </p>
@@ -46,12 +48,18 @@ export function BranchesHeader({
 
       <div className="flex items-center gap-3">
         <div className="inline-flex p-1 bg-surface-subtle rounded-2xl border border-border-subtle">
-          <button type="button" onClick={() => onSubTabChange('offices')} className={tabClass(activeSubTab === 'offices')}>
+          <button
+            type="button"
+            onClick={() => onSubTabChange('offices')}
+            className={tabClass(activeSubTab === 'offices')}>
             <Building size={13} />
             <span>Registered Hubs ({officeCount})</span>
           </button>
           {canManage && (
-            <button type="button" onClick={() => onSubTabChange('logs')} className={tabClass(activeSubTab === 'logs')}>
+            <button
+              type="button"
+              onClick={() => onSubTabChange('logs')}
+              className={tabClass(activeSubTab === 'logs')}>
               <Activity size={13} />
               <span>Audit Logs</span>
             </button>

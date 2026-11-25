@@ -120,7 +120,10 @@ export function InvoiceFormModal({
           </button>
         </div>
 
-        <form onSubmit={handleFormSubmit} noValidate className="overflow-y-auto flex-1 p-6 space-y-6">
+        <form
+          onSubmit={handleFormSubmit}
+          noValidate
+          className="overflow-y-auto flex-1 p-6 space-y-6">
           {Object.keys(errors).length > 0 && (
             <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-700 text-sm font-medium">
               <AlertCircle size={20} className="shrink-0 text-red-500" />

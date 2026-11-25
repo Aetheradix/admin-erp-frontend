@@ -77,7 +77,7 @@ export function ClearMonthLogsModal({
           </div>
         </div>
         <p className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-           <strong>Safety note:</strong> This action permanently purges only logs matching{' '}
+          <strong>Safety note:</strong> This action permanently purges only logs matching{' '}
           <strong>{monthLabel}</strong>. Logs outside this month will NOT be affected.
         </p>
       </div>
