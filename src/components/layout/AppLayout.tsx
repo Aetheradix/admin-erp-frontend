@@ -1,4 +1,5 @@
 import Header from '@/components/layout/Header';
+import { GlobalBreadcrumb } from '@/components/layout/GlobalBreadcrumb';
 import Sidebar from '@/components/layout/sidebar/Sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
@@ -231,14 +232,14 @@ export default function AppLayout() {
           location.pathname !== '/profile-completion' && (
             <div
               className={`px-6 py-2.5 flex items-center justify-between gap-4 border-b animate-in slide-in-from-top-2 duration-300 ${empProfile?.status === 'changes_required'
-                  ? 'bg-warning/10 border-warning/30 text-warning'
-                  : 'bg-primary/10 border-primary/20 text-foreground'
+                ? 'bg-warning/10 border-warning/30 text-warning'
+                : 'bg-primary/10 border-primary/20 text-foreground'
                 }`}>
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${empProfile?.status === 'changes_required'
-                      ? 'bg-warning/20 text-warning'
-                      : 'bg-primary/20 text-primary'
+                    ? 'bg-warning/20 text-warning'
+                    : 'bg-primary/20 text-primary'
                     }`}>
                   {empProfile?.status === 'changes_required' ? (
                     <AlertTriangle size={13} />
@@ -266,8 +267,8 @@ export default function AppLayout() {
                   type="button"
                   onClick={() => setIsProfileModalOpen(true)}
                   className={`text-xs font-black px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 ${empProfile?.status === 'changes_required'
-                      ? 'bg-warning text-white hover:bg-warning/90'
-                      : 'bg-primary text-white hover:bg-primary/90'
+                    ? 'bg-warning text-white hover:bg-warning/90'
+                    : 'bg-primary text-white hover:bg-primary/90'
                     }`}>
                   <span>
                     {empProfile?.status === 'changes_required' ? 'Fix Now' : 'Complete Profile'}
@@ -284,6 +285,8 @@ export default function AppLayout() {
               </div>
             </div>
           )}
+
+        <GlobalBreadcrumb />
 
         <main className="app-main flex-1 min-w-0 overflow-y-auto p-3 sm:p-6 lg:p-10 bg-background custom-scrollbar">
           <div

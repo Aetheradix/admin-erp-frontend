@@ -25,7 +25,6 @@ export const PageHeader = ({
   description,
   actions,
   primaryAction,
-  breadcrumbs,
   back,
   className,
 }: PageHeaderProps) => {
@@ -33,25 +32,6 @@ export const PageHeader = ({
 
   return (
     <div className={cn('flex flex-col gap-4 mb-8', className)}>
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-2 text-[10px] uppercase font-black tracking-[0.2em] text-foreground/40 mb-1">
-          {breadcrumbs.map((crumb, i) => (
-            <React.Fragment key={i}>
-              {i > 0 && <span className="opacity-20 translate-y-[1px]">/</span>}
-              {crumb.url ? (
-                <button
-                  onClick={() => navigate(crumb.url!)}
-                  className="hover:text-primary transition-all duration-300 animated-underline active:scale-95">
-                  {crumb.label}
-                </button>
-              ) : (
-                <span className="text-foreground/80">{crumb.label}</span>
-              )}
-            </React.Fragment>
-          ))}
-        </nav>
-      )}
-
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           {back && (
