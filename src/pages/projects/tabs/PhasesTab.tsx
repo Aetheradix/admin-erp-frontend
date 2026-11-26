@@ -1,7 +1,13 @@
 import { useState } from 'react';
-import type { Project, ProjectTask } from '@/types/project';
+import type { Project, ProjectTask, Milestone } from '@/types/project';
 import type { ProjectPhase, PhaseTemplate } from '@/types/phase';
 import { projectService } from '@/services/projectService';
+import {
+  useCreateMilestoneMutation,
+  useUpdateMilestoneMutation,
+  useDeleteMilestoneMutation,
+  useSignoffMilestoneMutation,
+} from '@/store/api/projectApiSlice';
 import {
   Plus,
   ArrowUpDown,
@@ -12,6 +18,10 @@ import {
   Layers,
   Edit2,
   Check,
+  Flag,
+  Lock,
+  ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   Card,
@@ -25,6 +35,7 @@ import {
   Row,
   Col,
   Space,
+  Switch,
   message,
 } from 'antd';
 
@@ -33,17 +44,87 @@ const { TextArea } = Input;
 interface PhasesTabProps {
   project: Project;
   phases: ProjectPhase[];
+  milestones?: Milestone[];
   tasks: ProjectTask[];
   onPhasesUpdated: () => void;
 }
 
-export function PhasesTab({ project, phases, tasks, onPhasesUpdated }: PhasesTabProps) {
+export function PhasesTab({ project, phases, milestones = [], tasks, onPhasesUpdated }: PhasesTabProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [editingPhase, setEditingPhase] = useState<ProjectPhase | null>(null);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [form] = Form.useForm();
+  const [msForm] = Form.useForm();
+
+  const [createMilestoneApi, { isLoading: savingMs }] = useCreateMilestoneMutation();
+  const [updateMilestoneApi] = useUpdateMilestoneMutation();
+  const [deleteMilestoneApi] = useDeleteMilestoneMutation();
+  const [signoffMilestoneApi] = useSignoffMilestoneMutation();
 
   const templates: PhaseTemplate[] = projectService.getPhaseTemplates();
+
+  const handleOpenCreateMilestone = () => {
+    setEditingMilestone(null);
+    msForm.resetFields();
+    msForm.setFieldsValue({
+      targetDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+      isFixed: false,
+      requiresSignoff: false,
+    });
+    setShowMilestoneModal(true);
+  };
+
+  const handleOpenEditMilestone = (ms: Milestone) => {
+    setEditingMilestone(ms);
+    msForm.setFieldsValue({
+      name: ms.name,
+      description: ms.description || '',
+      targetDate: ms.targetDate,
+      isFixed: ms.isFixed,
+      requiresSignoff: ms.requiresSignoff,
+    });
+    setShowMilestoneModal(true);
+  };
+
+  const handleSaveMilestone = async (values: {
+    name: string;
+    description?: string;
+    targetDate?: string;
+    isFixed?: boolean;
+    requiresSignoff?: boolean;
+  }) => {
+    try {
+      if (editingMilestone) {
+        await updateMilestoneApi({
+          id: editingMilestone.id,
+          data: {
+            name: values.name.trim(),
+            description: values.description || '',
+            target_date: values.targetDate,
+            is_fixed: values.isFixed ? 1 : 0,
+            requires_signoff: values.requiresSignoff ? 1 : 0,
+          },
+        }).unwrap();
+        message.success('Milestone updated');
+      } else {
+        await createMilestoneApi({
+          project_id: project.id,
+          name: values.name.trim(),
+          description: values.description || '',
+          target_date: values.targetDate,
+          is_fixed: values.isFixed ? 1 : 0,
+          requires_signoff: values.requiresSignoff ? 1 : 0,
+        }).unwrap();
+        message.success('Milestone created');
+      }
+      setShowMilestoneModal(false);
+      onPhasesUpdated();
+    } catch {
+      message.error('Failed to save milestone');
+    }
+  };
 
   const handleOpenCreate = () => {
     setEditingPhase(null);
@@ -146,8 +227,112 @@ export function PhasesTab({ project, phases, tasks, onPhasesUpdated }: PhasesTab
 
   return (
     <div className="space-y-6">
+      {/* ── Live Project Milestones Section ── */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-black text-foreground flex items-center gap-2">
+              <Flag className="text-primary" size={18} />
+              <span>Project Milestones ({milestones.length})</span>
+            </h2>
+            <p className="text-xs text-muted">
+              Track Fixed & Flexible delivery gates, sign-offs, and milestone completion.
+            </p>
+          </div>
+          <Button
+            type="primary"
+            icon={<Plus size={14} />}
+            onClick={handleOpenCreateMilestone}
+            className="rounded-xl font-bold text-xs">
+            New Milestone
+          </Button>
+        </div>
+
+        {milestones.length === 0 ? (
+          <Card className="rounded-2xl border-border-subtle bg-card text-center py-6">
+            <p className="text-xs text-muted">No milestones yet. Create one to track delivery gates.</p>
+          </Card>
+        ) : (
+          <Row gutter={[12, 12]}>
+            {milestones.map((ms) => {
+              const msTasks = tasks.filter((t) => t.milestoneId === ms.id);
+              const doneTasks = msTasks.filter((t) => t.status === 'Done' || t.status === 'Completed').length;
+              const pct = msTasks.length > 0 ? Math.round((doneTasks / msTasks.length) * 100) : ms.progress ?? 0;
+              const isOverdue =
+                Boolean(ms.targetDate) &&
+                new Date(ms.targetDate) < new Date() &&
+                ms.status !== 'completed';
+
+              return (
+                <Col xs={24} md={12} key={ms.id}>
+                  <Card className="rounded-2xl border-border-subtle bg-card shadow-xs" styles={{ body: { padding: '16px' } }}>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-sm text-foreground">{ms.name}</span>
+                          <Tag color={ms.isFixed ? 'purple' : 'blue'} className="text-[10px] m-0 font-bold">
+                            {ms.isFixed ? (
+                              <span className="flex items-center gap-0.5"><Lock size={9} /> Fixed</span>
+                            ) : (
+                              'Flexible'
+                            )}
+                          </Tag>
+                          {isOverdue && (
+                            <Tag color="error" className="text-[10px] m-0 font-bold flex items-center gap-0.5">
+                              <AlertTriangle size={9} /> Overdue
+                            </Tag>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted block mt-0.5">
+                          Target: {ms.targetDate || 'No date'} · {ms.ownerName || 'Owner'}
+                        </span>
+                      </div>
+                      <Space size={4}>
+                        {ms.requiresSignoff && ms.signoffStatus !== 'approved' && (
+                          <Button
+                            size="small"
+                            type="primary"
+                            icon={<ShieldCheck size={12} />}
+                            onClick={async () => {
+                              try {
+                                await signoffMilestoneApi({ id: ms.id, approval_status: 'approved' }).unwrap();
+                                message.success('Milestone signed off!');
+                                onPhasesUpdated();
+                              } catch {
+                                message.error('Sign-off failed');
+                              }
+                            }}
+                            className="rounded-lg text-xs">
+                            Sign Off
+                          </Button>
+                        )}
+                        <Button size="small" icon={<Edit2 size={12} />} onClick={() => handleOpenEditMilestone(ms)} />
+                        <Popconfirm
+                          title="Delete milestone?"
+                          onConfirm={async () => {
+                            try {
+                              await deleteMilestoneApi(ms.id).unwrap();
+                              message.success('Milestone deleted');
+                              onPhasesUpdated();
+                            } catch {
+                              message.error('Failed to delete milestone');
+                            }
+                          }}>
+                          <Button size="small" danger icon={<Trash2 size={12} />} />
+                        </Popconfirm>
+                      </Space>
+                    </div>
+                    <Progress percent={pct} size="small" status={ms.status === 'completed' ? 'success' : 'active'} />
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        )}
+      </div>
+
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border-subtle">
         <div>
           <h2 className="text-base font-black text-foreground flex items-center gap-2">
             <Layers className="text-primary" size={18} />
@@ -430,6 +615,40 @@ export function PhasesTab({ project, phases, tasks, onPhasesUpdated }: PhasesTab
             </Card>
           ))}
         </div>
+      </Modal>
+
+      {/* Create / Edit Milestone Modal */}
+      <Modal
+        title={editingMilestone ? 'Edit Milestone' : 'Create Milestone'}
+        open={showMilestoneModal}
+        onCancel={() => setShowMilestoneModal(false)}
+        footer={null}
+        destroyOnClose>
+        <Form form={msForm} layout="vertical" onFinish={handleSaveMilestone}>
+          <Form.Item name="name" label="Milestone Name" rules={[{ required: true }]}>
+            <Input placeholder="e.g. Beta Release" className="rounded-xl" />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <TextArea rows={2} placeholder="Deliverables for this milestone..." className="rounded-xl" />
+          </Form.Item>
+          <Form.Item name="targetDate" label="Target Date">
+            <Input type="date" className="rounded-xl" />
+          </Form.Item>
+          <Space size="large" className="mb-4">
+            <Form.Item name="isFixed" valuePropName="checked" className="mb-0">
+              <Switch checkedChildren="Fixed Date" unCheckedChildren="Flexible" />
+            </Form.Item>
+            <Form.Item name="requiresSignoff" valuePropName="checked" className="mb-0">
+              <Switch checkedChildren="Requires Sign-off" unCheckedChildren="No Sign-off" />
+            </Form.Item>
+          </Space>
+          <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
+            <Button onClick={() => setShowMilestoneModal(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={savingMs} className="font-bold">
+              {editingMilestone ? 'Save Changes' : 'Create Milestone'}
+            </Button>
+          </div>
+        </Form>
       </Modal>
     </div>
   );

@@ -158,13 +158,28 @@ export const navItems: NavItem[] = [
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
     children: [
       {
-        label: 'Projects & Pipelines',
+        label: 'All Projects',
         path: '/projects',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
       {
         label: 'Monitoring & My Work',
         path: '/projects/monitoring',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+      {
+        label: 'My Time',
+        path: '/projects/my-time',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+      },
+      {
+        label: 'Approvals',
+        path: '/projects/approvals',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
+      },
+      {
+        label: 'Doc Templates',
+        path: '/projects/doc-templates',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
     ],
@@ -199,21 +214,6 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  // {
-  //   label: 'Channels',
-  //   path: '/channels',
-  //   icon: MessageSquare,
-  //   category: 'MANAGEMENT',
-  //   description: 'Team communication channels',
-  //   roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
-  //   children: [
-  //     {
-  //       label: 'All Channels',
-  //       path: '/channels',
-  //       roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
-  //     },
-  //   ],
-  // },
   {
     label: 'Resource Booking',
     path: '/resource-booking',

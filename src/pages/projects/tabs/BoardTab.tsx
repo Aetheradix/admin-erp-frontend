@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { Project, ProjectTask, Milestone } from '@/types/project';
 import type { ProjectPhase } from '@/types/phase';
 import type { TaskStatus } from '@/types/taskStatus';
-import { Clock, SlidersHorizontal, Plus, Sparkles, CheckSquare } from 'lucide-react';
-import { Button, Select, Tag, Card, Input, Badge, Radio, Space, message } from 'antd';
+import { Clock, SlidersHorizontal, Plus, Sparkles, CheckSquare, AlertTriangle } from 'lucide-react';
+import { Button, Select, Tag, Card, Input, Badge, Radio, Space, Modal, message } from 'antd';
 import { projectService } from '@/services/projectService';
 import { StatusSettingsModal } from '../modals/StatusSettingsModal';
 import { SmartTaskCreateModal } from '../modals/SmartTaskCreateModal';
@@ -30,6 +30,8 @@ export function BoardTab({
   const [showStatusSettings, setShowStatusSettings] = useState(false);
   const [showSmartCreate, setShowSmartCreate] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
+  const [blockingTarget, setBlockingTarget] = useState<{ task: ProjectTask; status: string } | null>(null);
+  const [blockedReasonInput, setBlockedReasonInput] = useState('');
 
   const [createTaskReal] = useCreateTaskRealMutation();
   const [updateTaskReal] = useUpdateTaskRealMutation();
@@ -46,7 +48,12 @@ export function BoardTab({
     return true;
   });
 
-  const handleStatusChange = async (task: ProjectTask, newStatus: string) => {
+  const handleStatusChange = async (task: ProjectTask, newStatus: string, reason?: string) => {
+    if (newStatus === 'Blocked' && !reason?.trim()) {
+      setBlockingTarget({ task, status: newStatus });
+      setBlockedReasonInput(task.remark || '');
+      return;
+    }
     try {
       const backendStatus =
         newStatus === 'Done' || newStatus === 'Completed'
@@ -58,11 +65,21 @@ export function BoardTab({
               : newStatus === 'In Progress'
                 ? 'In Progress'
                 : 'Pending';
-      await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
+      await updateTaskReal({
+        id: task.id,
+        data: {
+          task_status: backendStatus,
+          ...(newStatus === 'Blocked' ? { blocked_reason: reason?.trim() } : {}),
+        },
+      }).unwrap();
     } catch {
       // offline fallback
     }
-    projectService.saveTask({ id: task.id, status: newStatus });
+    projectService.saveTask({
+      id: task.id,
+      status: newStatus,
+      ...(newStatus === 'Blocked' ? { remark: reason?.trim() } : {}),
+    });
     onTasksUpdated();
     message.success(`Task moved to ${newStatus}`);
   };
@@ -265,6 +282,13 @@ export function BoardTab({
                           {task.title}
                         </h4>
 
+                        {task.status === 'Blocked' && task.remark && (
+                          <div className="mb-2 px-2 py-1 rounded bg-red-500/10 border border-red-500/20 text-[10px] text-red-500 flex items-center gap-1">
+                            <AlertTriangle size={10} className="shrink-0" />
+                            <span className="truncate">{task.remark}</span>
+                          </div>
+                        )}
+
                         {taskPhase && (
                           <div className="mb-2">
                             <Tag
@@ -348,6 +372,38 @@ export function BoardTab({
           }
         }}
       />
+
+      {/* Mandatory Blocked Reason Modal */}
+      <Modal
+        title="Blocked Reason Required"
+        open={Boolean(blockingTarget)}
+        onCancel={() => {
+          setBlockingTarget(null);
+          setBlockedReasonInput('');
+        }}
+        onOk={() => {
+          if (!blockedReasonInput.trim()) {
+            message.error('Please enter a reason why this task is blocked.');
+            return;
+          }
+          if (blockingTarget) {
+            handleStatusChange(blockingTarget.task, blockingTarget.status, blockedReasonInput);
+          }
+          setBlockingTarget(null);
+          setBlockedReasonInput('');
+        }}
+        okText="Confirm Blocked"
+        okButtonProps={{ danger: true }}>
+        <p className="text-xs text-muted mb-2">
+          Explain what is blocking <strong>{blockingTarget?.task.title}</strong>:
+        </p>
+        <Input.TextArea
+          rows={3}
+          value={blockedReasonInput}
+          onChange={(e) => setBlockedReasonInput(e.target.value)}
+          placeholder="e.g. Waiting for API credentials from client..."
+        />
+      </Modal>
     </div>
   );
 }

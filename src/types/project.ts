@@ -64,6 +64,7 @@ export interface Milestone {
   id: number;
   projectId: number;
   name: string;
+  description?: string;
   targetDate: string;
   ownerUserId?: number;
   ownerName?: string;
@@ -71,6 +72,7 @@ export interface Milestone {
   requiresSignoff: boolean;
   signoffStatus?: 'pending' | 'approved' | 'rejected';
   status: MilestoneStatus;
+  progress?: number;
   sortOrder: number;
 }
 
@@ -147,6 +149,7 @@ export interface ProjectTask {
   keyNumber: number; // e.g. 1 for CDR-1
   title: string;
   description?: string;
+  remark?: string;
   type: ProjectTaskType;
   status: ProjectTaskStatus;
   statusId?: number;

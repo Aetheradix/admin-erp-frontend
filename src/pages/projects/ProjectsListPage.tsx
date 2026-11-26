@@ -39,7 +39,7 @@ import {
 } from '@/store/api/projectApiSlice';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectTable } from '@/components/projects/ProjectTable';
-import { EmployeeSelector } from '@/components/projects/EmployeeSelector';
+import { UserSelect } from '@/components/projects/UserSelect';
 
 const { TextArea } = Input;
 
@@ -81,7 +81,21 @@ type FormValues = {
   priority?: string;
   project_status?: string;
   progress?: number;
+  project_type?: string;
+  mode?: 'simple' | 'advanced';
+  client_name?: string;
+  estimation_unit?: 'hours' | 'points';
+  auto_shift_mode?: 'strict' | 'flexible' | 'off';
 };
+
+const PROJECT_TYPE_OPTIONS = [
+  { value: 'Software', label: 'Software / Product' },
+  { value: 'Client Delivery', label: 'Client Delivery' },
+  { value: 'Marketing', label: 'Marketing & Growth' },
+  { value: 'Operations', label: 'Operations' },
+  { value: 'Design', label: 'Design & UX' },
+  { value: 'Internal', label: 'Internal Initiative' },
+];
 
 // ─── Stat Card ───────────────────────────────────────────────────────────────
 interface StatCardProps {
@@ -128,6 +142,7 @@ export function ProjectsListPage() {
 
   // Modal state: null = closed, 'create' = new, project = edit
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+  const [configMode, setConfigMode] = useState<'simple' | 'advanced'>('simple');
   const [editingProject, setEditingProject] = useState<BackendProject | null>(null);
   const [form] = Form.useForm<FormValues>();
 
@@ -203,11 +218,16 @@ export function ProjectsListPage() {
   const openCreateModal = useCallback(() => {
     setEditingProject(null);
     setModalMode('create');
+    setConfigMode('simple');
     form.resetFields();
     form.setFieldsValue({
       methodology: 'scrum',
       priority: 'Medium',
       project_status: 'Planning',
+      project_type: 'Software',
+      mode: 'simple',
+      estimation_unit: 'hours',
+      auto_shift_mode: 'flexible',
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(Date.now() + 45 * 86_400_000).toISOString().split('T')[0],
     });
@@ -218,6 +238,8 @@ export function ProjectsListPage() {
     (project: BackendProject) => {
       setEditingProject(project);
       setModalMode('edit');
+      const m = project.mode === 'advanced' ? 'advanced' : 'simple';
+      setConfigMode(m);
       form.resetFields();
       form.setFieldsValue({
         project_name: project.project_name,
@@ -232,6 +254,11 @@ export function ProjectsListPage() {
         priority: project.priority || 'Medium',
         project_status: project.project_status || 'Planning',
         progress: project.progress ?? 0,
+        project_type: project.project_type || 'Software',
+        mode: m,
+        client_name: project.client_name || '',
+        estimation_unit: project.estimation_unit || 'hours',
+        auto_shift_mode: project.auto_shift_mode || 'flexible',
       });
     },
     [form]
@@ -267,6 +294,11 @@ export function ProjectsListPage() {
         health: 'on_track',
         visibility: 'team',
         progress: values.progress ?? 0,
+        project_type: values.project_type || 'Software',
+        mode: configMode,
+        client_name: values.client_name || undefined,
+        estimation_unit: values.estimation_unit || 'hours',
+        auto_shift_mode: values.auto_shift_mode || 'flexible',
       }).unwrap();
 
       closeModal();
@@ -299,6 +331,11 @@ export function ProjectsListPage() {
           methodology: values.methodology,
           priority: values.priority,
           progress: values.progress ?? 0,
+          project_type: values.project_type,
+          mode: configMode,
+          client_name: values.client_name,
+          estimation_unit: values.estimation_unit,
+          auto_shift_mode: values.auto_shift_mode,
         },
       }).unwrap();
 
@@ -540,13 +577,34 @@ export function ProjectsListPage() {
         centered
         width={620}>
         <Form form={form} layout="vertical" onFinish={handleFormFinish} className="pt-2">
-          {/* Row 1: Name */}
-          <Form.Item
-            name="project_name"
-            label="Project Name"
-            rules={[{ required: true, message: 'Please enter a project name' }]}>
-            <Input placeholder="e.g. Customer Portal Redesign" className="rounded-lg" />
-          </Form.Item>
+          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border-subtle">
+            <span className="text-xs font-semibold text-muted">Configuration Mode</span>
+            <Radio.Group
+              value={configMode}
+              onChange={(e) => setConfigMode(e.target.value)}
+              size="small"
+              buttonStyle="solid">
+              <Radio.Button value="simple">Simple Mode</Radio.Button>
+              <Radio.Button value="advanced">Advanced Mode</Radio.Button>
+            </Radio.Group>
+          </div>
+
+          {/* Row 1: Name + Type */}
+          <Row gutter={12}>
+            <Col span={14}>
+              <Form.Item
+                name="project_name"
+                label="Project Name"
+                rules={[{ required: true, message: 'Please enter a project name' }]}>
+                <Input placeholder="e.g. Customer Portal Redesign" className="rounded-lg" />
+              </Form.Item>
+            </Col>
+            <Col span={10}>
+              <Form.Item name="project_type" label="Project Type">
+                <Select options={PROJECT_TYPE_OPTIONS} placeholder="Select type" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           {/* Row 2: Key + Department */}
           <Row gutter={12}>
@@ -577,15 +635,46 @@ export function ProjectsListPage() {
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item name="owner_user_id" label="Project Owner">
-                <EmployeeSelector placeholder="Select owner" />
+                <UserSelect placeholder="Select owner" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="project_manager_id" label="Project Manager">
-                <EmployeeSelector placeholder="Select manager" />
+                <UserSelect placeholder="Select manager" />
               </Form.Item>
             </Col>
           </Row>
+
+          {configMode === 'advanced' && (
+            <Row gutter={12}>
+              <Col span={8}>
+                <Form.Item name="client_name" label="Client Name">
+                  <Input placeholder="e.g. Acme Corp" className="rounded-lg" />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="estimation_unit" label="Estimation Unit">
+                  <Select
+                    options={[
+                      { value: 'hours', label: 'Hours' },
+                      { value: 'points', label: 'Story Points' },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="auto_shift_mode" label="Auto-Shift Mode">
+                  <Select
+                    options={[
+                      { value: 'flexible', label: 'Flexible' },
+                      { value: 'strict', label: 'Strict' },
+                      { value: 'off', label: 'Off' },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
 
           {/* Description */}
           <Form.Item name="description" label="Description">
