@@ -106,16 +106,16 @@ export function BoardTab({
       }).unwrap();
     } catch {
       // offline fallback
+      projectService.saveTask({
+        projectId: project.id,
+        title: quickTitle.trim(),
+        status: statusName,
+        priority: 'Medium',
+        durationDays: 3,
+        estimatePoints: 3,
+        estimateMinutes: 720,
+      });
     }
-    projectService.saveTask({
-      projectId: project.id,
-      title: quickTitle.trim(),
-      status: statusName,
-      priority: 'Medium',
-      durationDays: 3,
-      estimatePoints: 3,
-      estimateMinutes: 720,
-    });
     setQuickTitle('');
     setShowQuickAdd(null);
     onTasksUpdated();

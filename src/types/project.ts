@@ -31,6 +31,8 @@ export interface Project {
   methodology: ProjectMethodology;
   estimationUnit: EstimationUnit;
   autoShiftMode: AutoShiftMode;
+  projectType?: string;
+  mode?: 'simple' | 'advanced';
   color?: string;
   members: ProjectMember[];
   chatChannelId?: number;

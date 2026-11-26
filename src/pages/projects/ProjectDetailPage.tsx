@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FolderKanban,
   Play,
@@ -70,6 +70,8 @@ function mapBackendToLocal(bp: BackendProject): Project {
     methodology: (bp.methodology as Project['methodology']) || 'scrum',
     estimationUnit: bp.estimation_unit || 'hours',
     autoShiftMode: bp.auto_shift_mode || 'flexible',
+    projectType: bp.project_type || 'General',
+    mode: bp.mode || 'simple',
     leadUserId: bp.owner_user_id || bp.project_manager_id || 1,
     startDate: bp.start_date || '',
     targetDate: bp.end_date || bp.deadline || '',
@@ -212,7 +214,11 @@ function mapBackendTaskToProjectTask(bt: BackendTask, _projectKey: string = 'PRJ
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab }, { replace: true });
+  };
   const [showSmartTaskModal, setShowSmartTaskModal] = useState(false);
 
   const projectId = id ? Number(id) : undefined;
@@ -319,22 +325,15 @@ export function ProjectDetailPage() {
     return documents;
   }, [backendDocs, documents]);
 
-  // Merge live backend tasks and local storage tasks
+  // Prefer live backend tasks when backendProject is loaded; fall back to local only when offline
   const tasks: ProjectTask[] = useMemo(() => {
-    const live = backendTasks.map((bt) =>
-      mapBackendTaskToProjectTask(bt, backendProject?.project_key || 'PRJ')
-    );
-    if (live.length === 0) return localTasks;
-    // Combine live and local so newly created items never disappear
-    const liveIds = new Set(live.map((t) => t.id));
-    const merged = [...live];
-    for (const lt of localTasks) {
-      if (!liveIds.has(lt.id)) {
-        merged.push(lt);
-      }
+    if (backendProject) {
+      return backendTasks.map((bt) =>
+        mapBackendTaskToProjectTask(bt, backendProject.project_key || 'PRJ')
+      );
     }
-    return merged;
-  }, [backendTasks, localTasks, backendProject?.project_key]);
+    return localTasks;
+  }, [backendProject, backendTasks, localTasks]);
 
   if (loadingReal) {
     return (
@@ -386,6 +385,23 @@ export function ProjectDetailPage() {
 
   const doneDocsCount = effectiveDocuments.filter((d) => d.status === 'done').length;
   const activeDocsCount = effectiveDocuments.filter((d) => d.status !== 'not_needed').length;
+  const isAdvancedMode = project.mode === 'advanced';
+
+  const handleToggleMode = async () => {
+    const nextMode = isAdvancedMode ? 'simple' : 'advanced';
+    if (backendProject) {
+      try {
+        await updateProject({
+          id: backendProject.project_id,
+          data: { mode: nextMode },
+        }).unwrap();
+        message.success(`Advanced tools ${nextMode === 'advanced' ? 'enabled' : 'turned off'}`);
+        refetchReal();
+      } catch {
+        message.error('Failed to switch project mode');
+      }
+    }
+  };
 
   const tabItems = [
     {
@@ -401,42 +417,10 @@ export function ProjectDetailPage() {
           milestones={effectiveMilestones}
           tasks={tasks}
           sprints={effectiveSprints}
+          documents={effectiveDocuments}
           onTabChange={setActiveTab}
+          onAddTask={() => setShowSmartTaskModal(true)}
           onProjectUpdated={loadData}
-        />
-      ),
-    },
-    {
-      key: 'timeline',
-      label: (
-        <span className="flex items-center gap-1.5 font-bold">
-          <Calendar size={14} /> Timeline (Gantt)
-        </span>
-      ),
-      children: (
-        <TimelineTab
-          project={project}
-          milestones={effectiveMilestones}
-          tasks={tasks}
-          dependencies={effectiveDependencies}
-          onUpdated={loadData}
-        />
-      ),
-    },
-    {
-      key: 'board',
-      label: (
-        <span className="flex items-center gap-1.5 font-bold">
-          <Columns size={14} /> Board
-        </span>
-      ),
-      children: (
-        <BoardTab
-          project={project}
-          tasks={tasks}
-          phases={phases}
-          milestones={effectiveMilestones}
-          onTasksUpdated={loadData}
         />
       ),
     },
@@ -458,38 +442,19 @@ export function ProjectDetailPage() {
       ),
     },
     {
-      key: 'phases',
+      key: 'board',
       label: (
         <span className="flex items-center gap-1.5 font-bold">
-          <Layers size={14} /> Milestones & Phases
-          <Tag className="ml-1 text-[10px] m-0 rounded-full" color="blue">
-            {effectiveMilestones.length || phases.length}
-          </Tag>
+          <Columns size={14} /> Board
         </span>
       ),
       children: (
-        <PhasesTab
+        <BoardTab
           project={project}
+          tasks={tasks}
           phases={phases}
           milestones={effectiveMilestones}
-          tasks={tasks}
-          onPhasesUpdated={loadData}
-        />
-      ),
-    },
-    {
-      key: 'sprints',
-      label: (
-        <span className="flex items-center gap-1.5 font-bold">
-          <Sparkles size={14} /> Sprints
-        </span>
-      ),
-      children: (
-        <SprintsTab
-          project={project}
-          sprints={effectiveSprints}
-          tasks={tasks}
-          onSprintsUpdated={loadData}
+          onTasksUpdated={loadData}
         />
       ),
     },
@@ -507,19 +472,76 @@ export function ProjectDetailPage() {
         <DocumentsTab project={project} documents={effectiveDocuments} onDocumentsUpdated={loadData} />
       ),
     },
-    ...(timeTrackingEnabled
+    ...(isAdvancedMode
       ? [
           {
-            key: 'time',
+            key: 'timeline',
             label: (
               <span className="flex items-center gap-1.5 font-bold">
-                <Clock size={14} /> My Time
+                <Calendar size={14} /> Timeline (Gantt)
               </span>
             ),
-            children: <TimeTab project={project} tasks={tasks} />,
+            children: (
+              <TimelineTab
+                project={project}
+                milestones={effectiveMilestones}
+                tasks={tasks}
+                dependencies={effectiveDependencies}
+                onUpdated={loadData}
+              />
+            ),
           },
+          {
+            key: 'sprints',
+            label: (
+              <span className="flex items-center gap-1.5 font-bold">
+                <Sparkles size={14} /> Sprints
+              </span>
+            ),
+            children: (
+              <SprintsTab
+                project={project}
+                sprints={effectiveSprints}
+                tasks={tasks}
+                onSprintsUpdated={loadData}
+              />
+            ),
+          },
+          ...(timeTrackingEnabled
+            ? [
+                {
+                  key: 'time',
+                  label: (
+                    <span className="flex items-center gap-1.5 font-bold">
+                      <Clock size={14} /> My Time
+                    </span>
+                  ),
+                  children: <TimeTab project={project} tasks={tasks} />,
+                },
+              ]
+            : []),
         ]
       : []),
+    {
+      key: 'phases',
+      label: (
+        <span className="flex items-center gap-1.5 font-bold">
+          <Layers size={14} /> Steps & Milestones
+          <Tag className="ml-1 text-[10px] m-0 rounded-full" color="blue">
+            {effectiveMilestones.length || phases.length}
+          </Tag>
+        </span>
+      ),
+      children: (
+        <PhasesTab
+          project={project}
+          phases={phases}
+          milestones={effectiveMilestones}
+          tasks={tasks}
+          onPhasesUpdated={loadData}
+        />
+      ),
+    },
     // Activity tab — real backend data
     ...(backendProject
       ? [
@@ -554,35 +576,66 @@ export function ProjectDetailPage() {
     <div className="space-y-6">
       {/* Top Breadcrumb & Action Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-subtle">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <Button
             type="text"
             icon={<ArrowLeft size={16} />}
             onClick={() => navigate('/projects')}
-            className="rounded-xl"
+            className="rounded-xl mt-0.5"
             title="Back to Projects"
           />
           <div>
-            <Space size={8} wrap>
-              <span className="font-mono text-xs font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10">
-                {project.key}
+            <div className="text-xs text-muted mb-1 flex items-center gap-1.5">
+              <span
+                className="hover:text-primary cursor-pointer"
+                onClick={() => navigate('/projects')}>
+                Projects
               </span>
-              <h1 className="text-xl font-black text-foreground">{project.name}</h1>
+              <span>/</span>
+              <span className="text-foreground font-semibold">{project.name}</span>
+            </div>
+            <Space size={8} wrap>
+              <h1 className="text-xl font-black text-foreground m-0">{project.name}</h1>
+              <Tag
+                color={
+                  project.health === 'on_track'
+                    ? 'green'
+                    : project.health === 'at_risk'
+                      ? 'gold'
+                      : 'red'
+                }
+                className="text-xs font-semibold m-0">
+                {project.health === 'on_track'
+                  ? 'On track'
+                  : project.health === 'at_risk'
+                    ? 'At risk'
+                    : 'Off track'}
+              </Tag>
               <StatusTag status={project.status} />
-              {project.departmentName && (
-                <Tag color="blue" className="text-xs font-semibold m-0">
-                  {project.departmentName}
-                </Tag>
-              )}
             </Space>
-            <div className="flex items-center gap-3 text-xs text-muted mt-1">
-              <span>{project.description || 'General Project'}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted mt-1">
+              <span>{project.projectType || 'General'}</span>
+              <span>·</span>
+              <span>{project.clientName || 'Internal'}</span>
               {project.ownerName && (
-                <span className="flex items-center gap-1">
-                  · <span className="text-muted-foreground font-medium">Owner:</span>
-                  <AssigneeAvatar name={project.ownerName} size={16} showName />
-                </span>
+                <>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    Lead <AssigneeAvatar name={project.ownerName} size={16} showName />
+                  </span>
+                </>
               )}
+              {(project.startDate || project.targetDate) && (
+                <>
+                  <span>·</span>
+                  <span>
+                    {project.startDate ? String(project.startDate).slice(0, 10) : '—'} →{' '}
+                    {project.targetDate ? String(project.targetDate).slice(0, 10) : 'No end date'}
+                  </span>
+                </>
+              )}
+              <span>·</span>
+              <span>{isAdvancedMode ? 'Advanced mode' : 'Simple mode'}</span>
             </div>
           </div>
         </div>
@@ -590,29 +643,45 @@ export function ProjectDetailPage() {
         {/* Header Action Buttons */}
         <Space wrap>
           <Button
-            type="primary"
-            icon={<Plus size={14} />}
-            onClick={() => setShowSmartTaskModal(true)}
-            className="rounded-xl font-bold text-xs shadow-xs">
-            Add Task
+            onClick={() => setActiveTab('documents')}
+            className="rounded-xl font-semibold text-xs shadow-xs">
+            Documents{' '}
+            <span className="ml-1 font-mono text-emerald-600 font-bold">
+              {doneDocsCount}/{activeDocsCount}
+            </span>
           </Button>
 
-          {project.status === 'planning' && (
+          <Button
+            onClick={() => setActiveTab('settings')}
+            className="rounded-xl font-semibold text-xs shadow-xs">
+            Members
+          </Button>
+
+          <Button
+            onClick={handleToggleMode}
+            className={`rounded-xl font-semibold text-xs shadow-xs ${
+              isAdvancedMode ? 'border-primary text-primary' : ''
+            }`}>
+            Advanced tools: {isAdvancedMode ? 'on' : 'off'}
+          </Button>
+
+          {project.status === 'planning' ? (
             <Button
               type="primary"
               icon={<Play size={14} />}
               onClick={handleStartProject}
-              className="bg-emerald-500 hover:bg-emerald-600 rounded-xl font-bold shadow-xs">
-              Start Project
+              className="rounded-xl font-bold text-xs shadow-xs">
+              Start project
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              icon={<Plus size={14} />}
+              onClick={() => setShowSmartTaskModal(true)}
+              className="rounded-xl font-bold text-xs shadow-xs">
+              + Task
             </Button>
           )}
-
-          <Button
-            icon={<Settings size={14} />}
-            onClick={() => setActiveTab('settings')}
-            className="rounded-xl font-bold text-xs shadow-xs">
-            Settings
-          </Button>
         </Space>
       </div>
 

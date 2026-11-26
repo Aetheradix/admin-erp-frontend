@@ -67,6 +67,8 @@ export interface BackendProject {
   color?: string;
   project_type?: string;
   mode?: 'simple' | 'advanced';
+  steps?: string[];
+  member_ids?: number[];
 }
 
 export interface BackendTask {
