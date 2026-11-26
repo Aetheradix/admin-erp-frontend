@@ -103,6 +103,7 @@ export const apiSlice = createApi({
     'Offices',
     'Teams',
     'TeamMembers',
+    'StickyNotes',
   ],
   endpoints: () => ({}),
 });

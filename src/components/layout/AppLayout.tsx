@@ -23,6 +23,7 @@ import {
 } from '@/services/employeeProfileService';
 import EmployeeProfileCompletion from '@/pages/employee-profile/EmployeeProfileCompletion';
 import { NewUserWelcomeModal } from '@/components/ui/composed/NewUserWelcomeModal';
+import { StickyNotesManager } from '@/components/sticky-notes/StickyNotesManager';
 
 function hexToRgb(hex: string) {
   const clean = hex.replace('#', '');
@@ -319,6 +320,8 @@ export default function AppLayout() {
       {isProfileModalOpen && (
         <EmployeeProfileCompletion fullPage={false} onClose={() => setIsProfileModalOpen(false)} />
       )}
+      {/* Global Sticky Notes / Floating Quick Notes */}
+      <StickyNotesManager />
     </div>
   );
 }
