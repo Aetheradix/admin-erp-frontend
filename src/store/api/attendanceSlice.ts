@@ -80,6 +80,7 @@ export interface CheckOutPayload {
   check_out_longitude?: number | null;
   location_name?: string | null;
   check_out_location?: string | null;
+  location_accuracy?: number | null;
 }
 
 export const attendanceSlice = apiSlice.injectEndpoints({
