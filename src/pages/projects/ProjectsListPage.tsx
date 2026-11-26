@@ -26,7 +26,12 @@ import {
   Spin,
   Divider,
   Tooltip,
+  Checkbox,
+  DatePicker,
+  Collapse,
 } from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
+import { PROJECT_TYPE_TEMPLATES, type ProjectTypeTemplate } from './config/projectTemplates';
 import { departmentService } from '@/services/departmentService';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetOrganizationHierarchyQuery } from '@/store/api/organizationApiSlice';
@@ -39,7 +44,7 @@ import {
 } from '@/store/api/projectApiSlice';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectTable } from '@/components/projects/ProjectTable';
-import { EmployeeSelector } from '@/components/projects/EmployeeSelector';
+import { UserSelect } from '@/components/projects/UserSelect';
 
 const { TextArea } = Input;
 
@@ -75,13 +80,28 @@ type FormValues = {
   department_id?: number;
   owner_user_id?: number;
   project_manager_id?: number;
-  start_date?: string;
-  end_date?: string;
+  start_date?: Dayjs | null;
+  end_date?: Dayjs | null;
   methodology?: string;
   priority?: string;
   project_status?: string;
   progress?: number;
+  project_type?: string;
+  mode?: 'simple' | 'advanced';
+  client_name?: string;
+  estimation_unit?: 'hours' | 'points';
+  auto_shift_mode?: 'strict' | 'flexible' | 'off';
+  member_ids?: number[];
 };
+
+const PROJECT_TYPE_OPTIONS = [
+  { value: 'Software', label: 'Software / Product' },
+  { value: 'Client Delivery', label: 'Client Delivery' },
+  { value: 'Marketing', label: 'Marketing & Growth' },
+  { value: 'Operations', label: 'Operations' },
+  { value: 'Design', label: 'Design & UX' },
+  { value: 'Internal', label: 'Internal Initiative' },
+];
 
 // ─── Stat Card ───────────────────────────────────────────────────────────────
 interface StatCardProps {
@@ -128,6 +148,8 @@ export function ProjectsListPage() {
 
   // Modal state: null = closed, 'create' = new, project = edit
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+  const [configMode, setConfigMode] = useState<'simple' | 'advanced'>('simple');
+  const [selectedType, setSelectedType] = useState<ProjectTypeTemplate>(PROJECT_TYPE_TEMPLATES[0]);
   const [editingProject, setEditingProject] = useState<BackendProject | null>(null);
   const [form] = Form.useForm<FormValues>();
 
@@ -203,21 +225,31 @@ export function ProjectsListPage() {
   const openCreateModal = useCallback(() => {
     setEditingProject(null);
     setModalMode('create');
+    setConfigMode('simple');
+    setSelectedType(PROJECT_TYPE_TEMPLATES[0]);
     form.resetFields();
     form.setFieldsValue({
-      methodology: 'scrum',
+      methodology: PROJECT_TYPE_TEMPLATES[0].defaultMethodology,
       priority: 'Medium',
       project_status: 'Planning',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date(Date.now() + 45 * 86_400_000).toISOString().split('T')[0],
+      project_type: PROJECT_TYPE_TEMPLATES[0].id,
+      mode: 'simple',
+      estimation_unit: 'hours',
+      auto_shift_mode: 'flexible',
+      owner_user_id: user?.id ? Number(user.id) : undefined,
+      member_ids: user?.id ? [Number(user.id)] : [],
+      start_date: dayjs(),
+      end_date: null,
     });
-  }, [form]);
+  }, [form, user?.id]);
 
   // ── Open Edit Modal ───────────────────────────────────────────────────────
   const openEditModal = useCallback(
     (project: BackendProject) => {
       setEditingProject(project);
       setModalMode('edit');
+      const m = project.mode === 'advanced' ? 'advanced' : 'simple';
+      setConfigMode(m);
       form.resetFields();
       form.setFieldsValue({
         project_name: project.project_name,
@@ -226,12 +258,17 @@ export function ProjectsListPage() {
         department_id: project.department_id,
         owner_user_id: project.owner_user_id,
         project_manager_id: project.project_manager_id,
-        start_date: project.start_date?.split('T')[0],
-        end_date: project.end_date?.split('T')[0],
+        start_date: project.start_date ? dayjs(project.start_date) : null,
+        end_date: project.end_date ? dayjs(project.end_date) : null,
         methodology: project.methodology || 'scrum',
         priority: project.priority || 'Medium',
         project_status: project.project_status || 'Planning',
         progress: project.progress ?? 0,
+        project_type: project.project_type || 'Software',
+        mode: m,
+        client_name: project.client_name || '',
+        estimation_unit: project.estimation_unit || 'hours',
+        auto_shift_mode: project.auto_shift_mode || 'flexible',
       });
     },
     [form]
@@ -260,13 +297,20 @@ export function ProjectsListPage() {
         owner_user_id: values.owner_user_id || (user?.id as number),
         project_manager_id:
           values.project_manager_id || values.owner_user_id || (user?.id as number),
-        start_date: values.start_date,
-        end_date: values.end_date,
+        start_date: values.start_date ? values.start_date.format('YYYY-MM-DD') : undefined,
+        end_date: values.end_date ? values.end_date.format('YYYY-MM-DD') : undefined,
         methodology: values.methodology || 'scrum',
         priority: values.priority || 'Medium',
         health: 'on_track',
         visibility: 'team',
         progress: values.progress ?? 0,
+        project_type: modalMode === 'create' ? selectedType.id : values.project_type || 'Software',
+        mode: values.mode || configMode,
+        client_name: values.client_name || undefined,
+        estimation_unit: values.estimation_unit || 'hours',
+        auto_shift_mode: values.auto_shift_mode || 'flexible',
+        steps: modalMode === 'create' ? selectedType.steps : undefined,
+        member_ids: modalMode === 'create' ? values.member_ids : undefined,
       }).unwrap();
 
       closeModal();
@@ -294,11 +338,16 @@ export function ProjectsListPage() {
           department_id: values.department_id,
           owner_user_id: values.owner_user_id,
           project_manager_id: values.project_manager_id,
-          start_date: values.start_date,
-          end_date: values.end_date,
+          start_date: values.start_date ? values.start_date.format('YYYY-MM-DD') : undefined,
+          end_date: values.end_date ? values.end_date.format('YYYY-MM-DD') : undefined,
           methodology: values.methodology,
           priority: values.priority,
           progress: values.progress ?? 0,
+          project_type: values.project_type,
+          mode: configMode,
+          client_name: values.client_name,
+          estimation_unit: values.estimation_unit,
+          auto_shift_mode: values.auto_shift_mode,
         },
       }).unwrap();
 
@@ -521,15 +570,21 @@ export function ProjectsListPage() {
       {/* ── Create / Edit Modal ──────────────────────────────────────────── */}
       <Modal
         title={
-          <div className="flex items-center gap-2 pb-1">
-            <FolderKanban size={18} className="text-primary" />
-            <span className="text-base font-black">
-              {modalMode === 'edit' ? `Edit Project` : 'Create New Project'}
-            </span>
-            {modalMode === 'edit' && editingProject?.project_key && (
-              <span className="font-mono text-xs font-bold text-primary px-1.5 py-0.5 rounded bg-primary/10">
-                {editingProject.project_key}
+          <div className="pb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-black text-foreground">
+                {modalMode === 'edit' ? 'Edit Project' : 'Start a new project'}
               </span>
+              {modalMode === 'edit' && editingProject?.project_key && (
+                <span className="font-mono text-xs font-bold text-primary px-1.5 py-0.5 rounded bg-primary/10">
+                  {editingProject.project_key}
+                </span>
+              )}
+            </div>
+            {modalMode === 'create' && (
+              <p className="text-xs font-normal text-muted m-0">
+                Pick what kind of project it is.
+              </p>
             )}
           </div>
         }
@@ -538,109 +593,317 @@ export function ProjectsListPage() {
         footer={null}
         destroyOnClose
         centered
-        width={620}>
+        width={680}>
         <Form form={form} layout="vertical" onFinish={handleFormFinish} className="pt-2">
-          {/* Row 1: Name */}
-          <Form.Item
-            name="project_name"
-            label="Project Name"
-            rules={[{ required: true, message: 'Please enter a project name' }]}>
-            <Input placeholder="e.g. Customer Portal Redesign" className="rounded-lg" />
-          </Form.Item>
+          {modalMode === 'create' ? (
+            <>
+              {/* 6 Interactive Project Type Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-3">
+                {PROJECT_TYPE_TEMPLATES.map((tpl) => {
+                  const isSelected = selectedType.id === tpl.id;
+                  const TypeIcon = tpl.icon;
+                  return (
+                    <button
+                      type="button"
+                      key={tpl.id}
+                      onClick={() => {
+                        setSelectedType(tpl);
+                        form.setFieldsValue({
+                          project_type: tpl.id,
+                          methodology: tpl.defaultMethodology,
+                        });
+                      }}
+                      className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary/30 shadow-xs'
+                          : 'border-border-subtle bg-card hover:border-primary/40'
+                      }`}>
+                      <div className="mb-1.5">
+                        <TypeIcon
+                          className={`w-4 h-4 ${isSelected ? 'text-primary' : tpl.iconColor}`}
+                        />
+                      </div>
+                      <div className="text-xs font-bold text-foreground">{tpl.label}</div>
+                      <div className="text-[11px] text-muted leading-snug mt-0.5">
+                        {tpl.subtitle}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-          {/* Row 2: Key + Department */}
-          <Row gutter={12}>
-            <Col span={10}>
+              {/* Dynamic Steps Preview Bar */}
+              <div className="px-3 py-2 rounded-lg bg-surface-subtle border border-border-subtle text-[11px] text-muted mb-4">
+                <span className="font-bold text-foreground">Steps: </span>
+                {selectedType.steps.length > 0 ? (
+                  <>
+                    <span>{selectedType.steps.join(' → ')}</span>
+                    <span className="opacity-75"> · you can rename, add or remove steps later</span>
+                  </>
+                ) : (
+                  <span>Empty · add your own steps after creation</span>
+                )}
+              </div>
+
+              {/* Project Name */}
               <Form.Item
-                name="project_key"
-                label="Project Key"
-                rules={[{ required: modalMode === 'create', message: 'Enter a project key' }]}>
-                <Input
-                  maxLength={10}
-                  placeholder="e.g. CPR"
-                  className="rounded-lg font-mono uppercase"
+                name="project_name"
+                label="Project name"
+                rules={[{ required: true, message: 'Please enter a project name' }]}>
+                <Input placeholder="e.g. Lotus clinic website" className="rounded-lg" />
+              </Form.Item>
+
+              {/* Start & Finish by Dates */}
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Form.Item name="start_date" label="Start date">
+                    <DatePicker className="w-full rounded-lg" format="DD-MM-YYYY" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="end_date" label="Finish by (optional)">
+                    <DatePicker
+                      className="w-full rounded-lg"
+                      format="DD-MM-YYYY"
+                      placeholder="Select finish date"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {/* Who's working on it? (Live Org Users) */}
+              <Form.Item name="member_ids" label="Who's working on it?" className="mb-2">
+                {hierarchyData?.data?.flatUsers && hierarchyData.data.flatUsers.length > 0 ? (
+                  <Checkbox.Group className="w-full flex flex-wrap gap-x-4 gap-y-1.5 p-2.5 rounded-xl border border-border-subtle bg-surface-subtle max-h-28 overflow-y-auto">
+                    {hierarchyData.data.flatUsers.map((u) => (
+                      <Checkbox key={u.id} value={u.id} className="text-xs m-0">
+                        {u.username || u.email}
+                      </Checkbox>
+                    ))}
+                  </Checkbox.Group>
+                ) : (
+                  <div className="p-2.5 rounded-xl border border-border-subtle bg-surface-subtle text-xs text-muted">
+                    Loading team members...
+                  </div>
+                )}
+              </Form.Item>
+
+              {/* Collapsible More Options */}
+              <Collapse
+                ghost
+                size="small"
+                className="mb-2 -mx-3"
+                items={[
+                  {
+                    key: 'more',
+                    label: <span className="text-xs font-semibold text-muted">More options</span>,
+                    children: (
+                      <div className="p-3 rounded-xl border border-border-subtle bg-surface-subtle/50 space-y-2">
+                        <Row gutter={12}>
+                          <Col span={12}>
+                            <Form.Item
+                              name="project_key"
+                              label="Short code (made from the name)">
+                              <Input
+                                maxLength={10}
+                                placeholder="Auto"
+                                className="rounded-lg font-mono uppercase"
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col span={12}>
+                            <Form.Item name="client_name" label="Client">
+                              <Input placeholder="Optional" className="rounded-lg" />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Row gutter={12}>
+                          <Col span={12}>
+                            <Form.Item name="owner_user_id" label="Project lead">
+                              <UserSelect placeholder="Select lead" />
+                            </Form.Item>
+                          </Col>
+                          <Col span={12}>
+                            <Form.Item name="mode" label="Advanced tools">
+                              <Select
+                                onChange={(val: 'simple' | 'advanced') => setConfigMode(val)}
+                                options={[
+                                  { value: 'simple', label: 'Off: keep it simple' },
+                                  { value: 'advanced', label: 'On: Sprints, Timeline & Time' },
+                                ]}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Row gutter={12}>
+                          <Col span={12}>
+                            <Form.Item name="department_id" label="Department">
+                              <Select
+                                placeholder="Select department"
+                                allowClear
+                                options={availableDepts.map((d) => ({ value: d.id, label: d.name }))}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col span={12}>
+                            <Form.Item name="priority" label="Priority">
+                              <Select options={PRIORITY_OPTIONS} />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border-subtle">
+                <span className="text-xs font-semibold text-muted">Configuration Mode</span>
+                <Radio.Group
+                  value={configMode}
+                  onChange={(e) => setConfigMode(e.target.value)}
+                  size="small"
+                  buttonStyle="solid">
+                  <Radio.Button value="simple">Simple Mode</Radio.Button>
+                  <Radio.Button value="advanced">Advanced Mode</Radio.Button>
+                </Radio.Group>
+              </div>
+
+              <Row gutter={12}>
+                <Col span={14}>
+                  <Form.Item
+                    name="project_name"
+                    label="Project Name"
+                    rules={[{ required: true, message: 'Please enter a project name' }]}>
+                    <Input placeholder="e.g. Customer Portal Redesign" className="rounded-lg" />
+                  </Form.Item>
+                </Col>
+                <Col span={10}>
+                  <Form.Item name="project_type" label="Project Type">
+                    <Select options={PROJECT_TYPE_OPTIONS} placeholder="Select type" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={12}>
+                <Col span={10}>
+                  <Form.Item name="project_key" label="Project Key">
+                    <Input
+                      maxLength={10}
+                      placeholder="e.g. CPR"
+                      className="rounded-lg font-mono uppercase"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={14}>
+                  <Form.Item name="department_id" label="Department">
+                    <Select
+                      placeholder="Select department"
+                      allowClear
+                      options={availableDepts.map((d) => ({ value: d.id, label: d.name }))}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Form.Item name="owner_user_id" label="Project Owner">
+                    <UserSelect placeholder="Select owner" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="project_manager_id" label="Project Manager">
+                    <UserSelect placeholder="Select manager" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {configMode === 'advanced' && (
+                <Row gutter={12}>
+                  <Col span={8}>
+                    <Form.Item name="client_name" label="Client Name">
+                      <Input placeholder="e.g. Acme Corp" className="rounded-lg" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item name="estimation_unit" label="Estimation Unit">
+                      <Select
+                        options={[
+                          { value: 'hours', label: 'Hours' },
+                          { value: 'points', label: 'Story Points' },
+                        ]}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item name="auto_shift_mode" label="Auto-Shift Mode">
+                      <Select
+                        options={[
+                          { value: 'flexible', label: 'Flexible' },
+                          { value: 'strict', label: 'Strict' },
+                          { value: 'off', label: 'Off' },
+                        ]}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
+
+              <Form.Item name="description" label="Description">
+                <TextArea
+                  rows={2}
+                  placeholder="Scope, deliverables, key goals..."
+                  className="rounded-lg"
                 />
               </Form.Item>
-            </Col>
-            <Col span={14}>
-              <Form.Item name="department_id" label="Department">
-                <Select
-                  placeholder="Select department"
-                  allowClear
-                  options={availableDepts.map((d) => ({ value: d.id, label: d.name }))}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
 
-          {/* Row 3: Owner + PM */}
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="owner_user_id" label="Project Owner">
-                <EmployeeSelector placeholder="Select owner" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="project_manager_id" label="Project Manager">
-                <EmployeeSelector placeholder="Select manager" />
-              </Form.Item>
-            </Col>
-          </Row>
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Form.Item name="start_date" label="Start Date">
+                    <DatePicker className="w-full rounded-lg" format="DD-MM-YYYY" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="end_date" label="Due Date">
+                    <DatePicker className="w-full rounded-lg" format="DD-MM-YYYY" />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          {/* Description */}
-          <Form.Item name="description" label="Description">
-            <TextArea
-              rows={2}
-              placeholder="Scope, deliverables, key goals..."
-              className="rounded-lg"
-            />
-          </Form.Item>
+              <Row gutter={12}>
+                <Col span={8}>
+                  <Form.Item name="project_status" label="Status">
+                    <Select options={STATUS_OPTIONS} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item name="priority" label="Priority">
+                    <Select options={PRIORITY_OPTIONS} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item name="methodology" label="Methodology">
+                    <Select
+                      options={[
+                        { value: 'scrum', label: 'Scrum' },
+                        { value: 'kanban', label: 'Kanban' },
+                        { value: 'waterfall', label: 'Waterfall' },
+                        { value: 'timeline_first', label: 'Timeline First' },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          {/* Row 4: Dates */}
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="start_date" label="Start Date">
-                <Input type="date" className="rounded-lg" />
+              <Form.Item name="progress" label="Progress (%)">
+                <Input type="number" min={0} max={100} placeholder="0–100" className="rounded-lg" />
               </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="end_date" label="Due Date">
-                <Input type="date" className="rounded-lg" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* Row 5: Status + Priority + Methodology */}
-          <Row gutter={12}>
-            <Col span={8}>
-              <Form.Item name="project_status" label="Status">
-                <Select options={STATUS_OPTIONS} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="priority" label="Priority">
-                <Select options={PRIORITY_OPTIONS} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="methodology" label="Methodology">
-                <Select
-                  options={[
-                    { value: 'scrum', label: 'Scrum' },
-                    { value: 'kanban', label: 'Kanban' },
-                    { value: 'waterfall', label: 'Waterfall' },
-                    { value: 'timeline_first', label: 'Timeline First' },
-                  ]}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* Progress (edit only) */}
-          {modalMode === 'edit' && (
-            <Form.Item name="progress" label="Progress (%)">
-              <Input type="number" min={0} max={100} placeholder="0–100" className="rounded-lg" />
-            </Form.Item>
+            </>
           )}
 
           <Divider className="my-3" />

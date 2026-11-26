@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { Project, Milestone, ProjectTask } from '@/types/project';
 import type { ProjectPhase } from '@/types/phase';
 import type { TaskStatus } from '@/types/taskStatus';
-import { Target, ShieldCheck, Layers, Sparkles, Plus } from 'lucide-react';
-import { Table, Card, Radio, Select, Tag, Space, Button, message } from 'antd';
+import { Target, ShieldCheck, Layers, Sparkles, Plus, AlertTriangle, CornerDownRight } from 'lucide-react';
+import { Table, Card, Radio, Select, Tag, Space, Button, Modal, Input, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { projectService } from '@/services/projectService';
 import { SmartTaskCreateModal } from '../modals/SmartTaskCreateModal';
@@ -28,11 +28,18 @@ export function ListTab({
   const [groupBy, setGroupBy] = useState<'phase' | 'milestone'>('phase');
   const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
   const [showSmartCreate, setShowSmartCreate] = useState(false);
+  const [blockingTarget, setBlockingTarget] = useState<{ task: ProjectTask; status: string } | null>(null);
+  const [blockedReasonInput, setBlockedReasonInput] = useState('');
   const [updateTaskReal] = useUpdateTaskRealMutation();
 
   const statuses: TaskStatus[] = projectService.getTaskStatuses(project.id);
 
-  const handleStatusChange = async (task: ProjectTask, newStatus: string) => {
+  const handleStatusChange = async (task: ProjectTask, newStatus: string, reason?: string) => {
+    if (newStatus === 'Blocked' && !reason?.trim()) {
+      setBlockingTarget({ task, status: newStatus });
+      setBlockedReasonInput(task.remark || '');
+      return;
+    }
     try {
       const backendStatus =
         newStatus === 'Done' || newStatus === 'Completed'
@@ -44,11 +51,21 @@ export function ListTab({
               : newStatus === 'In Progress'
                 ? 'In Progress'
                 : 'Pending';
-      await updateTaskReal({ id: task.id, data: { task_status: backendStatus } }).unwrap();
+      await updateTaskReal({
+        id: task.id,
+        data: {
+          task_status: backendStatus,
+          ...(newStatus === 'Blocked' ? { blocked_reason: reason?.trim() } : {}),
+        },
+      }).unwrap();
     } catch {
       // offline fallback
     }
-    projectService.saveTask({ id: task.id, status: newStatus });
+    projectService.saveTask({
+      id: task.id,
+      status: newStatus,
+      ...(newStatus === 'Blocked' ? { remark: reason?.trim() } : {}),
+    });
     onTasksUpdated();
     message.success(`Status updated to ${newStatus}`);
   };
@@ -118,10 +135,16 @@ export function ListTab({
       title: 'Title',
       key: 'title',
       render: (_, record) => (
-        <Space direction="vertical" size={2}>
-          <span className="font-semibold text-xs text-foreground hover:text-primary transition-colors">
+        <Space direction="vertical" size={2} className={record.parentTaskId ? 'pl-5' : ''}>
+          <span className="font-semibold text-xs text-foreground hover:text-primary transition-colors flex items-center gap-1">
+            {record.parentTaskId && <CornerDownRight size={12} className="text-muted shrink-0" />}
             {record.title}
           </span>
+          {record.status === 'Blocked' && record.remark && (
+            <Tag color="error" className="text-[10px] m-0 flex items-center gap-1 w-max">
+              <AlertTriangle size={10} /> {record.remark}
+            </Tag>
+          )}
           {record.phaseId && groupBy !== 'phase' && (
             <Tag bordered={false} className="text-[10px] m-0 bg-surface-elevated text-muted">
               <Sparkles size={9} className="text-primary inline mr-1" />
@@ -319,6 +342,38 @@ export function ListTab({
         onClose={() => setShowSmartCreate(false)}
         onSuccess={onTasksUpdated}
       />
+
+      {/* Mandatory Blocked Reason Modal */}
+      <Modal
+        title="Blocked Reason Required"
+        open={Boolean(blockingTarget)}
+        onCancel={() => {
+          setBlockingTarget(null);
+          setBlockedReasonInput('');
+        }}
+        onOk={() => {
+          if (!blockedReasonInput.trim()) {
+            message.error('Please enter a reason why this task is blocked.');
+            return;
+          }
+          if (blockingTarget) {
+            handleStatusChange(blockingTarget.task, blockingTarget.status, blockedReasonInput);
+          }
+          setBlockingTarget(null);
+          setBlockedReasonInput('');
+        }}
+        okText="Confirm Blocked"
+        okButtonProps={{ danger: true }}>
+        <p className="text-xs text-muted mb-2">
+          Explain what is blocking <strong>{blockingTarget?.task.title}</strong>:
+        </p>
+        <Input.TextArea
+          rows={3}
+          value={blockedReasonInput}
+          onChange={(e) => setBlockedReasonInput(e.target.value)}
+          placeholder="e.g. Waiting for API credentials from client..."
+        />
+      </Modal>
     </div>
   );
 }

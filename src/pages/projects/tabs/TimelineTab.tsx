@@ -1,18 +1,24 @@
 import { useState, useMemo } from 'react';
 import type { Project, Milestone, ProjectTask, Dependency } from '@/types/project';
-import { Zap } from 'lucide-react';
-import { Card, Radio, Checkbox, Space } from 'antd';
+import { Zap, Link2, Trash2 } from 'lucide-react';
+import { Card, Radio, Checkbox, Space, Button, Modal, Form, Select, Input, Tag, message } from 'antd';
+import { useCreateDependencyMutation, useDeleteDependencyMutation } from '@/store/api/projectApiSlice';
 
 interface TimelineTabProps {
   project: Project;
   milestones: Milestone[];
   tasks: ProjectTask[];
   dependencies: Dependency[];
+  onUpdated?: () => void;
 }
 
-export function TimelineTab({ project, milestones, tasks, dependencies }: TimelineTabProps) {
+export function TimelineTab({ project, milestones, tasks, dependencies, onUpdated }: TimelineTabProps) {
   const [zoom, setZoom] = useState<'day' | 'week' | 'month'>('week');
   const [showCriticalPath, setShowCriticalPath] = useState(true);
+  const [showDepModal, setShowDepModal] = useState(false);
+  const [depForm] = Form.useForm();
+  const [createDepApi, { isLoading: savingDep }] = useCreateDependencyMutation();
+  const [deleteDepApi] = useDeleteDependencyMutation();
 
   // Derive global timeline bounds (min start date, max due date)
   const { minDate, totalDays } = useMemo(() => {
@@ -84,14 +90,25 @@ export function TimelineTab({ project, milestones, tasks, dependencies }: Timeli
             </Radio.Group>
           </Space>
 
-          <Checkbox
-            checked={showCriticalPath}
-            onChange={(e) => setShowCriticalPath(e.target.checked)}>
-            <span className="flex items-center gap-1 text-xs font-bold text-foreground">
-              <Zap size={13} className="text-rose-500" />
-              Highlight Critical Path
-            </span>
-          </Checkbox>
+          <Space size="middle">
+            <Checkbox
+              checked={showCriticalPath}
+              onChange={(e) => setShowCriticalPath(e.target.checked)}>
+              <span className="flex items-center gap-1 text-xs font-bold text-foreground">
+                <Zap size={13} className="text-rose-500" />
+                Highlight Critical Path
+              </span>
+            </Checkbox>
+
+            <Button
+              size="small"
+              type="primary"
+              icon={<Link2 size={12} />}
+              onClick={() => setShowDepModal(true)}
+              className="rounded-lg text-xs font-bold">
+              Add Dependency
+            </Button>
+          </Space>
         </div>
       </Card>
 
@@ -220,6 +237,113 @@ export function TimelineTab({ project, milestones, tasks, dependencies }: Timeli
           </div>
         </div>
       </div>
+
+      {/* Active Dependencies List */}
+      {dependencies.length > 0 && (
+        <Card
+          title={<span className="text-xs font-black uppercase tracking-wider text-muted">Task Dependencies ({dependencies.length})</span>}
+          className="rounded-2xl border-border-subtle bg-card shadow-xs"
+          styles={{ body: { padding: '12px 16px' } }}>
+          <div className="flex flex-wrap gap-2">
+            {dependencies.map((d) => {
+              const pred = tasks.find((t) => t.id === d.predecessorId);
+              const succ = tasks.find((t) => t.id === d.successorId);
+              return (
+                <Tag
+                  key={d.id}
+                  closable
+                  onClose={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await deleteDepApi(d.id).unwrap();
+                      message.success('Dependency removed');
+                      onUpdated?.();
+                    } catch {
+                      message.error('Failed to remove dependency');
+                    }
+                  }}
+                  closeIcon={<Trash2 size={11} className="inline ml-1 text-red-500" />}
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
+                  <span>{pred?.title || `#${d.predecessorId}`}</span>
+                  <span className="text-primary font-mono">→ ({d.depType}{d.lagDays ? ` ${d.lagDays > 0 ? `+${d.lagDays}d` : `${d.lagDays}d`}` : ''}) →</span>
+                  <span>{succ?.title || `#${d.successorId}`}</span>
+                </Tag>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* Create Dependency Modal */}
+      <Modal
+        title="Add Task Dependency"
+        open={showDepModal}
+        onCancel={() => setShowDepModal(false)}
+        footer={null}
+        destroyOnClose>
+        <Form
+          form={depForm}
+          layout="vertical"
+          initialValues={{ dependency_type: 'FS', lag_days: 0 }}
+          onFinish={async (values: {
+            predecessor_id: number;
+            successor_id: number;
+            dependency_type: 'FS' | 'SS' | 'FF' | 'SF';
+            lag_days?: number;
+          }) => {
+            try {
+              await createDepApi({
+                project_id: project.id,
+                predecessor_id: values.predecessor_id,
+                successor_id: values.successor_id,
+                dependency_type: values.dependency_type,
+                lag_days: Number(values.lag_days || 0),
+              }).unwrap();
+              message.success('Dependency added');
+              depForm.resetFields();
+              setShowDepModal(false);
+              onUpdated?.();
+            } catch (err: unknown) {
+              message.error((err as { data?: { message?: string } })?.data?.message || 'Failed to add dependency');
+            }
+          }}>
+          <Form.Item name="predecessor_id" label="Predecessor Task" rules={[{ required: true }]}>
+            <Select
+              showSearch
+              placeholder="Select task that comes first"
+              options={tasks.map((t) => ({ value: t.id, label: `${project.key}-${t.keyNumber} ${t.title}` }))}
+            />
+          </Form.Item>
+          <Form.Item name="successor_id" label="Successor Task" rules={[{ required: true }]}>
+            <Select
+              showSearch
+              placeholder="Select dependent task"
+              options={tasks.map((t) => ({ value: t.id, label: `${project.key}-${t.keyNumber} ${t.title}` }))}
+            />
+          </Form.Item>
+          <Space className="w-full" size="middle">
+            <Form.Item name="dependency_type" label="Type" className="w-44">
+              <Select
+                options={[
+                  { value: 'FS', label: 'Finish-to-Start (FS)' },
+                  { value: 'SS', label: 'Start-to-Start (SS)' },
+                  { value: 'FF', label: 'Finish-to-Finish (FF)' },
+                  { value: 'SF', label: 'Start-to-Finish (SF)' },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item name="lag_days" label="Lag (Days)" className="w-32">
+              <Input type="number" />
+            </Form.Item>
+          </Space>
+          <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
+            <Button onClick={() => setShowDepModal(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={savingDep} className="font-bold">
+              Add Dependency
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 }

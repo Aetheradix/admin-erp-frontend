@@ -12,7 +12,6 @@ import {
   UserCheck,
   FileText,
   FolderKanban,
-  CheckSquare,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -158,7 +157,7 @@ export const navItems: NavItem[] = [
     roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
     children: [
       {
-        label: 'Projects & Pipelines',
+        label: 'All Projects',
         path: '/projects',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
@@ -167,50 +166,50 @@ export const navItems: NavItem[] = [
         path: '/projects/monitoring',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
-    ],
-  },
-  {
-    label: 'Tasks',
-    path: '/tasks',
-    icon: CheckSquare,
-    category: 'MANAGEMENT',
-    description: 'Task assignments, Kanbans & pipelines',
-    roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
-    children: [
       {
-        label: 'All Tasks & Board',
-        path: '/tasks',
+        label: 'My Time',
+        path: '/projects/my-time',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
       },
       {
-        label: 'My Work & Monitoring',
-        path: '/projects/monitoring',
-        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+        label: 'Approvals',
+        path: '/projects/approvals',
+        roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin'],
       },
       {
-        label: 'Dept. Dashboards',
-        path: '/departments',
+        label: 'Doc Templates',
+        path: '/projects/doc-templates',
         roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
-      },
-      {
-        label: 'Assignment Rules',
-        path: '/settings/assignment-permissions',
-        roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
       },
     ],
   },
   // {
-  //   label: 'Channels',
-  //   path: '/channels',
-  //   icon: MessageSquare,
+  //   label: 'Tasks',
+  //   path: '/tasks',
+  //   icon: CheckSquare,
   //   category: 'MANAGEMENT',
-  //   description: 'Team communication channels',
+  //   description: 'Task assignments, Kanbans & pipelines',
   //   roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
   //   children: [
   //     {
-  //       label: 'All Channels',
-  //       path: '/channels',
+  //       label: 'All Tasks & Board',
+  //       path: '/tasks',
   //       roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //     },
+  //     {
+  //       label: 'My Work & Monitoring',
+  //       path: '/projects/monitoring',
+  //       roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //     },
+  //     {
+  //       label: 'Dept. Dashboards',
+  //       path: '/departments',
+  //       roles: ['SuperAdmin', 'Admin', 'HrAdmin', 'FinanceAdmin', 'Employee'],
+  //     },
+  //     {
+  //       label: 'Assignment Rules',
+  //       path: '/settings/assignment-permissions',
+  //       roles: ['SuperAdmin', 'Admin', 'HrAdmin'],
   //     },
   //   ],
   // },

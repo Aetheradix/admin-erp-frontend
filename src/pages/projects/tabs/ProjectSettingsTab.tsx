@@ -13,9 +13,10 @@ import {
   Space,
   Popconfirm,
   Modal,
+  Switch,
   message,
 } from 'antd';
-import { Settings, UserPlus, Trash2, AlertTriangle } from 'lucide-react';
+import { Settings, UserPlus, Trash2, AlertTriangle, Clock } from 'lucide-react';
 import {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
@@ -23,10 +24,12 @@ import {
   useAddProjectMemberMutation,
   useRemoveProjectMemberMutation,
   useTransferOwnershipMutation,
+  useGetTimeSettingQuery,
+  useUpdateTimeSettingMutation,
   type BackendProject,
 } from '@/store/api/projectApiSlice';
 import { departmentService } from '@/services/departmentService';
-import { EmployeeSelector } from '@/components/projects/EmployeeSelector';
+import { UserSelect } from '@/components/projects/UserSelect';
 import { useNavigate } from 'react-router-dom';
 
 const { TextArea } = Input;
@@ -52,6 +55,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
   const { data: members = [], refetch: refetchMembers } = useGetProjectMembersQuery(
     project.project_id
   );
+  const { data: timeSetting } = useGetTimeSettingQuery();
+  const [updateTimeSetting, { isLoading: togglingTime }] = useUpdateTimeSettingMutation();
 
   // Add Member Modal State
   const [showAddMember, setShowAddMember] = useState(false);
@@ -404,6 +409,38 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
         </div>
       </Card>
 
+      {/* Time Tracking Toggle */}
+      <Card
+        title={
+          <div className="flex items-center gap-2 text-sm font-black">
+            <Clock size={16} className="text-primary" /> Time Tracking & Timesheets
+          </div>
+        }
+        className="rounded-2xl border-border-subtle bg-card shadow-xs">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-foreground block">
+              Enable Organization Time Tracking
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              Shows My Time tab in projects and My Time in the sidebar navigation.
+            </span>
+          </div>
+          <Switch
+            checked={timeSetting?.enabled ?? true}
+            loading={togglingTime}
+            onChange={async (checked) => {
+              try {
+                await updateTimeSetting({ enabled: checked }).unwrap();
+                message.success(`Time tracking ${checked ? 'enabled' : 'disabled'}`);
+              } catch {
+                message.error('Failed to update time tracking setting');
+              }
+            }}
+          />
+        </div>
+      </Card>
+
       {/* Add Member Modal */}
       <Modal
         title="Add Project Member"
@@ -416,9 +453,9 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
         <div className="space-y-4 pt-2">
           <div>
             <label className="text-xs font-semibold text-muted block mb-1">Select Employee</label>
-            <EmployeeSelector
+            <UserSelect
               value={selectedUserId}
-              onChange={setSelectedUserId}
+              onChange={(val: number | null) => setSelectedUserId(val ?? undefined)}
               placeholder="Search by name, role or dept..."
             />
           </div>
@@ -451,9 +488,9 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
         <div className="space-y-4 pt-2">
           <div>
             <label className="text-xs font-semibold text-muted block mb-1">New Project Owner</label>
-            <EmployeeSelector
+            <UserSelect
               value={newOwnerId}
-              onChange={setNewOwnerId}
+              onChange={(val: number | null) => setNewOwnerId(val ?? undefined)}
               placeholder="Select new owner..."
             />
           </div>

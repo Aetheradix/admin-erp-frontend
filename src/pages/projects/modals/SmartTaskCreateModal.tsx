@@ -122,7 +122,7 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
         ? dayjs(values.dateRange[1]).format('YYYY-MM-DD')
         : undefined;
 
-      // 1. Create in real database backend
+      // 1. Create in real database backend; only fall back to localStorage if API fails
       try {
         await createTaskReal({
           task_title: values.title,
@@ -141,36 +141,34 @@ export const SmartTaskCreateModal: React.FC<SmartTaskCreateModalProps> = ({
         }).unwrap();
       } catch (apiErr) {
         console.warn('Backend task create notice (persisting locally):', apiErr);
+        projectService.createTaskWithOwnership({
+          projectId,
+          title: values.title,
+          description: values.description,
+          type: values.type || 'task',
+          priority: values.priority || 'Medium',
+          startDate: startDateStr,
+          dueDate: dueDateStr,
+          phaseId: values.phaseId,
+          phaseName: selPhase?.name,
+          // Ownership fields
+          createdById: user?.id || 1, // Current authenticated user
+          createdByName: user?.username || 'Authenticated User',
+          assignedById: user?.id || 1,
+          assignedByName: user?.username || 'Authenticated User',
+          assignedToId: selectedAssignee?.userId,
+          assignedToName: selectedAssignee?.userName,
+          reportingManagerId: selectedAssignee?.reportingManagerId,
+          reportingManagerName: reportingChain.reportingManagerName,
+          deptHeadId: deptHead?.userId,
+          deptHeadName: deptHead?.userName,
+          projectManagerId: 1,
+          projectManagerName: 'Alex Mercer',
+          departmentId: selectedDeptId,
+          departmentName: currentDept?.name,
+          collaboratorIds: values.collaboratorIds || [],
+        });
       }
-
-      // 2. Also keep localStorage copy in sync
-      projectService.createTaskWithOwnership({
-        projectId,
-        title: values.title,
-        description: values.description,
-        type: values.type || 'task',
-        priority: values.priority || 'Medium',
-        startDate: startDateStr,
-        dueDate: dueDateStr,
-        phaseId: values.phaseId,
-        phaseName: selPhase?.name,
-        // Ownership fields
-        createdById: user?.id || 1, // Current authenticated user
-        createdByName: user?.username || 'Authenticated User',
-        assignedById: user?.id || 1,
-        assignedByName: user?.username || 'Authenticated User',
-        assignedToId: selectedAssignee?.userId,
-        assignedToName: selectedAssignee?.userName,
-        reportingManagerId: selectedAssignee?.reportingManagerId,
-        reportingManagerName: reportingChain.reportingManagerName,
-        deptHeadId: deptHead?.userId,
-        deptHeadName: deptHead?.userName,
-        projectManagerId: 1,
-        projectManagerName: 'Alex Mercer',
-        departmentId: selectedDeptId,
-        departmentName: currentDept?.name,
-        collaboratorIds: values.collaboratorIds || [],
-      });
 
       message.success(
         `Task created and assigned to ${selectedAssignee?.userName || 'Team'} successfully!`

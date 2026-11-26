@@ -1,46 +1,17 @@
-import { useState } from 'react';
-import type { Project, Milestone, ProjectTask, Sprint } from '@/types/project';
-import {
-  CheckCircle2,
-  Clock,
-  Users,
-  Target,
-  Sparkles,
-  Calendar,
-  ArrowRight,
-  ShieldCheck,
-  UserCheck,
-  Building2,
-  History,
-} from 'lucide-react';
-import {
-  Card,
-  Row,
-  Col,
-  Progress,
-  Tag,
-  Button,
-  Space,
-  Modal,
-  Select,
-  Input,
-  message,
-  Timeline,
-} from 'antd';
-import { departmentService } from '@/services/departmentService';
-import { projectService } from '@/services/projectService';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  useUpdateProjectManagerMutation,
-  useTransferOwnershipMutation,
-} from '@/store/api/projectApiSlice';
+import { useMemo } from 'react';
+import type { Project, Milestone, ProjectTask, Sprint, ProjectDocument } from '@/types/project';
+import { Plus, FileText, Activity as ActivityIcon, CheckCircle2, Clock } from 'lucide-react';
+import { Card, Row, Col, Progress, Tag, Button, Avatar } from 'antd';
+import { useGetProjectActivityQuery } from '@/store/api/projectApiSlice';
 
 interface OverviewTabProps {
   project: Project;
   milestones: Milestone[];
   tasks: ProjectTask[];
-  sprints: Sprint[];
+  sprints?: Sprint[];
+  documents?: ProjectDocument[];
   onTabChange: (tabKey: string) => void;
+  onAddTask?: () => void;
   onProjectUpdated?: () => void;
 }
 
@@ -48,495 +19,273 @@ export function OverviewTab({
   project,
   milestones,
   tasks,
-  sprints,
+  documents = [],
   onTabChange,
-  onProjectUpdated,
+  onAddTask,
 }: OverviewTabProps) {
-  const { user } = useAuth();
-  const [showTransferModal, setShowTransferModal] = useState(false);
-  const [newOwnerId, setNewOwnerId] = useState<number | undefined>();
-  const [transferReason, setTransferReason] = useState('');
-  const [transferring, setTransferring] = useState(false);
+  const { data: activities = [] } = useGetProjectActivityQuery({ id: project.id, limit: 6 });
 
-  // Project Manager Change state
-  const [showPMModal, setShowPMModal] = useState(false);
-  const [newPMId, setNewPMId] = useState<number | undefined>();
-  const [updatingPM, setUpdatingPM] = useState(false);
+  const openTasks = useMemo(
+    () => tasks.filter((t) => t.status !== 'Done' && t.status !== 'Completed'),
+    [tasks]
+  );
 
-  // RTK Query mutations
-  const [updatePMMutation] = useUpdateProjectManagerMutation();
-  const [transferOwnershipMutation] = useTransferOwnershipMutation();
-
-  const completedTasks = tasks.filter((t) => t.status === 'Done').length;
-  const inProgressTasks = tasks.filter(
-    (t) => t.status === 'In Progress' || t.status === 'In Review'
+  const doneDocsCount = documents.filter((d) => d.status === 'done').length;
+  const activeDocsCount = documents.filter((d) => d.status !== 'not_needed').length;
+  const docsPct = activeDocsCount > 0 ? Math.round((doneDocsCount / activeDocsCount) * 100) : 0;
+  const overdueDocsCount = documents.filter(
+    (d) =>
+      d.status !== 'done' &&
+      d.status !== 'not_needed' &&
+      Boolean(d.dueDate) &&
+      new Date(d.dueDate!) < new Date()
   ).length;
-  const progressPct = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
-  const activeSprint = sprints.find((s) => s.status === 'active');
 
-  const healthColor =
-    project.health === 'on_track' ? 'green' : project.health === 'at_risk' ? 'gold' : 'red';
-
-  const healthLabel =
-    project.health === 'on_track'
-      ? 'On Track'
-      : project.health === 'at_risk'
-        ? 'At Risk'
-        : 'Off Track';
-
-  const eligibleEmployees = departmentService.getAllEmployees();
-
-  const handleUpdatePM = async () => {
-    if (!newPMId) {
-      message.error('Please select a project manager from the database list.');
-      return;
-    }
-    const targetEmp = departmentService.getEmployeeById(newPMId);
-    if (!targetEmp) return;
-
-    setUpdatingPM(true);
-    try {
-      // Try real API
-      await updatePMMutation({ projectId: project.id, manager_id: targetEmp.userId }).unwrap();
-      message.success(`Project Manager updated to ${targetEmp.userName} successfully!`);
-    } catch {
-      // Fallback to localStorage service
-      projectService.updateProjectManager(project.id, targetEmp.userId, targetEmp.userName);
-      message.success(`Project Manager updated to ${targetEmp.userName} (locally).`);
-    }
-    setShowPMModal(false);
-    setNewPMId(undefined);
-    if (onProjectUpdated) onProjectUpdated();
-    setUpdatingPM(false);
-  };
-
-  const handleTransferOwnership = async () => {
-    if (!newOwnerId || !transferReason.trim()) {
-      message.error('Please select a new owner and state the business reason.');
-      return;
-    }
-    const targetEmp = departmentService.getEmployeeById(newOwnerId);
-    if (!targetEmp) return;
-
-    setTransferring(true);
-    try {
-      await transferOwnershipMutation({
-        projectId: project.id,
-        new_owner_id: targetEmp.userId,
-        reason: transferReason.trim(),
-      }).unwrap();
-      message.success(`Project ownership transferred to ${targetEmp.userName}!`);
-    } catch {
-      projectService.transferProjectOwnership(
-        project.id,
-        targetEmp.userId,
-        targetEmp.userName,
-        user?.id || 1,
-        user?.username || 'Authenticated Admin',
-        transferReason.trim()
-      );
-      message.success(`Ownership transferred to ${targetEmp.userName} (locally).`);
-    }
-    setShowTransferModal(false);
-    setTransferReason('');
-    setNewOwnerId(undefined);
-    if (onProjectUpdated) onProjectUpdated();
-    setTransferring(false);
+  const formatShortDate = (dateStr?: string) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
-    <div className="space-y-6">
-      {/* KPI Cards Row */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card
-            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
-            styles={{ body: { padding: '20px' } }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted">Project Health</span>
-              <Tag color={healthColor} className="font-bold text-[10px] uppercase m-0">
-                {healthLabel}
-              </Tag>
-            </div>
-            <div className="mt-2">
-              <span className="text-2xl font-black text-foreground">{progressPct}%</span>
-              <span className="text-xs text-muted ml-2">completed</span>
-              <Progress
-                percent={progressPct}
-                showInfo={false}
-                strokeColor="var(--primary, #3b82f6)"
-                className="mt-2"
-              />
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card
-            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
-            styles={{ body: { padding: '20px' } }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted">Active Sprint</span>
-              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                <Sparkles size={14} />
-              </div>
-            </div>
-            <div className="mt-2">
-              <span className="text-sm font-bold text-foreground line-clamp-1 block">
-                {activeSprint ? activeSprint.name : 'No Active Sprint'}
-              </span>
-              <span className="text-xs text-muted mt-1 block">
-                {activeSprint
-                  ? `${activeSprint.completedPoints} / ${activeSprint.committedPoints} pts delivered`
-                  : 'Cycle in backlog planning'}
-              </span>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card
-            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
-            styles={{ body: { padding: '20px' } }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted">Task Pipeline</span>
-              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
-                <CheckCircle2 size={14} />
-              </div>
-            </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-black text-foreground">{completedTasks}</span>
-              <span className="text-xs text-muted">/ {tasks.length} done</span>
-              <span className="text-xs font-bold text-amber-500 ml-auto">
-                ({inProgressTasks} active)
-              </span>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card
-            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
-            styles={{ body: { padding: '20px' } }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted">Target Timeline</span>
-              <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
-                <Calendar size={14} />
-              </div>
-            </div>
-            <div className="mt-2">
-              <span className="text-sm font-bold text-foreground block">{project.targetDate}</span>
-              <span className="text-xs text-muted mt-1 block">Started: {project.startDate}</span>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 2. Real Project Ownership & Governance Banner */}
-      <Card
-        className="rounded-2xl border-primary/20 bg-primary/5 shadow-xs"
-        styles={{ body: { padding: '20px' } }}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
+    <Row gutter={[20, 20]}>
+      {/* Left Column: Steps + Next Up */}
+      <Col xs={24} lg={16} className="space-y-5">
+        {/* Steps Card (Live Milestones) */}
+        <Card
+          className="rounded-2xl border-border-subtle bg-card shadow-xs"
+          styles={{ body: { padding: '20px' } }}>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <h3 className="text-sm font-black text-foreground m-0">Steps</h3>
             <div className="flex items-center gap-2">
-              <ShieldCheck className="text-primary" size={20} />
-              <h3 className="text-base font-black text-foreground">
-                Project Governance & Ownership
-              </h3>
-              <Tag color="cyan">{project.key}</Tag>
+              <Button
+                size="small"
+                onClick={() => onTabChange('phases')}
+                className="rounded-lg text-xs font-semibold">
+                Edit steps
+              </Button>
+              {onAddTask && (
+                <Button
+                  size="small"
+                  type="primary"
+                  icon={<Plus size={12} />}
+                  onClick={onAddTask}
+                  className="rounded-lg text-xs font-bold">
+                  Task
+                </Button>
+              )}
             </div>
-            <p className="text-xs text-muted">
-              Live organizational accountability structure connecting the project to company
-              departments and delivery leads.
-            </p>
           </div>
 
-          <Space>
-            <Button
-              icon={<UserCheck size={14} className="text-primary" />}
-              onClick={() => {
-                setNewPMId(project.projectManagerId);
-                setShowPMModal(true);
-              }}
-              className="rounded-xl font-bold">
-              Change Project Manager
-            </Button>
-            <Button
-              type="primary"
-              icon={<ShieldCheck size={14} />}
-              onClick={() => setShowTransferModal(true)}
-              className="rounded-xl font-bold">
-              Transfer Ownership
-            </Button>
-          </Space>
-        </div>
+          {milestones.length === 0 ? (
+            <div className="text-center py-8 text-xs text-muted border border-dashed border-border-subtle rounded-xl">
+              No steps defined yet. Click <strong>Edit steps</strong> to add milestones.
+            </div>
+          ) : (
+            <div className="divide-y divide-border-subtle">
+              {milestones.map((ms, idx) => {
+                const msTasks = tasks.filter((t) => t.milestoneId === ms.id);
+                const doneMsTasks = msTasks.filter(
+                  (t) => t.status === 'Done' || t.status === 'Completed'
+                ).length;
+                const pct =
+                  msTasks.length > 0
+                    ? Math.round((doneMsTasks / msTasks.length) * 100)
+                    : ms.progress ?? 0;
 
-        <Row gutter={[16, 16]} className="mt-4 pt-4 border-t border-primary/10">
-          <Col xs={12} sm={6}>
-            <span className="text-[11px] font-semibold text-muted uppercase block">
-              Project Owner
-            </span>
-            <span className="text-sm font-bold text-foreground block mt-0.5">
-              {project.ownerName || project.leadName || 'Alex Mercer'}
-            </span>
-            <span className="text-[11px] text-muted">Accountable for Delivery</span>
-          </Col>
-          <Col xs={12} sm={6}>
-            <span className="text-[11px] font-semibold text-muted uppercase block">
-              Project Manager
-            </span>
-            <span className="text-sm font-bold text-foreground block mt-0.5">
-              {project.projectManagerName || project.leadName || 'Alex Mercer'}
-            </span>
-            <span className="text-[11px] text-muted">Sprint & Team Lead</span>
-          </Col>
-          <Col xs={12} sm={6}>
-            <span className="text-[11px] font-semibold text-muted uppercase block">Department</span>
-            <span className="text-sm font-bold text-foreground block mt-0.5 flex items-center gap-1">
-              <Building2 size={13} className="text-primary inline" />
-              {project.departmentName || 'Engineering'}
-            </span>
-            <span className="text-[11px] text-muted">
-              Head: {project.deptHeadName || 'Alex Mercer'}
-            </span>
-          </Col>
-          <Col xs={12} sm={6}>
-            <span className="text-[11px] font-semibold text-muted uppercase block">Created By</span>
-            <span className="text-sm font-bold text-foreground block mt-0.5">
-              {project.createdByName || 'Authenticated User'}
-            </span>
-            <span className="text-[11px] text-muted">Initial Reporter</span>
-          </Col>
-        </Row>
+                const statusLabel =
+                  ms.status === 'completed'
+                    ? 'Completed'
+                    : ms.status === 'in_progress'
+                      ? 'In progress'
+                      : ms.status === 'missed'
+                        ? 'Blocked'
+                        : 'Not started';
 
-        {/* Ownership Transfer History Audit Timeline */}
-        {project.ownershipTransferHistory && project.ownershipTransferHistory.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-primary/10">
-            <span className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-2">
-              <History size={13} className="text-primary" /> Ownership Transfer Audit Trail
-            </span>
-            <Timeline
-              className="mt-2"
-              items={project.ownershipTransferHistory.map((h) => ({
-                color: 'blue',
-                children: (
-                  <div className="text-xs">
-                    <span className="font-bold">{h.transferredByName}</span> transferred ownership
-                    from <span className="font-semibold">{h.fromUserName || 'Initial Owner'}</span>{' '}
-                    to <span className="font-semibold text-primary">{h.toUserName}</span> on{' '}
-                    <span className="text-muted">{new Date(h.timestamp).toLocaleDateString()}</span>
-                    <p className="text-muted text-[11px] italic mt-0.5">"{h.reason}"</p>
+                return (
+                  <div
+                    key={ms.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-6 h-6 rounded-full bg-surface-subtle border border-border-subtle text-xs font-bold text-muted flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-foreground truncate">{ms.name}</div>
+                        <div className="text-xs text-muted">
+                          {formatShortDate(ms.targetDate)} ·{' '}
+                          {msTasks.length > 0
+                            ? `${doneMsTasks}/${msTasks.length} tasks`
+                            : 'No tasks yet'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="w-24">
+                        <Progress percent={pct} showInfo={false} size="small" />
+                      </div>
+                      <Tag
+                        color={
+                          ms.status === 'completed'
+                            ? 'success'
+                            : ms.status === 'in_progress'
+                              ? 'processing'
+                              : 'default'
+                        }
+                        className="text-[11px] font-semibold m-0 rounded-md">
+                        {statusLabel}
+                      </Tag>
+                    </div>
                   </div>
-                ),
-              }))}
-            />
-          </div>
-        )}
-      </Card>
+                );
+              })}
+            </div>
+          )}
+        </Card>
 
-      {/* Main Section: Milestones & Team */}
-      <Row gutter={[24, 24]}>
-        {/* Milestones Summary */}
-        <Col xs={24} lg={16}>
-          <Card
-            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs"
-            title={
-              <Space>
-                <Target size={16} className="text-primary" />
-                <span className="text-sm font-black">Project Milestones</span>
-              </Space>
-            }
-            extra={
+        {/* Next Up Card (Live Open Tasks) */}
+        <Card
+          className="rounded-2xl border-border-subtle bg-card shadow-xs"
+          styles={{ body: { padding: '20px' } }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-black text-foreground m-0">Next up</h3>
+            {openTasks.length > 0 && (
               <Button
                 type="link"
                 size="small"
-                onClick={() => onTabChange('timeline')}
-                className="font-bold p-0">
-                <span>View Timeline Gantt</span>
-                <ArrowRight size={13} className="ml-1 inline" />
+                onClick={() => onTabChange('list')}
+                className="text-xs p-0">
+                View all ({openTasks.length})
               </Button>
-            }
-            styles={{ body: { padding: '16px 20px' } }}>
-            <div className="space-y-3">
-              {milestones.length === 0 ? (
-                <p className="text-xs text-muted py-4 text-center">No milestones planned yet.</p>
-              ) : (
-                milestones.map((m) => {
-                  const isDone = m.status === 'completed';
-                  return (
-                    <div
-                      key={m.id}
-                      className="p-3.5 rounded-xl bg-background border border-border-subtle flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                            isDone
-                              ? 'bg-emerald-500/15 text-emerald-500'
-                              : 'bg-primary/10 text-primary'
-                          }`}>
-                          {isDone ? <CheckCircle2 size={16} /> : <Clock size={16} />}
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-foreground truncate">{m.name}</h4>
-                          <p className="text-[11px] text-muted flex items-center gap-2">
-                            <span>Target: {m.targetDate}</span>
-                            {m.isFixed && (
-                              <span className="text-amber-500 font-semibold">• Fixed Date</span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
+            )}
+          </div>
 
-                      <Space>
-                        {m.requiresSignoff && (
-                          <Tag color="purple" className="text-[10px] font-bold m-0">
-                            Sign-off Req
-                          </Tag>
-                        )}
-                        <Tag
-                          color={isDone ? 'green' : 'blue'}
-                          className="text-[10px] font-bold uppercase m-0">
-                          {m.status.replace('_', ' ')}
-                        </Tag>
-                      </Space>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </Card>
-        </Col>
-
-        {/* Team Members */}
-        <Col xs={24} lg={8}>
-          <Card
-            className="rounded-2xl border-border-subtle bg-surface-subtle shadow-xs h-full"
-            title={
-              <Space>
-                <Users size={16} className="text-primary" />
-                <span className="text-sm font-black">Project Team ({project.members.length})</span>
-              </Space>
-            }
-            styles={{ body: { padding: '16px 20px' } }}>
-            <div className="space-y-2.5">
-              {project.members.map((member) => (
+          {openTasks.length === 0 ? (
+            <p className="text-xs text-muted m-0">
+              No open tasks. Add one with <strong>+ Task</strong>.
+            </p>
+          ) : (
+            <div className="divide-y divide-border-subtle">
+              {openTasks.slice(0, 5).map((t) => (
                 <div
-                  key={member.userId}
-                  className="p-2.5 rounded-xl bg-background border border-border-subtle flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase shrink-0">
-                      {member.name.slice(0, 2)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate leading-tight">
-                        {member.name}
-                      </p>
-                      <p className="text-[11px] text-muted truncate">{member.email}</p>
-                    </div>
+                  key={t.id}
+                  onClick={() => onTabChange('board')}
+                  className="flex items-center justify-between py-2.5 gap-3 cursor-pointer hover:bg-surface-subtle/60 px-2 -mx-2 rounded-lg transition-colors">
+                  <div className="min-w-0">
+                    <span className="font-mono text-[11px] font-bold text-primary mr-2">
+                      {project.key}-{t.keyNumber}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">{t.title}</span>
                   </div>
-
-                  <Tag color="blue" className="text-[10px] font-bold uppercase m-0">
-                    {member.role}
-                  </Tag>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Tag
+                      color={t.priority === 'High' ? 'red' : t.priority === 'Medium' ? 'gold' : 'default'}
+                      className="text-[10px] font-bold m-0">
+                      {t.priority}
+                    </Tag>
+                    <Tag className="text-[10px] m-0">{t.status}</Tag>
+                  </div>
                 </div>
               ))}
             </div>
-          </Card>
-        </Col>
-      </Row>
+          )}
+        </Card>
+      </Col>
 
-      {/* Transfer Ownership Modal */}
-      <Modal
-        title={
-          <Space>
-            <ShieldCheck className="text-primary" size={16} />
-            <span className="font-bold text-sm">Transfer Project Ownership ({project.key})</span>
-          </Space>
-        }
-        open={showTransferModal}
-        onCancel={() => setShowTransferModal(false)}
-        onOk={handleTransferOwnership}
-        confirmLoading={transferring}
-        okText="Transfer Ownership"
-        centered>
-        <div className="space-y-4 my-2">
-          <p className="text-xs text-muted">
-            Transferring ownership reassigns final delivery accountability to the selected employee.
-            An audit record will be preserved with your identity, timestamp, and justification.
-          </p>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1.5">
-              New Project Owner
-            </label>
-            <Select
-              className="w-full"
-              placeholder="Search and select active employee..."
-              showSearch
-              optionFilterProp="label"
-              value={newOwnerId}
-              onChange={setNewOwnerId}
-              options={eligibleEmployees.map((e) => ({
-                value: e.userId,
-                label: `${e.userName} (${e.designation} - ${e.departmentName})`,
-              }))}
-            />
+      {/* Right Column: Documents + Activity */}
+      <Col xs={24} lg={8} className="space-y-5">
+        {/* Documents Summary Card */}
+        <Card
+          className="rounded-2xl border-border-subtle bg-card shadow-xs"
+          styles={{ body: { padding: '20px' } }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-black text-foreground flex items-center gap-1.5 m-0">
+              <FileText size={14} className="text-primary" /> Documents
+            </h3>
+            <Button
+              size="small"
+              onClick={() => onTabChange('documents')}
+              className="rounded-lg text-xs font-semibold">
+              Open checklist
+            </Button>
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1.5">
-              Business Rationale
-            </label>
-            <Input.TextArea
-              rows={3}
-              value={transferReason}
-              onChange={(e) => setTransferReason(e.target.value)}
-              placeholder="e.g. Lead role transition following departmental sprint reallocation..."
-              className="rounded-xl text-xs"
-            />
+          <div className="flex items-center justify-between text-xs text-muted mb-1.5">
+            <span>
+              {doneDocsCount} of {activeDocsCount} done
+            </span>
+            <span className={overdueDocsCount > 0 ? 'text-rose-500 font-semibold' : ''}>
+              {overdueDocsCount > 0 ? (
+                <span className="flex items-center gap-1">
+                  <Clock size={11} /> {overdueDocsCount} overdue
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 size={11} className="text-emerald-500" /> Nothing overdue
+                </span>
+              )}
+            </span>
           </div>
-        </div>
-      </Modal>
+          <Progress percent={docsPct} showInfo={false} size="small" strokeColor="#10b981" />
+        </Card>
 
-      {/* Change Project Manager Modal */}
-      <Modal
-        title={
-          <Space>
-            <UserCheck className="text-primary" size={16} />
-            <span className="font-bold text-sm">Assign Project Manager ({project.key})</span>
-          </Space>
-        }
-        open={showPMModal}
-        onCancel={() => setShowPMModal(false)}
-        onOk={handleUpdatePM}
-        confirmLoading={updatingPM}
-        okText="Update Project Manager"
-        centered>
-        <div className="space-y-4 my-2">
-          <p className="text-xs text-muted">
-            Select the designated Project Manager / Delivery Lead responsible for milestone
-            execution and task oversight.
-          </p>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1.5">
-              Project Manager (Loaded from DB)
-            </label>
-            <Select
-              className="w-full"
-              placeholder="Search and select employee from DB..."
-              showSearch
-              optionFilterProp="label"
-              value={newPMId}
-              onChange={setNewPMId}
-              options={eligibleEmployees.map((e) => ({
-                value: e.userId,
-                label: `${e.userName} (${e.designation} - ${e.departmentName})`,
-              }))}
-            />
+        {/* Live Activity Card */}
+        <Card
+          className="rounded-2xl border-border-subtle bg-card shadow-xs"
+          styles={{ body: { padding: '20px' } }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-black text-foreground flex items-center gap-1.5 m-0">
+              <ActivityIcon size={14} className="text-primary" /> Activity
+            </h3>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => onTabChange('activity')}
+              className="text-xs p-0">
+              View all
+            </Button>
           </div>
-        </div>
-      </Modal>
-    </div>
+
+          {activities.length === 0 ? (
+            <p className="text-xs text-muted m-0">No recent activity logged yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {activities.map((act) => {
+                const actor = act.actor_name || 'System';
+                const initials = actor
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase();
+                return (
+                  <div key={act.id} className="flex items-start justify-between gap-2 text-xs">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <Avatar
+                        size={22}
+                        src={act.actor_image || undefined}
+                        className="bg-amber-500/20 text-amber-700 font-bold text-[10px] shrink-0">
+                        {initials}
+                      </Avatar>
+                      <div className="min-w-0">
+                        <span className="font-bold text-foreground">{actor}</span>{' '}
+                        <span className="text-muted">
+                          {act.action.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted shrink-0">
+                      {act.created_at ? formatShortDate(act.created_at) : ''}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      </Col>
+    </Row>
   );
 }
