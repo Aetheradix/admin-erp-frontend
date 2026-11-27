@@ -184,7 +184,7 @@ export function BoardTab({
           return (
             <div
               key={statusObj.id}
-              className="flex flex-col bg-surface-subtle/50 rounded-2xl border border-border-subtle p-3 min-w-[280px] w-[300px] shrink-0 min-h-[520px]">
+              className="flex flex-col bg-surface-subtle/50 rounded-2xl border border-border-subtle p-3 min-w-70 w-75 shrink-0 min-h-130">
               {/* Column Header */}
               <div className="flex items-center justify-between px-1.5 py-1.5 mb-2">
                 <Space size={6}>

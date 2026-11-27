@@ -46,7 +46,7 @@ export const DetailPanel: React.FC<DetailPanelProps> = React.memo(
     const [activeTab, setActiveTab] = useState<DetailTab>('contact');
 
     return (
-      <div className="w-full sm:w-[520px] lg:w-auto lg:flex-1 min-w-0 h-full bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto animate-in slide-in-from-right duration-200 absolute inset-y-0 right-0 z-30 shadow-2xl lg:static lg:shadow-none">
+      <div className="w-full sm:w-130 lg:w-auto lg:flex-1 min-w-0 h-full bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto animate-in slide-in-from-right duration-200 absolute inset-y-0 right-0 z-30 shadow-2xl lg:static lg:shadow-none">
         <DetailHeader
           inspectedNode={inspectedNode}
           isCentral={isCentral}

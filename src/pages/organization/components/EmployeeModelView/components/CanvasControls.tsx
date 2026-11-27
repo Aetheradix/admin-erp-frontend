@@ -25,7 +25,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = React.memo(
             </button>
           </Tooltip>
 
-          <span className="text-[11px] font-mono font-bold text-slate-600 px-1.5 min-w-[42px] text-center select-none">
+          <span className="text-[11px] font-mono font-bold text-slate-600 px-1.5 min-w-10.5 text-center select-none">
             {Math.round(zoom * 100)}%
           </span>
 
@@ -39,7 +39,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = React.memo(
             </button>
           </Tooltip>
 
-          <div className="w-[1px] h-4 bg-slate-200 mx-1" />
+          <div className="w-px h-4 bg-slate-200 mx-1" />
 
           <Tooltip title="Fit model view to canvas">
             <button

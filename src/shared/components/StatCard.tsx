@@ -54,7 +54,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'bg-white p-6 rounded-[32px] border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex flex-col gap-4 group',
+        'bg-white p-6 rounded-4xl border border-border-subtle shadow-soft transition-all duration-300 hover:shadow-lg flex flex-col gap-4 group',
         className
       )}>
       {badge ? (

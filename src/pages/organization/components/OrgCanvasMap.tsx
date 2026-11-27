@@ -94,7 +94,7 @@ export const OrgCanvasMap = ({
       onPointerDown={transform.handlePointerDown}
       onPointerMove={transform.handlePointerMove}
       onPointerUp={transform.handlePointerUp}
-      className="relative w-full h-full min-h-[640px] flex-1 overflow-hidden select-none bg-[#faf9f8] text-slate-800 cursor-grab active:cursor-grabbing font-sans"
+      className="relative w-full h-full min-h-160 flex-1 overflow-hidden select-none bg-[#faf9f8] text-slate-800 cursor-grab active:cursor-grabbing font-sans"
       style={{ touchAction: 'none' }}>
       <DotGridBackground zoom={transform.zoom} pan={transform.pan} />
 

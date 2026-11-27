@@ -81,7 +81,7 @@ export function OrgNodeCard({
         opacity: isDimmed ? 0.25 : 1,
         ...(node.isDeptHead ? { borderLeftColor: node.departmentColor.text } : {}),
       }}
-      className={`absolute top-0 left-0 pointer-events-auto rounded-[16px] cursor-pointer outline-none select-none flex items-center justify-between px-3.5 transition-all bg-white text-slate-900 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 ${
+      className={`absolute top-0 left-0 pointer-events-auto rounded-2xl cursor-pointer outline-none select-none flex items-center justify-between px-3.5 transition-all bg-white text-slate-900 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 ${
         isUnassignedPool
           ? 'border-2 border-dashed border-amber-400 bg-amber-50/70 hover:bg-amber-100/80 shadow-xs'
           : isFounderOrCeoNode
@@ -172,7 +172,7 @@ export function OrgNodeCard({
               e.stopPropagation();
               onToggle(node.id);
             }}
-            className={`shrink-0 min-w-[26px] h-6 px-1.5 rounded-full flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+            className={`shrink-0 min-w-6.5 h-6 px-1.5 rounded-full flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
               isUnassignedPool
                 ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold'
                 : isFounderOrCeoNode

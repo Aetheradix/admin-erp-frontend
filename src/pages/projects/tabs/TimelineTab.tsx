@@ -113,7 +113,7 @@ export function TimelineTab({ project, milestones, tasks, dependencies, onUpdate
       </Card>
 
       {/* Main Gantt Split Container */}
-      <div className="rounded-2xl border border-border-subtle bg-surface-subtle overflow-hidden flex flex-col md:flex-row min-h-[450px]">
+      <div className="rounded-2xl border border-border-subtle bg-surface-subtle overflow-hidden flex flex-col md:flex-row min-h-112.5">
         {/* Left Side: Task Grid */}
         <div className="w-full md:w-80 border-r border-border-subtle bg-background shrink-0 overflow-y-auto">
           <div className="h-10 px-4 border-b border-border-subtle bg-surface-elevated/40 flex items-center font-bold text-xs text-muted">
@@ -145,7 +145,7 @@ export function TimelineTab({ project, milestones, tasks, dependencies, onUpdate
 
         {/* Right Side: Virtualized SVG Chart */}
         <div className="flex-1 overflow-x-auto overflow-y-auto relative bg-surface-subtle/30 custom-scrollbar">
-          <div style={{ width: chartWidth }} className="relative h-full min-h-[450px]">
+          <div style={{ width: chartWidth }} className="relative h-full min-h-112.5">
             {/* Header Dates */}
             <div className="h-10 border-b border-border-subtle relative bg-surface-elevated/20">
               {timelineMarkers.map((m, idx) => (

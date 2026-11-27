@@ -54,7 +54,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = React.memo(
                   <>
                     <span className="text-slate-400">•</span>
                     <span
-                      className="px-1.5 sm:px-2 py-0.25 rounded-md text-[9px] sm:text-[10px] font-bold"
+                      className="px-1.5 sm:px-2 py-px rounded-md text-[9px] sm:text-[10px] font-bold"
                       style={{ backgroundColor: deptColor.bg, color: deptColor.text }}>
                       {focusedNode.department}
                     </span>

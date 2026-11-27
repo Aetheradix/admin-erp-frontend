@@ -85,7 +85,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
   return (
     <div className="flex flex-col gap-1 w-full" ref={containerRef}>
       <div
-        className={`relative flex items-center w-full h-[46px] rounded-md border bg-white shadow-xs transition-all duration-200 ${
+        className={`relative flex items-center w-full h-11.5 rounded-md border bg-white shadow-xs transition-all duration-200 ${
           error
             ? 'border-red-400 ring-2 ring-red-100'
             : isOpen
@@ -109,7 +109,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
           <img
             src={`https://flagcdn.com/w40/${currentCountry.code.toLowerCase()}.png`}
             alt={currentCountry.name}
-            className="w-5 h-3.5 object-cover rounded-[2px] border border-slate-200/80 shrink-0"
+            className="w-5 h-3.5 object-cover rounded-xs border border-slate-200/80 shrink-0"
             onError={(e) => {
               (e.currentTarget as HTMLElement).style.display = 'none';
             }}
@@ -182,7 +182,7 @@ export const InternationalPhoneInput: React.FC<InternationalPhoneInputProps> = (
                         <img
                           src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
                           alt={c.name}
-                          className="w-5 h-3.5 object-cover rounded-[2px] border border-slate-200/80 shrink-0"
+                          className="w-5 h-3.5 object-cover rounded-xs border border-slate-200/80 shrink-0"
                           onError={(e) => {
                             (e.currentTarget as HTMLElement).style.display = 'none';
                           }}

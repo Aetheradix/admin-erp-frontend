@@ -34,7 +34,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = React.memo(
 
     return (
       <>
-        <div className="h-24 bg-gradient-to-r from-[#0078d4] via-[#106ebe] to-[#005a9e] relative shrink-0">
+        <div className="h-24 bg-linear-to-r from-[#0078d4] via-[#106ebe] to-[#005a9e] relative shrink-0">
           <Tooltip title="Collapse Details Sidebar">
             <button
               type="button"
@@ -106,7 +106,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = React.memo(
                     <span className="text-[9px] font-bold uppercase tracking-tighter text-slate-400 block">
                       Manager
                     </span>
-                    <span className="font-extrabold text-slate-800 truncate block max-w-[100px]">
+                    <span className="font-extrabold text-slate-800 truncate block max-w-25">
                       {manager ? (
                         manager.username
                       ) : (
@@ -138,7 +138,7 @@ export const DetailHeader: React.FC<DetailHeaderProps> = React.memo(
                     <span className="text-[9px] font-bold uppercase tracking-tighter text-slate-400 block">
                       Location
                     </span>
-                    <span className="font-extrabold text-slate-800 truncate block max-w-[90px]">
+                    <span className="font-extrabold text-slate-800 truncate block max-w-25">
                       <Building2 size={10} className="inline text-[#0078d4] mr-0.5" />
                       {resolvedOffice?.name || 'HQ'}
                     </span>

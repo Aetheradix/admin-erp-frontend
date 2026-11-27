@@ -22,7 +22,7 @@ export function OrgCanvasControls({ onZoomIn, onZoomOut, onFit }: OrgCanvasContr
           title="Zoom in">
           +
         </button>
-        <div className="w-[1px] h-4 bg-slate-200 mx-1" />
+        <div className="w-px h-4 bg-slate-200 mx-1" />
         <button
           type="button"
           onClick={onFit}
